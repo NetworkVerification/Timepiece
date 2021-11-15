@@ -11,7 +11,7 @@ namespace ZenDemo
         /// <summary>
         /// Generate a simple example network.
         /// </summary>
-        public static Network<Option<uint>> SimpleNetwork()
+        public static Network<Option<uint>> Net()
         {
             var nodes = new string[] { "A", "B", "C" };
 

@@ -10,8 +10,22 @@ namespace ZenDemo
         public static void Main(string[] args)
         {
 
-            var network = Simple.SimpleNetwork();
+            switch (args[0])
+            {
+                case "simple":
+                    Run(Simple.Net());
+                    break;
+                case "lp":
+                    Run(LocalPref.Net());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException($"Unexpected network type: {args[1]}");
+            };
 
+        }
+
+        public static void Run<T>(Network<T> network)
+        {
             var timer = System.Diagnostics.Stopwatch.StartNew();
 
             if (!network.CheckMonolithic())
@@ -28,6 +42,7 @@ namespace ZenDemo
             }
 
             Console.WriteLine($"Modular verification took {timer.ElapsedMilliseconds}ms");
+
         }
     }
 }
