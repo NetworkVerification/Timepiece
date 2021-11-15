@@ -33,7 +33,6 @@ namespace ZenDemo
             {
                 { "A", ReachabilityAssertionTime },
                 { "B", ReachabilityAssertionTime },
-                { "C", ReachabilityAssertionTime }
             };
 
             // we want to prove that A and B are reachable beyond some point in time.
@@ -42,7 +41,6 @@ namespace ZenDemo
             {
                 { "A", ReachabilityAssertionStable },
                 { "B", ReachabilityAssertionStable },
-                { "C", ReachabilityAssertionStable }
             };
 
             // sound annotations here. they are overapproximate but sufficient to prove what we want
@@ -50,8 +48,7 @@ namespace ZenDemo
             var annotations = new Dictionary<string, Func<Zen<Tuple<uint, uint>>, Zen<BigInteger>, Zen<bool>>>
             {
                 { "A", (route, time) => route == Tuple.Create(1U, 0U) },
-                { "B", (route, time) => Implies(time > new BigInteger(0), route.HasValue()) },
-                { "C", (route, time) => Implies(time > new BigInteger(1), route.HasValue()) }
+                { "B", (route, time) => Or(route == Tuple.Create(1U, 1U), route == Tuple.Create(1U, 10U))},
             };
 
             return new Network<Tuple<uint, uint>>(nodes, neighbors, Transfer, Merge, initialValues, annotations, modularAssertions, monolithicAssertions);
@@ -71,10 +68,10 @@ namespace ZenDemo
         /// </summary>
         public static Zen<Tuple<uint, uint>> Merge(Zen<Tuple<uint, uint>> r1, Zen<Tuple<uint, uint>> r2)
         {
-            (Zen<uint> r1First, Zen<uint> r1Second) = r1;
-            (Zen<uint> r2First, Zen<uint> r2Second) = r2;
+            (Zen<uint> r1First, Zen<uint> r1Second) = (r1.Item1(), r1.Item2());
+            (Zen<uint> r2First, Zen<uint> r2Second) = (r2.Item1(), r2.Item2());
             var min = Min(r1First, r2First);
-            return If(r1HasNoRoute, r2, If(r2HasNoRoute, r1, Some(min)));
+            return If(Or(r1First < r2First, And(r1First == r2First, r2First < r2Second)), r1, r2);
         }
 
         /// <summary>
@@ -82,7 +79,7 @@ namespace ZenDemo
         /// </summary>
         public static Zen<bool> ReachabilityAssertionTime(Zen<Tuple<uint, uint>> r, Zen<BigInteger> time)
         {
-            return Implies(time > new BigInteger(10), r.HasValue());
+            return Implies(time > new BigInteger(10), r.Item2() < 10U);
         }
 
         /// <summary>
@@ -90,7 +87,7 @@ namespace ZenDemo
         /// </summary>
         public static Zen<bool> ReachabilityAssertionStable(Zen<Tuple<uint, uint>> r)
         {
-            return r != Option.None<uint>();
+            return r.Item2() < 10U;
         }
     }
 }
