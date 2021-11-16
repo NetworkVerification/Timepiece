@@ -9,19 +9,11 @@ namespace ZenDemo
         /// </summary>
         public static void Main(string[] args)
         {
-            switch (args[0])
-            {
-                case "simple":
-                    Run(Simple.Net());
-                    break;
-                case "lp":
-                    Run(LocalPref.Net());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException($"Unexpected network type: {args[0]}");
-            }
-
-            ;
+            Console.WriteLine($"Simple 3-node shortest path benchmarks:");
+            Run(Simple.Sound());
+            Run(Simple.Unsound());
+            Console.WriteLine($"2-node local preference benchmarks:");
+            Run(LocalPref.Sound());
         }
 
         private static void Run<T>(Network<T> network)

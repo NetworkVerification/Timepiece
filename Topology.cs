@@ -39,20 +39,48 @@ namespace ZenDemo
             return ToBase26(i / 26) + (char) ('A' + i % 26);
         }
 
-        public static Topology Chain(int length)
+        /// <summary>
+        /// Create a path digraph topology.
+        /// </summary>
+        /// <param name="numNodes">Number of nodes in topology.</param>
+        /// <returns></returns>
+        public static Topology Path(int numNodes)
         {
             var neighbors = new Dictionary<string, List<string>>();
-            for (var i = 0; i < length; i++)
+            for (var i = 0; i < numNodes; i++)
             {
                 neighbors.Add(ToBase26(i + 1), new List<string>());
             }
 
             var nodes = neighbors.Keys.ToArray();
-            for (var i = 1; i < length; i++)
+            for (var i = 1; i < numNodes; i++)
             {
                 // add a pair of edges in sequence
                 neighbors[nodes[i - 1]].Add(nodes[i]);
                 neighbors[nodes[i]].Add(nodes[i - 1]);
+            }
+
+            return new Topology(neighbors);
+        }
+
+        /// <summary>
+        /// Create a complete digraph topology.
+        /// </summary>
+        /// <param name="numNodes">Number of nodes in topology.</param>
+        /// <returns></returns>
+        public static Topology Complete(int numNodes)
+        {
+            var neighbors = new Dictionary<string, List<string>>();
+            for (var i = 0; i < numNodes; i++)
+            {
+                neighbors.Add(ToBase26(i + 1), new List<string>());
+            }
+
+            var nodes = neighbors.Keys;
+            foreach (var (node,adj) in neighbors)
+            {
+                // add all other nodes except the current one
+                adj.AddRange(nodes.Where(n => n != node));
             }
 
             return new Topology(neighbors);

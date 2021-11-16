@@ -53,8 +53,7 @@ namespace ZenDemo
         protected Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicAssertions;
 
         public Network(
-            string[] nodes,
-            Dictionary<string, List<string>> edges,
+            Topology topology,
             Func<Zen<T>, Zen<T>> transferFunction,
             Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
             Dictionary<string, T> initialValues,
@@ -62,8 +61,8 @@ namespace ZenDemo
             Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularAssertions,
             Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicAssertions)
         {
-            this.nodes = nodes;
-            this.neighbors = edges;
+            nodes = topology.nodes;
+            neighbors = topology.neighbors;
             this.transferFunction = transferFunction;
             this.mergeFunction = mergeFunction;
             this.initialValues = initialValues;

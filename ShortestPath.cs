@@ -8,23 +8,23 @@ namespace ZenDemo
 {
     public class ShortestPath : Network<Option<uint>>
     {
-        public ShortestPath(string[] nodes, Dictionary<string, List<string>> edges,
+        public ShortestPath(Topology topology,
             Dictionary<string, Option<uint>> initialValues,
             Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>> annotations,
             BigInteger convergeTime
-        ) : base(nodes, edges, Transfer, Merge, initialValues, annotations,
+        ) : base(topology, Transfer, Merge, initialValues, annotations,
             new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>(),
             new Dictionary<string, Func<Zen<Option<uint>>, Zen<bool>>>())
         {
-            this.nodes = nodes;
-            this.neighbors = edges;
-            this.transferFunction = Transfer;
-            this.mergeFunction = Merge;
+            nodes = topology.nodes;
+            neighbors = topology.neighbors;
+            transferFunction = Transfer;
+            mergeFunction = Merge;
             this.annotations = annotations;
             foreach (var node in nodes)
             {
-                this.modularAssertions.Add(node, ReachabilityAssertionTime(convergeTime));
-                this.monolithicAssertions.Add(node, ReachabilityAssertionStable);
+                modularAssertions.Add(node, ReachabilityAssertionTime(convergeTime));
+                monolithicAssertions.Add(node, ReachabilityAssertionStable);
             }
         }
 

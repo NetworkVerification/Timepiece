@@ -11,9 +11,10 @@ namespace ZenDemo
         /// <summary>
         /// Generate a simple example network.
         /// </summary>
-        public static Network<Pair<uint, uint>> Net()
+        public static Network<Pair<uint, uint>> Net(
+            Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>> annotations)
         {
-            var topology = DefaultTopologies.Chain(2);
+            var topology = DefaultTopologies.Path(2);
 
             var initialValues = new Dictionary<string, Pair<uint, uint>>
             {
@@ -33,6 +34,14 @@ namespace ZenDemo
                 {"B", ReachabilityAssertionStable},
             };
 
+
+            return new Network<Pair<uint, uint>>(topology, Transfer, Merge, initialValues,
+                annotations, modularAssertions, monolithicAssertions);
+        }
+
+        public static Network<Pair<uint, uint>> Sound()
+        {
+            Console.WriteLine($"Sound annotations:");
             var annotations = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>>
             {
                 // NOTE: if we change the annotations from Item1() == 1 to Item1() <= 1,
@@ -44,9 +53,22 @@ namespace ZenDemo
                         Implies(And(route.Item1() == 1, time > new BigInteger(0)), route.Item2() < 10))
                 },
             };
+            return Net(annotations);
+        }
 
-            return new Network<Pair<uint, uint>>(topology.nodes, topology.neighbors, Transfer, Merge, initialValues,
-                annotations, modularAssertions, monolithicAssertions);
+        public static Network<Pair<uint, uint>> Unsound()
+        {
+            Console.WriteLine($"Unsound annotations:");
+            var annotations = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>>
+            {
+                {"A", (route, _) => And(route.Item1() <= 1, Implies(route.Item1() == 1, route.Item2() == 0))},
+                {
+                    "B",
+                    (route, time) => And(route.Item1() <= 1,
+                        Implies(And(route.Item1() == 1, time > new BigInteger(0)), route.Item2() < 10))
+                },
+            };
+            return Net(annotations);
         }
 
         /// <summary>
