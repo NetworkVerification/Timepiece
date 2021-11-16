@@ -9,7 +9,6 @@ namespace ZenDemo
         /// </summary>
         public static void Main(string[] args)
         {
-
             switch (args[0])
             {
                 case "simple":
@@ -19,12 +18,13 @@ namespace ZenDemo
                     Run(LocalPref.Net());
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException($"Unexpected network type: {args[1]}");
-            };
+                    throw new ArgumentOutOfRangeException($"Unexpected network type: {args[0]}");
+            }
 
+            ;
         }
 
-        public static void Run<T>(Network<T> network)
+        private static void Run<T>(Network<T> network)
         {
             var timer = System.Diagnostics.Stopwatch.StartNew();
 
@@ -42,7 +42,6 @@ namespace ZenDemo
             }
 
             Console.WriteLine($"Modular verification took {timer.ElapsedMilliseconds}ms");
-
         }
     }
 }

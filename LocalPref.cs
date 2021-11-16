@@ -6,49 +6,47 @@ using static ZenLib.Language;
 
 namespace ZenDemo
 {
-    public class LocalPref
+    public static class LocalPref
     {
         /// <summary>
         /// Generate a simple example network.
         /// </summary>
         public static Network<Pair<uint, uint>> Net()
         {
-            var nodes = new string[] { "A", "B" };
-
-            var neighbors = new Dictionary<string, List<string>>
-            {
-                { "A", new List<string> { "B" } },
-                { "B", new List<string> { "A" } },
-            };
+            var topology = DefaultTopologies.Chain(2);
 
             var initialValues = new Dictionary<string, Pair<uint, uint>>
             {
-                { "A", (1U, 0U) },
-                { "B", (1U, 10U) },
+                {"A", (1U, 0U)},
+                {"B", (1U, 10U)},
             };
 
             var modularAssertions = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>>
             {
-                { "A", ReachabilityAssertionTime },
-                { "B", ReachabilityAssertionTime },
+                {"A", ReachabilityAssertionTime},
+                {"B", ReachabilityAssertionTime},
             };
 
             var monolithicAssertions = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<bool>>>
             {
-                { "A", ReachabilityAssertionStable },
-                { "B", ReachabilityAssertionStable },
+                {"A", ReachabilityAssertionStable},
+                {"B", ReachabilityAssertionStable},
             };
 
             var annotations = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>>
             {
                 // NOTE: if we change the annotations from Item1() == 1 to Item1() <= 1,
                 // the assertions will fail but the annotations still hold
-                { "A", (route, time) => And(route.Item1() == 1, Implies(route.Item1() == 1, route.Item2() == 0)) },
-                { "B", (route, time) => And(route.Item1() == 1, Implies(And(route.Item1() == 1, time > new BigInteger(0)), route.Item2() < 10))},
+                {"A", (route, _) => And(route.Item1() == 1, Implies(route.Item1() == 1, route.Item2() == 0))},
+                {
+                    "B",
+                    (route, time) => And(route.Item1() == 1,
+                        Implies(And(route.Item1() == 1, time > new BigInteger(0)), route.Item2() < 10))
+                },
             };
 
-            return new Network<Pair<uint, uint>>(nodes, neighbors, Transfer, Merge, initialValues, annotations, modularAssertions, monolithicAssertions);
-
+            return new Network<Pair<uint, uint>>(topology.nodes, topology.neighbors, Transfer, Merge, initialValues,
+                annotations, modularAssertions, monolithicAssertions);
         }
 
         /// <summary>
@@ -56,7 +54,6 @@ namespace ZenDemo
         /// </summary>
         public static Zen<Pair<uint, uint>> Transfer(Zen<Pair<uint, uint>> route)
         {
-            var hops = route.Item2();
             return Pair(route.Item1(), route.Item2() + 1);
         }
 

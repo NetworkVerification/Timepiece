@@ -15,42 +15,42 @@ namespace ZenDemo
         /// <summary>
         /// The nodes in the network and their names.
         /// </summary>
-        private string[] nodes;
+        protected string[] nodes;
 
         /// <summary>
         /// The edges for each node in the network.
         /// </summary>
-        private Dictionary<string, List<string>> neighbors;
+        protected Dictionary<string, List<string>> neighbors;
 
         /// <summary>
         /// The transfer function (assume the same for each node for now)
         /// </summary>
-        private Func<Zen<T>, Zen<T>> transferFunction;
+        protected Func<Zen<T>, Zen<T>> transferFunction;
 
         /// <summary>
         /// The merge function for routes.
         /// </summary>
-        private Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction;
+        protected Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction;
 
         /// <summary>
         /// The initial values for each node.
         /// </summary>
-        private Dictionary<string, T> initialValues;
+        protected Dictionary<string, T> initialValues;
 
         /// <summary>
         /// The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
         /// </summary>
-        private Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations;
+        protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations;
 
         /// <summary>
         /// The modular assertions that we want to check (includes time).
         /// </summary>
-        private Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularAssertions;
+        protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularAssertions;
 
         /// <summary>
         /// The monolithic assertions that we want to check (assumes stable states).
         /// </summary>
-        private Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicAssertions;
+        protected Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicAssertions;
 
         public Network(
             string[] nodes,
@@ -92,7 +92,8 @@ namespace ZenDemo
                 var route = Symbolic<T>();
 
                 // if the route is the initial value, then the annotation holds (i.e., the annotation contains the route at time 0).
-                var check = Implies(route == this.initialValues[node], this.annotations[node](route, new BigInteger(0)));
+                var check = Implies(route == this.initialValues[node],
+                    this.annotations[node](route, new BigInteger(0)));
 
                 // negate and try to prove unsat.
                 var model = Not(check).Solve();
@@ -127,6 +128,7 @@ namespace ZenDemo
 
                 if (model.IsSatisfiable())
                 {
+                    var solution = model.Get(route);
                     Console.WriteLine($"Assertion check failed at node: {node}");
                     return false;
                 }
@@ -163,7 +165,7 @@ namespace ZenDemo
                 }
 
                 // collect all of the assumptions from neighbors.
-                var assume = new List<Zen<bool>> { time > new BigInteger(0) };
+                var assume = new List<Zen<bool>> {time > new BigInteger(0)};
                 foreach (var neighbor in neighbors[node])
                 {
                     assume.Add(this.annotations[neighbor](routes[neighbor], time - new BigInteger(1)));
