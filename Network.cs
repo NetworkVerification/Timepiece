@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Linq;
 using ZenLib;
 using static ZenLib.Language;
 
@@ -43,14 +44,14 @@ namespace ZenDemo
         protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations;
 
         /// <summary>
-        /// The modular assertions that we want to check (includes time).
+        /// The modular safety properties that we want to check (includes time).
         /// </summary>
-        protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularAssertions;
+        protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties;
 
         /// <summary>
-        /// The monolithic assertions that we want to check (assumes stable states).
+        /// The monolithic safety properties that we want to check (assumes stable states).
         /// </summary>
-        protected Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicAssertions;
+        protected Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties;
 
         public Network(
             Topology topology,
@@ -58,8 +59,8 @@ namespace ZenDemo
             Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
             Dictionary<string, T> initialValues,
             Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
-            Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularAssertions,
-            Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicAssertions)
+            Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+            Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties)
         {
             nodes = topology.nodes;
             neighbors = topology.neighbors;
@@ -67,8 +68,8 @@ namespace ZenDemo
             this.mergeFunction = mergeFunction;
             this.initialValues = initialValues;
             this.annotations = annotations;
-            this.modularAssertions = modularAssertions;
-            this.monolithicAssertions = monolithicAssertions;
+            this.modularProperties = modularProperties;
+            this.monolithicProperties = monolithicProperties;
         }
 
         /// <summary>
@@ -91,8 +92,8 @@ namespace ZenDemo
                 var route = Symbolic<T>();
 
                 // if the route is the initial value, then the annotation holds (i.e., the annotation contains the route at time 0).
-                var check = Implies(route == this.initialValues[node],
-                    this.annotations[node](route, new BigInteger(0)));
+                var check = Implies(route == initialValues[node],
+                    annotations[node](route, new BigInteger(0)));
 
                 // negate and try to prove unsat.
                 var model = Not(check).Solve();
@@ -120,7 +121,7 @@ namespace ZenDemo
                 var time = Symbolic<BigInteger>();
 
                 // ensure the inductive invariant implies the assertions we want to prove.
-                var check = Implies(this.annotations[node](route, time), this.modularAssertions[node](route, time));
+                var check = Implies(annotations[node](route, time), modularProperties[node](route, time));
 
                 // negate and try to prove unsat.
                 var model = Not(check).Solve();
@@ -156,21 +157,16 @@ namespace ZenDemo
             foreach (var node in nodes)
             {
                 // get the new route as the merge of all neighbors
-                var newNodeRoute = Constant(this.initialValues[node]);
-                foreach (var neighbor in neighbors[node])
-                {
-                    newNodeRoute = this.mergeFunction(newNodeRoute, this.transferFunction(routes[neighbor]));
-                }
+                var newNodeRoute = neighbors[node].Aggregate(Constant(initialValues[node]),
+                    (current, neighbor) => mergeFunction(current, transferFunction(routes[neighbor])));
 
                 // collect all of the assumptions from neighbors.
                 var assume = new List<Zen<bool>> {time > new BigInteger(0)};
-                foreach (var neighbor in neighbors[node])
-                {
-                    assume.Add(this.annotations[neighbor](routes[neighbor], time - new BigInteger(1)));
-                }
+                assume.AddRange(neighbors[node].Select(neighbor =>
+                    this.annotations[neighbor](routes[neighbor], time - new BigInteger(1))));
 
                 // now we need to ensure the new route after merging implies the annotation for this node.
-                var check = Implies(And(assume.ToArray()), this.annotations[node](newNodeRoute, time));
+                var check = Implies(And(assume.ToArray()), annotations[node](newNodeRoute, time));
 
                 // negate and try to prove unsat.
                 var model = Not(check).Solve();
@@ -206,25 +202,12 @@ namespace ZenDemo
             }
 
             // add the assertions
-            var assertions = new List<Zen<bool>>();
-            foreach (var node in nodes)
-            {
-                assertions.Add(this.monolithicAssertions[node](routes[node]));
-            }
+            var assertions = nodes.Select(node => monolithicProperties[node](routes[node]));
 
-            // add constraints for each node, that it's route is the merge of all the neighbors and init
-            var constraints = new List<Zen<bool>>();
-            foreach (var node in nodes)
-            {
-                // get the new route as the merge of all neighbors
-                var newNodeRoute = Constant(this.initialValues[node]);
-                foreach (var neighbor in neighbors[node])
-                {
-                    newNodeRoute = this.mergeFunction(newNodeRoute, this.transferFunction(routes[neighbor]));
-                }
-
-                constraints.Add(routes[node] == newNodeRoute);
-            }
+            // add constraints for each node, that its route is the merge of all the neighbors and init
+            var constraints = nodes.Select(node =>
+                routes[node] == neighbors[node].Aggregate(Constant(initialValues[node]),
+                    (current, neighbor) => mergeFunction(current, transferFunction(routes[neighbor]))));
 
             var check = And(And(constraints.ToArray()), Not(And(assertions.ToArray())));
 

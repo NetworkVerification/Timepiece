@@ -23,8 +23,8 @@ namespace ZenDemo
             this.annotations = annotations;
             foreach (var node in nodes)
             {
-                modularAssertions.Add(node, ReachabilityAssertionTime(convergeTime));
-                monolithicAssertions.Add(node, ReachabilityAssertionStable);
+                modularProperties.Add(node, ReachabilityAssertionTime(convergeTime));
+                monolithicProperties.Add(node, ReachabilityAssertionStable);
             }
         }
 
@@ -33,7 +33,7 @@ namespace ZenDemo
         /// </summary>
         public static Zen<Option<uint>> Transfer(Zen<Option<uint>> route)
         {
-            return If(route.HasValue(), Some(route.Value() + 1), Option.None<uint>());
+            return route.Select(hops => hops + 1);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace ZenDemo
         /// </summary>
         public static Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>> ReachabilityAssertionTime(Zen<BigInteger> convergeTime)
         {
-            return (r, time) => Implies(time > convergeTime, r.HasValue());
+            return Lang.After(convergeTime, (Zen<Option<uint>> r) => r.HasValue());
         }
 
         /// <summary>

@@ -17,10 +17,10 @@ namespace ZenDemo
             Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> mergeFunction,
             Dictionary<string, Option<T>> initialValues,
             Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> annotations,
-            Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularAssertions,
-            Dictionary<string, Func<Zen<Option<T>>, Zen<bool>>> monolithicAssertions,
+            Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+            Dictionary<string, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
             Dictionary<Tuple<string, string>, bool> failedEdges) : base(topology,
-            transferFunction, mergeFunction, initialValues, annotations, modularAssertions, monolithicAssertions)
+            transferFunction, mergeFunction, initialValues, annotations, modularProperties, monolithicProperties)
         {
             this.failedEdges = failedEdges;
         }
