@@ -84,8 +84,8 @@ namespace ZenDemo
         /// </summary>
         public static Zen<Pair<uint, uint>> Merge(Zen<Pair<uint, uint>> r1, Zen<Pair<uint, uint>> r2)
         {
-            (Zen<uint> r1First, Zen<uint> r1Second) = (r1.Item1(), r1.Item2());
-            (Zen<uint> r2First, Zen<uint> r2Second) = (r2.Item1(), r2.Item2());
+            var (r1First, r1Second) = (r1.Item1(), r1.Item2());
+            var (r2First, r2Second) = (r2.Item1(), r2.Item2());
             var cmp = If(r1Second < r2Second, r1, r2);
             return If(r1First < r2First, r1, If(r1First == r2First, cmp, r2));
         }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace ZenDemo
 {
@@ -22,6 +23,17 @@ namespace ZenDemo
         {
             neighbors = edges;
             nodes = neighbors.Keys.ToArray();
+        }
+
+        /// <summary>
+        /// Return a new Topology generated from the given JSON string
+        /// representing an adjacency list.
+        /// </summary>
+        /// <param name="json">A string in JSON format representing an adjacency list.</param>
+        /// <returns></returns>
+        public static Topology FromJson(string json)
+        {
+            return new Topology(JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json));
         }
     }
 
