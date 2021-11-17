@@ -127,7 +127,6 @@ namespace ZenDemo
 
                 if (model.IsSatisfiable())
                 {
-                    var solution = model.Get(route);
                     Console.WriteLine($"Assertion check failed at node: {node}");
                     return false;
                 }
