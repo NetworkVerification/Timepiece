@@ -14,29 +14,24 @@ namespace ZenDemo
     public class Network<T>
     {
         /// <summary>
-        /// The nodes in the network and their names.
+        /// The topology of the network.
         /// </summary>
-        protected string[] nodes;
+        private Topology topology;
 
         /// <summary>
-        /// The edges for each node in the network.
+        /// The transfer function for each edge.
         /// </summary>
-        protected Dictionary<string, List<string>> neighbors;
-
-        /// <summary>
-        /// The transfer function (assume the same for each node for now)
-        /// </summary>
-        protected Func<Zen<T>, Zen<T>> transferFunction;
+        private Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction;
 
         /// <summary>
         /// The merge function for routes.
         /// </summary>
-        protected Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction;
+        private Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction;
 
         /// <summary>
         /// The initial values for each node.
         /// </summary>
-        protected Dictionary<string, T> initialValues;
+        private Dictionary<string, T> initialValues;
 
         /// <summary>
         /// The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
@@ -55,15 +50,14 @@ namespace ZenDemo
 
         public Network(
             Topology topology,
-            Func<Zen<T>, Zen<T>> transferFunction,
+            Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
             Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
             Dictionary<string, T> initialValues,
             Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
             Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties,
             Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties)
         {
-            nodes = topology.nodes;
-            neighbors = topology.neighbors;
+            this.topology = topology;
             this.transferFunction = transferFunction;
             this.mergeFunction = mergeFunction;
             this.initialValues = initialValues;
@@ -87,7 +81,7 @@ namespace ZenDemo
         /// <returns>True if the annotations pass, false otherwise.</returns>
         public bool CheckBaseCase()
         {
-            foreach (var node in nodes)
+            foreach (var node in topology.nodes)
             {
                 var route = Symbolic<T>();
 
@@ -115,7 +109,7 @@ namespace ZenDemo
         /// <returns>True if the annotations pass, false otherwise.</returns>
         public bool CheckAssertions()
         {
-            foreach (var node in nodes)
+            foreach (var node in topology.nodes)
             {
                 var route = Symbolic<T>();
                 var time = Symbolic<BigInteger>();
@@ -145,7 +139,7 @@ namespace ZenDemo
         {
             // create symbolic values for each node.
             var routes = new Dictionary<string, Zen<T>>();
-            foreach (var node in nodes)
+            foreach (var node in topology.nodes)
             {
                 routes[node] = Symbolic<T>();
             }
@@ -154,16 +148,15 @@ namespace ZenDemo
             var time = Symbolic<BigInteger>();
 
             // check the inductiveness of the invariant for each node.
-            foreach (var node in nodes)
+            foreach (var node in topology.nodes)
             {
                 // get the new route as the merge of all neighbors
-                var newNodeRoute = neighbors[node].Aggregate(Constant(initialValues[node]),
-                    (current, neighbor) => mergeFunction(current, transferFunction(routes[neighbor])));
+                var newNodeRoute = UpdateNodeRoute(node, routes);
 
                 // collect all of the assumptions from neighbors.
                 var assume = new List<Zen<bool>> {time > new BigInteger(0)};
-                assume.AddRange(neighbors[node].Select(neighbor =>
-                    this.annotations[neighbor](routes[neighbor], time - new BigInteger(1))));
+                assume.AddRange(topology[node].Select(neighbor =>
+                    annotations[neighbor](routes[neighbor], time - new BigInteger(1))));
 
                 // now we need to ensure the new route after merging implies the annotation for this node.
                 var check = Implies(And(assume.ToArray()), annotations[node](newNodeRoute, time));
@@ -175,7 +168,7 @@ namespace ZenDemo
                 {
                     Console.WriteLine($"Inductive check failed at node: {node} for time: {model.Get(time)}");
 
-                    foreach (var neighbor in neighbors[node])
+                    foreach (var neighbor in topology[node])
                     {
                         Console.WriteLine($"neighbor {neighbor} had route: {model.Get(routes[neighbor])}");
                     }
@@ -196,18 +189,17 @@ namespace ZenDemo
         {
             // create symbolic values for each node.
             var routes = new Dictionary<string, Zen<T>>();
-            foreach (var node in nodes)
+            foreach (var node in topology.nodes)
             {
                 routes[node] = Symbolic<T>();
             }
 
             // add the assertions
-            var assertions = nodes.Select(node => monolithicProperties[node](routes[node]));
+            var assertions = topology.nodes.Select(node => monolithicProperties[node](routes[node]));
 
             // add constraints for each node, that its route is the merge of all the neighbors and init
-            var constraints = nodes.Select(node =>
-                routes[node] == neighbors[node].Aggregate(Constant(initialValues[node]),
-                    (current, neighbor) => mergeFunction(current, transferFunction(routes[neighbor]))));
+            var constraints = topology.nodes.Select(node =>
+                routes[node] == UpdateNodeRoute(node, routes));
 
             var check = And(And(constraints.ToArray()), Not(And(assertions.ToArray())));
 
@@ -218,7 +210,7 @@ namespace ZenDemo
             {
                 Console.WriteLine($"Monolithic check failed!");
 
-                foreach (var node in nodes)
+                foreach (var node in topology.nodes)
                 {
                     Console.WriteLine($"node {node} had route: {model.Get(routes[node])}");
                 }
@@ -228,6 +220,13 @@ namespace ZenDemo
 
             Console.WriteLine($"The monolithic checks passed!");
             return true;
+        }
+
+        private Zen<T> UpdateNodeRoute(string node, IReadOnlyDictionary<string, Zen<T>> neighborRoutes)
+        {
+            return topology[node].Aggregate(Constant(initialValues[node]),
+                (current, neighbor) =>
+                    mergeFunction(current, transferFunction[(neighbor, node)](neighborRoutes[neighbor])));
         }
     }
 }

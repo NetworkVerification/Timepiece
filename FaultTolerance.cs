@@ -13,7 +13,7 @@ namespace ZenDemo
         private Dictionary<Tuple<string, string>, bool> failedEdges;
 
         public FaultTolerance(Topology topology,
-            Func<Zen<Option<T>>, Zen<Option<T>>> transferFunction,
+            Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>> transferFunction,
             Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> mergeFunction,
             Dictionary<string, Option<T>> initialValues,
             Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> annotations,

@@ -14,6 +14,7 @@ namespace ZenDemo
             Run(Simple.Unsound());
             Console.WriteLine($"2-node local preference benchmarks:");
             Run(LocalPref.Sound());
+            Run(LocalPref.Unsound());
         }
 
         private static void Run<T>(Network<T> network)

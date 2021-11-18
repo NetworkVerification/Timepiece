@@ -12,54 +12,21 @@ namespace ZenDemo
         public static Network<DistMap> Net(
             Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>> annotations)
         {
-            var topology = DefaultTopologies.Path(4);
+            var topology = Default.Path(4);
 
-            var initialValues = new Dictionary<string, DistMap>
-            {
-                {
-                    "A", new DistMap
-                        {{"A", Option.Some(0U)}}
-                },
-                {
-                    "B", new DistMap
-                        {{"B", Option.Some(0U)}}
-                },
-                {
-                    "C", new DistMap
-                        {{"C", Option.Some(0U)}}
-                },
-                {
-                    "D", new DistMap
-                        {{"D", Option.Some(0U)}}
-                },
-            };
-
-            var modularAssertions = new Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>>
-            {
-                {"A", ReachabilityAssertionTime},
-                {"B", ReachabilityAssertionTime},
-                {"C", ReachabilityAssertionTime},
-                {"D", ReachabilityAssertionTime},
-            };
-
-            var monolithicAssertions = new Dictionary<string, Func<Zen<DistMap>, Zen<bool>>>
-            {
-                {"A", ReachabilityAssertionStable},
-                {"B", ReachabilityAssertionStable},
-                {"C", ReachabilityAssertionStable},
-                {"D", ReachabilityAssertionStable},
-            };
-
-            return new Network<DistMap>(topology, TransferFunction, MergeFunction, initialValues, annotations,
-                modularAssertions, monolithicAssertions);
+            var initialValues = topology.ForAllNodes(node => new DistMap {{node, Option.Some(0U)}});
+            
+            var convergeTime = new BigInteger(10);
+            var modularProperties =
+                topology.ForAllNodes(_ => Lang.After<DistMap>(convergeTime, ReachabilityAssertionStable));
+            
+            var monolithicProperties = topology.ForAllNodes(_ => ReachabilityAssertionStable);
+            
+            return new Network<DistMap>(topology, topology.ForAllEdges(_ => TransferFunction), MergeFunction, initialValues, annotations,
+                modularProperties, monolithicProperties);
         }
 
         private static Zen<bool> ReachabilityAssertionStable(Zen<DistMap> route)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Zen<bool> ReachabilityAssertionTime(Zen<DistMap> route, Zen<BigInteger> time)
         {
             throw new NotImplementedException();
         }

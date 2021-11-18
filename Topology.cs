@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -17,13 +18,17 @@ namespace ZenDemo
         /// <summary>
         /// The edges for each node in the network.
         /// </summary>
-        public readonly Dictionary<string, List<string>> neighbors;
+        private readonly Dictionary<string, List<string>> neighbors;
 
         public Topology(Dictionary<string, List<string>> edges)
         {
             neighbors = edges;
             nodes = neighbors.Keys.ToArray();
         }
+        
+        public string this[uint id] => nodes[id];
+
+        public List<string> this[string node] => neighbors[node];
 
         /// <summary>
         /// Return a new Topology generated from the given JSON string
@@ -35,9 +40,29 @@ namespace ZenDemo
         {
             return new Topology(JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json));
         }
+
+        /// <summary>
+        /// Return a dictionary mapping each node in the topology with a given function.
+        /// </summary>
+        /// <param name="nodeFunc">The function over every node.</param>
+        /// <typeparam name="T">The return type of the function.</typeparam>
+        /// <returns>A dictionary representing the result of the function for every node.</returns>
+        public Dictionary<string, T> ForAllNodes<T>(Func<string, T> nodeFunc)
+        {
+            return new Dictionary<string, T>(
+                nodes.Select(node => new KeyValuePair<string, T>(node, nodeFunc(node))));
+        }
+
+        public Dictionary<(string, string), T> ForAllEdges<T>(Func<(string, string), T> edgeFunc)
+        {
+            var edges = neighbors
+                .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr))
+                .Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
+            return new Dictionary<(string, string), T>(edges);
+        }
     }
 
-    public static class DefaultTopologies
+    public static class Default
     {
         // helper method to generate node names ala Excel columns
         // adapted from https://stackoverflow.com/a/5384627

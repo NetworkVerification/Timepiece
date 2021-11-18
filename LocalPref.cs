@@ -14,7 +14,7 @@ namespace ZenDemo
         public static Network<Pair<uint, uint>> Net(
             Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>> annotations)
         {
-            var topology = DefaultTopologies.Path(2);
+            var topology = Default.Path(2);
 
             var initialValues = new Dictionary<string, Pair<uint, uint>>
             {
@@ -22,21 +22,13 @@ namespace ZenDemo
                 {"B", (1U, 10U)},
             };
 
-            var modularAssertions = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<BigInteger>, Zen<bool>>>
-            {
-                {"A", ReachabilityAssertionTime},
-                {"B", ReachabilityAssertionTime},
-            };
+            var modularProperties =
+                topology.ForAllNodes(_ => Lang.After<Pair<uint, uint>>(new BigInteger(10), ReachabilityProperty));
 
-            var monolithicAssertions = new Dictionary<string, Func<Zen<Pair<uint, uint>>, Zen<bool>>>
-            {
-                {"A", ReachabilityAssertionStable},
-                {"B", ReachabilityAssertionStable},
-            };
+            var monolithicProperties = topology.ForAllNodes(_ => ReachabilityProperty);
 
-
-            return new Network<Pair<uint, uint>>(topology, Transfer, Merge, initialValues,
-                annotations, modularAssertions, monolithicAssertions);
+            return new Network<Pair<uint, uint>>(topology, topology.ForAllEdges(_ => Transfer), Merge, initialValues,
+                annotations, modularProperties, monolithicProperties);
         }
 
         public static Network<Pair<uint, uint>> Sound()
@@ -91,17 +83,9 @@ namespace ZenDemo
         }
 
         /// <summary>
-        /// Final assertion we want to check with respect to the network with time.
-        /// </summary>
-        public static Zen<bool> ReachabilityAssertionTime(Zen<Pair<uint, uint>> r, Zen<BigInteger> time)
-        {
-            return Implies(time > new BigInteger(10), r.Item2() < 10);
-        }
-
-        /// <summary>
         /// Final assertion we want to check for the stable paths encoding that removes time.
         /// </summary>
-        public static Zen<bool> ReachabilityAssertionStable(Zen<Pair<uint, uint>> r)
+        public static Zen<bool> ReachabilityProperty(Zen<Pair<uint, uint>> r)
         {
             return r.Item2() < 10;
         }

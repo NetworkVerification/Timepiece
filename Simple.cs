@@ -2,7 +2,6 @@ using System;
 using System.Numerics;
 using System.Collections.Generic;
 using ZenLib;
-using static ZenLib.Language;
 
 namespace ZenDemo
 {
@@ -14,7 +13,7 @@ namespace ZenDemo
         public static Network<Option<uint>> Net(Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>> annotations)
         {
             // generates an "A"--"B"--"C" topology
-            var topology = DefaultTopologies.Path(3);
+            var topology = Default.Path(3);
 
             var initialValues = new Dictionary<string, Option<uint>>
             {
@@ -33,9 +32,9 @@ namespace ZenDemo
             // sound annotations here. they are overapproximate but sufficient to prove what we want
             var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
             {
-                {"A", (route, _) => route == Option.Some(0U)},
-                {"B", (route, time) => Implies(time > new BigInteger(0), route.HasValue())},
-                {"C", (route, time) => Implies(time > new BigInteger(1), route.HasValue())}
+                {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
+                {"B", Lang.After<Option<uint>>(new BigInteger(0), route => route.HasValue())},
+                {"C", Lang.After<Option<uint>>(new BigInteger(1), route => route.HasValue())},
             };
             return Net(annotations);
         }
@@ -46,9 +45,9 @@ namespace ZenDemo
             // unsound annotations
             var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
             {
-                {"A", (route, _) => route == Option.Some(0U)},
-                {"B", (route, _) => Not(route.HasValue())},
-                {"C", (route, _) => Not(route.HasValue())}
+                {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
+                {"B", Lang.Never<Option<uint>>(route => route.HasValue())},
+                {"C", Lang.Never<Option<uint>>(route => route.HasValue())},
             };
             return Net(annotations);
         }
