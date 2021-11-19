@@ -33,8 +33,8 @@ namespace ZenDemo
             var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
             {
                 {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
-                {"B", Lang.After<Option<uint>>(new BigInteger(0), route => route.HasValue())},
-                {"C", Lang.After<Option<uint>>(new BigInteger(1), route => route.HasValue())},
+                {"B", Lang.After<Option<uint>>(new BigInteger(0), ShortestPath.IsReachable)},
+                {"C", Lang.After<Option<uint>>(new BigInteger(1), ShortestPath.IsReachable)},
             };
             return Net(annotations);
         }
@@ -46,8 +46,8 @@ namespace ZenDemo
             var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
             {
                 {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
-                {"B", Lang.Never<Option<uint>>(route => route.HasValue())},
-                {"C", Lang.Never<Option<uint>>(route => route.HasValue())},
+                {"B", Lang.Never<Option<uint>>(ShortestPath.IsReachable)},
+                {"C", Lang.Never<Option<uint>>(ShortestPath.IsReachable)},
             };
             return Net(annotations);
         }

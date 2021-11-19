@@ -122,7 +122,7 @@ namespace ZenDemo
 
                 if (model.IsSatisfiable())
                 {
-                    Console.WriteLine($"Assertion check failed at node: {node}");
+                    Console.WriteLine($"Assertion check failed at node: {node} for route: {model.Get(route)}");
                     return false;
                 }
             }
@@ -164,17 +164,16 @@ namespace ZenDemo
                 // negate and try to prove unsat.
                 var model = Not(check).Solve();
 
-                if (model.IsSatisfiable())
+                if (!model.IsSatisfiable()) continue;
+                
+                Console.WriteLine($"Inductive check failed at node: {node} for time: {model.Get(time)}");
+
+                foreach (var neighbor in topology[node])
                 {
-                    Console.WriteLine($"Inductive check failed at node: {node} for time: {model.Get(time)}");
-
-                    foreach (var neighbor in topology[node])
-                    {
-                        Console.WriteLine($"neighbor {neighbor} had route: {model.Get(routes[neighbor])}");
-                    }
-
-                    return false;
+                    Console.WriteLine($"neighbor {neighbor} had route: {model.Get(routes[neighbor])}");
                 }
+
+                return false;
             }
 
             Console.WriteLine($"All the inductive checks passed!");

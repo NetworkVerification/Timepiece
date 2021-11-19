@@ -2,6 +2,11 @@
 
 namespace ZenDemo
 {
+    // TODOs:
+    // add a parser to deserialize from JSON
+    // develop a representation of functions, annotations and predicates
+    // add code for plugging in different routing algebras and using more complex route types
+    //  e.g. products/tuples, maps, etc.
     public class Program
     {
         /// <summary>
