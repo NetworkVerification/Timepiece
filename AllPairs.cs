@@ -36,7 +36,7 @@ namespace ZenDemo
             throw new NotImplementedException();
         }
 
-        private static Zen<DistMap> TransferFunction(Zen<DistMap> arg)
+        private static Zen<DistMap> TransferFunction(Zen<DistMap> route)
         {
             throw new NotImplementedException();
         }
