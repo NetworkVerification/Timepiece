@@ -27,7 +27,8 @@ namespace ZenDemo
 
             var monolithicProperties = topology.ForAllNodes(_ => ReachabilityProperty);
 
-            return new Network<Pair<uint, uint>>(topology, topology.ForAllEdges(_ => Transfer), Merge, initialValues,
+            var transfer = topology.ForAllEdges(_ => Lang.Product(Lang.Identity<uint>(), Lang.Incr(1)));
+            return new Network<Pair<uint, uint>>(topology, transfer, Merge, initialValues,
                 annotations, modularProperties, monolithicProperties);
         }
 
@@ -61,14 +62,6 @@ namespace ZenDemo
                 },
             };
             return Net(annotations);
-        }
-
-        /// <summary>
-        /// The transfer function for the simple path length network.
-        /// </summary>
-        public static Zen<Pair<uint, uint>> Transfer(Zen<Pair<uint, uint>> route)
-        {
-            return Pair(route.Item1(), route.Item2() + 1);
         }
 
         /// <summary>

@@ -15,20 +15,11 @@ namespace ZenDemo
             Dictionary<string, bool> initialValues,
             Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
             BigInteger convergeTime)
-            : base(topology, topology.ForAllEdges(_ => Identity),
-            Merge, initialValues, annotations, topology.ForAllNodes(_ => Lang.After<bool>(convergeTime, Identity)),
-            topology.ForAllNodes(_ => Identity))
+            : base(topology, topology.ForAllEdges(_ => Lang.Identity<bool>()),
+                Or, initialValues, annotations,
+                topology.ForAllNodes(_ => Lang.After(convergeTime, Lang.Identity<bool>())),
+                topology.ForAllNodes(_ => Lang.Identity<bool>()))
         {
-        }
-
-        public static Zen<bool> Identity(Zen<bool> route)
-        {
-            return route;
-        }
-
-        public static Zen<bool> Merge(Zen<bool> r1, Zen<bool> r2)
-        {
-            return Or(r1, r2);
         }
     }
 }
