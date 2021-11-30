@@ -10,7 +10,8 @@ namespace ZenDemo
         /// <summary>
         /// Generate a simple example network.
         /// </summary>
-        public static Network<Option<uint>> Net(Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>> annotations)
+        public static Network<Option<uint>> Net(
+            Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>> annotations)
         {
             // generates an "A"--"B"--"C" topology
             var topology = Default.Path(3);

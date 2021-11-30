@@ -83,7 +83,8 @@ namespace ZenDemo
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
         /// <returns></returns>
-        public static Func<Zen<Pair<T1,T2>>, Zen<Pair<T1,T2>>> Product<T1, T2>(Func<Zen<T1>, Zen<T1>> f1, Func<Zen<T2>, Zen<T2>> f2)
+        public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T1, T2>>> Product<T1, T2>(Func<Zen<T1>, Zen<T1>> f1,
+            Func<Zen<T2>, Zen<T2>> f2)
         {
             return (prod => Pair(f1(prod.Item1()), f2(prod.Item2())));
         }
@@ -111,6 +112,11 @@ namespace ZenDemo
         public static Func<Zen<Option<T>>, Zen<bool>> IsSome<T>()
         {
             return r => r.HasValue();
+        }
+
+        public static Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> Omap2<T>(Func<Zen<T>, Zen<T>, Zen<T>> f)
+        {
+            return (r1, r2) => If(r1.HasValue(), If(r2.HasValue(), Some(f(r1.Value(), r2.Value())), r1), r2);
         }
 
         /// <summary>
