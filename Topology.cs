@@ -60,6 +60,11 @@ namespace ZenDemo
                 .Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
             return new Dictionary<(string, string), T>(edges);
         }
+
+        public TotalMap<string, T> ToNodeMap<T>(Func<string, T> nodeFunc)
+        {
+            return new TotalMap<string, T>(nodes.Select(node => (node, nodeFunc(node))));
+        }
     }
 
     public static class Default
