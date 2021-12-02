@@ -2,48 +2,51 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
+using static ZenLib.Language;
 
-namespace ZenDemo
+namespace ZenDemo;
+
+using DistMap = TotalMap<string, Option<uint>>;
+
+public static class AllPairs
 {
-    using DistMap = TotalMap<string, Option<uint>>;
-
-    public static class AllPairs
+    public static Network<DistMap> Net(
+        Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>> annotations)
     {
-        public static Network<DistMap> Net(
-            Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>> annotations)
-        {
-            var topology = Default.Path(4);
+        var topology = Default.Path(4);
 
-            var initialValues =
-                topology.ForAllNodes(node =>
-                    topology.ToNodeMap(_ => Option.None<uint>()).Update(node, Option.Some(0U)));
-            
-            var convergeTime = new BigInteger(10);
-            var modularProperties =
-                topology.ForAllNodes(_ => Lang.After<DistMap>(convergeTime, ReachabilityAssertionStable));
-            
-            var monolithicProperties = topology.ForAllNodes(_ => ReachabilityAssertionStable);
-            
-            return new Network<DistMap>(topology, topology.ForAllEdges(_ => TransferFunction), MergeFunction, initialValues, annotations,
-                modularProperties, monolithicProperties);
-        }
+        var initialValues =
+            topology.ForAllNodes(node =>
+                Constant(topology.ToNodeMap(_ => Option.None<uint>()).Update(node, Option.Some(0U))));
 
-        private static Zen<bool> ReachabilityAssertionStable(Zen<DistMap> route)
-        {
-            // return route.Members.All();
-            throw new NotImplementedException();
-        }
+        var convergeTime = new BigInteger(10);
+        var modularProperties =
+            topology.ForAllNodes(_ => Lang.After<DistMap>(convergeTime, ReachabilityAssertionStable));
 
-        private static Zen<DistMap> MergeFunction(Zen<DistMap> r1, Zen<DistMap> r2)
-        {
-            // return r1.Zip(r2, Lang.Omap2<uint>(Min));
-            throw new NotImplementedException();
-        }
+        var monolithicProperties = topology.ForAllNodes(_ => ReachabilityAssertionStable);
 
-        private static Zen<DistMap> TransferFunction(Zen<DistMap> route)
-        {
-            // return route.ForEach(Lang.Omap(Lang.Incr(1)));
-            throw new NotImplementedException();
-        }
+        var assumptions = Array.Empty<Zen<bool>>();
+
+        return new Network<DistMap>(topology, topology.ForAllEdges(_ => TransferFunction), MergeFunction, initialValues,
+            annotations,
+            modularProperties, monolithicProperties, assumptions);
+    }
+
+    private static Zen<bool> ReachabilityAssertionStable(Zen<DistMap> route)
+    {
+        // return route.Members.All();
+        throw new NotImplementedException();
+    }
+
+    private static Zen<DistMap> MergeFunction(Zen<DistMap> r1, Zen<DistMap> r2)
+    {
+        // return r1.Zip(r2, Lang.Omap2<uint>(Min));
+        throw new NotImplementedException();
+    }
+
+    private static Zen<DistMap> TransferFunction(Zen<DistMap> route)
+    {
+        // return route.ForEach(Lang.Omap(Lang.Incr(1)));
+        throw new NotImplementedException();
     }
 }
