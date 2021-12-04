@@ -22,4 +22,18 @@ public class BoolNet : Network<bool>
         Array.Empty<Zen<bool>>())
     {
     }
+
+    public static BoolNet Sound()
+    {
+        Console.WriteLine("Sound annotations:");
+        var topology = Default.Path(2);
+
+        var initialValues = topology.ForAllNodes(n => Eq<string>(n, "A"));
+        var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
+        {
+            { "A", (r, _) => r},
+            { "B", Lang.After(new BigInteger(1), Lang.Identity<bool>()) }
+        };
+        return new BoolNet(topology, initialValues, annotations, new BigInteger(5));
+    }
 }

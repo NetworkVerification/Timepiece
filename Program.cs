@@ -15,6 +15,8 @@ public class Program
     /// </summary>
     public static void Main(string[] args)
     {
+        Console.WriteLine("~~ 2-node boolean benchmarks ~~");
+        Run(BoolNet.Sound());
         Console.WriteLine("~~ Simple 3-node shortest path benchmarks ~~");
         Run(Simple.Sound());
         Run(Simple.Unsound());
@@ -24,6 +26,9 @@ public class Program
         Console.WriteLine("~~ 3-node symbolic shortest path benchmarks ~~");
         Run(Symbolic.Sound());
         Run(Symbolic.Unsound());
+        Console.WriteLine("~~ 4-node all-pairs shortest path benchmarks ~~");
+        Run(AllPairs.Sound());
+        // Run(AllPairs.Unsound());
     }
 
     private static void Run<T>(Network<T> network)

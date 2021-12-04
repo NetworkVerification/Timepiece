@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using ZenLib;
 
 namespace ZenDemo;
 
@@ -61,9 +62,15 @@ public class Topology
         return new Dictionary<(string, string), T>(edges);
     }
 
-    public TotalMap<string, T> ToNodeMap<T>(Func<string, T> nodeFunc)
+    public Dict<string, T> ToNodeDict<T>(Func<string, T> nodeFunc)
     {
-        return new TotalMap<string, T>(nodes.Select(node => (node, nodeFunc(node))));
+        var d = new Dict<string, T>();
+        foreach (var node in nodes)
+        {
+            d.Add(node, nodeFunc(node));
+        }
+
+        return d;
     }
 }
 

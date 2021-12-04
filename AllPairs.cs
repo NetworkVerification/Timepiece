@@ -6,7 +6,7 @@ using static ZenLib.Language;
 
 namespace ZenDemo;
 
-using DistMap = TotalMap<string, Option<uint>>;
+using DistMap = Dict<string, Option<uint>>;
 
 public static class AllPairs
 {
@@ -17,7 +17,7 @@ public static class AllPairs
 
         var initialValues =
             topology.ForAllNodes(node =>
-                Constant(topology.ToNodeMap(_ => Option.None<uint>()).Update(node, Option.Some(0U))));
+                Constant(topology.ToNodeDict(n => node.Equals(n) ? Option.Some(0U) : Option.None<uint>())));
 
         var convergeTime = new BigInteger(10);
         var modularProperties =
@@ -32,21 +32,30 @@ public static class AllPairs
             modularProperties, monolithicProperties, assumptions);
     }
 
+    public static Network<DistMap> Sound()
+    {
+        var annotations = new Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>>
+        {
+            {"A", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
+            {"B", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
+            {"C", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
+            {"D", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)}
+        };
+        return Net(annotations);
+    }
+
     private static Zen<bool> ReachabilityAssertionStable(Zen<DistMap> route)
     {
-        // return route.Members.All();
-        throw new NotImplementedException();
+        return route.All(pair => Lang.IsSome<uint>()(pair.Item2()));
     }
 
     private static Zen<DistMap> MergeFunction(Zen<DistMap> r1, Zen<DistMap> r2)
     {
-        // return r1.Zip(r2, Lang.Omap2<uint>(Min));
-        throw new NotImplementedException();
+        return r1.Zip(r2, Lang.Omap2<uint>(Min));
     }
 
     private static Zen<DistMap> TransferFunction(Zen<DistMap> route)
     {
-        // return route.ForEach(Lang.Omap(Lang.Incr(1)));
-        throw new NotImplementedException();
+        return route.ForEach(Lang.Omap(Lang.Incr(1)));
     }
 }

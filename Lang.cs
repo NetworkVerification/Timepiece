@@ -78,15 +78,23 @@ public static class Lang
     /// <summary>
     ///     Construct a function over tuples from functions over tuple elements.
     /// </summary>
-    /// <param name="f1"></param>
-    /// <param name="f2"></param>
+    /// <param name="f1">A function from T1 to T3.</param>
+    /// <param name="f2">A function from T2 to T4.</param>
     /// <typeparam name="T1"></typeparam>
     /// <typeparam name="T2"></typeparam>
-    /// <returns></returns>
-    public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T1, T2>>> Product<T1, T2>(Func<Zen<T1>, Zen<T1>> f1,
-        Func<Zen<T2>, Zen<T2>> f2)
+    /// <typeparam name="T3"></typeparam>
+    /// <typeparam name="T4"></typeparam>
+    /// <returns>A function from T1*T2 to T3*T4.</returns>
+    public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T3, T4>>> Product<T1, T2, T3, T4>(Func<Zen<T1>, Zen<T3>> f1,
+        Func<Zen<T2>, Zen<T4>> f2)
     {
         return prod => Pair(f1(prod.Item1()), f2(prod.Item2()));
+    }
+
+    public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T3, T4>>, Zen<Pair<T5, T6>>> Product2<T1, T2, T3, T4, T5, T6>(
+        Func<Zen<T1>, Zen<T3>, Zen<T5>> f1, Func<Zen<T2>, Zen<T4>, Zen<T6>> f2)
+    {
+        return (prod1, prod2) => Pair(f1(prod1.Item1(), prod2.Item1()), f2(prod1.Item2(), prod2.Item2()));
     }
 
     /// <summary>
@@ -104,7 +112,7 @@ public static class Lang
         return r => If(test(r), trueCase(r), falseCase(r));
     }
 
-    public static Func<Zen<Option<T>>, Zen<Option<T>>> Omap<T>(Func<Zen<T>, Zen<T>> f)
+    public static Func<Zen<Option<T1>>, Zen<Option<T2>>> Omap<T1, T2>(Func<Zen<T1>, Zen<T2>> f)
     {
         return r => r.Select(f);
     }
