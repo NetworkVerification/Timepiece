@@ -19,9 +19,9 @@ public static class AllPairs
       topology.ForAllNodes(node =>
         Constant(topology.ToNodeDict(n => node.Equals(n) ? Option.Some(0U) : Option.None<uint>())));
 
-    var convergeTime = new BigInteger(10);
+    var convergeTime = new BigInteger(26);
     var modularProperties =
-      topology.ForAllNodes(_ => Lang.After<DistMap>(convergeTime, ReachabilityAssertionStable));
+      topology.ForAllNodes(_ => Lang.Finally<DistMap>(convergeTime, ReachabilityAssertionStable));
 
     var monolithicProperties = topology.ForAllNodes(_ => ReachabilityAssertionStable);
 
@@ -34,12 +34,28 @@ public static class AllPairs
 
   public static Network<DistMap> Sound()
   {
+    Console.WriteLine("Sound annotations:");
+    // FIXME: we cannot express these in terms of a single universal convergence time
+    // instead, each key-value of the distmap has its own time which needs to be given
     var annotations = new Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
-      {"B", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
-      {"C", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
-      {"D", Lang.After<DistMap>(new BigInteger(10), ReachabilityAssertionStable)}
+      {"A", Lang.Finally<DistMap>(new BigInteger(10), ReachabilityAssertionStable)},
+      {"B", Lang.Finally<DistMap>(new BigInteger(15), ReachabilityAssertionStable)},
+      {"C", Lang.Finally<DistMap>(new BigInteger(20), ReachabilityAssertionStable)},
+      {"D", Lang.Finally<DistMap>(new BigInteger(25), ReachabilityAssertionStable)}
+    };
+    return Net(annotations);
+  }
+
+  public static Network<DistMap> Unsound()
+  {
+    Console.WriteLine("Unsound annotations:");
+    var annotations = new Dictionary<string, Func<Zen<DistMap>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"A", Lang.Finally<DistMap>(new BigInteger(10), r => r.All(pair => Lang.IfSome<uint>(x => x < 2)(pair.Item2())))},
+      {"B", Lang.Finally<DistMap>(new BigInteger(10), r => r.All(pair => Lang.IfSome<uint>(x => x < 2)(pair.Item2())))},
+      {"C", Lang.Finally<DistMap>(new BigInteger(10), r => r.All(pair => Lang.IfSome<uint>(x => x < 2)(pair.Item2())))},
+      {"D", Lang.Finally<DistMap>(new BigInteger(10), r => r.All(pair => Lang.IfSome<uint>(x => x < 2)(pair.Item2())))},
     };
     return Net(annotations);
   }

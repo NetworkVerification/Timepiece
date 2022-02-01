@@ -33,8 +33,8 @@ public static class Simple
     var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
     {
       {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
-      {"B", Lang.After(new BigInteger(0), Lang.IsSome<uint>())},
-      {"C", Lang.After(new BigInteger(1), Lang.IsSome<uint>())}
+      {"B", Lang.Finally(new BigInteger(0), Lang.IsSome<uint>())},
+      {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<uint>())}
     };
     return Net(annotations);
   }

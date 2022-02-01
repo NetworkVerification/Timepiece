@@ -62,12 +62,12 @@ public class FaultTolerance<T> : Network<Option<T>>
 
     var annotations = new Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", Lang.Always(Lang.IsSome<Unit>())},
-      {"B", Lang.After(new BigInteger(1), Lang.IsSome<Unit>())},
-      {"C", Lang.After(new BigInteger(1), Lang.IsSome<Unit>())}
+      {"A", Lang.Globally(Lang.IsSome<Unit>())},
+      {"B", Lang.Finally(new BigInteger(1), Lang.IsSome<Unit>())},
+      {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<Unit>())}
     };
 
-    var modularProperties = topology.ForAllNodes(_ => Lang.After(new BigInteger(1), Lang.IsSome<Unit>()));
+    var modularProperties = topology.ForAllNodes(_ => Lang.Finally(new BigInteger(1), Lang.IsSome<Unit>()));
     var monolithicProperties = topology.ForAllNodes(_ => Lang.IsSome<Unit>());
 
     var failedEdges = Symbolic<IList<(string, string)>>(topology.nEdges);

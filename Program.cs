@@ -42,6 +42,11 @@ public class Program
         Console.WriteLine("~~ 3-node fault tolerance shortest path benchmarks ~~");
         Run(FaultTolerance<Unit>.Sound());
         break;
+      case "ap":
+        Console.WriteLine("~~ 4-node all-pairs shortest path benchmarks ~~");
+        Run(AllPairs.Sound());
+        Run(AllPairs.Unsound());
+        break;
       default:
         Console.WriteLine("Invalid example given. Options are 'sp', 'lp', 'b' or 'ft'.");
         break;
@@ -49,9 +54,6 @@ public class Program
     // Console.WriteLine("~~ 3-node symbolic shortest path benchmarks ~~");
     // Run(Symbolic.Sound());
     // Run(Symbolic.Unsound());
-    // Console.WriteLine("~~ 4-node all-pairs shortest path benchmarks ~~");
-    // Run(AllPairs.Sound());
-    // Run(AllPairs.Unsound());
   }
 
   private static void Run<T>(Network<T> network)

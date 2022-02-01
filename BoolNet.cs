@@ -17,7 +17,7 @@ public class BoolNet : Network<bool>
     BigInteger convergeTime)
     : base(topology, topology.ForAllEdges(_ => Lang.Identity<bool>()),
       Or, initialValues, annotations,
-      topology.ForAllNodes(_ => Lang.After(convergeTime, Lang.Identity<bool>())),
+      topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
       topology.ForAllNodes(_ => Lang.Identity<bool>()),
       new Dictionary<Zen<object>, Zen<bool>>())
   {
@@ -32,7 +32,7 @@ public class BoolNet : Network<bool>
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
     {
       {"A", (r, _) => r},
-      {"B", Lang.After(new BigInteger(1), Lang.Identity<bool>())}
+      {"B", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())}
     };
     return new BoolNet(topology, initialValues, annotations, new BigInteger(5));
   }

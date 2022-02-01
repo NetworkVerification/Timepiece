@@ -23,7 +23,7 @@ public static class LocalPref
     };
 
     var modularProperties =
-      topology.ForAllNodes(_ => Lang.After<Pair<uint, uint>>(new BigInteger(10), ReachabilityProperty));
+      topology.ForAllNodes(_ => Lang.Finally<Pair<uint, uint>>(new BigInteger(10), ReachabilityProperty));
 
     var monolithicProperties = topology.ForAllNodes(_ => ReachabilityProperty);
 

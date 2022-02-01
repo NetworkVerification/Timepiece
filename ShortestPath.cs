@@ -22,7 +22,7 @@ public class ShortestPath : Network<Option<uint>>
     this.annotations = annotations;
     foreach (var node in topology.nodes)
     {
-      modularProperties.Add(node, Lang.After(convergeTime, Lang.IsSome<uint>()));
+      modularProperties.Add(node, Lang.Finally(convergeTime, Lang.IsSome<uint>()));
       monolithicProperties.Add(node, Lang.IsSome<uint>());
     }
   }

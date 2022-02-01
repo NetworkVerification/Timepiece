@@ -16,7 +16,7 @@ public static class Lang
     /// <param name="predicate">A predicate over a route.</param>
     /// <typeparam name="T">The type of routes.</typeparam>
     /// <returns>A predicate over a route and time.</returns>
-    public static Func<Zen<T>, Time, Zen<bool>> After<T>(Time t, Func<Zen<T>, Zen<bool>> predicate)
+    public static Func<Zen<T>, Time, Zen<bool>> Finally<T>(Time t, Func<Zen<T>, Zen<bool>> predicate)
   {
     return (r, time) => Implies(time > t, predicate(r));
   }
@@ -27,7 +27,7 @@ public static class Lang
     /// <param name="predicate">A predicate over a route.</param>
     /// <typeparam name="T">The type of routes.</typeparam>
     /// <returns>A predicate over a route and (ignored) time.</returns>
-    public static Func<Zen<T>, Time, Zen<bool>> Always<T>(Func<Zen<T>, Zen<bool>> predicate)
+    public static Func<Zen<T>, Time, Zen<bool>> Globally<T>(Func<Zen<T>, Zen<bool>> predicate)
   {
     return (r, _) => predicate(r);
   }
@@ -40,7 +40,7 @@ public static class Lang
     /// <returns>A predicate over a route and (ignored) time.</returns>
     public static Func<Zen<T>, Time, Zen<bool>> Equals<T>(Zen<T> route)
   {
-    return Always<T>(r => r == route);
+    return Globally<T>(r => r == route);
   }
 
     /// <summary>
