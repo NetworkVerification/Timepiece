@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using ZenDemo.Networks;
 using ZenLib;
 using static ZenLib.Language;
 
@@ -36,8 +37,8 @@ public static class Symbolic
     var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
       {"A", Lang.Equals(Some(d))},
-      {"B", Lang.Until(new BigInteger(1), r => Not(r.HasValue()), Lang.IfSome<BigInteger>(r => r >= d))},
-      {"C", Lang.Until(new BigInteger(1), r => Not(r.HasValue()), Lang.IfSome<BigInteger>(r => r >= d))}
+      {"B", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d))},
+      {"C", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d))}
     };
 
     return Net(annotations);

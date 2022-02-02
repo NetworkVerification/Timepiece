@@ -26,7 +26,7 @@ public class Program
     {
       case "b":
         Console.WriteLine("~~ 2-node boolean benchmarks ~~");
-        Run(BoolNet.Sound());
+        Run(Networks.Boolean.Sound());
         break;
       case "sp":
         Console.WriteLine("~~ Simple 3-node shortest path benchmarks ~~");
@@ -37,6 +37,10 @@ public class Program
         Console.WriteLine("~~ 2-node local preference benchmarks ~~");
         Run(LocalPref.Sound());
         Run(LocalPref.Unsound());
+        break;
+      case "tags":
+        Console.WriteLine("~~ 3-node bgp tags benchmarks ~~");
+        Run(Networks.Tags.Sound());
         break;
       case "ft":
         Console.WriteLine("~~ 3-node fault tolerance shortest path benchmarks ~~");

@@ -4,14 +4,14 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Language;
 
-namespace ZenDemo;
+namespace ZenDemo.Networks;
 
 /// <summary>
 ///   A network with a boolean routing algebra.
 /// </summary>
-public class BoolNet : Network<bool, Unit>
+public class Boolean : Network<bool, Unit>
 {
-  public BoolNet(Topology topology,
+  public Boolean(Topology topology,
     Dictionary<string, Zen<bool>> initialValues,
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime)
@@ -23,7 +23,7 @@ public class BoolNet : Network<bool, Unit>
   {
   }
 
-  public static BoolNet Sound()
+  public static Boolean Sound()
   {
     Console.WriteLine("Sound annotations:");
     var topology = Default.Path(2);
@@ -34,6 +34,6 @@ public class BoolNet : Network<bool, Unit>
       {"A", (r, _) => r},
       {"B", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())}
     };
-    return new BoolNet(topology, initialValues, annotations, new BigInteger(5));
+    return new Boolean(topology, initialValues, annotations, new BigInteger(5));
   }
 }

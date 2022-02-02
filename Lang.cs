@@ -131,9 +131,19 @@ public static class Lang
     return r => r.Select(f);
   }
 
+  public static Func<Zen<Option<T1>>, Zen<Option<T2>>> Bind<T1, T2>(Func<Zen<T1>, Zen<Option<T2>>> f)
+  {
+    return r => r.Case( none: Null<T2>, some: f);
+  }
+
   public static Func<Zen<Option<T>>, Zen<bool>> IsSome<T>()
   {
     return r => r.HasValue();
+  }
+
+  public static Func<Zen<Option<T>>, Zen<bool>> IsNone<T>()
+  {
+    return r => Not(r.HasValue());
   }
 
   /// <summary>

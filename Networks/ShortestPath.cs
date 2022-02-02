@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Language;
 
-namespace ZenDemo;
+namespace ZenDemo.Networks;
 
 public class ShortestPath<TS> : Network<Option<BigInteger>, TS>
 {
@@ -15,15 +15,9 @@ public class ShortestPath<TS> : Network<Option<BigInteger>, TS>
     BigInteger convergeTime
   ) : base(topology, topology.ForAllEdges(_ => Lang.Omap(Lang.Incr(1))), Lang.Omap2<BigInteger>(Min), initialValues,
     annotations,
-    new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>(),
-    new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>(),
+    topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.IsSome<BigInteger>())),
+    topology.ForAllNodes(_ => Lang.IsSome<BigInteger>()),
     symbolics)
   {
-    this.annotations = annotations;
-    foreach (var node in topology.nodes)
-    {
-      modularProperties.Add(node, Lang.Finally(convergeTime, Lang.IsSome<BigInteger>()));
-      monolithicProperties.Add(node, Lang.IsSome<BigInteger>());
-    }
   }
 }
