@@ -11,7 +11,8 @@ namespace ZenDemo;
 ///   Represents an NV network.
 /// </summary>
 /// <typeparam name="T">The type of the routes.</typeparam>
-public class Network<T>
+/// <typeparam name="TS">The type of symbolic values associated with the network.</typeparam>
+public class Network<T, TS>
 {
     /// <summary>
     ///   The initial values for each node.
@@ -51,7 +52,7 @@ public class Network<T>
     /// <summary>
     ///   Any additional symbolics on the network's components.
     /// </summary>
-    private readonly Dictionary<Zen<object>, Zen<bool>> symbolics;
+    private readonly Dictionary<Zen<TS>, Func<Zen<TS>, Zen<bool>>> symbolics;
 
   public Network(
     Topology topology,
@@ -60,7 +61,7 @@ public class Network<T>
     Dictionary<string, Zen<T>> initialValues,
     Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties,
-    Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties, Dictionary<Zen<object>, Zen<bool>> symbolics)
+    Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties, Dictionary<Zen<TS>, Func<Zen<TS>, Zen<bool>>> symbolics)
   {
     this.topology = topology;
     this.transferFunction = transferFunction;
@@ -131,6 +132,7 @@ public class Network<T>
       if (model.IsSatisfiable())
       {
         Console.ForegroundColor = ConsoleColor.Red;
+        foreach (var symbol in symbolics.Keys) Console.WriteLine($"    {symbol}: {model.Get(symbol)}");
         Console.WriteLine($"    Assertion check failed at node: {node} for route: {model.Get(route)}");
         Console.ResetColor();
         return false;
@@ -174,6 +176,8 @@ public class Network<T>
       if (!model.IsSatisfiable()) continue;
 
       Console.ForegroundColor = ConsoleColor.Red;
+      foreach (var symbol in symbolics.Keys) Console.WriteLine($"    {symbol}: {model.Get(symbol)}");
+      
       Console.WriteLine($"    Inductive check failed at node: {node} for time: {model.Get(time)}");
 
       foreach (var neighbor in topology[node])
@@ -234,6 +238,6 @@ public class Network<T>
 
   private Zen<bool> CheckSymbolics()
   {
-    return And(symbolics.Values.ToArray());
+    return And(symbolics.Select(p => p.Value(p.Key)).ToArray());
   }
 }

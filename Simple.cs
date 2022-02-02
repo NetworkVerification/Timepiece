@@ -7,47 +7,49 @@ namespace ZenDemo;
 
 public static class Simple
 {
-    /// <summary>
-    ///   Generate a simple example network.
-    /// </summary>
-    public static Network<Option<uint>> Net(
-    Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>> annotations)
+  /// <summary>
+  ///   Generate a simple example network.
+  /// </summary>
+  public static Network<Option<BigInteger>, Unit> Net(
+    Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     // generates an "A"--"B"--"C" topology
     var topology = Default.Path(3);
 
-    var initialValues = new Dictionary<string, Zen<Option<uint>>>
+    var initialValues = new Dictionary<string, Zen<Option<BigInteger>>>
     {
-      {"A", Option.Some(0U)},
-      {"B", Option.None<uint>()},
-      {"C", Option.None<uint>()}
+      {"A", Option.Some(new BigInteger(0))},
+      {"B", Option.None<BigInteger>()},
+      {"C", Option.None<BigInteger>()}
     };
 
-    return new ShortestPath(topology, initialValues, annotations, new BigInteger(8));
+    var symbolics = new Dictionary<Zen<Unit>, Func<Zen<Unit>, Zen<bool>>>();
+
+    return new ShortestPath<Unit>(topology, initialValues, annotations, symbolics, new BigInteger(8));
   }
 
-  public static Network<Option<uint>> Sound()
+  public static Network<Option<BigInteger>, Unit> Sound()
   {
     Console.WriteLine("Sound annotations:");
     // sound annotations here. they are overapproximate but sufficient to prove what we want
-    var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
+    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
-      {"B", Lang.Finally(new BigInteger(0), Lang.IsSome<uint>())},
-      {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<uint>())}
+      {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0)))},
+      {"B", Lang.Finally(new BigInteger(0), Lang.IsSome<BigInteger>())},
+      {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())}
     };
     return Net(annotations);
   }
 
-  public static Network<Option<uint>> Unsound()
+  public static Network<Option<BigInteger>, Unit> Unsound()
   {
     Console.WriteLine("Unsound annotations:");
     // unsound annotations
-    var annotations = new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>
+    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", Lang.Equals<Option<uint>>(Option.Some(0U))},
-      {"B", Lang.Never(Lang.IsSome<uint>())},
-      {"C", Lang.Never(Lang.IsSome<uint>())}
+      {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0)))},
+      {"B", Lang.Never(Lang.IsSome<BigInteger>())},
+      {"C", Lang.Never(Lang.IsSome<BigInteger>())}
     };
     return Net(annotations);
   }

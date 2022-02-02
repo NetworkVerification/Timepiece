@@ -6,24 +6,24 @@ using static ZenLib.Language;
 
 namespace ZenDemo;
 
-public class ShortestPath : Network<Option<uint>>
+public class ShortestPath<TS> : Network<Option<BigInteger>, TS>
 {
   public ShortestPath(Topology topology,
-    Dictionary<string, Zen<Option<uint>>> initialValues,
-    Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<string, Zen<Option<BigInteger>>> initialValues,
+    Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<Zen<TS>, Func<Zen<TS>, Zen<bool>>> symbolics,
     BigInteger convergeTime
-  ) : base(topology, topology.ForAllEdges(_ => Lang.Omap(Lang.Incr(1))), Lang.Omap2<uint>(Min), initialValues,
+  ) : base(topology, topology.ForAllEdges(_ => Lang.Omap(Lang.Incr(1))), Lang.Omap2<BigInteger>(Min), initialValues,
     annotations,
-    new Dictionary<string, Func<Zen<Option<uint>>, Zen<BigInteger>, Zen<bool>>>(),
-    new Dictionary<string, Func<Zen<Option<uint>>, Zen<bool>>>(),
-    new Dictionary<Zen<object>, Zen<bool>>()
-  )
+    new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>(),
+    new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>(),
+    symbolics)
   {
     this.annotations = annotations;
     foreach (var node in topology.nodes)
     {
-      modularProperties.Add(node, Lang.Finally(convergeTime, Lang.IsSome<uint>()));
-      monolithicProperties.Add(node, Lang.IsSome<uint>());
+      modularProperties.Add(node, Lang.Finally(convergeTime, Lang.IsSome<BigInteger>()));
+      monolithicProperties.Add(node, Lang.IsSome<BigInteger>());
     }
   }
 }

@@ -6,7 +6,7 @@ using static ZenLib.Language;
 
 namespace ZenDemo;
 
-public class FaultTolerance<T> : Network<Option<T>>
+public class FaultTolerance<T> : Network<Option<T>,(string,string)>
 {
     /// <summary>
     ///   Edges which have failed in the given topology.
@@ -28,12 +28,13 @@ public class FaultTolerance<T> : Network<Option<T>>
     this.failedEdges = failedEdges;
   }
 
-  private static Dictionary<Zen<object>, Zen<bool>> Symbolics(Zen<IList<(string, string)>> failedEdges)
+  private static Dictionary<Zen<(string, string)>, Func<Zen<(string, string)>, Zen<bool>>> Symbolics(
+    Zen<IList<(string, string)>> failedEdges)
   {
     var e = Symbolic<(string, string)>();
-    return new Dictionary<Zen<object>, Zen<bool>>
+    return new Dictionary<Zen<(string, string)>, Func<Zen<(string, string)>, Zen<bool>>>
     {
-      {e, failedEdges.Contains(e)}
+      {e, failedEdges.Contains}
     };
   }
 

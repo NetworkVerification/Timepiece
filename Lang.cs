@@ -9,83 +9,97 @@ using Time = Zen<BigInteger>;
 
 public static class Lang
 {
-    /// <summary>
-    ///   Generate an annotation: after time t, the predicate holds for a given route.
-    /// </summary>
-    /// <param name="t">An integer time.</param>
-    /// <param name="predicate">A predicate over a route.</param>
-    /// <typeparam name="T">The type of routes.</typeparam>
-    /// <returns>A predicate over a route and time.</returns>
-    public static Func<Zen<T>, Time, Zen<bool>> Finally<T>(Time t, Func<Zen<T>, Zen<bool>> predicate)
+  /// <summary>
+  ///   Generate an annotation: after time t, the predicate holds for a given route.
+  /// </summary>
+  /// <param name="t">An integer time.</param>
+  /// <param name="predicate">A predicate over a route.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Finally<T>(Time t, Func<Zen<T>, Zen<bool>> predicate)
   {
     return (r, time) => Implies(time > t, predicate(r));
   }
 
-    /// <summary>
-    ///   Generate an annotation: for all time, the predicate holds for a given route.
-    /// </summary>
-    /// <param name="predicate">A predicate over a route.</param>
-    /// <typeparam name="T">The type of routes.</typeparam>
-    /// <returns>A predicate over a route and (ignored) time.</returns>
-    public static Func<Zen<T>, Time, Zen<bool>> Globally<T>(Func<Zen<T>, Zen<bool>> predicate)
+  /// <summary>
+  /// Generate an annotation: until time t, the predicate p1 holds for a given route.
+  /// At time t, the predicate p2 holds for the given route.
+  /// </summary>
+  /// <param name="t">An integer time.</param>
+  /// <param name="p1">A predicate over a route.</param>
+  /// <param name="p2">A predicate over a route.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Until<T>(Time t, Func<Zen<T>, Zen<bool>> p1, Func<Zen<T>, Zen<bool>> p2)
+  {
+    return (r, time) => And(Implies(time < t, p1(r)), Implies(time >= t, p2(r)));
+  }
+
+  /// <summary>
+  ///   Generate an annotation: for all time, the predicate holds for a given route.
+  /// </summary>
+  /// <param name="predicate">A predicate over a route.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and (ignored) time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Globally<T>(Func<Zen<T>, Zen<bool>> predicate)
   {
     return (r, _) => predicate(r);
   }
 
-    /// <summary>
-    ///   Generate an always annotation: for all time, the route is equal to the given parameter.
-    /// </summary>
-    /// <param name="route">The fixed route.</param>
-    /// <typeparam name="T">The type of routes.</typeparam>
-    /// <returns>A predicate over a route and (ignored) time.</returns>
-    public static Func<Zen<T>, Time, Zen<bool>> Equals<T>(Zen<T> route)
+  /// <summary>
+  ///   Generate an always annotation: for all time, the route is equal to the given parameter.
+  /// </summary>
+  /// <param name="route">The fixed route.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and (ignored) time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Equals<T>(Zen<T> route)
   {
     return Globally<T>(r => r == route);
   }
 
-    /// <summary>
-    ///   Generate an annotation: for all time, the predicate *does not* hold for a given route.
-    /// </summary>
-    /// <param name="predicate">A predicate over a route.</param>
-    /// <typeparam name="T">The type of routes.</typeparam>
-    /// <returns>A predicate over a route and (ignored) time.</returns>
-    public static Func<Zen<T>, Time, Zen<bool>> Never<T>(Func<Zen<T>, Zen<bool>> predicate)
+  /// <summary>
+  ///   Generate an annotation: for all time, the predicate *does not* hold for a given route.
+  /// </summary>
+  /// <param name="predicate">A predicate over a route.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and (ignored) time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Never<T>(Func<Zen<T>, Zen<bool>> predicate)
   {
     return (r, _) => Not(predicate(r));
   }
 
-    /// <summary>
-    ///   Construct a function that ignores its argument and returns a constant route.
-    /// </summary>
-    /// <param name="val">The constant route to return.</param>
-    /// <typeparam name="T">The type of routes.</typeparam>
-    /// <returns>A function from routes to routes.</returns>
-    public static Func<Zen<T>, Zen<T>> Const<T>(T val)
+  /// <summary>
+  ///   Construct a function that ignores its argument and returns a constant route.
+  /// </summary>
+  /// <param name="val">The constant route to return.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A function from routes to routes.</returns>
+  public static Func<Zen<T>, Zen<T>> Const<T>(T val)
   {
     return _ => val;
   }
 
-    /// <summary>
-    ///   Construct an identity function over routes.
-    /// </summary>
-    /// <typeparam name="T">The type of routes.</typeparam>
-    /// <returns>A function from routes to routes.</returns>
-    public static Func<Zen<T>, Zen<T>> Identity<T>()
+  /// <summary>
+  ///   Construct an identity function over routes.
+  /// </summary>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A function from routes to routes.</returns>
+  public static Func<Zen<T>, Zen<T>> Identity<T>()
   {
     return r => r;
   }
 
-    /// <summary>
-    ///   Construct a function over tuples from functions over tuple elements.
-    /// </summary>
-    /// <param name="f1">A function from T1 to T3.</param>
-    /// <param name="f2">A function from T2 to T4.</param>
-    /// <typeparam name="T1"></typeparam>
-    /// <typeparam name="T2"></typeparam>
-    /// <typeparam name="T3"></typeparam>
-    /// <typeparam name="T4"></typeparam>
-    /// <returns>A function from T1*T2 to T3*T4.</returns>
-    public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T3, T4>>> Product<T1, T2, T3, T4>(Func<Zen<T1>, Zen<T3>> f1,
+  /// <summary>
+  ///   Construct a function over tuples from functions over tuple elements.
+  /// </summary>
+  /// <param name="f1">A function from T1 to T3.</param>
+  /// <param name="f2">A function from T2 to T4.</param>
+  /// <typeparam name="T1"></typeparam>
+  /// <typeparam name="T2"></typeparam>
+  /// <typeparam name="T3"></typeparam>
+  /// <typeparam name="T4"></typeparam>
+  /// <returns>A function from T1*T2 to T3*T4.</returns>
+  public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T3, T4>>> Product<T1, T2, T3, T4>(Func<Zen<T1>, Zen<T3>> f1,
     Func<Zen<T2>, Zen<T4>> f2)
   {
     return prod => Pair(f1(prod.Item1()), f2(prod.Item2()));
@@ -141,21 +155,21 @@ public static class Lang
   }
 
   /// <summary>
-  ///   Construct a function that increments a uint by n.
+  ///   Construct a function that increments a BigInteger by n.
   /// </summary>
   /// <param name="n">The amount to increment by.</param>
-  /// <returns>A function from uint to uint.</returns>
-  public static Func<Zen<uint>, Zen<uint>> Incr(uint n)
+  /// <returns>A function from BigInteger to BigInteger.</returns>
+  public static Func<Zen<BigInteger>, Zen<BigInteger>> Incr(BigInteger n)
   {
     return r => r + n;
   }
 
   /// <summary>
-  ///   Construct a function that decrements a uint by n.
+  ///   Construct a function that decrements a BigInteger by n.
   /// </summary>
   /// <param name="n">The amount to decrement by.</param>
-  /// <returns>A function from uint to uint.</returns>
-  public static Func<Zen<uint>, Zen<uint>> Decr(uint n)
+  /// <returns>A function from BigInteger to BigInteger.</returns>
+  public static Func<Zen<BigInteger>, Zen<BigInteger>> Decr(BigInteger n)
   {
     return r => r - n;
   }

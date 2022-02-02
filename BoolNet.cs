@@ -9,7 +9,7 @@ namespace ZenDemo;
 /// <summary>
 ///   A network with a boolean routing algebra.
 /// </summary>
-public class BoolNet : Network<bool>
+public class BoolNet : Network<bool, Unit>
 {
   public BoolNet(Topology topology,
     Dictionary<string, Zen<bool>> initialValues,
@@ -19,7 +19,7 @@ public class BoolNet : Network<bool>
       Or, initialValues, annotations,
       topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
       topology.ForAllNodes(_ => Lang.Identity<bool>()),
-      new Dictionary<Zen<object>, Zen<bool>>())
+      new Dictionary<Zen<Unit>, Func<Zen<Unit>, Zen<bool>>>())
   {
   }
 
