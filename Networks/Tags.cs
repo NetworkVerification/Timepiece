@@ -53,6 +53,8 @@ public static class BgpExtensions
   public static Zen<IList<string>> GetTags(this Zen<Bgp> b) => b.GetField<Bgp, IList<string>>("Tags");
   public static Zen<Bgp> SetCost(this Zen<Bgp> b, Zen<BigInteger> cost) => b.WithField("Cost", cost);
   public static Zen<Bgp> SetTags(this Zen<Bgp> b, Zen<IList<string>> tags) => b.WithField("Tags", tags);
+  public static Zen<bool> HasTag(this Zen<Bgp> b, string tag) => b.GetTags().Contains(tag);
+  public static Zen<Bgp> AddTag(this Zen<Bgp> b, string tag) => b.SetTags(b.GetTags().AddFront(tag));
 }
 
 public class Tags : Network<Option<Bgp>, Bgp>
@@ -87,13 +89,13 @@ public class Tags : Network<Option<Bgp>, Bgp>
       {
         "B",
         Lang.Until(new BigInteger(1), Lang.IsNone<Bgp>(),
-          Lang.IfSome<Bgp>(b => And(b.GetCost() == new BigInteger(2), Not(b.GetTags().Contains("C")))))
+          Lang.IfSome<Bgp>(b => And(b.GetCost() == new BigInteger(2), Not(b.HasTag("C")))))
       },
       {
         "C",
         Lang.Until(new BigInteger(2), Lang.IsNone<Bgp>(),
           Lang.IfSome<Bgp>(b =>
-            And(b.GetCost() == new BigInteger(3), b.GetTags().Contains("B"))))
+            And(b.GetCost() == new BigInteger(3), b.HasTag("B"))))
       },
     };
 
@@ -104,12 +106,12 @@ public class Tags : Network<Option<Bgp>, Bgp>
   private static Func<Zen<Bgp>, Zen<Option<Bgp>>> Transfer((string, string) edge)
   {
     var (src, snk) = edge;
-    return x => If(x.GetTags().Contains(snk), Option.None<Bgp>(),
-      Some(x.SetCost(Lang.Incr(1)(x.GetCost())).SetTags(x.GetTags().AddFront(src))));
+    return x => If(x.HasTag(snk), Option.None<Bgp>(),
+      Some(x.SetCost(x.GetCost() + new BigInteger(1)).AddTag(src)));
   }
 
   private static Zen<Bgp> Merge(Zen<Bgp> b1, Zen<Bgp> b2)
   {
-    return If(b1.GetField<Bgp, BigInteger>("Cost") < b2.GetField<Bgp, BigInteger>("Cost"), b1, b2);
+    return If(b1.GetCost() < b2.GetCost(), b1, b2);
   }
 }

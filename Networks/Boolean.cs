@@ -31,7 +31,7 @@ public class Boolean : Network<bool, Unit>
     var initialValues = topology.ForAllNodes(n => Eq<string>(n, "A"));
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", (r, _) => r},
+      {"A", Lang.Globally(Lang.Identity<bool>())},
       {"B", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())}
     };
     return new Boolean(topology, initialValues, annotations, new BigInteger(5));
