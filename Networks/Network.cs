@@ -97,7 +97,7 @@ public class Network<T, TS>
         annotations[node](route, new BigInteger(0)));
 
       // negate and try to prove unsat.
-      var model = And(CheckSymbolics(), Not(check)).Solve();
+      var model = And(GetAssumptions(), Not(check)).Solve();
 
       if (model.IsSatisfiable())
       {
@@ -127,7 +127,7 @@ public class Network<T, TS>
       var check = Implies(annotations[node](route, time), modularProperties[node](route, time));
 
       // negate and try to prove unsat.
-      var model = And(CheckSymbolics(), Not(check)).Solve();
+      var model = And(GetAssumptions(), Not(check)).Solve();
 
       if (model.IsSatisfiable())
       {
@@ -171,7 +171,7 @@ public class Network<T, TS>
       var check = Implies(And(assume.ToArray()), annotations[node](newNodeRoute, time));
 
       // negate and try to prove unsat.
-      var model = And(CheckSymbolics(), Not(check)).Solve();
+      var model = And(GetAssumptions(), Not(check)).Solve();
 
       if (!model.IsSatisfiable()) continue;
 
@@ -208,7 +208,7 @@ public class Network<T, TS>
     var constraints = topology.nodes.Select(node =>
       routes[node] == UpdateNodeRoute(node, routes));
 
-    var check = And(CheckSymbolics(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
+    var check = And(GetAssumptions(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
 
     // negate and try to prove unsat.
     var model = check.Solve();
@@ -236,7 +236,7 @@ public class Network<T, TS>
         mergeFunction(current, transferFunction[(neighbor, node)](neighborRoutes[neighbor])));
   }
 
-  private Zen<bool> CheckSymbolics()
+  private Zen<bool> GetAssumptions()
   {
     return And(symbolics.Select(p => p.Value(p.Key)).ToArray());
   }
