@@ -35,9 +35,9 @@ public static class Simple
         // sound annotations here. they are overapproximate but sufficient to prove what we want
         var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
         {
-            {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0)))},
-            {"B", Lang.Finally(new BigInteger(0), Lang.IsSome<BigInteger>())},
-            {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())}
+            {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0U)))},
+            {"B", Lang.Finally(new BigInteger(0U), Lang.IsSome<BigInteger>())},
+            {"C", Lang.Finally(new BigInteger(1U), Lang.IsSome<BigInteger>())}
         };
         return Net(annotations);
     }
@@ -48,7 +48,7 @@ public static class Simple
         // unsound annotations
         var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
         {
-            {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0)))},
+            {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0U)))},
             {"B", Lang.Never(Lang.IsSome<BigInteger>())},
             {"C", Lang.Never(Lang.IsSome<BigInteger>())}
         };

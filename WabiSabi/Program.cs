@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using WabiSabi.Networks;
 using ZenLib;
-using Boolean = WabiSabi.Networks.Boolean;
+using WabiSabi.Networks;
 
 namespace WabiSabi;
 
@@ -28,7 +27,7 @@ public class Program
         {
             case "b":
                 Console.WriteLine("~~ 2-node boolean benchmarks ~~");
-                Run(Boolean.Sound());
+                Run(Networks.Boolean.Sound());
                 break;
             case "sp":
                 Console.WriteLine("~~ Simple 3-node shortest path benchmarks ~~");
@@ -37,16 +36,16 @@ public class Program
                 break;
             case "lp":
                 Console.WriteLine("~~ 2-node local preference benchmarks ~~");
-                Run(LocalPref.Sound());
-                Run(LocalPref.Unsound());
+                Run(Networks.LocalPref.Sound());
+                Run(Networks.LocalPref.Unsound());
                 break;
             case "tags":
                 Console.WriteLine("~~ 3-node bgp tags benchmarks ~~");
-                Run(Tags.Sound());
+                Run(Networks.Tags.Sound());
                 break;
             case "ft":
                 Console.WriteLine("~~ 3-node fault tolerance shortest path benchmarks ~~");
-                Run(FaultTolerance<Unit>.Sound());
+                Run(Networks.FaultTolerance<Unit>.Sound());
                 break;
             case "sym":
                 Console.WriteLine("~~ 3-node symbolic shortest path benchmarks ~~");
@@ -55,8 +54,8 @@ public class Program
                 break;
             case "ap":
                 Console.WriteLine("~~ 4-node all-pairs shortest path benchmarks ~~");
-                Run(AllPairs.Sound());
-                Run(AllPairs.Unsound());
+                Run(Networks.AllPairs.Sound());
+                Run(Networks.AllPairs.Unsound());
                 break;
             case "dis":
                 Console.WriteLine("~~ BGP Disagree example ~~");
