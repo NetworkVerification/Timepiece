@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Language;
 
-namespace WabiSabi.Networks;
+namespace Karesansui.Networks;
 
 using DistMap = Dict<string, Option<BigInteger>>;
 

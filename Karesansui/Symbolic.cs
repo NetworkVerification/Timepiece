@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using WabiSabi.Networks;
+using Karesansui.Networks;
 using ZenLib;
 using static ZenLib.Language;
 
-namespace WabiSabi;
+namespace Karesansui;
 
 public static class Symbolic
 {

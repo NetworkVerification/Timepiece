@@ -4,27 +4,27 @@ using System.Linq;
 using Newtonsoft.Json;
 using ZenLib;
 
-namespace WabiSabi;
+namespace Karesansui;
 
 /// <summary>
 ///     Represents the topology of an NV network.
 /// </summary>
 public class Topology
 {
-  /// <summary>
-  ///     The number of edges in the network.
-  /// </summary>
-  public readonly int nEdges;
+    /// <summary>
+    ///     The number of edges in the network.
+    /// </summary>
+    public readonly int nEdges;
 
-  /// <summary>
-  ///     The edges for each node in the network.
-  /// </summary>
-  private readonly Dictionary<string, List<string>> neighbors;
+    /// <summary>
+    ///     The edges for each node in the network.
+    /// </summary>
+    private readonly Dictionary<string, List<string>> neighbors;
 
-  /// <summary>
-  ///     The nodes in the network and their names.
-  /// </summary>
-  public readonly string[] nodes;
+    /// <summary>
+    ///     The nodes in the network and their names.
+    /// </summary>
+    public readonly string[] nodes;
 
     public Topology(Dictionary<string, List<string>> edges)
     {
@@ -87,7 +87,7 @@ public static class Default
         if (i == 0) return "";
         i--;
         // the modulo is used to get the next char, looping back from 'Z' to 'A'
-        return ToBase26(i / 26) + (char) ('A' + i % 26);
+        return ToBase26(i / 26) + (char)('A' + i % 26);
     }
 
     /// <summary>

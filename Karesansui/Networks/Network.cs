@@ -5,7 +5,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Language;
 
-namespace WabiSabi.Networks;
+namespace Karesansui.Networks;
 
 /// <summary>
 ///     Represents an NV network.
@@ -14,45 +14,45 @@ namespace WabiSabi.Networks;
 /// <typeparam name="TS">The type of symbolic values associated with the network.</typeparam>
 public class Network<T, TS>
 {
-  /// <summary>
-  ///     The initial values for each node.
-  /// </summary>
-  private readonly Dictionary<string, Zen<T>> initialValues;
+    /// <summary>
+    ///     The initial values for each node.
+    /// </summary>
+    private readonly Dictionary<string, Zen<T>> initialValues;
 
-  /// <summary>
-  ///     The merge function for routes.
-  /// </summary>
-  private readonly Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction;
+    /// <summary>
+    ///     The merge function for routes.
+    /// </summary>
+    private readonly Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction;
 
-  /// <summary>
-  ///     The modular safety properties that we want to check (includes time).
-  /// </summary>
-  protected readonly Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties;
+    /// <summary>
+    ///     The modular safety properties that we want to check (includes time).
+    /// </summary>
+    protected readonly Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties;
 
-  /// <summary>
-  ///     The monolithic safety properties that we want to check (assumes stable states).
-  /// </summary>
-  protected readonly Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties;
+    /// <summary>
+    ///     The monolithic safety properties that we want to check (assumes stable states).
+    /// </summary>
+    protected readonly Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties;
 
-  /// <summary>
-  ///     Any additional symbolics on the network's components.
-  /// </summary>
-  private readonly Dictionary<Zen<TS>, Func<Zen<TS>, Zen<bool>>> symbolics;
+    /// <summary>
+    ///     Any additional symbolics on the network's components.
+    /// </summary>
+    private readonly Dictionary<Zen<TS>, Func<Zen<TS>, Zen<bool>>> symbolics;
 
-  /// <summary>
-  ///     The topology of the network.
-  /// </summary>
-  private readonly Topology topology;
+    /// <summary>
+    ///     The topology of the network.
+    /// </summary>
+    private readonly Topology topology;
 
-  /// <summary>
-  ///     The transfer function for each edge.
-  /// </summary>
-  private readonly Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction;
+    /// <summary>
+    ///     The transfer function for each edge.
+    /// </summary>
+    private readonly Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction;
 
-  /// <summary>
-  ///     The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
-  /// </summary>
-  protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations;
+    /// <summary>
+    ///     The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
+    /// </summary>
+    protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations;
 
     public Network(
         Topology topology,
@@ -164,7 +164,7 @@ public class Network<T, TS>
             var newNodeRoute = UpdateNodeRoute(node, routes);
 
             // collect all of the symbolics from neighbors.
-            var assume = new List<Zen<bool>> {time > new BigInteger(0)};
+            var assume = new List<Zen<bool>> { time > new BigInteger(0) };
             assume.AddRange(topology[node].Select(neighbor =>
                 annotations[neighbor](routes[neighbor], time - new BigInteger(1))));
 

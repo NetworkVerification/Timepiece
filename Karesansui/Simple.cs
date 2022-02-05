@@ -1,18 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using WabiSabi.Networks;
+using Karesansui.Networks;
 using ZenLib;
 
-namespace WabiSabi;
+namespace Karesansui;
 
 public static class Simple
 {
-  /// <summary>
-  ///     Generate a simple example network.
-  /// </summary>
-  public static Network<Option<BigInteger>, Unit> Net(
-        Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
+    /// <summary>
+    ///     Generate a simple example network.
+    /// </summary>
+    public static Network<Option<BigInteger>, Unit> Net(
+          Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
     {
         // generates an "A"--"B"--"C" topology
         var topology = Default.Path(3);

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using Karesansui.Networks;
 using ZenLib;
-using WabiSabi.Networks;
 
-namespace WabiSabi;
+namespace Karesansui;
 
 // TODOs:
 // add a parser to deserialize from JSON
@@ -12,10 +12,10 @@ namespace WabiSabi;
 //  e.g. products/tuples, maps, etc.
 public class Program
 {
-  /// <summary>
-  ///     Main entry point. Runs a simple example.
-  /// </summary>
-  public static void Main(string[] args)
+    /// <summary>
+    ///     Main entry point. Runs a simple example.
+    /// </summary>
+    public static void Main(string[] args)
     {
         if (args.Length == 0)
         {

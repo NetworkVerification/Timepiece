@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ZenLib;
 
-namespace WabiSabi;
+namespace Karesansui;
 
 public static class DictExtensions
 {

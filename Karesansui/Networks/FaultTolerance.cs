@@ -4,14 +4,14 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Language;
 
-namespace WabiSabi.Networks;
+namespace Karesansui.Networks;
 
 public class FaultTolerance<T> : Network<Option<T>, (string, string)>
 {
-  /// <summary>
-  ///     Edges which have failed in the given topology.
-  /// </summary>
-  private Zen<IList<(string, string)>> failedEdges;
+    /// <summary>
+    ///     Edges which have failed in the given topology.
+    /// </summary>
+    private Zen<IList<(string, string)>> failedEdges;
 
     public FaultTolerance(Topology topology,
         Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
