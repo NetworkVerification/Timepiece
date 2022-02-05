@@ -11,29 +11,29 @@ namespace Karesansui.Networks;
 /// </summary>
 public class Boolean : Network<bool, Unit>
 {
-    public Boolean(Topology topology,
-        Dictionary<string, Zen<bool>> initialValues,
-        Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
-        BigInteger convergeTime)
-        : base(topology, topology.ForAllEdges(_ => Lang.Identity<bool>()),
-            Or, initialValues, annotations,
-            topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
-            topology.ForAllNodes(_ => Lang.Identity<bool>()),
-            new Dictionary<Zen<Unit>, Func<Zen<Unit>, Zen<bool>>>())
-    {
-    }
+  public Boolean(Topology topology,
+    Dictionary<string, Zen<bool>> initialValues,
+    Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
+    BigInteger convergeTime)
+    : base(topology, topology.ForAllEdges(_ => Lang.Identity<bool>()),
+      Or, initialValues, annotations,
+      topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
+      topology.ForAllNodes(_ => Lang.Identity<bool>()),
+      Array.Empty<SymbolicValue<Unit>>())
+  {
+  }
 
-    public static Boolean Sound()
-    {
-        Console.WriteLine("Sound annotations:");
-        var topology = Default.Path(2);
+  public static Boolean Sound()
+  {
+    Console.WriteLine("Sound annotations:");
+    var topology = Default.Path(2);
 
-        var initialValues = topology.ForAllNodes(n => Eq<string>(n, "A"));
-        var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
-        {
-            {"A", Lang.Globally(Lang.Identity<bool>())},
-            {"B", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())}
-        };
-        return new Boolean(topology, initialValues, annotations, new BigInteger(5));
-    }
+    var initialValues = topology.ForAllNodes(n => Eq<string>(n, "A"));
+    var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"A", Lang.Globally(Lang.Identity<bool>())},
+      {"B", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())}
+    };
+    return new Boolean(topology, initialValues, annotations, new BigInteger(5));
+  }
 }
