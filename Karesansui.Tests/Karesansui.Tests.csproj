@@ -6,7 +6,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>WabiSabi.Tests</RootNamespace>
+    <RootNamespace>Karesansui.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
