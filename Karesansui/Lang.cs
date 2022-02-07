@@ -33,7 +33,7 @@ public static class Lang
   public static Func<Zen<T>, Time, Zen<bool>> Until<T>(Time t, Func<Zen<T>, Zen<bool>> before,
     Func<Zen<T>, Zen<bool>> after)
   {
-    return (r, time) => And(Implies(time < t, before(r)), Implies(time >= t, after(r)));
+    return (r, time) => If(time < t, before(r), after(r));
   }
 
   /// <summary>

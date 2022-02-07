@@ -49,6 +49,16 @@ public class Topology
     }
 
     /// <summary>
+    /// Return true if the given node is in the topology.
+    /// </summary>
+    /// <param name="node">The node name.</param>
+    /// <returns>True if the given node is present, false otherwise.</returns>
+    public bool HasNode(string node)
+    {
+        return neighbors.ContainsKey(node);
+    }
+
+    /// <summary>
     ///     Return a dictionary mapping each node in the topology with a given function.
     /// </summary>
     /// <param name="nodeFunc">The function over every node.</param>
@@ -58,6 +68,11 @@ public class Topology
     {
         return new Dictionary<string, T>(
             nodes.Select(node => new KeyValuePair<string, T>(node, nodeFunc(node))));
+    }
+
+    public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, string, TAcc> f)
+    {
+        return nodes.Aggregate<string, TAcc>(initial, f);
     }
 
     public Dictionary<(string, string), T> ForAllEdges<T>(Func<(string, string), T> edgeFunc)

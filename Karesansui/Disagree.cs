@@ -24,7 +24,7 @@ public static class Disagree
 
     return new Network<BigInteger, Unit>(topology, topology.ForAllEdges(_ => Lang.Incr(1)), Merge, initialValues,
       annotations, topology.ForAllNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
-      topology.ForAllNodes(_ => ReachablePredicate), Array.Empty<SymbolicValue<Unit>>());
+      topology.ForAllNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate), Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static Network<BigInteger, Unit> Sound()

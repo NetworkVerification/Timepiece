@@ -135,7 +135,7 @@ public class Network<T, TS>
       {
         Console.ForegroundColor = ConsoleColor.Red;
         foreach (var symbol in symbolics) Console.WriteLine($"    {symbol.Name}: {model.Get(symbol.Value)}");
-        Console.WriteLine($"    Assertion check failed at node: {node} for route: {model.Get(route)}");
+        Console.WriteLine($"    Assertion check failed at node: {node} for route: {model.Get(route)} at time: {model.Get(time)}");
         Console.ResetColor();
         return false;
       }
