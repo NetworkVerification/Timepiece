@@ -26,6 +26,9 @@ public class Topology
     /// </summary>
     public readonly string[] nodes;
 
+    /// <summary>
+    ///     Construct a Topology given a mapping from nodes to their predecessors.
+    /// </summary>
     public Topology(Dictionary<string, List<string>> edges)
     {
         neighbors = edges;
@@ -35,6 +38,9 @@ public class Topology
 
     public string this[uint id] => nodes[id];
 
+    /// <summary>
+    ///     Return the predecessors of a given node.
+    /// </summary>
     public List<string> this[string node] => neighbors[node];
 
     /// <summary>
