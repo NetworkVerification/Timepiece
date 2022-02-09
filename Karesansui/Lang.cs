@@ -48,7 +48,7 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Generate an always annotation: for all time, the route is equal to the given parameter.
+  ///     Generate a globally annotation: for all time, the route is equal to the given parameter.
   /// </summary>
   /// <param name="route">The fixed route.</param>
   /// <typeparam name="T">The type of routes.</typeparam>

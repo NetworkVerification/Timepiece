@@ -54,7 +54,7 @@ public static class Program
         RunCmp(Symbolic.Unsound());
         break;
       case "ap":
-        Console.WriteLine("~~ 4-node all-pairs shortest path benchmarks ~~");
+        Console.WriteLine("~~ 3-node all-pairs shortest path benchmarks ~~");
         RunCmp(AllPairs.Sound());
         RunCmp(AllPairs.Unsound());
         break;
