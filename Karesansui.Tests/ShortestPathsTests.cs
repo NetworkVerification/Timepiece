@@ -85,7 +85,7 @@ public class ShortestPathsTests
     {
       {"A", Lang.Equals(Language.Some(d.Value))},
       {"B", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d.Value))},
-      {"C", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d.Value))}
+      {"C", Lang.Until(new BigInteger(2), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d.Value))}
     };
     var net = NonSymbolic(annotations);
 

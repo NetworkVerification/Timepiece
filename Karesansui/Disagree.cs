@@ -24,7 +24,8 @@ public static class Disagree
 
     return new Network<BigInteger, Unit>(topology, topology.ForAllEdges(_ => Lang.Incr(1)), Merge, initialValues,
       annotations, topology.ForAllNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
-      topology.ForAllNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate), Array.Empty<SymbolicValue<Unit>>());
+      topology.ForAllNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static Network<BigInteger, Unit> Sound()
@@ -42,19 +43,6 @@ public static class Disagree
         "C", Lang.Until<BigInteger>(new BigInteger(1), r => r == new BigInteger(20),
           r => And(r > new BigInteger(0), r < new BigInteger(3)))
       }
-    };
-
-    return Net(annotations);
-  }
-
-  public static Network<BigInteger, Unit> AlternateSound()
-  {
-    Console.WriteLine("Sound annotations:");
-
-    var annotations = new Dictionary<string, Func<Zen<BigInteger>, Zen<BigInteger>, Zen<bool>>>
-    {
-      {"A", Lang.Equals<BigInteger>(new BigInteger(0))}
-      // TODO: add annotations for B and C using evenness/oddness to choose the routes
     };
 
     return Net(annotations);
