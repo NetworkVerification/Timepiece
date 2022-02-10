@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Karesansui.Networks;
-using ZenLib;
-using Boolean = Karesansui.Networks.Boolean;
 
 namespace Karesansui;
 
@@ -18,55 +16,6 @@ public static class Program
   /// </summary>
   public static void Main(string[] args)
   {
-    if (args.Length == 0)
-    {
-      Console.WriteLine("No example given. Options are 'sp', 'lp', 'b' or 'ft'.");
-      return;
-    }
-
-    switch (args[0].ToLower())
-    {
-      case "b":
-        Console.WriteLine("~~ 2-node boolean benchmarks ~~");
-        RunCmp(Boolean.Sound());
-        break;
-      case "sp":
-        Console.WriteLine("~~ Simple 3-node shortest path benchmarks ~~");
-        RunCmp(Simple.Sound());
-        RunCmp(Simple.Unsound());
-        break;
-      case "lp":
-        Console.WriteLine("~~ 2-node local preference benchmarks ~~");
-        RunCmp(LocalPref.Sound());
-        RunCmp(LocalPref.Unsound());
-        break;
-      case "tags":
-        Console.WriteLine("~~ 3-node bgp tags benchmarks ~~");
-        RunCmp(Tags.Sound());
-        break;
-      case "ft":
-        Console.WriteLine("~~ 3-node fault tolerance shortest path benchmarks ~~");
-        RunCmp(FaultTolerance<Unit>.Sound());
-        break;
-      case "sym":
-        Console.WriteLine("~~ 3-node symbolic shortest path benchmarks ~~");
-        RunCmp(Symbolic.Sound());
-        RunCmp(Symbolic.Unsound());
-        break;
-      case "ap":
-        Console.WriteLine("~~ 3-node all-pairs shortest path benchmarks ~~");
-        RunCmp(AllPairs.Sound());
-        RunCmp(AllPairs.Unsound());
-        break;
-      case "dis":
-        Console.WriteLine("~~ BGP Disagree example ~~");
-        RunCmp(Disagree.Sound());
-        break;
-      default:
-        Console.WriteLine(
-          "Invalid example given. Options are 'sp', 'lp', 'b', 'ap', 'ft', 'tags', 'sym' or 'dis'.");
-        break;
-    }
   }
 
   /// <summary>
@@ -90,7 +39,8 @@ public static class Program
 
   private static void RunAnnotated<T, TS>(Network<T, TS> network)
   {
-    if (!network.CheckAnnotations()) Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+    if (network.CheckAnnotations().HasValue)
+      Console.WriteLine("Error, unsound annotations provided or assertions failed!");
   }
 
   private static long Time<T, TS>(Action<Network<T, TS>> f, Network<T, TS> network)

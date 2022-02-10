@@ -8,16 +8,24 @@ namespace Karesansui.Networks;
 
 public class AllPairs : ShortestPath<string>
 {
-  private static readonly SymbolicValue<string> d = new("dnode");
+  /// <summary>
+  /// The symbolic value representing the destination.
+  /// </summary>
+  private SymbolicValue<string> D { get; } = new("dnode");
 
   public AllPairs(Topology topology,
-    Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Func<SymbolicValue<string>, Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>>
+      annotations,
     BigInteger convergeTime) : base(topology,
-    topology.ForAllNodes(n => If(d.Equals(n), Some<BigInteger>(BigInteger.Zero), Null<BigInteger>())),
-    annotations,
-    new[] {d}, convergeTime)
+    new Dictionary<string, Zen<Option<BigInteger>>>(),
+    new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>(),
+    Array.Empty<SymbolicValue<string>>(), convergeTime)
   {
-    d.Constraint = DeriveDestConstraint(topology);
+    InitialValues =
+      topology.ForAllNodes(n => If(D.EqualsValue(n), Some<BigInteger>(BigInteger.Zero), Null<BigInteger>()));
+    symbolics = new[] {D};
+    this.annotations = annotations(D);
+    D.Constraint = DeriveDestConstraint(topology);
   }
 
   /// <summary>
@@ -28,56 +36,5 @@ public class AllPairs : ShortestPath<string>
   private static Func<Zen<string>, Zen<bool>> DeriveDestConstraint(Topology topology)
   {
     return s => topology.FoldNodes(False(), (b, n) => Or(b, s == Constant(n)));
-  }
-
-  private static AllPairs Net(
-    Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
-  {
-    var topology = Default.Path(3);
-
-    var convergeTime = new BigInteger(4);
-
-    return new AllPairs(topology, annotations, convergeTime);
-  }
-
-  public static AllPairs Sound()
-  {
-    Console.WriteLine("Sound annotations:");
-    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
-    {
-      {
-        "A",
-        Lang.Until(
-          If(d == "A", new BigInteger(0),
-            If<BigInteger>(d == "B", new BigInteger(1), new BigInteger(2))),
-          Lang.IsNone<BigInteger>(), Lang.IsSome<BigInteger>())
-      },
-      {
-        "B",
-        Lang.Until(
-          If<BigInteger>(d != "B", new BigInteger(1), new BigInteger(0)),
-          Lang.IsNone<BigInteger>(), Lang.IsSome<BigInteger>())
-      },
-      {
-        "C",
-        Lang.Until(
-          If(d == "A", new BigInteger(2),
-            If<BigInteger>(d == "B", new BigInteger(1), new BigInteger(0))),
-          Lang.IsNone<BigInteger>(), Lang.IsSome<BigInteger>())
-      }
-    };
-    return Net(annotations);
-  }
-
-  public static AllPairs Unsound()
-  {
-    Console.WriteLine("Unsound annotations:");
-    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
-    {
-      {"A", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())},
-      {"B", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())},
-      {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())},
-    };
-    return Net(annotations);
   }
 }

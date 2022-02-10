@@ -1,7 +1,7 @@
 using System;
 using ZenLib;
 
-namespace Karesansui;
+namespace Karesansui.Datatypes;
 
 public static class OptionExtensions
 {

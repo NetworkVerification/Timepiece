@@ -13,34 +13,44 @@ public class Topology
   /// <summary>
   ///     The number of edges in the network.
   /// </summary>
-  public readonly int nEdges;
+  public int NEdges { get; }
 
   /// <summary>
   ///     The edges for each node in the network.
   /// </summary>
-  private readonly Dictionary<string, List<string>> neighbors;
+  private readonly Dictionary<string, List<string>> _neighbors;
 
   /// <summary>
   ///     The nodes in the network and their names.
   /// </summary>
-  public readonly string[] nodes;
+  public string[] Nodes { get; }
 
   /// <summary>
   ///     Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
   public Topology(Dictionary<string, List<string>> edges)
   {
-    neighbors = edges;
-    nEdges = neighbors.Sum(p => p.Value.Count);
-    nodes = neighbors.Keys.ToArray();
+    _neighbors = edges;
+    NEdges = _neighbors.Sum(p => p.Value.Count);
+    Nodes = _neighbors.Keys.ToArray();
   }
 
-  public string this[uint id] => nodes[id];
+  public string this[uint id] => Nodes[id];
 
   /// <summary>
   ///     Return the predecessors of a given node.
   /// </summary>
-  public List<string> this[string node] => neighbors[node];
+  public List<string> this[string node] => _neighbors[node];
+
+  /// <summary>
+  /// Return true if the topology contains the given node.
+  /// </summary>
+  /// <param name="node">A node.</param>
+  /// <returns>True if the node is present, false otherwise.</returns>
+  public bool HasNode(string node)
+  {
+    return _neighbors.ContainsKey(node);
+  }
 
   /// <summary>
   ///     Return a new Topology generated from the given JSON string
@@ -62,20 +72,27 @@ public class Topology
   public Dictionary<string, T> ForAllNodes<T>(Func<string, T> nodeFunc)
   {
     return new Dictionary<string, T>(
-      nodes.Select(node => new KeyValuePair<string, T>(node, nodeFunc(node))));
+      Nodes.Select(node => new KeyValuePair<string, T>(node, nodeFunc(node))));
   }
 
   public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, string, TAcc> f)
   {
-    return nodes.Aggregate(initial, f);
+    return Nodes.Aggregate(initial, f);
   }
 
   public Dictionary<(string, string), T> ForAllEdges<T>(Func<(string, string), T> edgeFunc)
   {
-    var edges = neighbors
+    var edges = _neighbors
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr))
       .Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
     return new Dictionary<(string, string), T>(edges);
+  }
+
+  public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (string, string), TAcc> f)
+  {
+    var edges = _neighbors
+      .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr));
+    return edges.Aggregate(initial, f);
   }
 }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Karesansui.Datatypes;
 using ZenLib;
 
 namespace Karesansui;
@@ -67,15 +68,15 @@ public class State<T, TS>
     var sb = new StringBuilder();
     foreach (var (name, value) in symbolicStates)
     {
-      sb.Append($"symbolic {name} := {value}\n");
+      sb.AppendLine($"symbolic {name} := {value}");
     }
 
-    time.May(t => sb.Append($"At time = {t}\n"));
+    time.May(t => sb.Append($"at time = {t}").AppendLine());
 
     foreach (var (node, route) in nodeStates)
     {
-      var specifier = _focusedNode.HasValue ? $"neighbor {node} of {_focusedNode.Value}" : "node";
-      sb.Append($"{specifier} had route := {route}\n");
+      var specifier = _focusedNode.HasValue ? $"neighbor {node} of {_focusedNode.Value}" : $"node {node}";
+      sb.AppendLine($"{specifier} had route := {route}");
     }
 
     return sb.ToString();
@@ -88,7 +89,7 @@ public class State<T, TS>
   public void ReportCheckFailure(string check)
   {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"  {check} check failed!");
+    Console.WriteLine($"{check} check failed!");
     Console.WriteLine(ToString());
     Console.ResetColor();
   }

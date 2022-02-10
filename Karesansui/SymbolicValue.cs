@@ -38,23 +38,21 @@ public class SymbolicValue<T>
   /// <summary>
   /// Return true if the symbolic value equals the given constant value.
   /// </summary>
-  /// <param name="s">A symbolic value.</param>
   /// <param name="val">A constant value of the same type as the symbolic value.</param>
   /// <returns>True if the values are the same, and false otherwise.</returns>
-  public static Zen<bool> operator ==(SymbolicValue<T> s, T val)
+  public Zen<bool> EqualsValue(T val)
   {
-    return s != null ? Constant(val) == s.Value : False();
+    return Constant(val) == Value;
   }
 
   /// <summary>
   /// Return true if the symbolic value does not equal the given constant value.
   /// </summary>
-  /// <param name="s">A symbolic value.</param>
   /// <param name="val">A constant value of the same type.</param>
   /// <returns>True if the values are different, and false otherwise.</returns>
-  public static Zen<bool> operator !=(SymbolicValue<T> s, T val)
+  public Zen<bool> DoesNotEqualValue(T val)
   {
-    return Not(s == val);
+    return Not(EqualsValue(val));
   }
 
   public bool HasConstraint()

@@ -7,7 +7,7 @@ using ZenLib;
 
 namespace Karesansui.Tests;
 
-public class ShortestPathsTests
+public static class ShortestPathsTests
 {
   private static ShortestPath<Unit> NonSymbolic(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
@@ -25,27 +25,27 @@ public class ShortestPathsTests
       Array.Empty<SymbolicValue<Unit>>(), 4);
   }
 
-  private static readonly SymbolicValue<BigInteger> d = new("d", r => r >= BigInteger.Zero);
+  private static readonly SymbolicValue<BigInteger> D = new("d", r => r >= BigInteger.Zero);
 
-  public static ShortestPath<BigInteger> SymbolicDest(
+  private static ShortestPath<BigInteger> SymbolicDest(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Default.Complete(3);
 
     var initialValues = new Dictionary<string, Zen<Option<BigInteger>>>
     {
-      {"A", Language.Some(d.Value)},
+      {"A", Language.Some(D.Value)},
       {"B", Option.None<BigInteger>()},
       {"C", Option.None<BigInteger>()}
     };
 
-    var symbolics = new[] {d};
+    var symbolics = new[] {D};
 
     return new ShortestPath<BigInteger>(topology, initialValues, annotations, symbolics, 2);
   }
 
   [Fact]
-  public void SoundAnnotationsPassChecks()
+  public static void SoundAnnotationsPassChecks()
   {
     var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
@@ -61,11 +61,11 @@ public class ShortestPathsTests
     };
     var net = NonSymbolic(annotations);
 
-    Assert.True(net.CheckAnnotations(), "Sound annotations for simple shortest-paths should pass.");
+    NetworkAssert.CheckSound(net);
   }
 
   [Fact]
-  public void UnsoundAnnotationsFailChecks()
+  public static void UnsoundAnnotationsFailChecks()
   {
     var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
@@ -75,20 +75,34 @@ public class ShortestPathsTests
     };
     var net = NonSymbolic(annotations);
 
-    Assert.False(net.CheckAnnotations(), "Unsound annotations for simple shortest-paths should fail.");
+    NetworkAssert.CheckUnsound(net);
   }
 
   [Fact]
-  public void SoundSymbolicAnnotationsPassChecks()
+  public static void SoundSymbolicAnnotationsPassChecks()
   {
     var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", Lang.Equals(Language.Some(d.Value))},
-      {"B", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d.Value))},
-      {"C", Lang.Until(new BigInteger(2), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= d.Value))}
+      {"A", Lang.Equals(Language.Some(D.Value))},
+      {"B", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= D.Value))},
+      {"C", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= D.Value))}
     };
-    var net = NonSymbolic(annotations);
+    var net = SymbolicDest(annotations);
 
-    Assert.True(net.CheckAnnotations(), "Sound annotations for symbolic shortest-paths should pass.");
+    NetworkAssert.CheckSound(net);
+  }
+
+  [Fact]
+  public static void UnsoundSymbolicAnnotationsFailChecks()
+  {
+    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"A", Lang.Globally(Lang.IfSome<BigInteger>(r => r <= D.Value))},
+      {"B", Lang.Finally(new BigInteger(1), Lang.IfSome<BigInteger>(r => r <= D.Value))},
+      {"C", Lang.Finally(new BigInteger(1), Lang.IfSome<BigInteger>(r => r <= D.Value))}
+    };
+    var net = SymbolicDest(annotations);
+
+    NetworkAssert.CheckUnsound(net);
   }
 }

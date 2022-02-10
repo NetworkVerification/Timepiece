@@ -1,0 +1,98 @@
+using System.Collections.Generic;
+using System.Numerics;
+using ZenLib;
+using static ZenLib.Language;
+
+namespace Karesansui.Datatypes;
+
+public record struct Bgp
+{
+  public Bgp(BigInteger lp, BigInteger asLength, IList<string> tags)
+  {
+    Lp = lp;
+    AsLength = asLength;
+    Tags = tags;
+  }
+
+  public Bgp()
+  {
+    Lp = default;
+    AsLength = default;
+    Tags = default;
+  }
+
+  /// <summary>
+  /// Local preference of the given BGP announcement.
+  /// </summary>
+  public BigInteger Lp { get; set; }
+
+  /// <summary>
+  /// Abstract AS length of the given BGP announcement.
+  /// </summary>
+  public BigInteger AsLength { get; set; }
+
+  /// <summary>
+  /// List of community tags.
+  /// </summary>
+  public IList<string> Tags { get; set; }
+
+  public override string ToString()
+  {
+    var tagVal = string.Empty;
+    foreach (var tag in Tags)
+      if (string.IsNullOrEmpty(tagVal))
+        tagVal += $"{tag}";
+      else
+        tagVal += $", {tag}";
+    return $"Bgp(Lp={Lp},AsLengthAsLength={AsLength},Tags=[{tagVal}])";
+  }
+}
+
+public static class BgpExtensions
+{
+  public static Zen<BigInteger> GetLp(this Zen<Bgp> b)
+  {
+    return b.GetField<Bgp, BigInteger>("Lp");
+  }
+
+  public static Zen<BigInteger> GetAsLength(this Zen<Bgp> b)
+  {
+    return b.GetField<Bgp, BigInteger>("AsLength");
+  }
+
+  public static Zen<IList<string>> GetTags(this Zen<Bgp> b)
+  {
+    return b.GetField<Bgp, IList<string>>("Tags");
+  }
+
+  public static Zen<Bgp> SetLp(this Zen<Bgp> b, Zen<BigInteger> lp)
+  {
+    return b.WithField("Lp", lp);
+  }
+
+  public static Zen<Bgp> SetAsLength(this Zen<Bgp> b, Zen<BigInteger> cost)
+  {
+    return b.WithField("AsLength", cost);
+  }
+
+  public static Zen<Bgp> SetTags(this Zen<Bgp> b, Zen<IList<string>> tags)
+  {
+    return b.WithField("Tags", tags);
+  }
+
+  public static Zen<bool> HasTag(this Zen<Bgp> b, string tag)
+  {
+    return b.GetTags().Contains(tag);
+  }
+
+  public static Zen<Bgp> AddTag(this Zen<Bgp> b, string tag)
+  {
+    return b.SetTags(b.GetTags().AddFront(tag));
+  }
+
+  public static Zen<Bgp> Min(Zen<Bgp> b1, Zen<Bgp> b2)
+  {
+    return If(b1.GetLp() > b2.GetLp(), b1,
+      If(b2.GetLp() > b1.GetLp(), b2, If(b1.GetAsLength() < b2.GetAsLength(), b1, b2)));
+  }
+}

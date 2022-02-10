@@ -112,6 +112,12 @@ public static class Lang
     return (prod1, prod2) => Pair(f1(prod1.Item1(), prod2.Item1()), f2(prod1.Item2(), prod2.Item2()));
   }
 
+  public static Func<Zen<Pair<T1, T2>>, Zen<bool>> Both<T1, T2>(Func<Zen<T1>, Zen<bool>> f1,
+    Func<Zen<T2>, Zen<bool>> f2)
+  {
+    return prod => And(f1(prod.Item1()), f2(prod.Item2()));
+  }
+
   /// <summary>
   ///     Construct a function that tests a given route and delegates to one of two cases based on the result
   ///     of the test.
