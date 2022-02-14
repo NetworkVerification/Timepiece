@@ -48,7 +48,7 @@ public class Network<T, TS>
   /// <summary>
   ///     The transfer function for each edge.
   /// </summary>
-  public Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; }
+  public Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
 
   /// <summary>
   ///     The invariant/annotation function for each node. Takes a route and a time and returns a boolean.

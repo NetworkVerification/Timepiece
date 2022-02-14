@@ -10,7 +10,7 @@ namespace Karesansui.Networks;
 public class FaultTolerance<T> : Network<Option<T>, (string, string)>
 {
   /// <summary>
-  /// Edges which have failed in the given topology.
+  /// Edges which may fail in the given topology.
   /// </summary>
   private Zen<FSeq<(string, string)>> failedEdges;
 
@@ -23,7 +23,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
     Zen<FSeq<(string, string)>> failedEdges, uint numFailed) : base(topology,
-    Transfer(transferFunction, failedEdges),
+    new Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>>(),
     Lang.Omap2(mergeFunction), initialValues,
     new Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(),
     modularProperties, monolithicProperties,
@@ -31,6 +31,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
   {
     this.failedEdges = failedEdges;
     this.annotations = annotations(symbolics);
+    TransferFunction = Transfer(transferFunction, symbolics);
   }
 
   public FaultTolerance(Network<T, object> net,
@@ -40,11 +41,13 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
     Zen<FSeq<(string, string)>> failedEdges, uint numFailed) : base(net.Topology,
-    Transfer(net.TransferFunction, failedEdges), Lang.Omap2(net.MergeFunction), initialValues,
+    new Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>>(), Lang.Omap2(net.MergeFunction),
+    initialValues,
     new Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(), modularProperties, monolithicProperties,
     Symbolics(net.Topology, failedEdges, numFailed))
   {
     this.annotations = annotations(symbolics);
+    TransferFunction = Transfer(net.TransferFunction, symbolics);
   }
 
   /// <summary>
@@ -78,12 +81,12 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
   }
 
   private static Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>> Transfer(
-    Dictionary<(string, string), Func<Zen<T>, Zen<T>>> inner, Zen<FSeq<(string, string)>> failedEdges)
+    Dictionary<(string, string), Func<Zen<T>, Zen<T>>> inner, SymbolicValue<(string, string)>[] failedEdges)
   {
     var lifted = new Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>>();
     foreach (var (edge, f) in inner)
       lifted[edge] =
-        Lang.Test(_ => failedEdges.Contains(edge), Lang.Const(Option.None<T>()), Lang.Omap(f));
+        Lang.Test(_ => IsFailed(failedEdges, edge), Lang.Const(Option.None<T>()), Lang.Omap(f));
 
     return lifted;
   }
