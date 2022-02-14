@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Networks;
 
@@ -16,7 +16,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
   /// </summary>
   public SymbolicValue<Option<TaggedRoute>> HijackRoute { get; } = new("hijack");
 
-  public static Zen<Option<TaggedRoute>> DestRoute = Some(Pair<BigInteger, bool>(BigInteger.Zero, false));
+  public static Zen<Option<TaggedRoute>> DestRoute = Option.Create(Pair.Create<BigInteger, bool>(BigInteger.Zero, false));
 
   /// <summary>
   /// Construct a hijack network: a network containing a legitimate internal destination, and an external node
@@ -54,7 +54,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
 
     InitialValues = topology.ForAllNodes(n =>
       n == hijacker ? HijackRoute.Value :
-      n == dest ? DestRoute : Null<TaggedRoute>());
+      n == dest ? DestRoute : Option.Null<TaggedRoute>());
     symbolics = new[] {HijackRoute};
     this.annotations = annotations(HijackRoute);
     HijackRoute.Constraint = DeriveHijackConstraint();

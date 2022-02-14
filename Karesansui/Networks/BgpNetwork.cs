@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Karesansui.Datatypes;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Networks;
 
@@ -24,6 +24,6 @@ public class BgpNetwork : Network<Option<Bgp>, Bgp>
   {
     var (src, snk) = edge;
     return x => If(x.HasTag(snk), Option.None<Bgp>(),
-      Some(x.SetAsLength(x.GetAsLength() + new BigInteger(1)).AddTag(src)));
+      Option.Create(x.SetAsLength(x.GetAsLength() + new BigInteger(1)).AddTag(src)));
   }
 }

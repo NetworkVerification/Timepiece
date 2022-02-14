@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Networks;
 
@@ -22,7 +22,7 @@ public class AllPairs : ShortestPath<string>
     Array.Empty<SymbolicValue<string>>(), convergeTime)
   {
     InitialValues =
-      topology.ForAllNodes(n => If(D.EqualsValue(n), Some<BigInteger>(BigInteger.Zero), Null<BigInteger>()));
+      topology.ForAllNodes(n => If(D.EqualsValue(n), Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>()));
     symbolics = new[] {D};
     this.annotations = annotations(D);
     D.Constraint = DeriveDestConstraint(topology);

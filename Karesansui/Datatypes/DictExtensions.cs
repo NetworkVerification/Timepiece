@@ -13,24 +13,24 @@ public static class DictExtensions
   /// <typeparam name="TKey">The type of the Dict's keys.</typeparam>
   /// <typeparam name="TValue">The type of the Dict's values.</typeparam>
   /// <returns>The internal list of key-value pairs.</returns>
-  public static Zen<IList<Pair<TKey, TValue>>> Values<TKey, TValue>(this Zen<Dict<TKey, TValue>> m)
+  public static Zen<FSeq<Pair<TKey, TValue>>> Values<TKey, TValue>(this Zen<FMap<TKey, TValue>> m)
   {
-    return m.GetField<Dict<TKey, TValue>, IList<Pair<TKey, TValue>>>("Values");
+    return m.GetField<FMap<TKey, TValue>, FSeq<Pair<TKey, TValue>>>("Values");
   }
 
-  public static Zen<Dict<TKey, TValue2>> ForEach<TKey, TValue, TValue2>(this Zen<Dict<TKey, TValue>> m,
+  public static Zen<FMap<TKey, TValue2>> ForEach<TKey, TValue, TValue2>(this Zen<FMap<TKey, TValue>> m,
     Func<Zen<TValue>, Zen<TValue2>> f)
   {
     var members = m.Values().Select(Lang.Product(Lang.Identity<TKey>(), f));
-    return Language.Create<Dict<TKey, TValue2>>(("Values", members));
+    return Zen.Create<FMap<TKey, TValue2>>(("Values", members));
   }
 
-  public static Zen<Dict<TKey, TValue3>> Zip<TKey, TValue1, TValue2, TValue3>(this Zen<Dict<TKey, TValue1>> m1,
-    Zen<Dict<TKey, TValue2>> m2, Func<Zen<TValue1>, Zen<TValue2>, Zen<TValue3>> f)
+  public static Zen<FMap<TKey, TValue3>> Zip<TKey, TValue1, TValue2, TValue3>(this Zen<FMap<TKey, TValue1>> m1,
+    Zen<FMap<TKey, TValue2>> m2, Func<Zen<TValue1>, Zen<TValue2>, Zen<TValue3>> f)
   {
     var members1 = m1.Values();
     var members2 = m2.Values();
-    return Language.Create<Dict<TKey, TValue3>>(("Values", members1.Zip(members2, f)));
+    return Zen.Create<FMap<TKey, TValue3>>(("Values", members1.Zip(members2, f)));
   }
 
   /// <summary>
@@ -45,16 +45,16 @@ public static class DictExtensions
   /// <typeparam name="TValue2">The type of the second list's values.</typeparam>
   /// <typeparam name="TValueResult">The type of the resulting list's values.</typeparam>
   /// <returns>The resulting list of key-value pairs.</returns>
-  private static Zen<IList<Pair<TKey, TValueResult>>> Zip<TKey, TValue1, TValue2, TValueResult>(
-    this Zen<IList<Pair<TKey, TValue1>>> m1,
-    Zen<IList<Pair<TKey, TValue2>>> m2, Func<Zen<TValue1>, Zen<TValue2>, Zen<TValueResult>> f)
+  private static Zen<FSeq<Pair<TKey, TValueResult>>> Zip<TKey, TValue1, TValue2, TValueResult>(
+    this Zen<FSeq<Pair<TKey, TValue1>>> m1,
+    Zen<FSeq<Pair<TKey, TValue2>>> m2, Func<Zen<TValue1>, Zen<TValue2>, Zen<TValueResult>> f)
   {
     return m1.Case(
-      Language.EmptyList<Pair<TKey, TValueResult>>(),
+      FSeq.Empty<Pair<TKey, TValueResult>>(),
       (hd1, tl1) =>
       {
         return m2.Case(
-          Language.EmptyList<Pair<TKey, TValueResult>>(),
+          FSeq.Empty<Pair<TKey, TValueResult>>(),
           (hd2, tl2) =>
           {
             // NOTE: assumes the keys are the same!
@@ -64,20 +64,20 @@ public static class DictExtensions
       });
   }
 
-  public static Zen<bool> All<TKey, TValue>(this Zen<Dict<TKey, TValue>> m,
+  public static Zen<bool> All<TKey, TValue>(this Zen<FMap<TKey, TValue>> m,
     Func<Zen<Pair<TKey, TValue>>, Zen<bool>> f)
   {
     return m.Values().All(f);
   }
 
-  public static Zen<TAcc> Fold<TKey, TValue, TAcc>(this Zen<Dict<TKey, TValue>> m, Zen<TAcc> initialValue,
+  public static Zen<TAcc> Fold<TKey, TValue, TAcc>(this Zen<FMap<TKey, TValue>> m, Zen<TAcc> initialValue,
     Func<Zen<Pair<TKey, TValue>>, Zen<TAcc>, Zen<TAcc>> f)
   {
     return m.Values().Fold(initialValue, f);
   }
 
-  public static Zen<bool> Compare<TKey, TValue>(this Zen<Dict<TKey, TValue>> m1,
-    Zen<Dict<TKey, TValue>> m2, Func<Zen<TValue>, Zen<TValue>, Zen<bool>> cmpf)
+  public static Zen<bool> Compare<TKey, TValue>(this Zen<FMap<TKey, TValue>> m1,
+    Zen<FMap<TKey, TValue>> m2, Func<Zen<TValue>, Zen<TValue>, Zen<bool>> cmpf)
   {
     return m1.Zip(m2, cmpf).Values().All(p => p.Item2());
   }

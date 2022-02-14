@@ -4,7 +4,7 @@ using System.Numerics;
 using Karesansui.Networks;
 using Xunit;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Tests;
 

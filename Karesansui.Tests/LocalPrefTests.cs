@@ -4,7 +4,7 @@ using System.Numerics;
 using Karesansui.Networks;
 using Xunit;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Tests;
 
@@ -19,8 +19,8 @@ public static class LocalPrefTests
 
     var initialValues = new Dictionary<string, Zen<LpRoute>>
     {
-      {"A", Pair(Constant(BigInteger.One), Constant(BigInteger.Zero))},
-      {"B", Pair(Constant(BigInteger.One), Constant(new BigInteger(10)))}
+      {"A", Pair.Create(Constant(BigInteger.One), Constant(BigInteger.Zero))},
+      {"B", Pair.Create(Constant(BigInteger.One), Constant(new BigInteger(10)))}
     };
 
     var convergeTime = new BigInteger(10);
@@ -36,12 +36,12 @@ public static class LocalPrefTests
       // the assertions will fail but the annotations still hold
       {
         "A",
-        Lang.Equals<LpRoute>(Pair<BigInteger, BigInteger>(BigInteger.One, BigInteger.Zero))
+        Lang.Equals<LpRoute>(Pair.Create<BigInteger, BigInteger>(BigInteger.One, BigInteger.Zero))
       },
       {
         "B",
         Lang.Until(BigInteger.One,
-          r => r == Pair<BigInteger, BigInteger>(BigInteger.One, new BigInteger(10)),
+          r => r == Pair.Create<BigInteger, BigInteger>(BigInteger.One, new BigInteger(10)),
           Lang.Both<BigInteger, BigInteger>(fst => fst == BigInteger.One,
             snd => And(snd > BigInteger.Zero, snd < new BigInteger(10))))
       }
