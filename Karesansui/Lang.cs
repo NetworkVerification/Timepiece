@@ -48,7 +48,7 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Generate a globally annotation: for all time, the route is equal to the given parameter.
+  /// Generate a globally annotation: for all time, the route is equal to the given parameter.
   /// </summary>
   /// <param name="route">The fixed route.</param>
   /// <typeparam name="T">The type of routes.</typeparam>
@@ -59,7 +59,7 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Generate an annotation: for all time, the predicate *does not* hold for a given route.
+  /// Generate an annotation: for all time, the predicate *does not* hold for a given route.
   /// </summary>
   /// <param name="predicate">A predicate over a route.</param>
   /// <typeparam name="T">The type of routes.</typeparam>
@@ -70,7 +70,7 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Construct a function that ignores its argument and returns a constant route.
+  /// Construct a function that ignores its argument and returns a constant route.
   /// </summary>
   /// <param name="val">The constant route to return.</param>
   /// <typeparam name="T">The type of routes.</typeparam>
@@ -81,7 +81,7 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Construct an identity function over routes.
+  /// Construct an identity function over routes.
   /// </summary>
   /// <typeparam name="T">The type of routes.</typeparam>
   /// <returns>A function from routes to routes.</returns>
@@ -91,7 +91,7 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Construct a function over tuples from functions over tuple elements.
+  /// Construct a function over tuples from functions over tuple elements.
   /// </summary>
   /// <param name="f1">A function from T1 to T3.</param>
   /// <param name="f2">A function from T2 to T4.</param>

@@ -9,8 +9,9 @@ namespace Karesansui.Tests;
 
 public static class FaultToleranceTests
 {
-  public static FaultTolerance<Unit> UnitFtNet(
-    Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>> annotations)
+  private static FaultTolerance<Unit> UnitFtNet(
+    Func<SymbolicValue<(string, string)>[], Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>>
+      annotations)
   {
     var topology = Default.Complete(3);
 
@@ -26,8 +27,9 @@ public static class FaultToleranceTests
 
     var failedEdges = Zen.Symbolic<FSeq<(string, string)>>(topology.NEdges);
 
-    return new FaultTolerance<Unit>(new UnitNetwork(topology), initialValues, annotations, modularProperties,
-      monolithicProperties, failedEdges);
+    return new FaultTolerance<Unit>(new UnitNetwork(topology), initialValues, annotations,
+      modularProperties,
+      monolithicProperties, failedEdges, 1);
   }
 
   [Fact]
@@ -36,12 +38,26 @@ public static class FaultToleranceTests
     // FIXME: these annotations are too weak: we need to state that if the one edge is failed, then the other one will work,
     // so that either B gets a route at 1 and C gets a route at 2, or C gets a route at 1 and B gets a route at 2,
     // or both B and C get a route at 1
-    var annotations = new Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>
-    {
-      {"A", Lang.Globally(Lang.IsSome<Unit>())},
-      {"B", Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>())},
-      {"C", Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>())}
-    };
+    var annotations =
+      new Func<SymbolicValue<(string, string)>[],
+        Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>>(edges =>
+        new Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>
+        {
+          {"A", Lang.Globally(Lang.IsSome<Unit>())},
+          {
+            "B",
+            Lang.Finally(
+              Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "B")), new BigInteger(2),
+                new BigInteger(1)),
+              Lang.IsSome<Unit>())
+          },
+          {
+            "C", Lang.Finally(
+              Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "C")), new BigInteger(2),
+                new BigInteger(1)),
+              Lang.IsSome<Unit>())
+          }
+        });
 
     var net = UnitFtNet(annotations);
 
