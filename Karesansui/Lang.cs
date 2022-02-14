@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui;
 
@@ -103,13 +103,13 @@ public static class Lang
   public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T3, T4>>> Product<T1, T2, T3, T4>(Func<Zen<T1>, Zen<T3>> f1,
     Func<Zen<T2>, Zen<T4>> f2)
   {
-    return prod => Pair(f1(prod.Item1()), f2(prod.Item2()));
+    return prod => Pair.Create(f1(prod.Item1()), f2(prod.Item2()));
   }
 
   public static Func<Zen<Pair<T1, T2>>, Zen<Pair<T3, T4>>, Zen<Pair<T5, T6>>> Product2<T1, T2, T3, T4, T5, T6>(
     Func<Zen<T1>, Zen<T3>, Zen<T5>> f1, Func<Zen<T2>, Zen<T4>, Zen<T6>> f2)
   {
-    return (prod1, prod2) => Pair(f1(prod1.Item1(), prod2.Item1()), f2(prod1.Item2(), prod2.Item2()));
+    return (prod1, prod2) => Pair.Create(f1(prod1.Item1(), prod2.Item1()), f2(prod1.Item2(), prod2.Item2()));
   }
 
   public static Func<Zen<Pair<T1, T2>>, Zen<bool>> Both<T1, T2>(Func<Zen<T1>, Zen<bool>> f1,
@@ -140,17 +140,17 @@ public static class Lang
 
   public static Func<Zen<Option<T1>>, Zen<Option<T2>>> Bind<T1, T2>(Func<Zen<T1>, Zen<Option<T2>>> f)
   {
-    return r => r.Case(Null<T2>, f);
+    return r => r.Case(Option.Null<T2>, f);
   }
 
   public static Func<Zen<Option<T>>, Zen<bool>> IsSome<T>()
   {
-    return r => r.HasValue();
+    return r => r.IsSome();
   }
 
   public static Func<Zen<Option<T>>, Zen<bool>> IsNone<T>()
   {
-    return r => Not(r.HasValue());
+    return r => r.IsNone();
   }
 
   /// <summary>
@@ -163,12 +163,12 @@ public static class Lang
   /// <returns></returns>
   public static Func<Zen<Option<T>>, Zen<bool>> IfSome<T>(Func<Zen<T>, Zen<bool>> f)
   {
-    return r => And(r.HasValue(), f(r.Value()));
+    return r => And(r.IsSome(), f(r.Value()));
   }
 
   public static Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> Omap2<T>(Func<Zen<T>, Zen<T>, Zen<T>> f)
   {
-    return (r1, r2) => If(r1.HasValue(), If(r2.HasValue(), Some(f(r1.Value(), r2.Value())), r1), r2);
+    return (r1, r2) => If(r1.IsSome(), If(r2.IsSome(), Option.Create(f(r1.Value(), r2.Value())), r1), r2);
   }
 
   /// <summary>

@@ -1,6 +1,6 @@
 using System;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui;
 

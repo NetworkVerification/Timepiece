@@ -34,7 +34,7 @@ public static class ShortestPathsTests
 
     var initialValues = new Dictionary<string, Zen<Option<BigInteger>>>
     {
-      {"A", Language.Some(D.Value)},
+      {"A", Option.Create(D.Value)},
       {"B", Option.None<BigInteger>()},
       {"C", Option.None<BigInteger>()}
     };
@@ -83,7 +83,7 @@ public static class ShortestPathsTests
   {
     var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
-      {"A", Lang.Equals(Language.Some(D.Value))},
+      {"A", Lang.Equals(Option.Create(D.Value))},
       {"B", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= D.Value))},
       {"C", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= D.Value))}
     };

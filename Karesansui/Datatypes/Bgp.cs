@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Datatypes;
 
 public record struct Bgp
 {
-  public Bgp(BigInteger lp, BigInteger asLength, IList<string> tags)
+  public Bgp(BigInteger lp, BigInteger asLength, FSeq<string> tags)
   {
     Lp = lp;
     AsLength = asLength;
@@ -34,12 +34,12 @@ public record struct Bgp
   /// <summary>
   /// List of community tags.
   /// </summary>
-  public IList<string> Tags { get; set; }
+  public FSeq<string> Tags { get; set; }
 
   public override string ToString()
   {
     var tagVal = string.Empty;
-    foreach (var tag in Tags)
+    foreach (var tag in Tags.Values)
       if (string.IsNullOrEmpty(tagVal))
         tagVal += $"{tag}";
       else
@@ -60,9 +60,9 @@ public static class BgpExtensions
     return b.GetField<Bgp, BigInteger>("AsLength");
   }
 
-  public static Zen<IList<string>> GetTags(this Zen<Bgp> b)
+  public static Zen<FSeq<string>> GetTags(this Zen<Bgp> b)
   {
-    return b.GetField<Bgp, IList<string>>("Tags");
+    return b.GetField<Bgp, FSeq<string>>("Tags");
   }
 
   public static Zen<Bgp> SetLp(this Zen<Bgp> b, Zen<BigInteger> lp)
@@ -75,7 +75,7 @@ public static class BgpExtensions
     return b.WithField("AsLength", cost);
   }
 
-  public static Zen<Bgp> SetTags(this Zen<Bgp> b, Zen<IList<string>> tags)
+  public static Zen<Bgp> SetTags(this Zen<Bgp> b, Zen<FSeq<string>> tags)
   {
     return b.WithField("Tags", tags);
   }

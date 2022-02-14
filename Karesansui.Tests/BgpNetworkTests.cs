@@ -5,13 +5,13 @@ using Karesansui.Datatypes;
 using Karesansui.Networks;
 using Xunit;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Tests;
 
 public static class BgpNetworkTests
 {
-  private static readonly Zen<Option<Bgp>> Start = Some<Bgp>(new Bgp(100, 1, new List<string>()));
+  private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp(100, 1, new FSeq<string>()));
 
   private static BgpNetwork Net(Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {

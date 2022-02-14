@@ -24,7 +24,7 @@ public static class FaultToleranceTests
     var modularProperties = topology.ForAllNodes(_ => Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>()));
     var monolithicProperties = topology.ForAllNodes(_ => Lang.IsSome<Unit>());
 
-    var failedEdges = Language.Symbolic<IList<(string, string)>>(topology.NEdges);
+    var failedEdges = Zen.Symbolic<FSeq<(string, string)>>(topology.NEdges);
 
     return new FaultTolerance<Unit>(new UnitNetwork(topology), initialValues, annotations, modularProperties,
       monolithicProperties, failedEdges);

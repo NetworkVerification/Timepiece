@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Networks;
 
@@ -11,7 +11,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
   /// <summary>
   /// Edges which have failed in the given topology.
   /// </summary>
-  private Zen<IList<(string, string)>> failedEdges;
+  private Zen<FSeq<(string, string)>> failedEdges;
 
   public FaultTolerance(Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
@@ -20,7 +20,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
-    Zen<IList<(string, string)>> failedEdges) : base(topology,
+    Zen<FSeq<(string, string)>> failedEdges) : base(topology,
     Transfer(transferFunction, failedEdges),
     Lang.Omap2(mergeFunction), initialValues, annotations, modularProperties, monolithicProperties,
     Symbolics(topology, failedEdges))
@@ -33,7 +33,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
-    Zen<IList<(string, string)>> failedEdges) : base(net.Topology,
+    Zen<FSeq<(string, string)>> failedEdges) : base(net.Topology,
     Transfer(net.TransferFunction, failedEdges), Lang.Omap2(net.MergeFunction), initialValues,
     annotations, modularProperties, monolithicProperties, Symbolics(net.Topology, failedEdges))
   {
@@ -41,7 +41,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
 
   private static SymbolicValue<(string, string)>[] Symbolics(
     Topology topology,
-    Zen<IList<(string, string)>> failedEdges)
+    Zen<FSeq<(string, string)>> failedEdges)
   {
     var e = new SymbolicValue<(string, string)>("e")
     {
@@ -52,7 +52,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
   }
 
   private static Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>> Transfer(
-    Dictionary<(string, string), Func<Zen<T>, Zen<T>>> inner, Zen<IList<(string, string)>> failedEdges)
+    Dictionary<(string, string), Func<Zen<T>, Zen<T>>> inner, Zen<FSeq<(string, string)>> failedEdges)
   {
     var lifted = new Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>>();
     foreach (var (edge, f) in inner)

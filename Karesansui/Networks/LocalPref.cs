@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Language;
+using static ZenLib.Zen;
 
 namespace Karesansui.Networks;
 
@@ -20,7 +20,7 @@ public class LocalPref : Network<LpRoute, UnitNetwork>
       initialValues,
       annotations,
       topology.ForAllNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
-      topology.ForAllNodes(_ => ReachabilityProperty),
+      topology.ForAllNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
       Array.Empty<SymbolicValue<UnitNetwork>>())
   {
   }
