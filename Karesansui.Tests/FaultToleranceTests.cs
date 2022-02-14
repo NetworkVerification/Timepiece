@@ -44,16 +44,14 @@ public static class FaultToleranceTests
           {
             "B",
             Lang.Finally(
-              new BigInteger(2),
-              // Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "B")), new BigInteger(2),
-              // new BigInteger(1)),
+              Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "B")), new BigInteger(2),
+                new BigInteger(1)),
               Lang.IsSome<Unit>())
           },
           {
             "C", Lang.Finally(
-              new BigInteger(2),
-              // Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "C")), new BigInteger(2),
-              // new BigInteger(1)),
+              Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "C")), new BigInteger(2),
+                new BigInteger(1)),
               Lang.IsSome<Unit>())
           }
         });
@@ -61,5 +59,24 @@ public static class FaultToleranceTests
     var net = UnitFtNet(annotations);
 
     NetworkAssert.CheckSound(net);
+  }
+
+  [Fact]
+  public static void UnsoundAnnotationsFailChecks()
+  {
+    var annotations =
+      new Func<SymbolicValue<(string, string)>[],
+        Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>>(_ =>
+        new Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>
+        {
+          {"A", Lang.Globally(Lang.IsSome<Unit>())},
+          {"B", Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>())},
+          {"C", Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>())}
+        });
+
+    var net = UnitFtNet(annotations);
+
+    // inductive check fails
+    NetworkAssert.CheckUnsound(net);
   }
 }
