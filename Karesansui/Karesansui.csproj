@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <StartupObject>Karesansui.Program</StartupObject>
+        <OutputType>Library</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
