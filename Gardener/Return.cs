@@ -16,7 +16,7 @@ public class Return : Statement
     throw new NotImplementedException();
   }
 
-  public override Dictionary<string, dynamic> Evaluate(Dictionary<string, dynamic> state)
+  public override State Evaluate(State state)
   {
     throw new NotImplementedException();
   }

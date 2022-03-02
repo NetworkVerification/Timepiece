@@ -20,9 +20,9 @@ public class Assign : Statement
   /// </summary>
   public string Var { get; set; }
 
-  public override Dictionary<string, dynamic> Evaluate(Dictionary<string, dynamic> state)
+  public override State Evaluate(State state)
   {
-    state.Add(Var, Expr.Evaluate());
+    state.Add(Var, Expr.Evaluate(state));
     return state;
   }
 

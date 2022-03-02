@@ -26,11 +26,27 @@ public class AstFunc
 
   public Func<Zen<dynamic>, Zen<dynamic>> ToZenUnary()
   {
-    throw new NotImplementedException();
+    CheckArgsLength(1);
+    var initialState = new State(Args);
+    var finalState = Body.Evaluate(initialState);
+    // FIXME: return a function that maps an argument to the constraint on the final state
+    return x => finalState[Args[0]];
   }
 
   public Func<Zen<dynamic>, Zen<dynamic>, Zen<dynamic>> ToZenBinary()
   {
-    throw new NotImplementedException();
+    CheckArgsLength(2);
+    var initialState = new State(Args);
+    var finalState = Body.Evaluate(initialState);
+    // FIXME: return a function that maps the arguments to the constraints on the final state
+    return (x, y) => Zen.And(finalState[Args[0]], finalState[Args[1]]);
+  }
+
+  private void CheckArgsLength(uint numberArgs)
+  {
+    if (Args.Length != numberArgs)
+    {
+      throw new ArgumentException("Invalid number of arguments.");
+    }
   }
 }

@@ -18,11 +18,11 @@ public class IfThenElse : Statement
     return t => Zen.If(Guard.ToZen<bool>(), TrueStatement.ToZen()(t), FalseStatement.ToZen()(t));
   }
 
-  public override Dictionary<string, dynamic> Evaluate(Dictionary<string, dynamic> state)
+  public override State Evaluate(State state)
   {
     var trueState = TrueStatement.Evaluate(state);
     var falseState = FalseStatement.Evaluate(state);
-    // TODO: merge the resulting states for each variable according to the guard
-    throw new NotImplementedException();
+    trueState.Join(falseState, Guard.Evaluate(state));
+    return trueState;
   }
 }

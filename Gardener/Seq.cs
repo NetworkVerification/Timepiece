@@ -18,7 +18,7 @@ public class Seq : Statement
     return t => Second.ToZen()(First.ToZen()(t));
   }
 
-  public override Dictionary<string, dynamic> Evaluate(Dictionary<string, dynamic> state)
+  public override State Evaluate(State state)
   {
     return Second.Evaluate(First.Evaluate(state));
   }
