@@ -9,8 +9,8 @@ public class Havoc : Expr
     throw new NotImplementedException();
   }
 
-  public override Zen<bool> Evaluate(State state)
+  public override Func<dynamic, Zen<bool>> Evaluate(State state)
   {
-    return Zen.Symbolic<bool>();
+    return _ => Zen.Symbolic<bool>();
   }
 }

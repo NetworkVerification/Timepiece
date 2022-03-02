@@ -6,5 +6,5 @@ public abstract class Expr
 {
   public abstract Zen<T> ToZen<T>();
 
-  public abstract Zen<bool> Evaluate(State state);
+  public abstract Func<dynamic, dynamic> Evaluate(State state);
 }

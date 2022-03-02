@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text.Json.Serialization;
 using Karesansui;
 using Karesansui.Networks;
 using ZenLib;
@@ -7,31 +8,44 @@ namespace Gardener;
 
 public class Ast
 {
-  private Topology Topology { get; }
+  public Topology Topology { get; set; }
 
-  private Dictionary<(string, string), AstFunc> TransferFunction { get; init; }
+  [JsonPropertyName("transfer")]
+  public Dictionary<(string, string), AstFunc> TransferFunction { get; set; }
 
-  private AstFunc MergeFunction { get; init; }
+  [JsonPropertyName("merge")]
+  public AstFunc MergeFunction { get; set; }
 
-  private Dictionary<string, Expr> InitFunction { get; init; }
+  [JsonPropertyName("init")]
+  public Dictionary<string, Expr> InitFunction { get; set; }
 
+  [JsonPropertyName("declarations")]
+  public Dictionary<string, AstFunc> Declarations { get; set; }
+
+  [JsonConstructor]
   public Ast(Topology topology, Dictionary<(string, string), AstFunc> transferFunction, AstFunc mergeFunction,
-    Dictionary<string, Expr> initFunction)
+    Dictionary<string, Expr> initFunction, Dictionary<string, AstFunc> declarations)
   {
     Topology = topology;
     TransferFunction = transferFunction;
     MergeFunction = mergeFunction;
     InitFunction = initFunction;
+    Declarations = declarations;
   }
 
-  public Network<dynamic, dynamic> ToNetwork()
+  public Network<T, TS> ToNetwork<T, TS>()
   {
-    return new Network<dynamic, dynamic>(Topology,
-      TransferFunction.Select(p => (p.Key, p.Value.ToZenUnary())).ToDictionary(p => p.Item1, p => p.Item2),
+    var transfer = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
+    foreach (var (edge, astFunc) in TransferFunction)
+    {
+      transfer.Add(edge, astFunc.ToZenUnary());
+    }
+    return new Network<T, TS>(Topology,
+      transfer,
       MergeFunction.ToZenBinary(),
-      InitFunction.Select(p => (p.Key, p.Value.ToZen<dynamic>())).ToDictionary(p => p.Item1, p => p.Item2),
-      new Dictionary<string, Func<Zen<dynamic>, Zen<BigInteger>, Zen<bool>>>(),
-      new Dictionary<string, Func<Zen<dynamic>, Zen<BigInteger>, Zen<bool>>>(),
-      new Dictionary<string, Func<Zen<dynamic>, Zen<bool>>>(), Array.Empty<SymbolicValue<object>>());
+      InitFunction.Select(p => (p.Key, p.Value.ToZen<T>())).ToDictionary(p => p.Item1, p => p.Item2),
+      new Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>(),
+      new Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>(),
+      new Dictionary<string, Func<Zen<T>, Zen<bool>>>(), Array.Empty<SymbolicValue<TS>>());
   }
 }

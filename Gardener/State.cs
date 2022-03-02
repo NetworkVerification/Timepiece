@@ -6,16 +6,16 @@ namespace Gardener;
 public class State
 {
   /// <summary>
-  /// A mapping from variable names to their constraints.
+  /// A mapping from variable names to functions.
   /// </summary>
-  private Dictionary<string, Zen<bool>> Variables { get; }
+  private Dictionary<string, object> Variables { get; }
 
   public State(IEnumerable<string> args)
   {
-    Variables = new Dictionary<string, Zen<bool>>();
+    Variables = new Dictionary<string, object>();
     foreach (var arg in args)
     {
-      Variables.Add(arg, Zen.Symbolic<bool>());
+      Variables.Add(arg, new Func<object, object>(t => t));
     }
   }
 
@@ -24,15 +24,15 @@ public class State
     return Variables.ContainsKey(var);
   }
 
-  public Zen<bool> this[string var]
+  public object this[string var]
   {
     get => Variables[var];
     private set => Variables[var] = value;
   }
 
-  public void Add<T>(string var, T val)
+  public void Add<T>(string var, Func<T, T> val)
   {
-    Variables.Add(var, Zen.Eq(Zen.Symbolic<T>(), Zen.Constant(val)));
+    Variables.Add(var, val);
   }
 
   /// <summary>
@@ -43,22 +43,36 @@ public class State
   /// </summary>
   /// <param name="other">Another State to use.</param>
   /// <param name="guard">A boolean expression acting as the guard.</param>
-  public void Join(State other, Zen<bool> guard)
+  public void Join(State other, object guard)
   {
-    foreach (var (key, value) in Variables)
+    // make both states have the same keys
+    foreach (var key in Variables.Keys.Where(key => !other.ContainsVar(key)))
     {
-      this[key] = Zen.Implies(guard, value);
+      other.Add<object>(key, t => t);
     }
+    foreach (var key in other.Variables.Keys.Where(key => !ContainsVar(key)))
+    {
+      Add<object>(key, t => t);
+    }
+
+    // foreach (var (key, value) in Variables)
+    // {
+    // this[key] = Zen.Implies(guard, value);
+    // }
     foreach (var (key, value) in other.Variables)
     {
-      var impl = Zen.Implies(Zen.Not(guard), value);
+      var g = (Func<dynamic, bool>) guard;
+      var trueCase = (Func<dynamic, dynamic>) this[key];
+      var falseCase = (Func<dynamic, dynamic>) value;
       if (ContainsVar(key))
       {
-        this[key] = Zen.And(this[key], impl);
+        this[key] = new Func<object, dynamic>(t => Zen.If(g(t),
+          trueCase(t),
+          falseCase(t)));
       }
       else
       {
-        this[key] = impl;
+        this[key] = value;
       }
     }
   }

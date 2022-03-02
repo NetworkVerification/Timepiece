@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Karesansui;
 
@@ -13,26 +13,30 @@ public class Topology
   /// <summary>
   ///     The number of edges in the network.
   /// </summary>
+  [JsonIgnore]
   public int NEdges { get; }
 
   /// <summary>
   ///     The edges for each node in the network.
   /// </summary>
-  private readonly Dictionary<string, List<string>> _neighbors;
+  [JsonPropertyName("edges")]
+  public Dictionary<string, List<string>> Neighbors { get; }
 
   /// <summary>
   ///     The nodes in the network and their names.
   /// </summary>
+  [JsonIgnore]
   public string[] Nodes { get; }
 
   /// <summary>
   ///     Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
-  public Topology(Dictionary<string, List<string>> edges)
+  [JsonConstructor]
+  public Topology(Dictionary<string, List<string>> neighbors)
   {
-    _neighbors = edges;
-    NEdges = _neighbors.Sum(p => p.Value.Count);
-    Nodes = _neighbors.Keys.ToArray();
+    Neighbors = neighbors;
+    NEdges = Neighbors.Sum(p => p.Value.Count);
+    Nodes = Neighbors.Keys.ToArray();
   }
 
   public string this[uint id] => Nodes[id];
@@ -40,7 +44,7 @@ public class Topology
   /// <summary>
   ///     Return the predecessors of a given node.
   /// </summary>
-  public List<string> this[string node] => _neighbors[node];
+  public List<string> this[string node] => Neighbors[node];
 
   /// <summary>
   /// Return true if the topology contains the given node.
@@ -49,18 +53,7 @@ public class Topology
   /// <returns>True if the node is present, false otherwise.</returns>
   public bool HasNode(string node)
   {
-    return _neighbors.ContainsKey(node);
-  }
-
-  /// <summary>
-  ///     Return a new Topology generated from the given JSON string
-  ///     representing an adjacency list.
-  /// </summary>
-  /// <param name="json">A string in JSON format representing an adjacency list.</param>
-  /// <returns></returns>
-  public static Topology FromJson(string json)
-  {
-    return new Topology(JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json));
+    return Neighbors.ContainsKey(node);
   }
 
   /// <summary>
@@ -82,7 +75,7 @@ public class Topology
 
   public Dictionary<(string, string), T> ForAllEdges<T>(Func<(string, string), T> edgeFunc)
   {
-    var edges = _neighbors
+    var edges = Neighbors
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr))
       .Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
     return new Dictionary<(string, string), T>(edges);
@@ -90,7 +83,7 @@ public class Topology
 
   public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (string, string), TAcc> f)
   {
-    var edges = _neighbors
+    var edges = Neighbors
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr));
     return edges.Aggregate(initial, f);
   }

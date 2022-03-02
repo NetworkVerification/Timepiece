@@ -17,12 +17,12 @@ public class Var : Expr
     throw new NotImplementedException();
   }
 
-  public override Zen<bool> Evaluate(State state)
+  public override Func<dynamic, dynamic> Evaluate(State state)
   {
     if (!state.ContainsVar(Name))
     {
       throw new ArgumentOutOfRangeException($"Variable {Name} unbound in the given state.");
     }
-    return state[Name];
+    return (Func<dynamic, dynamic>) state[Name];
   }
 }
