@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Gardener;
 
-public abstract class Expr
+public abstract class Expr<T>
 {
-  public abstract Zen<T> ToZen<T>();
+  public abstract Zen<T> ToZen();
 
-  public abstract Func<dynamic, dynamic> Evaluate(State state);
+  public abstract Func<Zen<TInput>, Zen<T>> Evaluate<TInput>(State state);
 }

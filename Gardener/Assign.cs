@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Gardener;
 
-public class Assign : Statement
+public class Assign<T> : Statement
 {
-  public Assign(string var, Expr expr)
+  public Assign(string var, Expr<T> expr)
   {
     Var = var;
     Expr = expr;
@@ -13,7 +13,7 @@ public class Assign : Statement
   /// <summary>
   /// Right-hand side of the assignment.
   /// </summary>
-  public Expr Expr { get; set; }
+  public Expr<T> Expr { get; set; }
 
   /// <summary>
   /// The variable to assign.
@@ -22,12 +22,7 @@ public class Assign : Statement
 
   public override State Evaluate(State state)
   {
-    state.Add(Var, Expr.Evaluate(state));
+    state.Add(Var, Expr.Evaluate<T>(state));
     return state;
-  }
-
-  public override Func<Zen<dynamic>, Zen<dynamic>> ToZen()
-  {
-    throw new NotImplementedException();
   }
 }

@@ -13,16 +13,11 @@ if (args.Length == 0)
 var options = new JsonSerializerOptions
 {
   PropertyNameCaseInsensitive = true,
-  Converters =
-  {
-    new EdgesJsonConverter()
-  }
 };
 var json = File.ReadAllText(args[0]);
 Console.WriteLine($"Input JSON: {json}");
-var ast = JsonSerializer.Deserialize<Ast>(json, options)!;
+var ast = JsonSerializer.Deserialize<AstAlt>(json, options)!;
 
-Console.WriteLine($"#Nodes: {ast.Topology.Nodes.Length}");
-Console.WriteLine($"#Edges: {ast.Topology.NEdges}");
+Console.WriteLine($"#Nodes: {ast.Nodes.Keys.Count}");
 Console.WriteLine(JsonSerializer.Serialize(ast));
 // Profile.RunCmp(ast.ToNetwork<dynamic, dynamic>());

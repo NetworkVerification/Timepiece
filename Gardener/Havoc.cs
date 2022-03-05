@@ -2,14 +2,14 @@ using ZenLib;
 
 namespace Gardener;
 
-public class Havoc : Expr
+public class Havoc : Expr<bool>
 {
-  public override Zen<T> ToZen<T>()
+  public override Zen<bool> ToZen()
   {
-    throw new NotImplementedException();
+    return Zen.Symbolic<bool>();
   }
 
-  public override Func<dynamic, Zen<bool>> Evaluate(State state)
+  public override Func<Zen<TInput>, Zen<bool>> Evaluate<TInput>(State state)
   {
     return _ => Zen.Symbolic<bool>();
   }

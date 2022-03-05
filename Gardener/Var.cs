@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Gardener;
 
-public class Var : Expr
+public class Var<T> : Expr<T>
 {
   public string Name { get; set; }
 
@@ -12,17 +12,17 @@ public class Var : Expr
   }
 
 
-  public override Zen<T> ToZen<T>()
+  public override Zen<T> ToZen()
   {
     throw new NotImplementedException();
   }
 
-  public override Func<dynamic, dynamic> Evaluate(State state)
+  public override Func<Zen<TInput>, Zen<T>> Evaluate<TInput>(State state)
   {
     if (!state.ContainsVar(Name))
     {
       throw new ArgumentOutOfRangeException($"Variable {Name} unbound in the given state.");
     }
-    return (Func<dynamic, dynamic>) state[Name];
+    return (Func<Zen<TInput>, Zen<T>>) state[Name];
   }
 }
