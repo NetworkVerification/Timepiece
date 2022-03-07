@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Text.Json;
+using Newtonsoft.Json;
 using Gardener;
 using Karesansui;
 
@@ -10,14 +10,20 @@ if (args.Length == 0)
   return;
 }
 
-var options = new JsonSerializerOptions
+
+var serializer = new JsonSerializer
 {
-  PropertyNameCaseInsensitive = true,
+  TypeNameHandling = TypeNameHandling.All
 };
-var json = File.ReadAllText(args[0]);
+var testFunc = new AstFunc<BatfishBgpRoute, BatfishBgpRoute>("x", new Return<BatfishBgpRoute>(new Var<BatfishBgpRoute>("x")));
+var writer = new StringWriter();
+serializer.Serialize(writer, testFunc);
+Console.WriteLine($"Test func serialization: {writer}");
+var json = new JsonTextReader(new StreamReader(args[0]));
 Console.WriteLine($"Input JSON: {json}");
-var ast = JsonSerializer.Deserialize<Ast>(json, options)!;
+var ast = serializer.Deserialize<Ast>(json);
+json.Close();
 
 Console.WriteLine($"#Nodes: {ast.Nodes.Keys.Count}");
-Console.WriteLine(JsonSerializer.Serialize(ast));
+Console.WriteLine(JsonConvert.SerializeObject(ast));
 // Profile.RunCmp(ast.ToNetwork<dynamic, dynamic>());

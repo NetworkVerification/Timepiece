@@ -7,7 +7,7 @@
             {
               "arg": "x",
               "body": {
-                "stmt": "return",
+                "$type": "return",
                 "expr": {
                   "expr": "Var",
                   "name": "x"
@@ -19,7 +19,7 @@
             {
               "arg": "x",
               "body": {
-                "stmt": "return",
+                "$type": "return",
                 "expr": {
                   "expr": "Var",
                   "name": "x"
