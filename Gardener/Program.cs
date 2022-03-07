@@ -16,7 +16,7 @@ var options = new JsonSerializerOptions
 };
 var json = File.ReadAllText(args[0]);
 Console.WriteLine($"Input JSON: {json}");
-var ast = JsonSerializer.Deserialize<AstAlt>(json, options)!;
+var ast = JsonSerializer.Deserialize<Ast>(json, options)!;
 
 Console.WriteLine($"#Nodes: {ast.Nodes.Keys.Count}");
 Console.WriteLine(JsonSerializer.Serialize(ast));

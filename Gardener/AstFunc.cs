@@ -18,22 +18,20 @@ public class AstFunc<TArg, TResult>
   /// <summary>
   /// The body of the function.
   /// </summary>
-  public List<Statement> Body { get; set; }
-
-  public Expr<TResult> Return { get; set; }
+  public Statement<TResult> Body { get; set; }
 
   [JsonConstructor]
-  public AstFunc(string arg, List<Statement> body, Expr<TResult> returnExpr)
+  public AstFunc(string arg, Statement<TResult> body)
   {
     Arg = arg;
     Body = body;
-    Return = returnExpr;
   }
 
   public static AstFunc<T, T> Identity<T>()
   {
-    return new AstFunc<T, T>("x", new List<Statement>(), new Var<T>("x"));
+    return new AstFunc<T, T>("x", new Return<T>(new Var<T>("x")));
   }
+
 
   /// <summary>
   /// Return an AstFunc which is the equivalent of calling this function
@@ -44,8 +42,9 @@ public class AstFunc<TArg, TResult>
   /// <returns>A new AstFunc composing the behavior of the original two.</returns>
   public AstFunc<TArg, TResult2> Compose<TResult2>(AstFunc<TResult, TResult2> that)
   {
-    var assignResult = new Assign<TResult>(that.Arg, Return);
-    return new AstFunc<TArg, TResult2>(Arg, Body.Concat(that.Body.Prepend(assignResult)).ToList(), that.Return);
+    // bind the result of this body to that argument
+    var bound = Body.Bind(that.Arg);
+    return new AstFunc<TArg, TResult2>(Arg, new Seq<TResult2>(bound, that.Body));
   }
 
   /// <summary>
@@ -63,8 +62,8 @@ public class AstFunc<TArg, TResult>
   public Func<Zen<TArg>, Zen<TResult>> Evaluate(State state)
   {
     state.Add<TArg>(Arg, t => t);
-    var finalState = Body.Aggregate(state, (s, stmt) => stmt.Evaluate(s));
-    return Return.Evaluate<TArg>(finalState);
-    // return finalState.Return as Func<Zen<TArg>, Zen<TResult>> ?? throw new InvalidOperationException("No value returned by function.");
+    var finalState = Body.Evaluate(state);
+    return finalState.Return as Func<Zen<TArg>, Zen<TResult>> ??
+           throw new InvalidOperationException("No value returned by function.");
   }
 }

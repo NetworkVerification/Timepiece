@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ZenLib;
 
 namespace Gardener;
@@ -13,6 +14,7 @@ public record struct BatfishBgpRoute
     OriginType = new Int2(0);
   }
 
+  [JsonConstructor]
   public BatfishBgpRoute(int adminDist, int lp, int asPathLength, int med, Int2 originType)
   {
     AdminDist = adminDist;

@@ -8,53 +8,79 @@ namespace Gardener;
 
 public class Ast
 {
-  public Topology Topology { get; set; }
+  public Dictionary<string, NodeProperties<BatfishBgpRoute>> Nodes { get; set; }
 
-  [JsonPropertyName("transfer")]
-  public Dictionary<(string, string), AstFunc<BatfishBgpRoute, BatfishBgpRoute>> TransferFunction { get; set; }
-
-  [JsonPropertyName("init")]
-  public Dictionary<string, Statement> InitFunction { get; set; }
-
-  [JsonPropertyName("declarations")]
   public Dictionary<string, AstFunc<object, object>> Declarations { get; set; }
 
   // TODO: use symbolics
   public List<(string, Expr<bool>)> Symbolics { get; set; }
 
   [JsonConstructor]
-  public Ast(Topology topology, Dictionary<(string, string), AstFunc<BatfishBgpRoute, BatfishBgpRoute>> transferFunction,
-    Dictionary<string, Statement> initFunction, Dictionary<string, AstFunc<object, object>> declarations, List<(string, Expr<bool>)> symbolics)
+  public Ast(Dictionary<string, NodeProperties<BatfishBgpRoute>> nodes,
+    Dictionary<string, AstFunc<object, object>> declarations, List<(string, Expr<bool>)> symbolics)
   {
-    Topology = topology;
-    TransferFunction = transferFunction;
-    InitFunction = initFunction;
+    Nodes = nodes;
     Declarations = declarations;
     Symbolics = symbolics;
   }
 
   public Network<BatfishBgpRoute, TS> ToNetwork<TS>()
   {
-    var transfer = new Dictionary<(string, string), Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>>();
-    foreach (var (edge, astFunc) in TransferFunction)
+    var edges = new Dictionary<string, List<string>>();
+    var transferAstFuncs =
+      new Dictionary<(string, string), (AstFunc<BatfishBgpRoute, BatfishBgpRoute>,
+        AstFunc<BatfishBgpRoute, BatfishBgpRoute>)>();
+    // TODO: assign a route for each node
+    var initFunction = new Dictionary<string, Zen<BatfishBgpRoute>>();
+    foreach (var (node, props) in Nodes)
     {
-      transfer.Add(edge, astFunc.Evaluate(new State()));
+      if (!edges.ContainsKey(node))
+      {
+        edges.Add(node, new List<string>());
+      }
+
+      foreach (var (neighbor, policies) in props.Policies)
+      {
+        edges[node].Add(neighbor);
+        var fwdEdge = (node, neighbor);
+        var bwdEdge = (neighbor, node);
+        var export = AstFunc<BatfishBgpRoute, BatfishBgpRoute>.Compose(policies.Export);
+        var import = AstFunc<BatfishBgpRoute, BatfishBgpRoute>.Compose(policies.Import);
+        // set the policies if they are missing
+        if (transferAstFuncs.TryGetValue(fwdEdge, out var policy))
+        {
+          transferAstFuncs[fwdEdge] = (export, policy.Item2);
+        }
+
+        if (transferAstFuncs.TryGetValue(bwdEdge, out policy))
+        {
+          transferAstFuncs[bwdEdge] = (policy.Item1, import);
+        }
+      }
     }
 
-    var init = new Dictionary<string, Zen<BatfishBgpRoute>>();
-    foreach (var (node, stmt) in InitFunction)
+    var transferFunction = new Dictionary<(string, string), Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>>();
+    foreach (var (edge, (export, import)) in transferAstFuncs)
     {
-      var returned = stmt.Evaluate(new State()).Return;
-      if (returned is null)
-      {
-        throw new ArgumentException($"No value returned by initialFunction for node {node}");
-      }
-      init.Add(node, (Zen<BatfishBgpRoute>) returned);
+      // compose the export and import and evaluate on a fresh state
+      transferFunction.Add(edge, export.Compose(import).Evaluate(new State()));
     }
-    return new Network<BatfishBgpRoute, TS>(Topology,
-      transfer,
+
+    var topology = new Topology(edges);
+
+    // foreach (var (node, stmt) in InitFunction)
+    // {
+    // var returned = stmt.Evaluate(new State()).Return;
+    // if (returned is null)
+    // {
+    // throw new ArgumentException($"No value returned by initialFunction for node {node}");
+    // }
+    // init.Add(node, (Zen<BatfishBgpRoute>) returned);
+    // }
+    return new Network<BatfishBgpRoute, TS>(topology,
+      transferFunction,
       BatfishBgpRouteExtensions.Min,
-      init,
+      initFunction,
       new Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<BigInteger>, Zen<bool>>>(),
       new Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<BigInteger>, Zen<bool>>>(),
       new Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<bool>>>(), Array.Empty<SymbolicValue<TS>>());

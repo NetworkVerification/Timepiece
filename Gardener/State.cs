@@ -32,6 +32,12 @@ public class State
     private set => Variables[var] = value;
   }
 
+  /// <summary>
+  /// Bind the given variable in the state to the given function.
+  /// </summary>
+  /// <param name="var">The name of the variable.</param>
+  /// <param name="val">Its unary function to be bound to.</param>
+  /// <typeparam name="T">The type of the function's argument and return type.</typeparam>
   public void Add<T>(string var, Func<T, T> val)
   {
     Variables.Add(var, val);

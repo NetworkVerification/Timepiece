@@ -1,41 +1,60 @@
 {
-  "topology": {
-    "edges": {
-      "0": [
-        "1"
-      ],
-      "1": [
-        "0",
-        "2"
-      ],
-      "2": [
-        "1"
-      ]
+  "nodes": {
+    "0": {
+      "policies": {
+        "1": {
+          "export": [
+            {
+              "arg": "x",
+              "body": {
+                "stmt": "return",
+                "expr": {
+                  "expr": "Var",
+                  "name": "x"
+                }
+              }
+            }
+          ],
+          "import": [
+            {
+              "arg": "x",
+              "body": {
+                "stmt": "return",
+                "expr": {
+                  "expr": "Var",
+                  "name": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "prefixes": []
+    },
+    "1": {
+      "policies": {
+        "0": {
+          "import": {},
+          "export": {}
+        },
+        "2": {
+          "import": {},
+          "export": {}
+        }
+      },
+      "prefixes": []
+    },
+    "2": {
+      "policies": {
+        "1": {
+          "import": {},
+          "export": {}
+        }
+      },
+      "prefixes": []
     }
   },
-  "transfer": {
-    "0,1": {
-      "args": ["x"],
-      "body": {},
-      "return": {
-        "expr": "Var",
-        "name": "x"
-      }
-    },
-    "1,0": {},
-    "1,2": {},
-    "2,1": {}
-  },
-  "merge": {
-    "args": ["x", "y"],
-    "body": {}
-  },
-  "init": {
-    "0": {},
-    "1": {},
-    "2": {}
-  },
   "declarations": {
-
-  }
+  },
+  "symbolics": []
 }

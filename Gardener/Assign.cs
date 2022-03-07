@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Gardener;
 
-public class Assign<T> : Statement
+public class Assign<T> : Statement<Unit>
 {
   public Assign(string var, Expr<T> expr)
   {
@@ -24,5 +24,10 @@ public class Assign<T> : Statement
   {
     state.Add(Var, Expr.Evaluate<T>(state));
     return state;
+  }
+
+  public override Statement<Unit> Bind(string var)
+  {
+    return this;
   }
 }
