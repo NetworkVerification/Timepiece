@@ -13,7 +13,8 @@ if (args.Length == 0)
 
 var serializer = new JsonSerializer
 {
-  TypeNameHandling = TypeNameHandling.All
+  TypeNameHandling = TypeNameHandling.All,
+  SerializationBinder = new AstBinder()
 };
 var testFunc = new AstFunc<BatfishBgpRoute, BatfishBgpRoute>("x", new Return<BatfishBgpRoute>(new Var<BatfishBgpRoute>("x")));
 var writer = new StringWriter();
@@ -26,4 +27,4 @@ json.Close();
 
 Console.WriteLine($"#Nodes: {ast.Nodes.Keys.Count}");
 Console.WriteLine(JsonConvert.SerializeObject(ast));
-// Profile.RunCmp(ast.ToNetwork<dynamic, dynamic>());
+Profile.RunCmp(ast.ToNetwork<BatfishBgpRoute>());

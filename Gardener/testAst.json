@@ -9,7 +9,7 @@
               "body": {
                 "$type": "return",
                 "expr": {
-                  "expr": "Var",
+                  "$type": "var",
                   "name": "x"
                 }
               }
@@ -21,7 +21,7 @@
               "body": {
                 "$type": "return",
                 "expr": {
-                  "expr": "Var",
+                  "$type": "var",
                   "name": "x"
                 }
               }
@@ -34,12 +34,12 @@
     "1": {
       "policies": {
         "0": {
-          "import": {},
-          "export": {}
+          "import": [],
+          "export": []
         },
         "2": {
-          "import": {},
-          "export": {}
+          "import": [],
+          "export": []
         }
       },
       "prefixes": []
@@ -47,14 +47,15 @@
     "2": {
       "policies": {
         "1": {
-          "import": {},
-          "export": {}
+          "import": [],
+          "export": []
         }
       },
       "prefixes": []
     }
   },
-  "declarations": {
-  },
-  "symbolics": []
+  "declarations": {},
+  "constants": {},
+  "symbolics": {},
+  "assertions": {}
 }

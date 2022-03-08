@@ -8,20 +8,41 @@ namespace Gardener;
 
 public class Ast
 {
+  /// <summary>
+  /// The nodes of the network with their associated policies.
+  /// </summary>
   public Dictionary<string, NodeProperties<BatfishBgpRoute>> Nodes { get; set; }
 
+  /// <summary>
+  /// Additional function declarations.
+  /// </summary>
   public Dictionary<string, AstFunc<object, object>> Declarations { get; set; }
 
-  // TODO: use symbolics
-  public List<(string, Expr<bool>)> Symbolics { get; set; }
+  /// <summary>
+  /// Additional constant declarations.
+  /// </summary>
+  public Dictionary<string, Expr<object>> Constants { get; set; }
+
+  /// <summary>
+  /// Symbolic expressions.
+  /// </summary>
+  public Dictionary<string, Expr<bool>> Symbolics { get; set; }
+
+  /// <summary>
+  /// Assertions over nodes.
+  /// </summary>
+  public Dictionary<string, Statement<object>> Assertions { get; set; }
 
   [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<BatfishBgpRoute>> nodes,
-    Dictionary<string, AstFunc<object, object>> declarations, List<(string, Expr<bool>)> symbolics)
+    Dictionary<string, AstFunc<object, object>> declarations, Dictionary<string, Expr<bool>> symbolics,
+    Dictionary<string, Expr<object>> constants, Dictionary<string, Statement<object>> assertions)
   {
     Nodes = nodes;
     Declarations = declarations;
     Symbolics = symbolics;
+    Constants = constants;
+    Assertions = assertions;
   }
 
   public Network<BatfishBgpRoute, TS> ToNetwork<TS>()
@@ -77,6 +98,7 @@ public class Ast
     // }
     // init.Add(node, (Zen<BatfishBgpRoute>) returned);
     // }
+    // TODO: set properties, symbolics and annotations
     return new Network<BatfishBgpRoute, TS>(topology,
       transferFunction,
       BatfishBgpRouteExtensions.Min,
