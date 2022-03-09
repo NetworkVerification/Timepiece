@@ -10,15 +10,15 @@ public class AstBinder : ISerializationBinder
   {
     AliasToType = new Dictionary<string, Type>
     {
-      { "return", typeof(Return<BatfishBgpRoute>) },
-      { "assign", typeof(Assign<>) },
-      { "seq", typeof(Seq<>) },
-      { "if", typeof(IfThenElse<>) },
-      { "var", typeof(Var<BatfishBgpRoute>) },
-      { "and", typeof(And) },
-      { "havoc", typeof(Havoc)},
-      { "plus", typeof(Plus<int, ZenLib.Signed>)},
-      { "int", typeof(IntExpr<int,ZenLib.Signed>)}
+      { "ReturnStatement", typeof(Return<object>) },
+      { "AssignStatement", typeof(Assign<object>) },
+      { "SeqStatement", typeof(Seq<object>) },
+      { "IfStatement", typeof(IfThenElse<object>) },
+      { "Var", typeof(Var<>) },
+      { "And", typeof(And) },
+      { "Havoc", typeof(Havoc)},
+      { "Plus", typeof(Plus<int, ZenLib.Signed>)},
+      { "Int", typeof(IntExpr<int,ZenLib.Signed>)}
     };
   }
   public Type BindToType(string? assemblyName, string typeName)

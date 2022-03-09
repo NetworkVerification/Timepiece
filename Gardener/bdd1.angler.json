@@ -1,0 +1,942 @@
+{
+  "consts": {},
+  "declarations": {
+    "TEST_ADD1": {
+      "arg": "route",
+      "body": {
+        "$type": "ReturnStatement",
+        "return_value": {
+          "$type": "Pair",
+          "first": {
+            "$type": "LiteralTrue"
+          },
+          "second": {
+            "$type": "Var",
+            "name": "route"
+          }
+        }
+      }
+    },
+    "TEST_ADD2": {
+      "arg": "route",
+      "body": {
+        "$type": "ReturnStatement",
+        "return_value": {
+          "$type": "Pair",
+          "first": {
+            "$type": "LiteralTrue"
+          },
+          "second": {
+            "$type": "Var",
+            "name": "route"
+          }
+        }
+      }
+    },
+    "TEST_ADD3": {
+      "arg": "route",
+      "body": {
+        "$type": "ReturnStatement",
+        "return_value": {
+          "$type": "Pair",
+          "first": {
+            "$type": "LiteralTrue"
+          },
+          "second": {
+            "$type": "Var",
+            "name": "route"
+          }
+        }
+      }
+    },
+    "TEST_ADD_REMOVE1": {
+      "arg": "route",
+      "body": {
+        "$type": "SeqStatement",
+        "first": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "metric",
+              "fieldVal": {
+                "$type": "LiteralInt",
+                "value": 50
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "second": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "communities",
+              "fieldVal": {
+                "$type": "SetRemove",
+                "expr": {
+                  "$type": "Var",
+                  "name": "list1"
+                },
+                "set": {
+                  "$type": "GetField",
+                  "fieldName": "communities",
+                  "record": {
+                    "$type": "Var",
+                    "name": "route"
+                  }
+                }
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        },
+        "second": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_ADD_REMOVE2": {
+      "arg": "route",
+      "body": {
+        "$type": "SeqStatement",
+        "first": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "SeqStatement",
+            "first": {
+              "$type": "AssignStatement",
+              "lhs": {
+                "$type": "Var",
+                "name": "route"
+              },
+              "rhs": {
+                "$type": "WithField",
+                "fieldName": "communities",
+                "fieldVal": {
+                  "$type": "SetUnion",
+                  "sets": [
+                    {
+                      "$type": "GetField",
+                      "fieldName": "communities",
+                      "record": {
+                        "$type": "Var",
+                        "name": "route"
+                      }
+                    },
+                    {
+                      "$type": "SetAdd",
+                      "expr": {
+                        "$type": "LiteralString",
+                        "value": "1:2"
+                      },
+                      "set": {
+                        "$type": "EmptySet"
+                      }
+                    }
+                  ]
+                },
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              }
+            },
+            "second": {
+              "$type": "AssignStatement",
+              "lhs": {
+                "$type": "Var",
+                "name": "route"
+              },
+              "rhs": {
+                "$type": "WithField",
+                "fieldName": "communities",
+                "fieldVal": {
+                  "$type": "SetRemove",
+                  "expr": {
+                    "$type": "Var",
+                    "name": "list1"
+                  },
+                  "set": {
+                    "$type": "GetField",
+                    "fieldName": "communities",
+                    "record": {
+                      "$type": "Var",
+                      "name": "route"
+                    }
+                  }
+                },
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              }
+            }
+          },
+          "second": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "metric",
+              "fieldVal": {
+                "$type": "LiteralInt",
+                "value": 50
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        },
+        "second": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_COMMUTATIVE1": {
+      "arg": "route",
+      "body": {
+        "$type": "SeqStatement",
+        "first": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "metric",
+              "fieldVal": {
+                "$type": "LiteralInt",
+                "value": 50
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "second": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "communities",
+              "fieldVal": {
+                "$type": "SetUnion",
+                "sets": [
+                  {
+                    "$type": "GetField",
+                    "fieldName": "communities",
+                    "record": {
+                      "$type": "Var",
+                      "name": "route"
+                    }
+                  },
+                  {
+                    "$type": "SetAdd",
+                    "expr": {
+                      "$type": "LiteralString",
+                      "value": "1:2"
+                    },
+                    "set": {
+                      "$type": "EmptySet"
+                    }
+                  }
+                ]
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        },
+        "second": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_COMMUTATIVE2": {
+      "arg": "route",
+      "body": {
+        "$type": "SeqStatement",
+        "first": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "communities",
+              "fieldVal": {
+                "$type": "SetUnion",
+                "sets": [
+                  {
+                    "$type": "GetField",
+                    "fieldName": "communities",
+                    "record": {
+                      "$type": "Var",
+                      "name": "route"
+                    }
+                  },
+                  {
+                    "$type": "SetAdd",
+                    "expr": {
+                      "$type": "LiteralString",
+                      "value": "1:2"
+                    },
+                    "set": {
+                      "$type": "EmptySet"
+                    }
+                  }
+                ]
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "second": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "metric",
+              "fieldVal": {
+                "$type": "LiteralInt",
+                "value": 50
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        },
+        "second": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_MATCH_COMM1": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_MATCH_COMM1~10~",
+        "falseStatements": {
+          "$type": "IfStatement",
+          "comment": "~RMCLAUSE~TEST_MATCH_COMM1~20~",
+          "falseStatements": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "GetField",
+                "fieldName": "LocalDefaultAction",
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "guard": {
+            "$type": "SetContains",
+            "search": {
+              "$type": "Var",
+              "name": "list3"
+            },
+            "set": {
+              "$type": "GetField",
+              "fieldName": "communities",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "trueStatements": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "LiteralTrue"
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        },
+        "guard": {
+          "$type": "SetContains",
+          "search": {
+            "$type": "Var",
+            "name": "list2"
+          },
+          "set": {
+            "$type": "GetField",
+            "fieldName": "communities",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "trueStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_MATCH_COMM2": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_MATCH_COMM2~10~",
+        "falseStatements": {
+          "$type": "IfStatement",
+          "comment": "~RMCLAUSE~TEST_MATCH_COMM2~20~",
+          "falseStatements": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "GetField",
+                "fieldName": "LocalDefaultAction",
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "guard": {
+            "$type": "SetContains",
+            "search": {
+              "$type": "Var",
+              "name": "list2"
+            },
+            "set": {
+              "$type": "GetField",
+              "fieldName": "communities",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "trueStatements": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "LiteralTrue"
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        },
+        "guard": {
+          "$type": "SetContains",
+          "search": {
+            "$type": "Var",
+            "name": "list3"
+          },
+          "set": {
+            "$type": "GetField",
+            "fieldName": "communities",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "trueStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_MATCH_IP1": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_MATCH_IP1~10~",
+        "falseStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "GetField",
+              "fieldName": "LocalDefaultAction",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "guard": {
+          "$type": "PrefixContains",
+          "addr": {
+            "$type": "GetField",
+            "fieldName": "prefix",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          },
+          "prefix": {
+            "$type": "Var",
+            "name": "101"
+          }
+        },
+        "trueStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_MATCH_IP2": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_MATCH_IP2~10~",
+        "falseStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "GetField",
+              "fieldName": "LocalDefaultAction",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "guard": {
+          "$type": "PrefixContains",
+          "addr": {
+            "$type": "GetField",
+            "fieldName": "prefix",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          },
+          "prefix": {
+            "$type": "Var",
+            "name": "102"
+          }
+        },
+        "trueStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "LiteralTrue"
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        }
+      }
+    },
+    "TEST_PFX_LENGTH": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_PFX_LENGTH~10~",
+        "falseStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "GetField",
+              "fieldName": "LocalDefaultAction",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "guard": {
+          "$type": "PrefixContains",
+          "addr": {
+            "$type": "GetField",
+            "fieldName": "prefix",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          },
+          "prefix": {
+            "$type": "Var",
+            "name": "FOO2"
+          }
+        },
+        "trueStatements": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "SeqStatement",
+            "first": {
+              "$type": "AssignStatement",
+              "lhs": {
+                "$type": "Var",
+                "name": "route"
+              },
+              "rhs": {
+                "$type": "WithField",
+                "fieldName": "lp",
+                "fieldVal": {
+                  "$type": "LiteralInt",
+                  "value": 2
+                },
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              }
+            },
+            "second": {
+              "$type": "AssignStatement",
+              "lhs": {
+                "$type": "Var",
+                "name": "route"
+              },
+              "rhs": {
+                "$type": "WithField",
+                "fieldName": "lp",
+                "fieldVal": {
+                  "$type": "LiteralInt",
+                  "value": 1
+                },
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              }
+            }
+          },
+          "second": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "LiteralTrue"
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        }
+      }
+    },
+    "TEST_UPDATE": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_UPDATE~10~",
+        "falseStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "GetField",
+              "fieldName": "LocalDefaultAction",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "guard": {
+          "$type": "PrefixContains",
+          "addr": {
+            "$type": "GetField",
+            "fieldName": "prefix",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          },
+          "prefix": {
+            "$type": "Var",
+            "name": "FOO"
+          }
+        },
+        "trueStatements": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "AssignStatement",
+            "lhs": {
+              "$type": "Var",
+              "name": "route"
+            },
+            "rhs": {
+              "$type": "WithField",
+              "fieldName": "lp",
+              "fieldVal": {
+                "$type": "LiteralInt",
+                "value": 1
+              },
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          },
+          "second": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "LiteralTrue"
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        }
+      }
+    },
+    "TEST_UPDATE_IDEM": {
+      "arg": "route",
+      "body": {
+        "$type": "IfStatement",
+        "comment": "~RMCLAUSE~TEST_UPDATE_IDEM~10~",
+        "falseStatements": {
+          "$type": "ReturnStatement",
+          "return_value": {
+            "$type": "Pair",
+            "first": {
+              "$type": "GetField",
+              "fieldName": "LocalDefaultAction",
+              "record": {
+                "$type": "Var",
+                "name": "route"
+              }
+            },
+            "second": {
+              "$type": "Var",
+              "name": "route"
+            }
+          }
+        },
+        "guard": {
+          "$type": "PrefixContains",
+          "addr": {
+            "$type": "GetField",
+            "fieldName": "prefix",
+            "record": {
+              "$type": "Var",
+              "name": "route"
+            }
+          },
+          "prefix": {
+            "$type": "Var",
+            "name": "FOO"
+          }
+        },
+        "trueStatements": {
+          "$type": "SeqStatement",
+          "first": {
+            "$type": "SeqStatement",
+            "first": {
+              "$type": "AssignStatement",
+              "lhs": {
+                "$type": "Var",
+                "name": "route"
+              },
+              "rhs": {
+                "$type": "WithField",
+                "fieldName": "lp",
+                "fieldVal": {
+                  "$type": "LiteralInt",
+                  "value": 2
+                },
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              }
+            },
+            "second": {
+              "$type": "AssignStatement",
+              "lhs": {
+                "$type": "Var",
+                "name": "route"
+              },
+              "rhs": {
+                "$type": "WithField",
+                "fieldName": "lp",
+                "fieldVal": {
+                  "$type": "LiteralInt",
+                  "value": 1
+                },
+                "record": {
+                  "$type": "Var",
+                  "name": "route"
+                }
+              }
+            }
+          },
+          "second": {
+            "$type": "ReturnStatement",
+            "return_value": {
+              "$type": "Pair",
+              "first": {
+                "$type": "LiteralTrue"
+              },
+              "second": {
+                "$type": "Var",
+                "name": "route"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "nodes": {},
+  "route": {},
+  "symbolics": {}
+}
