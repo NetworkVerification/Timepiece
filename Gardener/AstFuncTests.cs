@@ -7,6 +7,8 @@ public static class AstFuncTests
 {
   public static void Tests()
   {
+    // var one = new IntExpr<int, Signed, BatfishBgpRoute>(new ZenLib.Int32(0));
+    // var two = new Plus<int, Signed, BatfishBgpRoute>(one, one);
     var rVar = new Var<BatfishBgpRoute>("route");
     var increment = new WithField<BatfishBgpRoute, IntN<int, Signed>, BatfishBgpRoute>(
       rVar, "AsPathLength",
