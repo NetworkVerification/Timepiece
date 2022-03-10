@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Gardener;
 
-public abstract class Statement<T>
+public abstract class Statement<T, TState>
 {
-  public abstract State Evaluate(State state);
+  public abstract State<TState> Evaluate(State<TState> state);
 
   /// <summary>
   /// Convert the statement to an assignment to a given variable.
@@ -13,5 +13,5 @@ public abstract class Statement<T>
   /// </summary>
   /// <param name="var">The name of the variable to bind.</param>
   /// <returns>A new statement assigning the result </returns>
-  public abstract Statement<Unit> Bind(string var);
+  public abstract Statement<Unit, TState> Bind(string var);
 }

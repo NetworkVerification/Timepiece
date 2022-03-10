@@ -2,23 +2,19 @@ using ZenLib;
 
 namespace Gardener;
 
-public class And : Expr<bool>
+public class And<TState> : Expr<bool, TState>
 {
-  private readonly Expr<bool> _e1;
-  private readonly Expr<bool> _e2;
+  private readonly Expr<bool, TState> _e1;
+  private readonly Expr<bool, TState> _e2;
 
-  public And(Expr<bool> e1, Expr<bool> e2)
+  public And(Expr<bool, TState> e1, Expr<bool, TState> e2)
   {
     _e1 = e1;
     _e2 = e2;
   }
-  public override Zen<bool> ToZen()
-  {
-    return Zen.And(_e1.ToZen(), _e2.ToZen());
-  }
 
-  public override Func<Zen<TInput>, Zen<bool>> Evaluate<TInput>(State state)
+  public override Func<Zen<TState>, Zen<bool>> Evaluate(State<TState> state)
   {
-    return t => Zen.And(_e1.Evaluate<TInput>(state)(t), _e2.Evaluate<TInput>(state)(t));
+    return t => Zen.And(_e1.Evaluate(state)(t), _e2.Evaluate(state)(t));
   }
 }

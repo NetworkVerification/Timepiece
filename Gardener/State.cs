@@ -3,21 +3,29 @@ using ZenLib;
 
 namespace Gardener;
 
-public class State
+public class State<T>
 {
   /// <summary>
   /// A mapping from variable names to values.
   /// </summary>
-  private Dictionary<string, object> Variables { get; }
+  private Dictionary<string, Func<Zen<T>, Zen<T>>> Variables { get; }
 
-  public object? Return { get; set; }
+  public Func<Zen<T>, Zen<T>>? Return { get; set; }
+
+  public bool Debug { get; }
 
   /// <summary>
   /// Return a new state with no bindings.
   /// </summary>
   public State()
   {
-    Variables = new Dictionary<string, object>();
+    Variables = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
+  }
+
+  public State(bool debug)
+  {
+    Variables = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
+    Debug = debug;
   }
 
 
@@ -26,7 +34,7 @@ public class State
     return Variables.ContainsKey(var);
   }
 
-  public object this[string var]
+  public Func<Zen<T>, Zen<T>> this[string var]
   {
     get => Variables[var];
     private set => Variables[var] = value;
@@ -38,9 +46,13 @@ public class State
   /// <param name="var">The name of the variable.</param>
   /// <param name="val">Its unary function to be bound to.</param>
   /// <typeparam name="T">The type of the function's argument and return type.</typeparam>
-  public void Add<T>(string var, Func<T, T> val)
+  public void Add(string var, Func<Zen<T>, Zen<T>> val)
   {
     Variables.Add(var, val);
+    if (Debug)
+    {
+      Console.WriteLine($"Added {var} bound to {val}");
+    }
   }
 
   /// <summary>
@@ -51,25 +63,25 @@ public class State
   /// </summary>
   /// <param name="other">Another State to use.</param>
   /// <param name="guard">A boolean expression acting as the guard.</param>
-  public void Join(State other, Func<Zen<object>, Zen<bool>> guard)
+  public void Join(State<T> other, Func<Zen<T>, Zen<bool>> guard)
   {
     // make both states have the same keys
     foreach (var key in Variables.Keys.Where(key => !other.ContainsVar(key)))
     {
-      other.Add<object>(key, t => t);
+      other.Add(key, t => t);
     }
     foreach (var key in other.Variables.Keys.Where(key => !ContainsVar(key)))
     {
-      Add<object>(key, t => t);
+      Add(key, t => t);
     }
 
     foreach (var (key, value) in other.Variables)
     {
-      var trueCase = (Func<dynamic, dynamic>) this[key];
-      var falseCase = (Func<dynamic, dynamic>) value;
+      var trueCase = this[key];
+      var falseCase = value;
       if (ContainsVar(key))
       {
-        this[key] = new Func<object, dynamic>(t => Zen.If(guard(t),
+        this[key] = (t => Zen.If(guard(t),
           trueCase(t),
           falseCase(t)));
       }

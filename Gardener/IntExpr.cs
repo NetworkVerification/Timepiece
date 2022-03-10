@@ -2,22 +2,17 @@ using ZenLib;
 
 namespace Gardener;
 
-public class IntExpr<T, TSign> : Expr<IntN<T, TSign>>
+public class IntExpr<T, TSign, TState> : Expr<IntN<T, TSign>, TState>
 {
-  private int _value;
+  private readonly IntN<T, TSign> _value;
 
-  public IntExpr(int value)
+  public IntExpr(IntN<T, TSign> value)
   {
     _value = value;
   }
 
-  public override Zen<IntN<T, TSign>> ToZen()
+  public override Func<Zen<TState>, Zen<IntN<T, TSign>>> Evaluate(State<TState> state)
   {
-    throw new NotImplementedException();
-  }
-
-  public override Func<Zen<TInput>, Zen<IntN<T, TSign>>> Evaluate<TInput>(State state)
-  {
-    throw new NotImplementedException();
+    return _ => Zen.Constant(_value);
   }
 }

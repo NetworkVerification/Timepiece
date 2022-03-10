@@ -8,24 +8,25 @@ namespace Gardener;
 /// while the second may have any return type.
 /// </summary>
 /// <typeparam name="T">The second statement's return type.</typeparam>
-public class Seq<T> : Statement<T>
+/// <typeparam name="TState">The type of evaluation state for this statement.</typeparam>
+public class Seq<T, TState> : Statement<T, TState>
 {
-  public Seq(Statement<Unit> first, Statement<T> second)
+  public Seq(Statement<Unit, TState> first, Statement<T, TState> second)
   {
     First = first;
     Second = second;
   }
 
-  public Statement<Unit> First { get; set; }
-  public Statement<T> Second { get; set; }
+  public Statement<Unit, TState> First { get; set; }
+  public Statement<T, TState> Second { get; set; }
 
-  public override State Evaluate(State state)
+  public override State<TState> Evaluate(State<TState> state)
   {
     return Second.Evaluate(First.Evaluate(state));
   }
 
-  public override Statement<Unit> Bind(string var)
+  public override Statement<Unit, TState> Bind(string var)
   {
-    return new Seq<Unit>(First.Bind(var), Second.Bind(var));
+    return new Seq<Unit, TState>(First.Bind(var), Second.Bind(var));
   }
 }

@@ -2,14 +2,9 @@ using ZenLib;
 
 namespace Gardener;
 
-public class Havoc : Expr<bool>
+public class Havoc<TState> : Expr<bool, TState>
 {
-  public override Zen<bool> ToZen()
-  {
-    return Zen.Symbolic<bool>();
-  }
-
-  public override Func<Zen<TInput>, Zen<bool>> Evaluate<TInput>(State state)
+  public override Func<Zen<TState>, Zen<bool>> Evaluate(State<TState> state)
   {
     return _ => Zen.Symbolic<bool>();
   }

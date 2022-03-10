@@ -60,8 +60,8 @@ public class Ast
     var serializer = Serializer();
     var edges = new Dictionary<string, List<string>>();
     var transferAstFunctions =
-      new Dictionary<(string, string), (AstFunc<BatfishBgpRoute, BatfishBgpRoute>,
-        AstFunc<BatfishBgpRoute, BatfishBgpRoute>)>();
+      new Dictionary<(string, string), (AstFunc<BatfishBgpRoute>,
+        AstFunc<BatfishBgpRoute>)>();
     // TODO: assign a route for each node
     var initFunction = new Dictionary<string, Zen<BatfishBgpRoute>>();
     foreach (var (node, props) in Nodes)
@@ -78,11 +78,11 @@ public class Ast
         var bwdEdge = (neighbor, node);
         // get each declaration and cast it to an AstFunc from route to route
         var exportFunctions = policies.Export.Select(policyName =>
-          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute, BatfishBgpRoute>>(serializer)!);
+          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute>>(serializer)!);
         var importFunctions= policies.Import.Select(policyName =>
-          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute, BatfishBgpRoute>>(serializer)!);
-        var export = AstFuncExtensions.Compose(exportFunctions);
-        var import = AstFuncExtensions.Compose(importFunctions);
+          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute>>(serializer)!);
+        var export = AstFunc<BatfishBgpRoute>.Compose(exportFunctions);
+        var import = AstFunc<BatfishBgpRoute>.Compose(importFunctions);
         // set the policies if they are missing
         if (transferAstFunctions.TryGetValue(fwdEdge, out var policy))
         {
@@ -100,7 +100,7 @@ public class Ast
     foreach (var (edge, (export, import)) in transferAstFunctions)
     {
       // compose the export and import and evaluate on a fresh state
-      transferFunction.Add(edge, export.Compose(import).Evaluate(new State()));
+      transferFunction.Add(edge, export.Compose(import).Evaluate(new State<BatfishBgpRoute>()));
     }
 
     var topology = new Topology(edges);
