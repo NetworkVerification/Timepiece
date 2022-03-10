@@ -1,7 +1,8 @@
 using System.Numerics;
-using System.Text.Json.Serialization;
 using Karesansui;
 using Karesansui.Networks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using ZenLib;
 
 namespace Gardener;
@@ -16,27 +17,27 @@ public class Ast
   /// <summary>
   /// Additional function declarations.
   /// </summary>
-  public Dictionary<string, object> Declarations { get; set; }
+  public Dictionary<string, JObject> Declarations { get; set; }
 
   /// <summary>
   /// Additional constant declarations.
   /// </summary>
-  public Dictionary<string, object> Constants { get; set; }
+  public Dictionary<string, JObject> Constants { get; set; }
 
   /// <summary>
   /// Symbolic expressions.
   /// </summary>
-  public Dictionary<string, object> Symbolics { get; set; }
+  public Dictionary<string, JObject> Symbolics { get; set; }
 
   /// <summary>
   /// Assertions over nodes.
   /// </summary>
-  public Dictionary<string, object> Assertions { get; set; }
+  public Dictionary<string, JObject> Assertions { get; set; }
 
-  [JsonConstructor]
+  [System.Text.Json.Serialization.JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<BatfishBgpRoute>> nodes,
-    Dictionary<string, object> declarations, Dictionary<string, object> symbolics,
-    Dictionary<string, object> constants, Dictionary<string, object> assertions)
+    Dictionary<string, JObject> declarations, Dictionary<string, JObject> symbolics,
+    Dictionary<string, JObject> constants, Dictionary<string, JObject> assertions)
   {
     Nodes = nodes;
     Declarations = declarations;
@@ -45,8 +46,18 @@ public class Ast
     Assertions = assertions;
   }
 
+  public static JsonSerializer Serializer()
+  {
+    return new JsonSerializer
+    {
+      TypeNameHandling = TypeNameHandling.All,
+      SerializationBinder = new AstBinder()
+    };
+  }
+
   public Network<BatfishBgpRoute, TS> ToNetwork<TS>()
   {
+    var serializer = Serializer();
     var edges = new Dictionary<string, List<string>>();
     var transferAstFunctions =
       new Dictionary<(string, string), (AstFunc<BatfishBgpRoute, BatfishBgpRoute>,
@@ -65,10 +76,11 @@ public class Ast
         edges[node].Add(neighbor);
         var fwdEdge = (node, neighbor);
         var bwdEdge = (neighbor, node);
+        // get each declaration and cast it to an AstFunc from route to route
         var exportFunctions = policies.Export.Select(policyName =>
-          (AstFunc<BatfishBgpRoute, BatfishBgpRoute>) Declarations[policyName]);
+          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute, BatfishBgpRoute>>(serializer)!);
         var importFunctions= policies.Import.Select(policyName =>
-          (AstFunc<BatfishBgpRoute, BatfishBgpRoute>) Declarations[policyName]);
+          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute, BatfishBgpRoute>>(serializer)!);
         var export = AstFuncExtensions.Compose(exportFunctions);
         var import = AstFuncExtensions.Compose(importFunctions);
         // set the policies if they are missing

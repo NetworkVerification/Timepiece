@@ -11,20 +11,17 @@ if (args.Length == 0)
 }
 
 
-var serializer = new JsonSerializer
-{
-  TypeNameHandling = TypeNameHandling.All,
-  SerializationBinder = new AstBinder()
-};
-var testFunc = new AstFunc<BatfishBgpRoute, BatfishBgpRoute>("x", new Return<BatfishBgpRoute>(new Var<BatfishBgpRoute>("x")));
-var writer = new StringWriter();
-serializer.Serialize(writer, testFunc);
-Console.WriteLine($"Test func serialization: {writer}");
-var json = new JsonTextReader(new StreamReader(args[0]));
-Console.WriteLine($"Input JSON: {json}");
-var ast = serializer.Deserialize<Ast>(json);
+// var testFunc = new AstFunc<BatfishBgpRoute, BatfishBgpRoute>("x", new Return<BatfishBgpRoute>(new Var<BatfishBgpRoute>("x")));
+// var writer = new StringWriter();
+// serializer.Serialize(writer, testFunc);
+// Console.WriteLine($"Test func serialization: {writer}");
+var file = args[0];
+var json = new JsonTextReader(new StreamReader(file));
+var ast = Ast.Serializer().Deserialize<Ast>(json);
+Console.WriteLine($"Successfully deserialized JSON file {file}");
 json.Close();
 
-Console.WriteLine($"#Nodes: {ast.Nodes.Keys.Count}");
+Console.WriteLine($"Parsed an AST with JSON:");
 Console.WriteLine(JsonConvert.SerializeObject(ast));
-Profile.RunCmp(ast.ToNetwork<BatfishBgpRoute>());
+if (ast != null) Profile.RunCmp(ast.ToNetwork<BatfishBgpRoute>());
+else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
