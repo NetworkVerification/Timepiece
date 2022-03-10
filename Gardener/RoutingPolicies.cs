@@ -9,13 +9,13 @@ namespace Gardener;
 public class RoutingPolicies<T>
 {
   [JsonConstructor]
-  public RoutingPolicies(List<AstFunc<T, T>> import, List<AstFunc<T, T>> export)
+  public RoutingPolicies(List<string> import, List<string> export)
   {
     Import = import;
     Export = export;
   }
 
-  public List<AstFunc<T, T>> Import { get; set; }
+  public List<string> Import { get; set; }
 
-  public List<AstFunc<T, T>> Export { get; set; }
+  public List<string> Export { get; set; }
 }

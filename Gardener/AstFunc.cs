@@ -27,11 +27,6 @@ public class AstFunc<TArg, TResult>
     Body = body;
   }
 
-  public static AstFunc<T, T> Identity<T>()
-  {
-    return new AstFunc<T, T>("x", new Return<T>(new Var<T>("x")));
-  }
-
 
   /// <summary>
   /// Return an AstFunc which is the equivalent of calling this function
@@ -47,23 +42,36 @@ public class AstFunc<TArg, TResult>
     return new AstFunc<TArg, TResult2>(Arg, new Seq<TResult2>(bound, that.Body));
   }
 
-  /// <summary>
-  /// Compose an enumerable of AstFunc which all have the same type.
-  /// </summary>
-  /// <param name="functions"></param>
-  /// <typeparam name="TT"></typeparam>
-  /// <returns></returns>
-  public static AstFunc<TT, TT> Compose<TT>(IEnumerable<AstFunc<TT, TT>> functions)
-  {
-    var f = Identity<TT>();
-    return functions.Aggregate(f, (current, ff) => current.Compose(ff));
-  }
-
   public Func<Zen<TArg>, Zen<TResult>> Evaluate(State state)
   {
     state.Add<TArg>(Arg, t => t);
     var finalState = Body.Evaluate(state);
     return finalState.Return as Func<Zen<TArg>, Zen<TResult>> ??
            throw new InvalidOperationException("No value returned by function.");
+  }
+}
+
+public static class AstFuncExtensions
+{
+  /// <summary>
+  /// Generate an AstFunc that returns its argument unchanged.
+  /// </summary>
+  /// <typeparam name="T">The type of the argument.</typeparam>
+  /// <returns>A function that returns an argument unchanged.</returns>
+  public static AstFunc<T, T> Identity<T>()
+  {
+    return new AstFunc<T, T>("x", new Return<T>(new Var<T>("x")));
+  }
+
+  /// <summary>
+  /// Compose an enumerable of AstFunc which all have the same type.
+  /// </summary>
+  /// <param name="functions"></param>
+  /// <typeparam name="T"></typeparam>
+  /// <returns></returns>
+  public static AstFunc<T, T> Compose<T>(IEnumerable<AstFunc<T, T>> functions)
+  {
+    var f = Identity<T>();
+    return functions.Aggregate(f, (current, ff) => current.Compose(ff));
   }
 }

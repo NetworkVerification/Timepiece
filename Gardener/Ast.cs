@@ -16,27 +16,27 @@ public class Ast
   /// <summary>
   /// Additional function declarations.
   /// </summary>
-  public Dictionary<string, AstFunc<object, object>> Declarations { get; set; }
+  public Dictionary<string, object> Declarations { get; set; }
 
   /// <summary>
   /// Additional constant declarations.
   /// </summary>
-  public Dictionary<string, Expr<object>> Constants { get; set; }
+  public Dictionary<string, object> Constants { get; set; }
 
   /// <summary>
   /// Symbolic expressions.
   /// </summary>
-  public Dictionary<string, Expr<bool>> Symbolics { get; set; }
+  public Dictionary<string, object> Symbolics { get; set; }
 
   /// <summary>
   /// Assertions over nodes.
   /// </summary>
-  public Dictionary<string, Statement<object>> Assertions { get; set; }
+  public Dictionary<string, object> Assertions { get; set; }
 
   [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<BatfishBgpRoute>> nodes,
-    Dictionary<string, AstFunc<object, object>> declarations, Dictionary<string, Expr<bool>> symbolics,
-    Dictionary<string, Expr<object>> constants, Dictionary<string, Statement<object>> assertions)
+    Dictionary<string, object> declarations, Dictionary<string, object> symbolics,
+    Dictionary<string, object> constants, Dictionary<string, object> assertions)
   {
     Nodes = nodes;
     Declarations = declarations;
@@ -48,7 +48,7 @@ public class Ast
   public Network<BatfishBgpRoute, TS> ToNetwork<TS>()
   {
     var edges = new Dictionary<string, List<string>>();
-    var transferAstFuncs =
+    var transferAstFunctions =
       new Dictionary<(string, string), (AstFunc<BatfishBgpRoute, BatfishBgpRoute>,
         AstFunc<BatfishBgpRoute, BatfishBgpRoute>)>();
     // TODO: assign a route for each node
@@ -65,23 +65,27 @@ public class Ast
         edges[node].Add(neighbor);
         var fwdEdge = (node, neighbor);
         var bwdEdge = (neighbor, node);
-        var export = AstFunc<BatfishBgpRoute, BatfishBgpRoute>.Compose(policies.Export);
-        var import = AstFunc<BatfishBgpRoute, BatfishBgpRoute>.Compose(policies.Import);
+        var exportFunctions = policies.Export.Select(policyName =>
+          (AstFunc<BatfishBgpRoute, BatfishBgpRoute>) Declarations[policyName]);
+        var importFunctions= policies.Import.Select(policyName =>
+          (AstFunc<BatfishBgpRoute, BatfishBgpRoute>) Declarations[policyName]);
+        var export = AstFuncExtensions.Compose(exportFunctions);
+        var import = AstFuncExtensions.Compose(importFunctions);
         // set the policies if they are missing
-        if (transferAstFuncs.TryGetValue(fwdEdge, out var policy))
+        if (transferAstFunctions.TryGetValue(fwdEdge, out var policy))
         {
-          transferAstFuncs[fwdEdge] = (export, policy.Item2);
+          transferAstFunctions[fwdEdge] = (export, policy.Item2);
         }
 
-        if (transferAstFuncs.TryGetValue(bwdEdge, out policy))
+        if (transferAstFunctions.TryGetValue(bwdEdge, out policy))
         {
-          transferAstFuncs[bwdEdge] = (policy.Item1, import);
+          transferAstFunctions[bwdEdge] = (policy.Item1, import);
         }
       }
     }
 
     var transferFunction = new Dictionary<(string, string), Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>>();
-    foreach (var (edge, (export, import)) in transferAstFuncs)
+    foreach (var (edge, (export, import)) in transferAstFunctions)
     {
       // compose the export and import and evaluate on a fresh state
       transferFunction.Add(edge, export.Compose(import).Evaluate(new State()));

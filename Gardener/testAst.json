@@ -4,28 +4,10 @@
       "policies": {
         "1": {
           "export": [
-            {
-              "arg": "x",
-              "body": {
-                "$type": "return",
-                "expr": {
-                  "$type": "var",
-                  "name": "x"
-                }
-              }
-            }
+            "identity"
           ],
           "import": [
-            {
-              "arg": "x",
-              "body": {
-                "$type": "return",
-                "expr": {
-                  "$type": "var",
-                  "name": "x"
-                }
-              }
-            }
+            "identity"
           ]
         }
       },
@@ -54,7 +36,18 @@
       "prefixes": []
     }
   },
-  "declarations": {},
+  "declarations": {
+    "identity": {
+      "arg": "x",
+      "body": {
+        "$type": "ReturnStatement",
+        "expr": {
+          "$type": "Var",
+          "name": "x"
+        }
+      }
+    }
+  },
   "constants": {},
   "symbolics": {},
   "assertions": {}
