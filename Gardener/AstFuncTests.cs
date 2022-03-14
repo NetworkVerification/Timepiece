@@ -1,3 +1,5 @@
+using Gardener.AstExpr;
+using Gardener.AstStmt;
 using Xunit;
 using ZenLib;
 
@@ -5,20 +7,28 @@ namespace Gardener;
 
 public static class AstFuncTests
 {
-  public static void Tests()
+
+  [Fact]
+  public static void TestHavoc()
   {
-    // var one = new IntExpr<int, Signed, BatfishBgpRoute>(new ZenLib.Int32(0));
-    // var two = new Plus<int, Signed, BatfishBgpRoute>(one, one);
+    var one = new ConstantExpr<int, BatfishBgpRoute>(0);
     var rVar = new Var<BatfishBgpRoute>("route");
-    var increment = new WithField<BatfishBgpRoute, IntN<int, Signed>, BatfishBgpRoute>(
+    // AST representation of incrementing AsPathLength by 1
+    var increment = new WithField<BatfishBgpRoute, int, BatfishBgpRoute>(
       rVar, "AsPathLength",
-      new GetField<BatfishBgpRoute, IntN<int, Signed>, BatfishBgpRoute>(rVar, "AsPathLength")
+      new Plus<int, BatfishBgpRoute>(
+        new GetField<BatfishBgpRoute, int, BatfishBgpRoute>(rVar, "AsPathLength"),
+        one)
     );
-    var f = new AstFunc<BatfishBgpRoute>("route",
+    var r = Zen.Symbolic<BatfishBgpRoute>();
+    var rIncremented = r.WithAsPathLength(r.GetAsPathLength() + 1);
+    var f = new AstFunction<BatfishBgpRoute>("route",
       new IfThenElse<BatfishBgpRoute, BatfishBgpRoute>(new Havoc<BatfishBgpRoute>(),
         new Return<BatfishBgpRoute>(increment),
         new Return<BatfishBgpRoute>(rVar)));
-    var r = Zen.Symbolic<BatfishBgpRoute>();
-    Assert.Equal(r, f.Evaluate(new State<BatfishBgpRoute>())(r));
+    var zenF = f.Evaluate(new State<BatfishBgpRoute>());
+    // since the if is a havoc, we have that zenF(r) is either incremented or the same:
+    var model = Zen.Not(Zen.And(Zen.Eq(zenF(r), r), Zen.Eq(zenF(r), rIncremented))).Solve();
+    Assert.True(model.IsSatisfiable());
   }
 }

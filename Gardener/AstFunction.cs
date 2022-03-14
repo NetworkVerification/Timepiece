@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Gardener.AstExpr;
+using Gardener.AstStmt;
 using ZenLib;
 
 namespace Gardener;
@@ -7,7 +9,7 @@ namespace Gardener;
 /// A unary function of type T to T.
 /// </summary>
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
-public class AstFunc<T>
+public class AstFunction<T>
 {
   /// <summary>
   /// The name of the argument to the function.
@@ -20,10 +22,19 @@ public class AstFunc<T>
   public Statement<T, T> Body { get; set; }
 
   [JsonConstructor]
-  public AstFunc(string arg, Statement<T, T> body)
+  public AstFunction(string arg, Statement<T, T> body)
   {
     Arg = arg;
     Body = body;
+  }
+
+  public void Rename(string oldArg, string newArg)
+  {
+    if (Arg.Equals(oldArg))
+    {
+      Arg = newArg;
+    }
+    Body.Rename(oldArg, newArg);
   }
 
   /// <summary>
@@ -31,9 +42,9 @@ public class AstFunc<T>
   /// </summary>
   /// <typeparam name="T">The type of the argument.</typeparam>
   /// <returns>A function that returns an argument unchanged.</returns>
-  public static AstFunc<T> Identity()
+  public static AstFunction<T> Identity()
   {
-    return new AstFunc<T>("x", new Return<T>(new Var<T>("x")));
+    return new AstFunction<T>("x", new Return<T>(new Var<T>("x")));
   }
 
   /// <summary>
@@ -43,11 +54,13 @@ public class AstFunc<T>
   /// <param name="that">A second AstFunc from TResult to TResult2.</param>
   /// <typeparam name="T">The final return type.</typeparam>
   /// <returns>A new AstFunc composing the behavior of the original two.</returns>
-  public AstFunc<T> Compose(AstFunc<T> that)
+  public AstFunction<T> Compose(AstFunction<T> that)
   {
     // bind the result of this body to that argument
+    // FIXME: if this.Arg and that.Arg are equal, the behavior will diverge!
+    // TODO: check if this.Arg and that.Arg are equal, and rename that.Arg if so
     var bound = Body.Bind(that.Arg);
-    return new AstFunc<T>(Arg, new Seq<T, T>(bound, that.Body));
+    return new AstFunction<T>(Arg, new Seq<T, T>(bound, that.Body));
   }
 
   /// <summary>
@@ -56,7 +69,7 @@ public class AstFunc<T>
   /// <param name="functions"></param>
   /// <typeparam name="T"></typeparam>
   /// <returns></returns>
-  public static AstFunc<T> Compose(IEnumerable<AstFunc<T>> functions)
+  public static AstFunction<T> Compose(IEnumerable<AstFunction<T>> functions)
   {
     var f = Identity();
     return functions.Aggregate(f, (current, ff) => current.Compose(ff));

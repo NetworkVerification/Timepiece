@@ -1,6 +1,7 @@
+using Gardener.AstExpr;
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstStmt;
 
 public class Return<T>: Statement<T, T>
 {
@@ -20,5 +21,10 @@ public class Return<T>: Statement<T, T>
   public override Statement<Unit, T> Bind(string var)
   {
     return new Assign<T>(var, Expr);
+  }
+
+  public override void Rename(string oldVar, string newVar)
+  {
+    Expr.Rename(oldVar, newVar);
   }
 }

@@ -11,38 +11,53 @@
           ]
         }
       },
-      "prefixes": []
+      "prefixes": ["127.0.0.0"],
+      "assert": "isValid"
     },
     "1": {
       "policies": {
         "0": {
-          "import": [],
-          "export": []
+          "import": [
+            "identity"
+          ],
+          "export": [
+            "identity"
+          ]
         },
         "2": {
-          "import": [],
-          "export": []
+          "import": [
+            "identity"
+          ],
+          "export": [
+            "identity"
+          ]
         }
       },
-      "prefixes": []
+      "prefixes": [],
+      "assert": "isValid"
     },
     "2": {
       "policies": {
         "1": {
-          "import": [],
-          "export": []
+          "import": [
+            "identity"
+          ],
+          "export": [
+            "identity"
+          ]
         }
       },
-      "prefixes": []
+      "prefixes": [],
+      "assert": "isValid"
     }
   },
   "declarations": {
     "identity": {
       "arg": "x",
       "body": {
-        "$type": "ReturnStatement",
+        "$type": "Return(Var(Route))",
         "expr": {
-          "$type": "Var",
+          "$type": "Var(Route)",
           "name": "x"
         }
       }
@@ -50,5 +65,17 @@
   },
   "constants": {},
   "symbolics": {},
-  "assertions": {}
+  "assertions": {
+    "isValid": {
+      "arg": "route",
+      "expr": {
+        "$type": "GetField(Var(Route);Bool)",
+        "fieldName": "Valid",
+        "record": {
+          "$type": "Var(Route)",
+          "name": "route"
+        }
+      }
+    }
+  }
 }

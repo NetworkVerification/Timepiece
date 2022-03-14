@@ -1,3 +1,8 @@
+using System.Numerics;
+using Gardener.AstExpr;
+using NetTools;
+using ZenLib;
+
 namespace Gardener;
 
 /// <summary>
@@ -7,13 +12,20 @@ namespace Gardener;
 /// <typeparam name="T">The type of routes in the node's RoutingPolicies.</typeparam>
 public class NodeProperties<T>
 {
-  public NodeProperties(List<string> prefixes, Dictionary<string, RoutingPolicies<T>> policies)
+  public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies<T>> policies,
+    string? assert, AstPredicate<Pair<T,BigInteger>>? invariant)
   {
     Prefixes = prefixes;
     Policies = policies;
+    Assert = assert;
+    Invariant = invariant;
   }
 
-  public List<string> Prefixes { get; }
+  public AstPredicate<Pair<T, BigInteger>>? Invariant { get; set; }
+
+  public List<IPAddressRange> Prefixes { get; }
 
   public Dictionary<string, RoutingPolicies<T>> Policies { get; }
+
+  public string? Assert { get; }
 }

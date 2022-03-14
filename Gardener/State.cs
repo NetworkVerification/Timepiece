@@ -37,7 +37,7 @@ public class State<T>
   public Func<Zen<T>, Zen<T>> this[string var]
   {
     get => Variables[var];
-    private set => Variables[var] = value;
+    set => Variables[var] = value;
   }
 
   /// <summary>

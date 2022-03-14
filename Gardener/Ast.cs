@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+using System.Net;
 using System.Numerics;
 using Karesansui;
 using Karesansui.Networks;
@@ -6,6 +8,10 @@ using Newtonsoft.Json.Linq;
 using ZenLib;
 
 namespace Gardener;
+
+using AstZenFunction = Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>;
+using AstZenConstraint = Func<Zen<BatfishBgpRoute>, Zen<bool>>;
+using AstZenTemporalConstraint = Func<Zen<BatfishBgpRoute>, Zen<BigInteger>, Zen<bool>>;
 
 public class Ast
 {
@@ -17,7 +23,7 @@ public class Ast
   /// <summary>
   /// Additional function declarations.
   /// </summary>
-  public Dictionary<string, JObject> Declarations { get; set; }
+  public Dictionary<string, AstFunction<BatfishBgpRoute>> Declarations { get; set; }
 
   /// <summary>
   /// Additional constant declarations.
@@ -30,17 +36,22 @@ public class Ast
   public Dictionary<string, JObject> Symbolics { get; set; }
 
   /// <summary>
-  /// Assertions over nodes.
+  /// Assertions over routes.
   /// </summary>
-  public Dictionary<string, JObject> Assertions { get; set; }
+  public Dictionary<string, AstPredicate<BatfishBgpRoute>> Assertions { get; set; }
 
   [System.Text.Json.Serialization.JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<BatfishBgpRoute>> nodes,
-    Dictionary<string, JObject> declarations, Dictionary<string, JObject> symbolics,
-    Dictionary<string, JObject> constants, Dictionary<string, JObject> assertions)
+    Dictionary<string, AstFunction<BatfishBgpRoute>> declarations, Dictionary<string, JObject> symbolics,
+    Dictionary<string, JObject> constants, Dictionary<string, AstPredicate<BatfishBgpRoute>> assertions)
   {
     Nodes = nodes;
     Declarations = declarations;
+    // make the declaration functions' arguments unique
+    foreach (var (name, function) in Declarations)
+    {
+      function.Rename(function.Arg, $"${function.Arg}~{VarCounter.Request()}");
+    }
     Symbolics = symbolics;
     Constants = constants;
     Assertions = assertions;
@@ -55,15 +66,16 @@ public class Ast
     };
   }
 
-  public Network<BatfishBgpRoute, TS> ToNetwork<TS>()
+  public Network<BatfishBgpRoute, TS> ToNetwork<TS>(IPAddress? destination)
   {
-    var serializer = Serializer();
+    // construct all the mappings we'll need
     var edges = new Dictionary<string, List<string>>();
-    var transferAstFunctions =
-      new Dictionary<(string, string), (AstFunc<BatfishBgpRoute>,
-        AstFunc<BatfishBgpRoute>)>();
-    // TODO: assign a route for each node
+    var importFunctions = new Dictionary<(string, string), AstFunction<BatfishBgpRoute>>();
+    var exportFunctions = new Dictionary<(string, string), AstFunction<BatfishBgpRoute>>();
     var initFunction = new Dictionary<string, Zen<BatfishBgpRoute>>();
+    var monolithicAssertions = new Dictionary<string, AstZenConstraint>();
+    var annotations = new Dictionary<string, AstZenTemporalConstraint>();
+
     foreach (var (node, props) in Nodes)
     {
       if (!edges.ContainsKey(node))
@@ -71,56 +83,72 @@ public class Ast
         edges.Add(node, new List<string>());
       }
 
+      // init
+      if (props.Prefixes.Any(range => range.Contains(destination)))
+      {
+        initFunction[node] = Zen.Constant(new BatfishBgpRoute()).Valid(true);
+      }
+      else
+      {
+        initFunction[node] = new BatfishBgpRoute();
+      }
+
+      // assert
+      if (props.Assert is null)
+      {
+        monolithicAssertions[node] = _ => true;
+      }
+      else
+      {
+        var assert = Assertions[props.Assert];
+        monolithicAssertions[node] = assert.Evaluate(new State<BatfishBgpRoute>());
+      }
+
+      // invariant
+      if (props.Invariant is null)
+      {
+        annotations[node] = (_, _) => true;
+      }
+      else
+      {
+        var fn =
+          props.Invariant.Evaluate(new State<Pair<BatfishBgpRoute, BigInteger>>());
+        annotations[node] = (r, t) => fn(Pair.Create(r, t));
+      }
+
+      // transfer
       foreach (var (neighbor, policies) in props.Policies)
       {
         edges[node].Add(neighbor);
         var fwdEdge = (node, neighbor);
         var bwdEdge = (neighbor, node);
         // get each declaration and cast it to an AstFunc from route to route
-        var exportFunctions = policies.Export.Select(policyName =>
-          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute>>(serializer)!);
-        var importFunctions= policies.Import.Select(policyName =>
-          Declarations[policyName].ToObject<AstFunc<BatfishBgpRoute>>(serializer)!);
-        var export = AstFunc<BatfishBgpRoute>.Compose(exportFunctions);
-        var import = AstFunc<BatfishBgpRoute>.Compose(importFunctions);
+        var expFuncs = policies.Export.Select(policyName => Declarations[policyName]);
+        var impFuncs = policies.Import.Select(policyName => Declarations[policyName]);
+        var export = AstFunction<BatfishBgpRoute>.Compose(expFuncs);
+        var import = AstFunction<BatfishBgpRoute>.Compose(impFuncs);
         // set the policies if they are missing
-        if (transferAstFunctions.TryGetValue(fwdEdge, out var policy))
-        {
-          transferAstFunctions[fwdEdge] = (export, policy.Item2);
-        }
-
-        if (transferAstFunctions.TryGetValue(bwdEdge, out policy))
-        {
-          transferAstFunctions[bwdEdge] = (policy.Item1, import);
-        }
+        exportFunctions[fwdEdge] = export;
+        importFunctions[bwdEdge] = import;
       }
     }
 
-    var transferFunction = new Dictionary<(string, string), Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>>();
-    foreach (var (edge, (export, import)) in transferAstFunctions)
+    var transferFunction = new Dictionary<(string, string), AstZenFunction>();
+    foreach (var (edge, export) in exportFunctions)
     {
       // compose the export and import and evaluate on a fresh state
-      transferFunction.Add(edge, export.Compose(import).Evaluate(new State<BatfishBgpRoute>()));
+      // NOTE: assumes that every export edge has a corresponding import edge (i.e. the graph is undirected)
+      transferFunction.Add(edge, export.Compose(importFunctions[edge]).Evaluate(new State<BatfishBgpRoute>()));
     }
 
     var topology = new Topology(edges);
 
-    // foreach (var (node, stmt) in InitFunction)
-    // {
-    // var returned = stmt.Evaluate(new State()).Return;
-    // if (returned is null)
-    // {
-    // throw new ArgumentException($"No value returned by initialFunction for node {node}");
-    // }
-    // init.Add(node, (Zen<BatfishBgpRoute>) returned);
-    // }
-    // TODO: set properties, symbolics and annotations
     return new Network<BatfishBgpRoute, TS>(topology,
       transferFunction,
       BatfishBgpRouteExtensions.Min,
       initFunction,
-      new Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<BigInteger>, Zen<bool>>>(),
-      new Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<BigInteger>, Zen<bool>>>(),
-      new Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<bool>>>(), Array.Empty<SymbolicValue<TS>>());
+      annotations,
+      topology.ForAllNodes(n => Lang.Finally(new BigInteger(topology.NEdges), monolithicAssertions[n])),
+      monolithicAssertions, Array.Empty<SymbolicValue<TS>>());
   }
 }

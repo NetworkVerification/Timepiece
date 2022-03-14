@@ -7,6 +7,7 @@ public record struct BatfishBgpRoute
 {
   public BatfishBgpRoute()
   {
+    Valid = false;
     AdminDist = 0;
     Lp = 0;
     AsPathLength = 0;
@@ -15,14 +16,20 @@ public record struct BatfishBgpRoute
   }
 
   [JsonConstructor]
-  public BatfishBgpRoute(int adminDist, int lp, int asPathLength, int med, Int2 originType)
+  public BatfishBgpRoute(bool valid, int adminDist, int lp, int asPathLength, int med, Int2 originType)
   {
+    Valid = valid;
     AdminDist = adminDist;
     Lp = lp;
     AsPathLength = asPathLength;
     Med = med;
     OriginType = originType;
   }
+
+  /// <summary>
+  /// Marker for whether the route is valid or not.
+  /// </summary>
+  public bool Valid { get; set; }
 
   /// <summary>
   /// 32-bit integer representation of administrative distance.
@@ -55,9 +62,24 @@ public record struct BatfishBgpRoute
 
 public static class BatfishBgpRouteExtensions
 {
+  public static Zen<bool> IsValid(this Zen<BatfishBgpRoute> b)
+  {
+    return b.GetField<BatfishBgpRoute, bool>("Valid");
+  }
+
+  public static Zen<BatfishBgpRoute> Valid(this Zen<BatfishBgpRoute> b, Zen<bool> valid)
+  {
+    return b.WithField("Valid", valid);
+  }
+
   public static Zen<int> GetLp(this Zen<BatfishBgpRoute> b)
   {
     return b.GetField<BatfishBgpRoute, int>("Lp");
+  }
+
+  public static Zen<BatfishBgpRoute> WithLp(this Zen<BatfishBgpRoute> b, Zen<int> lp)
+  {
+    return b.WithField("Lp", lp);
   }
 
   public static Zen<int> GetAsPathLength(this Zen<BatfishBgpRoute> b)
@@ -65,14 +87,29 @@ public static class BatfishBgpRouteExtensions
     return b.GetField<BatfishBgpRoute, int>("AsPathLength");
   }
 
+  public static Zen<BatfishBgpRoute> WithAsPathLength(this Zen<BatfishBgpRoute> b, Zen<int> asPathLength)
+  {
+    return b.WithField("AsPathLength", asPathLength);
+  }
+
   public static Zen<int> GetMed(this Zen<BatfishBgpRoute> b)
   {
     return b.GetField<BatfishBgpRoute, int>("Med");
   }
 
+  public static Zen<BatfishBgpRoute> WithMed(this Zen<BatfishBgpRoute> b, Zen<int> med)
+  {
+    return b.WithField("Med", med);
+  }
+
   public static Zen<Int2> GetOriginType(this Zen<BatfishBgpRoute> b)
   {
     return b.GetField<BatfishBgpRoute, Int2>("OriginType");
+  }
+
+  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<Int2> originType)
+  {
+    return b.WithField("OriginType", originType);
   }
 
   private static Func<Zen<T>, Zen<T>, Zen<T>> MinBy<T, TKey>(Func<Zen<T>, Zen<TKey>> keyAccessor,
@@ -87,6 +124,8 @@ public static class BatfishBgpRouteExtensions
     var smallerLength = MinBy<BatfishBgpRoute, int>(GetAsPathLength, Zen.Lt);
     var betterOrigin = MinBy<BatfishBgpRoute, Int2>(GetOriginType, Zen.Gt);
     var lowerMed = MinBy<BatfishBgpRoute, int>(GetMed, Zen.Lt);
-    return largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))));
+    return Zen.If(Zen.Not(b1.IsValid()), b2,
+      Zen.If(Zen.Not(b2.IsValid()), b1,
+        largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))))));
   }
 }

@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstExpr;
 
 public class Var<T> : Expr<T, T>
 {
@@ -17,6 +17,15 @@ public class Var<T> : Expr<T, T>
     {
       throw new ArgumentOutOfRangeException($"Variable {Name} unbound in the given state.");
     }
+
     return state[Name];
+  }
+
+  public override void Rename(string oldVar, string newVar)
+  {
+    if (Name.Equals(oldVar))
+    {
+      Name = newVar;
+    }
   }
 }

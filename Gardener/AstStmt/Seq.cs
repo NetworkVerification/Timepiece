@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstStmt;
 
 /// <summary>
 /// A sequence of two statements.
@@ -28,5 +28,11 @@ public class Seq<T, TState> : Statement<T, TState>
   public override Statement<Unit, TState> Bind(string var)
   {
     return new Seq<Unit, TState>(First.Bind(var), Second.Bind(var));
+  }
+
+  public override void Rename(string oldVar, string newVar)
+  {
+    First.Rename(oldVar, newVar);
+    Second.Rename(oldVar, newVar);
   }
 }

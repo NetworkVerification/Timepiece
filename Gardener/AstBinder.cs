@@ -1,4 +1,7 @@
+using Gardener.AstExpr;
+using Gardener.AstStmt;
 using Newtonsoft.Json.Serialization;
+using ZenLib;
 
 namespace Gardener;
 
@@ -10,19 +13,29 @@ public class AstBinder : ISerializationBinder
   {
     AliasToType = new Dictionary<string, Type>
     {
-      { "ReturnStatement[Pair[...]]", typeof(Return<>) },
-      { "AssignStatement", typeof(Assign<>) },
-      { "SeqStatement", typeof(Seq<,>) },
-      { "IfStatement", typeof(IfThenElse<,>) },
-      { "Var", typeof(Var<BatfishBgpRoute>) },
-      { "And", typeof(And<BatfishBgpRoute>) },
-      { "Havoc", typeof(Havoc<BatfishBgpRoute>)},
-      { "Plus", typeof(Plus<int, ZenLib.Signed, BatfishBgpRoute>)},
-      { "Int", typeof(IntExpr<int,ZenLib.Signed, BatfishBgpRoute>)}
+      // {"Return(Pair(Bool;Var(Route)))", typeof(Return<AstExpr.Pair<bool, BatfishBgpRoute, BatfishBgpRoute>>)},
+      {"Return(Var(Route))", typeof(Return<BatfishBgpRoute>)},
+      {"Assign", typeof(Assign<>)},
+      {"Seq", typeof(Seq<,>)},
+      {"If", typeof(IfThenElse<,>)},
+      {"Var(Route)", typeof(Var<BatfishBgpRoute>)},
+      {"True", typeof(ConstantExpr<bool, BatfishBgpRoute>)},
+      {"False", typeof(ConstantExpr<bool, BatfishBgpRoute>)},
+      {"And", typeof(And<BatfishBgpRoute>)},
+      {"Or", typeof(Or<BatfishBgpRoute>)},
+      {"Not", typeof(Not<BatfishBgpRoute>)},
+      {"Havoc", typeof(Havoc<BatfishBgpRoute>)},
+      {"Int32", typeof(ConstantExpr<int, BatfishBgpRoute>)},
+      {"Plus32", typeof(Plus<int, BatfishBgpRoute>)},
+      // {"Pair(Bool;Var(Route))", typeof(AstExpr.Pair<bool, BatfishBgpRoute, BatfishBgpRoute>)},
+      {"GetField(Var(Route);Int32)", typeof(GetField<BatfishBgpRoute, int, BatfishBgpRoute>)},
+      {"GetField(Var(Route);Bool)", typeof(GetField<BatfishBgpRoute, bool, BatfishBgpRoute>)},
     };
   }
+
   public Type BindToType(string? assemblyName, string typeName)
   {
+    // TODO: split up typeName and parse in sections?
     return AliasToType[typeName];
   }
 

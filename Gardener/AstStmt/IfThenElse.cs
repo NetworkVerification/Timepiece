@@ -1,6 +1,7 @@
+using Gardener.AstExpr;
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstStmt;
 
 public class IfThenElse<T, TState> : Statement<T, TState>
 {
@@ -25,5 +26,12 @@ public class IfThenElse<T, TState> : Statement<T, TState>
   public override Statement<Unit, TState> Bind(string var)
   {
     return new IfThenElse<Unit, TState>(Guard, TrueStatement.Bind(var), FalseStatement.Bind(var));
+  }
+
+  public override void Rename(string oldVar, string newVar)
+  {
+    Guard.Rename(oldVar, newVar);
+    TrueStatement.Rename(oldVar, newVar);
+    FalseStatement.Rename(oldVar, newVar);
   }
 }

@@ -1,6 +1,7 @@
+using Gardener.AstExpr;
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstStmt;
 
 public class Assign<T> : Statement<Unit, T>
 {
@@ -22,12 +23,21 @@ public class Assign<T> : Statement<Unit, T>
 
   public override State<T> Evaluate(State<T> state)
   {
-    state.Add(Var, Expr.Evaluate(state));
+    state[Var] = Expr.Evaluate(state);
     return state;
   }
 
   public override Statement<Unit, T> Bind(string var)
   {
     return this;
+  }
+
+  public override void Rename(string oldVar, string newVar)
+  {
+    if (Var.Equals(oldVar))
+    {
+      Var = newVar;
+    }
+    Expr.Rename(oldVar, newVar);
   }
 }
