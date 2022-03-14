@@ -13,7 +13,7 @@ namespace Gardener;
 public class NodeProperties<T>
 {
   public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies<T>> policies,
-    string? assert, AstPredicate<Pair<T,BigInteger>>? invariant)
+    string? assert, string? invariant)
   {
     Prefixes = prefixes;
     Policies = policies;
@@ -21,7 +21,7 @@ public class NodeProperties<T>
     Invariant = invariant;
   }
 
-  public AstPredicate<Pair<T, BigInteger>>? Invariant { get; set; }
+  public string? Invariant { get; set; }
 
   public List<IPAddressRange> Prefixes { get; }
 

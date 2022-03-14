@@ -11,7 +11,12 @@
           ]
         }
       },
-      "prefixes": ["127.0.0.0"],
+      "prefixes": [
+        {
+          "Begin": "127.0.0.1",
+          "End": "127.0.0.1"
+        }
+      ],
       "assert": "isValid"
     },
     "1": {
@@ -55,10 +60,16 @@
     "identity": {
       "arg": "x",
       "body": {
-        "$type": "Return(Var(Route))",
-        "expr": {
-          "$type": "Var(Route)",
-          "name": "x"
+        "$type": "Return(Pair(Bool;Var(Route)))",
+        "return_value": {
+          "$type": "Pair(Bool;Var(Route))",
+          "first": {
+            "$type": "True"
+          },
+          "second": {
+            "$type": "Var(Route)",
+            "name": "x"
+          }
         }
       }
     }
@@ -69,11 +80,23 @@
     "isValid": {
       "arg": "route",
       "expr": {
-        "$type": "GetField(Var(Route);Bool)",
-        "fieldName": "Valid",
-        "record": {
+        "$type": "First(Bool;Var(Route))",
+        "pair": {
           "$type": "Var(Route)",
           "name": "route"
+        }
+      }
+    }
+  },
+  "invariants": {
+    "isValidFinally": {
+      "arg": "rt",
+      "expr": {
+        "$type": "Finally(Var(Route))",
+        "time": 2,
+        "predicate": {
+          "$type": "Call(Assertion)",
+          "name": "isValid"
         }
       }
     }

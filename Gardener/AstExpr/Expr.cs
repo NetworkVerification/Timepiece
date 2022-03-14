@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Gardener.AstExpr;
 
-public abstract class Expr<T, TState>
+public abstract class Expr<T, TState> : IRenameable
 {
   public abstract Func<Zen<TState>, Zen<T>> Evaluate(State<TState> state);
 

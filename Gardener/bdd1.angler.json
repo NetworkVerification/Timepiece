@@ -141,33 +141,27 @@
           }
         ]
       }
-    },
-    "list1": {
-      "$type": "String",
-      "value": "1:2"
-    },
-    "list2": {
-      "$type": "String",
-      "value": "1:3"
-    },
-    "list3": {
-      "$type": "String",
-      "value": "1:4"
     }
   },
   "declarations": {
     "TEST_ADD1": {
       "arg": "route",
       "body": {
-        "$type": "Return(Pair(Bool,Var(Route)))",
-        "return_value": {
-          "$type": "Pair(Bool,Var(Route))",
-          "first": {
-            "$type": "True"
-          },
-          "second": {
-            "$type": "Var(Route)",
-            "name": "route"
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
+        "first": {
+          "$type": "Skip"
+        },
+        "second": {
+          "$type": "Return(Pair(Bool;Var(Route)))",
+          "return_value": {
+            "$type": "Pair(Bool;Var(Route))",
+            "first": {
+              "$type": "True"
+            },
+            "second": {
+              "$type": "Var(Route)",
+              "name": "route"
+            }
           }
         }
       }
@@ -175,15 +169,21 @@
     "TEST_ADD2": {
       "arg": "route",
       "body": {
-        "$type": "Return(Pair(Bool,Var(Route)))",
-        "return_value": {
-          "$type": "Pair(Bool,Var(Route))",
-          "first": {
-            "$type": "True"
-          },
-          "second": {
-            "$type": "Var(Route)",
-            "name": "route"
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
+        "first": {
+          "$type": "Skip"
+        },
+        "second": {
+          "$type": "Return(Pair(Bool;Var(Route)))",
+          "return_value": {
+            "$type": "Pair(Bool;Var(Route))",
+            "first": {
+              "$type": "True"
+            },
+            "second": {
+              "$type": "Var(Route)",
+              "name": "route"
+            }
           }
         }
       }
@@ -191,15 +191,21 @@
     "TEST_ADD3": {
       "arg": "route",
       "body": {
-        "$type": "Return(Pair(Bool,Var(Route)))",
-        "return_value": {
-          "$type": "Pair(Bool,Var(Route))",
-          "first": {
-            "$type": "True"
-          },
-          "second": {
-            "$type": "Var(Route)",
-            "name": "route"
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
+        "first": {
+          "$type": "Skip"
+        },
+        "second": {
+          "$type": "Return(Pair(Bool;Var(Route)))",
+          "return_value": {
+            "$type": "Pair(Bool;Var(Route))",
+            "first": {
+              "$type": "True"
+            },
+            "second": {
+              "$type": "Var(Route)",
+              "name": "route"
+            }
           }
         }
       }
@@ -207,17 +213,17 @@
     "TEST_ADD_REMOVE1": {
       "arg": "route",
       "body": {
-        "$type": "Seq(_)",
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
         "first": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Assign(WithField(Var(Route);Set)))",
           "first": {
-            "$type": "Assign(WithField(Var(Route),Int32))",
+            "$type": "Assign(WithField(Var(Route);Int32))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Int32)",
+              "$type": "WithField(Var(Route);Int32)",
               "fieldName": "metric",
               "fieldVal": {
                 "$type": "Int32",
@@ -230,13 +236,13 @@
             }
           },
           "second": {
-            "$type": "Assign(WithField(Var(Route),Set))",
+            "$type": "Assign(WithField(Var(Route);Set))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Set)",
+              "$type": "WithField(Var(Route);Set)",
               "fieldName": "communities",
               "fieldVal": {
                 "$type": "SetRemove",
@@ -245,7 +251,7 @@
                   "name": "list1"
                 },
                 "set": {
-                  "$type": "GetField(Var(Route),Set)",
+                  "$type": "GetField(Var(Route);Set)",
                   "fieldName": "communities",
                   "record": {
                     "$type": "Var(Route)",
@@ -261,9 +267,9 @@
           }
         },
         "second": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -278,25 +284,25 @@
     "TEST_ADD_REMOVE2": {
       "arg": "route",
       "body": {
-        "$type": "Seq(_)",
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
         "first": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Assign(WithField(Var(Route);Int32)))",
           "first": {
-            "$type": "Seq(_)",
+            "$type": "Seq(Assign(WithField(Var(Route);Set)))",
             "first": {
-              "$type": "Assign(WithField(Var(Route),Set))",
+              "$type": "Assign(WithField(Var(Route);Set))",
               "lhs": {
                 "$type": "Var(Route)",
                 "name": "route"
               },
               "rhs": {
-                "$type": "WithField(Var(Route),Set)",
+                "$type": "WithField(Var(Route);Set)",
                 "fieldName": "communities",
                 "fieldVal": {
                   "$type": "SetUnion",
                   "sets": [
                     {
-                      "$type": "GetField(Var(Route),Set)",
+                      "$type": "GetField(Var(Route);Set)",
                       "fieldName": "communities",
                       "record": {
                         "$type": "Var(Route)",
@@ -322,13 +328,13 @@
               }
             },
             "second": {
-              "$type": "Assign(WithField(Var(Route),Set))",
+              "$type": "Assign(WithField(Var(Route);Set))",
               "lhs": {
                 "$type": "Var(Route)",
                 "name": "route"
               },
               "rhs": {
-                "$type": "WithField(Var(Route),Set)",
+                "$type": "WithField(Var(Route);Set)",
                 "fieldName": "communities",
                 "fieldVal": {
                   "$type": "SetRemove",
@@ -337,7 +343,7 @@
                     "name": "list1"
                   },
                   "set": {
-                    "$type": "GetField(Var(Route),Set)",
+                    "$type": "GetField(Var(Route);Set)",
                     "fieldName": "communities",
                     "record": {
                       "$type": "Var(Route)",
@@ -353,13 +359,13 @@
             }
           },
           "second": {
-            "$type": "Assign(WithField(Var(Route),Int32))",
+            "$type": "Assign(WithField(Var(Route);Int32))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Int32)",
+              "$type": "WithField(Var(Route);Int32)",
               "fieldName": "metric",
               "fieldVal": {
                 "$type": "Int32",
@@ -373,9 +379,9 @@
           }
         },
         "second": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -390,17 +396,17 @@
     "TEST_COMMUTATIVE1": {
       "arg": "route",
       "body": {
-        "$type": "Seq(_)",
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
         "first": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Assign(WithField(Var(Route);Set)))",
           "first": {
-            "$type": "Assign(WithField(Var(Route),Int32))",
+            "$type": "Assign(WithField(Var(Route);Int32))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Int32)",
+              "$type": "WithField(Var(Route);Int32)",
               "fieldName": "metric",
               "fieldVal": {
                 "$type": "Int32",
@@ -413,19 +419,19 @@
             }
           },
           "second": {
-            "$type": "Assign(WithField(Var(Route),Set))",
+            "$type": "Assign(WithField(Var(Route);Set))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Set)",
+              "$type": "WithField(Var(Route);Set)",
               "fieldName": "communities",
               "fieldVal": {
                 "$type": "SetUnion",
                 "sets": [
                   {
-                    "$type": "GetField(Var(Route),Set)",
+                    "$type": "GetField(Var(Route);Set)",
                     "fieldName": "communities",
                     "record": {
                       "$type": "Var(Route)",
@@ -452,9 +458,9 @@
           }
         },
         "second": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -469,23 +475,23 @@
     "TEST_COMMUTATIVE2": {
       "arg": "route",
       "body": {
-        "$type": "Seq(_)",
+        "$type": "Seq(Return(Pair(Bool;Var(Route))))",
         "first": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Assign(WithField(Var(Route);Int32)))",
           "first": {
-            "$type": "Assign(WithField(Var(Route),Set))",
+            "$type": "Assign(WithField(Var(Route);Set))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Set)",
+              "$type": "WithField(Var(Route);Set)",
               "fieldName": "communities",
               "fieldVal": {
                 "$type": "SetUnion",
                 "sets": [
                   {
-                    "$type": "GetField(Var(Route),Set)",
+                    "$type": "GetField(Var(Route);Set)",
                     "fieldName": "communities",
                     "record": {
                       "$type": "Var(Route)",
@@ -511,13 +517,13 @@
             }
           },
           "second": {
-            "$type": "Assign(WithField(Var(Route),Int32))",
+            "$type": "Assign(WithField(Var(Route);Int32))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Int32)",
+              "$type": "WithField(Var(Route);Int32)",
               "fieldName": "metric",
               "fieldVal": {
                 "$type": "Int32",
@@ -531,9 +537,9 @@
           }
         },
         "second": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -554,11 +560,11 @@
           "$type": "If(Unit)",
           "comment": "~RMCLAUSE~TEST_MATCH_COMM1~20~",
           "falseStatements": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
-                "$type": "GetField(Var(Route),Bool)",
+                "$type": "GetField(Var(Route);Bool)",
                 "fieldName": "LocalDefaultAction",
                 "record": {
                   "$type": "Var(Route)",
@@ -578,7 +584,7 @@
               "name": "list3"
             },
             "set": {
-              "$type": "GetField(Var(Route),Set)",
+              "$type": "GetField(Var(Route);Set)",
               "fieldName": "communities",
               "record": {
                 "$type": "Var(Route)",
@@ -587,9 +593,9 @@
             }
           },
           "trueStatements": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
                 "$type": "True"
               },
@@ -607,7 +613,7 @@
             "name": "list2"
           },
           "set": {
-            "$type": "GetField(Var(Route),Set)",
+            "$type": "GetField(Var(Route);Set)",
             "fieldName": "communities",
             "record": {
               "$type": "Var(Route)",
@@ -616,9 +622,9 @@
           }
         },
         "trueStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -639,11 +645,11 @@
           "$type": "If(Unit)",
           "comment": "~RMCLAUSE~TEST_MATCH_COMM2~20~",
           "falseStatements": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
-                "$type": "GetField(Var(Route),Bool)",
+                "$type": "GetField(Var(Route);Bool)",
                 "fieldName": "LocalDefaultAction",
                 "record": {
                   "$type": "Var(Route)",
@@ -663,7 +669,7 @@
               "name": "list2"
             },
             "set": {
-              "$type": "GetField(Var(Route),Set)",
+              "$type": "GetField(Var(Route);Set)",
               "fieldName": "communities",
               "record": {
                 "$type": "Var(Route)",
@@ -672,9 +678,9 @@
             }
           },
           "trueStatements": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
                 "$type": "True"
               },
@@ -692,7 +698,7 @@
             "name": "list3"
           },
           "set": {
-            "$type": "GetField(Var(Route),Set)",
+            "$type": "GetField(Var(Route);Set)",
             "fieldName": "communities",
             "record": {
               "$type": "Var(Route)",
@@ -701,9 +707,9 @@
           }
         },
         "trueStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -721,11 +727,11 @@
         "$type": "If(Unit)",
         "comment": "~RMCLAUSE~TEST_MATCH_IP1~10~",
         "falseStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
-              "$type": "GetField(Var(Route),Bool)",
+              "$type": "GetField(Var(Route);Bool)",
               "fieldName": "LocalDefaultAction",
               "record": {
                 "$type": "Var(Route)",
@@ -741,7 +747,7 @@
         "guard": {
           "$type": "PrefixContains",
           "addr": {
-            "$type": "GetField(Var(Route),IpAddress)",
+            "$type": "GetField(Var(Route);IpAddress)",
             "fieldName": "prefix",
             "record": {
               "$type": "Var(Route)",
@@ -754,9 +760,9 @@
           }
         },
         "trueStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -774,11 +780,11 @@
         "$type": "If(Unit)",
         "comment": "~RMCLAUSE~TEST_MATCH_IP2~10~",
         "falseStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
-              "$type": "GetField(Var(Route),Bool)",
+              "$type": "GetField(Var(Route);Bool)",
               "fieldName": "LocalDefaultAction",
               "record": {
                 "$type": "Var(Route)",
@@ -794,7 +800,7 @@
         "guard": {
           "$type": "PrefixContains",
           "addr": {
-            "$type": "GetField(Var(Route),IpAddress)",
+            "$type": "GetField(Var(Route);IpAddress)",
             "fieldName": "prefix",
             "record": {
               "$type": "Var(Route)",
@@ -807,9 +813,9 @@
           }
         },
         "trueStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
               "$type": "True"
             },
@@ -827,11 +833,11 @@
         "$type": "If(Unit)",
         "comment": "~RMCLAUSE~TEST_PFX_LENGTH~10~",
         "falseStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
-              "$type": "GetField(Var(Route),Bool)",
+              "$type": "GetField(Var(Route);Bool)",
               "fieldName": "LocalDefaultAction",
               "record": {
                 "$type": "Var(Route)",
@@ -847,7 +853,7 @@
         "guard": {
           "$type": "PrefixContains",
           "addr": {
-            "$type": "GetField(Var(Route),IpAddress)",
+            "$type": "GetField(Var(Route);IpAddress)",
             "fieldName": "prefix",
             "record": {
               "$type": "Var(Route)",
@@ -860,17 +866,17 @@
           }
         },
         "trueStatements": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Return(Pair(Bool;Var(Route))))",
           "first": {
-            "$type": "Seq(_)",
+            "$type": "Seq(Assign(WithField(Var(Route);Set)))",
             "first": {
-              "$type": "Assign(WithField(Var(Route),Set))",
+              "$type": "Assign(WithField(Var(Route);Set))",
               "lhs": {
                 "$type": "Var(Route)",
                 "name": "route"
               },
               "rhs": {
-                "$type": "WithField(Var(Route),Set)",
+                "$type": "WithField(Var(Route);Set)",
                 "fieldName": "lp",
                 "fieldVal": {
                   "$type": "Int32",
@@ -883,13 +889,13 @@
               }
             },
             "second": {
-              "$type": "Assign(WithField(Var(Route),Set))",
+              "$type": "Assign(WithField(Var(Route);Set))",
               "lhs": {
                 "$type": "Var(Route)",
                 "name": "route"
               },
               "rhs": {
-                "$type": "WithField(Var(Route),Set)",
+                "$type": "WithField(Var(Route);Set)",
                 "fieldName": "lp",
                 "fieldVal": {
                   "$type": "Int32",
@@ -903,9 +909,9 @@
             }
           },
           "second": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
                 "$type": "True"
               },
@@ -924,11 +930,11 @@
         "$type": "If(Unit)",
         "comment": "~RMCLAUSE~TEST_UPDATE~10~",
         "falseStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
-              "$type": "GetField(Var(Route),Bool)",
+              "$type": "GetField(Var(Route);Bool)",
               "fieldName": "LocalDefaultAction",
               "record": {
                 "$type": "Var(Route)",
@@ -944,7 +950,7 @@
         "guard": {
           "$type": "PrefixContains",
           "addr": {
-            "$type": "GetField(Var(Route),IpAddress)",
+            "$type": "GetField(Var(Route);IpAddress)",
             "fieldName": "prefix",
             "record": {
               "$type": "Var(Route)",
@@ -957,15 +963,15 @@
           }
         },
         "trueStatements": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Return(Pair(Bool;Var(Route))))",
           "first": {
-            "$type": "Assign(WithField(Var(Route),Set))",
+            "$type": "Assign(WithField(Var(Route);Set))",
             "lhs": {
               "$type": "Var(Route)",
               "name": "route"
             },
             "rhs": {
-              "$type": "WithField(Var(Route),Set)",
+              "$type": "WithField(Var(Route);Set)",
               "fieldName": "lp",
               "fieldVal": {
                 "$type": "Int32",
@@ -978,9 +984,9 @@
             }
           },
           "second": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
                 "$type": "True"
               },
@@ -999,11 +1005,11 @@
         "$type": "If(Unit)",
         "comment": "~RMCLAUSE~TEST_UPDATE_IDEM~10~",
         "falseStatements": {
-          "$type": "Return(Pair(Bool,Var(Route)))",
+          "$type": "Return(Pair(Bool;Var(Route)))",
           "return_value": {
-            "$type": "Pair(Bool,Var(Route))",
+            "$type": "Pair(Bool;Var(Route))",
             "first": {
-              "$type": "GetField(Var(Route),Bool)",
+              "$type": "GetField(Var(Route);Bool)",
               "fieldName": "LocalDefaultAction",
               "record": {
                 "$type": "Var(Route)",
@@ -1019,7 +1025,7 @@
         "guard": {
           "$type": "PrefixContains",
           "addr": {
-            "$type": "GetField(Var(Route),IpAddress)",
+            "$type": "GetField(Var(Route);IpAddress)",
             "fieldName": "prefix",
             "record": {
               "$type": "Var(Route)",
@@ -1032,17 +1038,17 @@
           }
         },
         "trueStatements": {
-          "$type": "Seq(_)",
+          "$type": "Seq(Return(Pair(Bool;Var(Route))))",
           "first": {
-            "$type": "Seq(_)",
+            "$type": "Seq(Assign(WithField(Var(Route);Set)))",
             "first": {
-              "$type": "Assign(WithField(Var(Route),Set))",
+              "$type": "Assign(WithField(Var(Route);Set))",
               "lhs": {
                 "$type": "Var(Route)",
                 "name": "route"
               },
               "rhs": {
-                "$type": "WithField(Var(Route),Set)",
+                "$type": "WithField(Var(Route);Set)",
                 "fieldName": "lp",
                 "fieldVal": {
                   "$type": "Int32",
@@ -1055,13 +1061,13 @@
               }
             },
             "second": {
-              "$type": "Assign(WithField(Var(Route),Set))",
+              "$type": "Assign(WithField(Var(Route);Set))",
               "lhs": {
                 "$type": "Var(Route)",
                 "name": "route"
               },
               "rhs": {
-                "$type": "WithField(Var(Route),Set)",
+                "$type": "WithField(Var(Route);Set)",
                 "fieldName": "lp",
                 "fieldVal": {
                   "$type": "Int32",
@@ -1075,9 +1081,9 @@
             }
           },
           "second": {
-            "$type": "Return(Pair(Bool,Var(Route)))",
+            "$type": "Return(Pair(Bool;Var(Route)))",
             "return_value": {
-              "$type": "Pair(Bool,Var(Route))",
+              "$type": "Pair(Bool;Var(Route))",
               "first": {
                 "$type": "True"
               },

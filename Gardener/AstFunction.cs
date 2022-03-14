@@ -9,7 +9,7 @@ namespace Gardener;
 /// A unary function of type T to T.
 /// </summary>
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
-public class AstFunction<T>
+public class AstFunction<T> : IRenameable
 {
   /// <summary>
   /// The name of the argument to the function.

@@ -128,4 +128,11 @@ public static class BatfishBgpRouteExtensions
       Zen.If(Zen.Not(b2.IsValid()), b1,
         largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))))));
   }
+
+  public static Zen<Pair<bool, BatfishBgpRoute>> MinPair(this Zen<Pair<bool, BatfishBgpRoute>> b1,
+    Zen<Pair<bool, BatfishBgpRoute>> b2)
+  {
+    return Zen.If(Zen.Not(b1.Item1()), b2,
+      Zen.If(Zen.Not(b2.Item1()), b1, Pair.Create(Zen.True(), Min(b1.Item2(), b2.Item2()))));
+  }
 }

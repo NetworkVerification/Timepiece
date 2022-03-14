@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Gardener.AstStmt;
 
-public abstract class Statement<T, TState>
+public abstract class Statement<T, TState> : IRenameable
 {
   public abstract State<TState> Evaluate(State<TState> state);
 

@@ -1,29 +1,32 @@
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Numerics;
+using System.Reflection.Metadata;
 using Karesansui;
 using Karesansui.Networks;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ZenLib;
 
 namespace Gardener;
 
-using AstZenFunction = Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>;
-using AstZenConstraint = Func<Zen<BatfishBgpRoute>, Zen<bool>>;
-using AstZenTemporalConstraint = Func<Zen<BatfishBgpRoute>, Zen<BigInteger>, Zen<bool>>;
+using Route = Pair<bool, BatfishBgpRoute>;
+using AstZenFunction = Func<Zen<Pair<bool, BatfishBgpRoute>>, Zen<Pair<bool, BatfishBgpRoute>>>;
+using AstZenConstraint = Func<Zen<Pair<bool, BatfishBgpRoute>>, Zen<bool>>;
+using AstZenTemporalConstraint = Func<Zen<Pair<bool, BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>;
 
 public class Ast
 {
   /// <summary>
   /// The nodes of the network with their associated policies.
   /// </summary>
-  public Dictionary<string, NodeProperties<BatfishBgpRoute>> Nodes { get; set; }
+  public Dictionary<string, NodeProperties<Route>> Nodes { get; set; }
 
   /// <summary>
   /// Additional function declarations.
   /// </summary>
-  public Dictionary<string, AstFunction<BatfishBgpRoute>> Declarations { get; set; }
+  public Dictionary<string, AstFunction<Route>> Declarations { get; set; }
 
   /// <summary>
   /// Additional constant declarations.
@@ -38,23 +41,38 @@ public class Ast
   /// <summary>
   /// Assertions over routes.
   /// </summary>
-  public Dictionary<string, AstPredicate<BatfishBgpRoute>> Assertions { get; set; }
+  public Dictionary<string, AstPredicate<Route>> Assertions { get; set; }
+
+
+  /// <summary>
+  /// Temporal invariants over routes.
+  /// </summary>
+  public Dictionary<string, AstPredicate<Pair<Route, BigInteger>>> Invariants { get; set; }
 
   [System.Text.Json.Serialization.JsonConstructor]
-  public Ast(Dictionary<string, NodeProperties<BatfishBgpRoute>> nodes,
-    Dictionary<string, AstFunction<BatfishBgpRoute>> declarations, Dictionary<string, JObject> symbolics,
-    Dictionary<string, JObject> constants, Dictionary<string, AstPredicate<BatfishBgpRoute>> assertions)
+  public Ast(Dictionary<string, NodeProperties<Route>> nodes,
+    Dictionary<string, AstFunction<Route>> declarations, Dictionary<string, JObject> symbolics,
+    Dictionary<string, JObject> constants, Dictionary<string, AstPredicate<Route>> assertions,
+    Dictionary<string, AstPredicate<Pair<Route, BigInteger>>> invariants)
   {
     Nodes = nodes;
     Declarations = declarations;
-    // make the declaration functions' arguments unique
+    Symbolics = symbolics;
+    Constants = constants;
+    Assertions = assertions;
+    Invariants = invariants;
+    DisambiguateVariableNames();
+  }
+
+  /// <summary>
+  /// Make the arguments to all AstFunctions unique.
+  /// </summary>
+  private void DisambiguateVariableNames()
+  {
     foreach (var (name, function) in Declarations)
     {
       function.Rename(function.Arg, $"${function.Arg}~{VarCounter.Request()}");
     }
-    Symbolics = symbolics;
-    Constants = constants;
-    Assertions = assertions;
   }
 
   public static JsonSerializer Serializer()
@@ -62,17 +80,17 @@ public class Ast
     return new JsonSerializer
     {
       TypeNameHandling = TypeNameHandling.All,
-      SerializationBinder = new AstBinder()
+      SerializationBinder = new AstBinder<Route>()
     };
   }
 
-  public Network<BatfishBgpRoute, TS> ToNetwork<TS>(IPAddress? destination)
+  public Network<Route, TS> ToNetwork<TS>(IPAddress? destination)
   {
     // construct all the mappings we'll need
     var edges = new Dictionary<string, List<string>>();
-    var importFunctions = new Dictionary<(string, string), AstFunction<BatfishBgpRoute>>();
-    var exportFunctions = new Dictionary<(string, string), AstFunction<BatfishBgpRoute>>();
-    var initFunction = new Dictionary<string, Zen<BatfishBgpRoute>>();
+    var importFunctions = new Dictionary<(string, string), AstFunction<Route>>();
+    var exportFunctions = new Dictionary<(string, string), AstFunction<Route>>();
+    var initFunction = new Dictionary<string, Zen<Route>>();
     var monolithicAssertions = new Dictionary<string, AstZenConstraint>();
     var annotations = new Dictionary<string, AstZenTemporalConstraint>();
 
@@ -84,14 +102,9 @@ public class Ast
       }
 
       // init
-      if (props.Prefixes.Any(range => range.Contains(destination)))
-      {
-        initFunction[node] = Zen.Constant(new BatfishBgpRoute()).Valid(true);
-      }
-      else
-      {
-        initFunction[node] = new BatfishBgpRoute();
-      }
+      initFunction[node] = Pair.Create<bool, BatfishBgpRoute>(
+        props.Prefixes.Any(range => range.Contains(destination)),
+          new BatfishBgpRoute());
 
       // assert
       if (props.Assert is null)
@@ -101,7 +114,7 @@ public class Ast
       else
       {
         var assert = Assertions[props.Assert];
-        monolithicAssertions[node] = assert.Evaluate(new State<BatfishBgpRoute>());
+        monolithicAssertions[node] = assert.Evaluate(new State<Route>());
       }
 
       // invariant
@@ -111,8 +124,8 @@ public class Ast
       }
       else
       {
-        var fn =
-          props.Invariant.Evaluate(new State<Pair<BatfishBgpRoute, BigInteger>>());
+        var inv = Invariants[props.Invariant];
+        var fn = inv.Evaluate(new State<Pair<Route, BigInteger>>());
         annotations[node] = (r, t) => fn(Pair.Create(r, t));
       }
 
@@ -125,8 +138,8 @@ public class Ast
         // get each declaration and cast it to an AstFunc from route to route
         var expFuncs = policies.Export.Select(policyName => Declarations[policyName]);
         var impFuncs = policies.Import.Select(policyName => Declarations[policyName]);
-        var export = AstFunction<BatfishBgpRoute>.Compose(expFuncs);
-        var import = AstFunction<BatfishBgpRoute>.Compose(impFuncs);
+        var export = AstFunction<Route>.Compose(expFuncs);
+        var import = AstFunction<Route>.Compose(impFuncs);
         // set the policies if they are missing
         exportFunctions[fwdEdge] = export;
         importFunctions[bwdEdge] = import;
@@ -138,14 +151,14 @@ public class Ast
     {
       // compose the export and import and evaluate on a fresh state
       // NOTE: assumes that every export edge has a corresponding import edge (i.e. the graph is undirected)
-      transferFunction.Add(edge, export.Compose(importFunctions[edge]).Evaluate(new State<BatfishBgpRoute>()));
+      transferFunction.Add(edge, export.Compose(importFunctions[edge]).Evaluate(new State<Route>()));
     }
 
     var topology = new Topology(edges);
 
-    return new Network<BatfishBgpRoute, TS>(topology,
+    return new Network<Route, TS>(topology,
       transferFunction,
-      BatfishBgpRouteExtensions.Min,
+      BatfishBgpRouteExtensions.MinPair,
       initFunction,
       annotations,
       topology.ForAllNodes(n => Lang.Finally(new BigInteger(topology.NEdges), monolithicAssertions[n])),
