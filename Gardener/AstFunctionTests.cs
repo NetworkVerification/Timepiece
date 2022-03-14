@@ -5,9 +5,8 @@ using ZenLib;
 
 namespace Gardener;
 
-public static class AstFuncTests
+public static class AstFunctionTests
 {
-
   [Fact]
   public static void TestHavoc()
   {
@@ -30,5 +29,15 @@ public static class AstFuncTests
     // since the if is a havoc, we have that zenF(r) is either incremented or the same:
     var model = Zen.Not(Zen.And(Zen.Eq(zenF(r), r), Zen.Eq(zenF(r), rIncremented))).Solve();
     Assert.True(model.IsSatisfiable());
+  }
+
+  public static void TestRename()
+  {
+    var f1 = new AstFunction<int>("x", new Seq<int, int>(new IfThenElse<Unit, int>(new Havoc<int>(),
+      new Assign<int>("x", new Plus<int, int>(new Var<int>("x"), new ConstantExpr<int, int>(1))),
+      new Assign<int>("x", new ConstantExpr<int, int>(0))), new Return<int>(new Var<int>("x"))));
+    var f2 = new AstFunction<int>("x",
+      new Return<int>(new Plus<int, int>(new Var<int>("x"), new ConstantExpr<int, int>(3))));
+    f1.Compose(f2);
   }
 }
