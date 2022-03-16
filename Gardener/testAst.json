@@ -60,16 +60,10 @@
     "identity": {
       "arg": "x",
       "body": {
-        "$type": "Return(Pair(Bool;Var(Route)))",
+        "$type": "Return(Pair(Bool;Route))",
         "return_value": {
-          "$type": "Pair(Bool;Var(Route))",
-          "first": {
-            "$type": "True"
-          },
-          "second": {
-            "$type": "Var(Route)",
-            "name": "x"
-          }
+          "$type": "Var(Pair(Bool;Route))",
+          "name": "x"
         }
       }
     }
@@ -80,9 +74,9 @@
     "isValid": {
       "arg": "route",
       "expr": {
-        "$type": "First(Bool;Var(Route))",
+        "$type": "First(Bool;Route)",
         "pair": {
-          "$type": "Var(Route)",
+          "$type": "Var(Pair(Bool;Route))",
           "name": "route"
         }
       }
@@ -92,7 +86,7 @@
     "isValidFinally": {
       "arg": "rt",
       "expr": {
-        "$type": "Finally(Var(Route))",
+        "$type": "Finally(Route)",
         "time": 2,
         "predicate": {
           "$type": "Call(Assertion)",

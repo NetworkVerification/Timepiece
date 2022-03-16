@@ -2,6 +2,8 @@ using System.Diagnostics.Metrics;
 using System.Net;
 using System.Numerics;
 using System.Reflection.Metadata;
+using Gardener.AstExpr;
+using Gardener.AstStmt;
 using Karesansui;
 using Karesansui.Networks;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
@@ -72,6 +74,7 @@ public class Ast
     foreach (var (name, function) in Declarations)
     {
       function.Rename(function.Arg, $"${function.Arg}~{VarCounter.Request()}");
+      Console.WriteLine($"New function arg: {function.Arg}");
     }
   }
 
@@ -80,8 +83,22 @@ public class Ast
     return new JsonSerializer
     {
       TypeNameHandling = TypeNameHandling.All,
-      SerializationBinder = new AstBinder<Route>()
+      SerializationBinder = new AstSerializationBinder<BatfishBgpRoute>()
     };
+  }
+
+  // default export behavior for a route, always used
+  public static AstFunction<Route> DefaultExport()
+  {
+    return new AstFunction<Route>("arg",
+      new Return<Route>(
+        new PairExpr<bool, BatfishBgpRoute, Route>(
+          new First<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
+          new WithField<BatfishBgpRoute, int, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
+            "AsPathLength",
+            new Plus<int, Route>(
+              new GetField<BatfishBgpRoute, int, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
+                "AsPathLength"), new ConstantExpr<int, Route>(1))))));
   }
 
   public Network<Route, TS> ToNetwork<TS>(IPAddress? destination)
@@ -104,7 +121,7 @@ public class Ast
       // init
       initFunction[node] = Pair.Create<bool, BatfishBgpRoute>(
         props.Prefixes.Any(range => range.Contains(destination)),
-          new BatfishBgpRoute());
+        new BatfishBgpRoute());
 
       // assert
       if (props.Assert is null)
@@ -138,9 +155,9 @@ public class Ast
         // get each declaration and cast it to an AstFunc from route to route
         var expFuncs = policies.Export.Select(policyName => Declarations[policyName]);
         var impFuncs = policies.Import.Select(policyName => Declarations[policyName]);
-        var export = AstFunction<Route>.Compose(expFuncs);
-        var import = AstFunction<Route>.Compose(impFuncs);
-        // set the policies if they are missing
+        var export = AstFunction<Route>.Compose(expFuncs, DefaultExport());
+        var import = AstFunction<Route>.Compose(impFuncs, AstFunction<Route>.Identity());
+        // set the policies
         exportFunctions[fwdEdge] = export;
         importFunctions[bwdEdge] = import;
       }

@@ -6,7 +6,7 @@ using ZenLib;
 namespace Gardener;
 
 /// <summary>
-/// A unary function of type T to T.
+/// A unary function of type T to Option T.
 /// </summary>
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
 public class AstFunction<T> : IRenameable
@@ -66,13 +66,13 @@ public class AstFunction<T> : IRenameable
   /// <summary>
   /// Compose an enumerable of AstFunc which all have the same type.
   /// </summary>
-  /// <param name="functions"></param>
-  /// <typeparam name="T"></typeparam>
-  /// <returns></returns>
-  public static AstFunction<T> Compose(IEnumerable<AstFunction<T>> functions)
+  /// <param name="functions">An enumerable of functions to compose.</param>
+  /// <param name="seed">A starting function for the composition.</param>
+  /// <typeparam name="T">The type of the function's inputs and outputs.</typeparam>
+  /// <returns>A final function representing the composition of all inputs.</returns>
+  public static AstFunction<T> Compose(IEnumerable<AstFunction<T>> functions, AstFunction<T> seed)
   {
-    var f = Identity();
-    return functions.Aggregate(f, (current, ff) => current.Compose(ff));
+    return functions.Aggregate(seed, (current, ff) => current.Compose(ff));
   }
 
   public Func<Zen<T>, Zen<T>> Evaluate(State<T> state)

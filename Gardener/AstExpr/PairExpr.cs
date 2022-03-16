@@ -13,6 +13,11 @@ public class PairExpr<TA, TB, T> : Expr<Pair<TA, TB>, T>
     _second = second;
   }
 
+  public PairExpr<TA, TB, T> WithSecond(Expr<TB, T> snd)
+  {
+    return new PairExpr<TA, TB, T>(_first, snd);
+  }
+
   public override Func<Zen<T>, Zen<Pair<TA, TB>>> Evaluate(State<T> state)
   {
     return r => Pair.Create(_first.Evaluate(state)(r), _second.Evaluate(state)(r));

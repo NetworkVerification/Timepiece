@@ -2,6 +2,12 @@ using ZenLib;
 
 namespace Gardener.AstExpr;
 
+/// <summary>
+/// An expression getting a named field from a record.
+/// </summary>
+/// <typeparam name="T1">The type of the record.</typeparam>
+/// <typeparam name="T2">The type of the field.</typeparam>
+/// <typeparam name="TState">The type of the evaluation state.</typeparam>
 public class GetField<T1, T2, TState> : Expr<T2, TState>
 {
   public Expr<T1, TState> Record { get; set; }
