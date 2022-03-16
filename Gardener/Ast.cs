@@ -1,12 +1,10 @@
-using System.Diagnostics.Metrics;
 using System.Net;
 using System.Numerics;
-using System.Reflection.Metadata;
 using Gardener.AstExpr;
+using Gardener.AstFunction;
 using Gardener.AstStmt;
 using Karesansui;
 using Karesansui.Networks;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ZenLib;
@@ -71,7 +69,7 @@ public class Ast
   /// </summary>
   private void DisambiguateVariableNames()
   {
-    foreach (var (name, function) in Declarations)
+    foreach (var function in Declarations.Values)
     {
       function.Rename(function.Arg, $"${function.Arg}~{VarCounter.Request()}");
       Console.WriteLine($"New function arg: {function.Arg}");
@@ -83,7 +81,7 @@ public class Ast
     return new JsonSerializer
     {
       TypeNameHandling = TypeNameHandling.All,
-      SerializationBinder = new AstSerializationBinder<BatfishBgpRoute>()
+      SerializationBinder = new AstSerializationBinder<BatfishBgpRoute, Route>()
     };
   }
 

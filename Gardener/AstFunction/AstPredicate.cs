@@ -1,7 +1,7 @@
 using Gardener.AstExpr;
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstFunction;
 
 /// <summary>
 /// A unary function from type T to bool, aka a predicate over type T.

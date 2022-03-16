@@ -3,7 +3,7 @@ using Gardener.AstStmt;
 using Xunit;
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstFunction;
 
 public static class AstFunctionTests
 {

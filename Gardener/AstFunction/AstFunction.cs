@@ -3,7 +3,7 @@ using Gardener.AstExpr;
 using Gardener.AstStmt;
 using ZenLib;
 
-namespace Gardener;
+namespace Gardener.AstFunction;
 
 /// <summary>
 /// A unary function of type T to Option T.

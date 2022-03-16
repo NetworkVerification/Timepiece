@@ -60,9 +60,9 @@
     "identity": {
       "arg": "x",
       "body": {
-        "$type": "Return(Pair(Bool;Route))",
+        "$type": "Return(TPair(TBool;TRoute))",
         "return_value": {
-          "$type": "Var(Pair(Bool;Route))",
+          "$type": "Var(TPair(TBool;TRoute))",
           "name": "x"
         }
       }
@@ -74,9 +74,9 @@
     "isValid": {
       "arg": "route",
       "expr": {
-        "$type": "First(Bool;Route)",
+        "$type": "First(TBool;TRoute)",
         "pair": {
-          "$type": "Var(Pair(Bool;Route))",
+          "$type": "Var(TPair(TBool;TRoute))",
           "name": "route"
         }
       }
@@ -86,7 +86,7 @@
     "isValidFinally": {
       "arg": "rt",
       "expr": {
-        "$type": "Finally(Route)",
+        "$type": "Finally(TRoute)",
         "time": 2,
         "predicate": {
           "$type": "Call(Assertion)",

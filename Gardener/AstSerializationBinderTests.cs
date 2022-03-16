@@ -5,24 +5,26 @@ using ZenLib;
 
 namespace Gardener;
 
-using Route = Pair<bool, BatfishBgpRoute>;
+using ZenRoute = Pair<bool, BatfishBgpRoute>;
+using AstRoute = PairExpr<bool, BatfishBgpRoute, Pair<bool, BatfishBgpRoute>>;
 
 public static class AstSerializationBinderTests
 {
   /// <summary>
   /// The binder to use for the tests.
   /// </summary>
-  private static readonly AstSerializationBinder<BatfishBgpRoute> _binder = new();
+  private static readonly AstSerializationBinder<BatfishBgpRoute, ZenRoute> Binder = new();
 
   [Theory]
-  [InlineData("Route", typeof(BatfishBgpRoute))]
-  [InlineData("Bool", typeof(bool))]
-  [InlineData("Return(Route)", typeof(Return<Route>))]
-  [InlineData("Pair(Bool;Route)", typeof(PairExpr<bool, BatfishBgpRoute, Route>))]
-  [InlineData("Return(Pair(Bool;Route))", typeof(Return<Route>))]
+  [InlineData("TRoute", typeof(BatfishBgpRoute))]
+  [InlineData("TBool", typeof(bool))]
+  [InlineData("Pair(TBool;TRoute)", typeof(AstRoute))]
+  [InlineData("Return(TPair(TBool;TRoute))", typeof(Return<ZenRoute>))]
+  [InlineData("Var(TPair(TBool;TRoute))", typeof(Var<ZenRoute>))]
+  [InlineData("If(TPair(TBool;TRoute))", typeof(IfThenElse<ZenRoute, ZenRoute>))]
   public static void BindToTypeAuxReturnsCorrectType(string typeName, Type expectedType)
   {
-    var t = _binder.BindToType(null, typeName);
+    var t = Binder.BindToType(null, typeName);
     Assert.Equal(expectedType, t);
   }
 }
