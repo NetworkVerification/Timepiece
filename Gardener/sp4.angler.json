@@ -1,0 +1,450 @@
+{
+  "Assertions": {},
+  "Nodes": {
+    "aggregation-12": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-0": {
+          "export": [],
+          "import": []
+        },
+        "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-15": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.12.0",
+          "End": "70.0.12.255"
+        }
+      ]
+    },
+    "aggregation-13": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-2": {
+          "export": [],
+          "import": []
+        },
+        "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-15": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.13.0",
+          "End": "70.0.13.255"
+        }
+      ]
+    },
+    "aggregation-16": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-0": {
+          "export": [],
+          "import": []
+        },
+        "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-19": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.16.0",
+          "End": "70.0.16.255"
+        }
+      ]
+    },
+    "aggregation-17": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-2": {
+          "export": [],
+          "import": []
+        },
+        "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-19": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.17.0",
+          "End": "70.0.17.255"
+        }
+      ]
+    },
+    "aggregation-4": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-0": {
+          "export": [],
+          "import": []
+        },
+        "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-7": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.4.0",
+          "End": "70.0.4.255"
+        }
+      ]
+    },
+    "aggregation-5": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-2": {
+          "export": [],
+          "import": []
+        },
+        "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-7": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.5.0",
+          "End": "70.0.5.255"
+        }
+      ]
+    },
+    "aggregation-8": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-0": {
+          "export": [],
+          "import": []
+        },
+        "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-11": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.8.0",
+          "End": "70.0.8.255"
+        }
+      ]
+    },
+    "aggregation-9": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "core-2": {
+          "export": [],
+          "import": []
+        },
+        "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-11": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.9.0",
+          "End": "70.0.9.255"
+        }
+      ]
+    },
+    "core-0": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-12": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-16": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-8": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.0.0",
+          "End": "70.0.0.255"
+        }
+      ]
+    },
+    "core-1": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-12": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-16": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-8": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.1.0",
+          "End": "70.0.1.255"
+        }
+      ]
+    },
+    "core-2": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-13": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-17": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-9": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.2.0",
+          "End": "70.0.2.255"
+        }
+      ]
+    },
+    "core-3": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-13": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-17": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-9": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.3.0",
+          "End": "70.0.3.255"
+        }
+      ]
+    },
+    "edge-10": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-9": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.10.0",
+          "End": "70.0.10.255"
+        }
+      ]
+    },
+    "edge-11": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-9": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.11.0",
+          "End": "70.0.11.255"
+        }
+      ]
+    },
+    "edge-14": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-13": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.14.0",
+          "End": "70.0.14.255"
+        }
+      ]
+    },
+    "edge-15": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-13": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.15.0",
+          "End": "70.0.15.255"
+        }
+      ]
+    },
+    "edge-18": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-17": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.18.0",
+          "End": "70.0.18.255"
+        }
+      ]
+    },
+    "edge-19": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-17": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.19.0",
+          "End": "70.0.19.255"
+        }
+      ]
+    },
+    "edge-6": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-5": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.6.0",
+          "End": "70.0.6.255"
+        }
+      ]
+    },
+    "edge-7": {
+      "Assertions": [],
+      "Consts": {},
+      "Declarations": {},
+      "Policies": {
+        "aggregation-5": {
+          "export": [],
+          "import": []
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.7.0",
+          "End": "70.0.7.255"
+        }
+      ]
+    }
+  },
+  "Route": {
+    "communities": "TSet",
+    "lp": "TInt32",
+    "metric": "TInt32",
+    "prefix": "TIpAddress",
+    "tag": "TInt32"
+  },
+  "Symbolics": {},
+  "TemporalInvariants": {}
+}

@@ -15,7 +15,7 @@ public class AstPredicate<T> : IRenameable
     Expr = expr;
   }
 
-  public Expr<bool,T> Expr { get; set; }
+  public Expr<bool, T> Expr { get; set; }
 
   public string Arg { get; set; }
 
@@ -28,10 +28,20 @@ public class AstPredicate<T> : IRenameable
 
   public void Rename(string oldArg, string newArg)
   {
-      if (Arg.Equals(oldArg))
-      {
-        Arg = newArg;
-      }
-      Expr.Rename(oldArg, newArg);
+    if (Arg.Equals(oldArg))
+    {
+      Arg = newArg;
     }
+
+    Expr.Rename(oldArg, newArg);
+  }
+}
+
+public static class AstPredicateExtensions
+{
+  public static Func<Zen<T1>, Zen<T2>, Zen<bool>> EvaluateBinary<T1, T2>(this AstPredicate<Pair<T1, T2>> f,
+    State<Pair<T1, T2>> state)
+  {
+    return (t1, t2) => f.Evaluate(state)(Pair.Create(t1, t2));
+  }
 }

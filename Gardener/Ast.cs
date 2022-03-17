@@ -1,182 +1,100 @@
-using System.Net;
 using System.Numerics;
-using Gardener.AstExpr;
 using Gardener.AstFunction;
-using Gardener.AstStmt;
 using Karesansui;
 using Karesansui.Networks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using NetTools;
 using ZenLib;
 
 namespace Gardener;
 
-using Route = Pair<bool, BatfishBgpRoute>;
-using AstZenFunction = Func<Zen<Pair<bool, BatfishBgpRoute>>, Zen<Pair<bool, BatfishBgpRoute>>>;
-using AstZenConstraint = Func<Zen<Pair<bool, BatfishBgpRoute>>, Zen<bool>>;
-using AstZenTemporalConstraint = Func<Zen<Pair<bool, BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>;
-
-public class Ast
+public class Ast<T, TS>
 {
   /// <summary>
   /// The nodes of the network with their associated policies.
   /// </summary>
-  public Dictionary<string, NodeProperties<Route>> Nodes { get; set; }
-
-  /// <summary>
-  /// Additional function declarations.
-  /// </summary>
-  public Dictionary<string, AstFunction<Route>> Declarations { get; set; }
-
-  /// <summary>
-  /// Additional constant declarations.
-  /// </summary>
-  public Dictionary<string, JObject> Constants { get; set; }
+  public Dictionary<string, NodeProperties<T>> Nodes { get; }
 
   /// <summary>
   /// Symbolic expressions.
   /// </summary>
-  public Dictionary<string, JObject> Symbolics { get; set; }
+  public Dictionary<string, AstPredicate<TS>> Symbolics { get; }
 
   /// <summary>
   /// Assertions over routes.
   /// </summary>
-  public Dictionary<string, AstPredicate<Route>> Assertions { get; set; }
+  public Dictionary<string, AstPredicate<Pair<T, BigInteger>>> Assertions { get; }
 
 
   /// <summary>
   /// Temporal invariants over routes.
   /// </summary>
-  public Dictionary<string, AstPredicate<Pair<Route, BigInteger>>> Invariants { get; set; }
+  public Dictionary<string, AstPredicate<Pair<T, BigInteger>>> Invariants { get; }
 
   [System.Text.Json.Serialization.JsonConstructor]
-  public Ast(Dictionary<string, NodeProperties<Route>> nodes,
-    Dictionary<string, AstFunction<Route>> declarations, Dictionary<string, JObject> symbolics,
-    Dictionary<string, JObject> constants, Dictionary<string, AstPredicate<Route>> assertions,
-    Dictionary<string, AstPredicate<Pair<Route, BigInteger>>> invariants)
+  public Ast(Dictionary<string, NodeProperties<T>> nodes,
+    Dictionary<string, AstPredicate<TS>> symbolics,
+    Dictionary<string, AstPredicate<Pair<T, BigInteger>>> assertions,
+    Dictionary<string, AstPredicate<Pair<T, BigInteger>>> invariants)
   {
     Nodes = nodes;
-    Declarations = declarations;
     Symbolics = symbolics;
-    Constants = constants;
     Assertions = assertions;
     Invariants = invariants;
-    DisambiguateVariableNames();
   }
 
-  /// <summary>
-  /// Make the arguments to all AstFunctions unique.
-  /// </summary>
-  private void DisambiguateVariableNames()
-  {
-    foreach (var function in Declarations.Values)
-    {
-      function.Rename(function.Arg, $"${function.Arg}~{VarCounter.Request()}");
-      Console.WriteLine($"New function arg: {function.Arg}");
-    }
-  }
-
-  public static JsonSerializer Serializer()
-  {
-    return new JsonSerializer
-    {
-      TypeNameHandling = TypeNameHandling.All,
-      SerializationBinder = new AstSerializationBinder<BatfishBgpRoute, Route>()
-    };
-  }
-
-  // default export behavior for a route, always used
-  public static AstFunction<Route> DefaultExport()
-  {
-    return new AstFunction<Route>("arg",
-      new Return<Route>(
-        new PairExpr<bool, BatfishBgpRoute, Route>(
-          new First<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-          new WithField<BatfishBgpRoute, int, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-            "AsPathLength",
-            new Plus<int, Route>(
-              new GetField<BatfishBgpRoute, int, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-                "AsPathLength"), new ConstantExpr<int, Route>(1))))));
-  }
-
-  public Network<Route, TS> ToNetwork<TS>(IPAddress? destination)
+  public Network<T, TS> ToNetwork(Func<List<IPAddressRange>, Zen<T>> initGenerator,
+    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, AstFunction<T> defaultExport,
+    AstFunction<T> defaultImport)
   {
     // construct all the mappings we'll need
     var edges = new Dictionary<string, List<string>>();
-    var importFunctions = new Dictionary<(string, string), AstFunction<Route>>();
-    var exportFunctions = new Dictionary<(string, string), AstFunction<Route>>();
-    var initFunction = new Dictionary<string, Zen<Route>>();
-    var monolithicAssertions = new Dictionary<string, AstZenConstraint>();
-    var annotations = new Dictionary<string, AstZenTemporalConstraint>();
+    var initFunction = new Dictionary<string, Zen<T>>();
+    var modularProperties = new Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>();
+    var annotations = new Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>();
+    var exportFunctions = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
+    var importFunctions = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
 
     foreach (var (node, props) in Nodes)
     {
-      if (!edges.ContainsKey(node))
+      var details = props.CreateNode(initGenerator, s => Assertions[s], s => Invariants[s],
+        defaultExport, defaultImport);
+      edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
+      initFunction[node] = details.initialValue;
+      modularProperties[node] = details.safetyProperty;
+      annotations[node] = details.annotation;
+      foreach (var (nbr, fn) in details.exports)
       {
-        edges.Add(node, new List<string>());
+        exportFunctions[(node, nbr)] = fn;
       }
 
-      // init
-      initFunction[node] = Pair.Create<bool, BatfishBgpRoute>(
-        props.Prefixes.Any(range => range.Contains(destination)),
-        new BatfishBgpRoute());
-
-      // assert
-      if (props.Assert is null)
+      foreach (var (nbr, fn) in details.imports)
       {
-        monolithicAssertions[node] = _ => true;
-      }
-      else
-      {
-        var assert = Assertions[props.Assert];
-        monolithicAssertions[node] = assert.Evaluate(new State<Route>());
-      }
-
-      // invariant
-      if (props.Invariant is null)
-      {
-        annotations[node] = (_, _) => true;
-      }
-      else
-      {
-        var inv = Invariants[props.Invariant];
-        var fn = inv.Evaluate(new State<Pair<Route, BigInteger>>());
-        annotations[node] = (r, t) => fn(Pair.Create(r, t));
-      }
-
-      // transfer
-      foreach (var (neighbor, policies) in props.Policies)
-      {
-        edges[node].Add(neighbor);
-        var fwdEdge = (node, neighbor);
-        var bwdEdge = (neighbor, node);
-        // get each declaration and cast it to an AstFunc from route to route
-        var expFuncs = policies.Export.Select(policyName => Declarations[policyName]);
-        var impFuncs = policies.Import.Select(policyName => Declarations[policyName]);
-        var export = AstFunction<Route>.Compose(expFuncs, DefaultExport());
-        var import = AstFunction<Route>.Compose(impFuncs, AstFunction<Route>.Identity());
-        // set the policies
-        exportFunctions[fwdEdge] = export;
-        importFunctions[bwdEdge] = import;
+        importFunctions[(nbr, node)] = fn;
       }
     }
 
-    var transferFunction = new Dictionary<(string, string), AstZenFunction>();
+    var transferFunction = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
     foreach (var (edge, export) in exportFunctions)
     {
       // compose the export and import and evaluate on a fresh state
       // NOTE: assumes that every export edge has a corresponding import edge (i.e. the graph is undirected)
-      transferFunction.Add(edge, export.Compose(importFunctions[edge]).Evaluate(new State<Route>()));
+      transferFunction.Add(edge, r => importFunctions[edge](export(r)));
     }
 
     var topology = new Topology(edges);
+    // construct a reasonable estimate of the monolithic properties by checking that the modular properties
+    // will hold at a time equal to the number of nodes in the network (i.e. the longest path possible)
+    var monolithicProperties =
+      topology.ForAllNodes<Func<Zen<T>, Zen<bool>>>(n => r => modularProperties[n](r, new BigInteger(topology.NEdges)));
 
-    return new Network<Route, TS>(topology,
+    return new Network<T, TS>(topology,
       transferFunction,
-      BatfishBgpRouteExtensions.MinPair,
+      mergeFunction,
       initFunction,
       annotations,
-      topology.ForAllNodes(n => Lang.Finally(new BigInteger(topology.NEdges), monolithicAssertions[n])),
-      monolithicAssertions, Array.Empty<SymbolicValue<TS>>());
+      modularProperties,
+      monolithicProperties,
+      Symbolics.Select(nameConstraint =>
+        new SymbolicValue<TS>(nameConstraint.Key, nameConstraint.Value.Evaluate(new State<TS>()))).ToArray());
   }
 }
