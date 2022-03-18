@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Gardener.AstExpr;
 
-public abstract class Expr<T, TState> : IRenameable
+public abstract class Expr<T, TState> : IRenameable, IEvaluable<TState, T>
 {
   public abstract Func<Zen<TState>, Zen<T>> Evaluate(State<TState> state);
 
@@ -13,4 +13,9 @@ public abstract class Expr<T, TState> : IRenameable
   /// <param name="oldVar">The variable name to rename.</param>
   /// <param name="newVar">The replacement variable name.</param>
   public abstract void Rename(string oldVar, string newVar);
+
+  public static Expr<T, TState2> Map<TState2>()
+  {
+    throw new NotImplementedException();
+  }
 }

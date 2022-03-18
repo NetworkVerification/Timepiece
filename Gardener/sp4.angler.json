@@ -1,8 +1,22 @@
 {
-  "Assertions": {},
+  "Assertions": {
+    "isValid": {
+      "arg": "rt",
+      "expr": {
+        "$type": "!First(TBool;TRoute)",
+        "pair": {
+          "$type": "!First(TPair(TBool;TRoute); TTime)",
+          "pair": {
+            "$type": "!Var(TPair(TBool;TRoute))",
+            "name": "rt"
+          }
+        }
+      }
+    }
+  },
   "Nodes": {
     "aggregation-12": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -11,6 +25,10 @@
           "import": []
         },
         "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-14": {
           "export": [],
           "import": []
         },
@@ -27,7 +45,7 @@
       ]
     },
     "aggregation-13": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -36,6 +54,10 @@
           "import": []
         },
         "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-14": {
           "export": [],
           "import": []
         },
@@ -52,7 +74,7 @@
       ]
     },
     "aggregation-16": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -61,6 +83,10 @@
           "import": []
         },
         "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-18": {
           "export": [],
           "import": []
         },
@@ -77,7 +103,7 @@
       ]
     },
     "aggregation-17": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -86,6 +112,10 @@
           "import": []
         },
         "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-18": {
           "export": [],
           "import": []
         },
@@ -102,7 +132,7 @@
       ]
     },
     "aggregation-4": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -111,6 +141,10 @@
           "import": []
         },
         "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-6": {
           "export": [],
           "import": []
         },
@@ -127,7 +161,7 @@
       ]
     },
     "aggregation-5": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -136,6 +170,10 @@
           "import": []
         },
         "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-6": {
           "export": [],
           "import": []
         },
@@ -152,7 +190,7 @@
       ]
     },
     "aggregation-8": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -161,6 +199,10 @@
           "import": []
         },
         "core-1": {
+          "export": [],
+          "import": []
+        },
+        "edge-10": {
           "export": [],
           "import": []
         },
@@ -177,7 +219,7 @@
       ]
     },
     "aggregation-9": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -186,6 +228,10 @@
           "import": []
         },
         "core-3": {
+          "export": [],
+          "import": []
+        },
+        "edge-10": {
           "export": [],
           "import": []
         },
@@ -202,7 +248,7 @@
       ]
     },
     "core-0": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -211,6 +257,10 @@
           "import": []
         },
         "aggregation-16": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-4": {
           "export": [],
           "import": []
         },
@@ -227,7 +277,7 @@
       ]
     },
     "core-1": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -236,6 +286,10 @@
           "import": []
         },
         "aggregation-16": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-4": {
           "export": [],
           "import": []
         },
@@ -252,7 +306,7 @@
       ]
     },
     "core-2": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -261,6 +315,10 @@
           "import": []
         },
         "aggregation-17": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-5": {
           "export": [],
           "import": []
         },
@@ -277,7 +335,7 @@
       ]
     },
     "core-3": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -286,6 +344,10 @@
           "import": []
         },
         "aggregation-17": {
+          "export": [],
+          "import": []
+        },
+        "aggregation-5": {
           "export": [],
           "import": []
         },
@@ -302,10 +364,14 @@
       ]
     },
     "edge-10": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-8": {
+          "export": [],
+          "import": []
+        },
         "aggregation-9": {
           "export": [],
           "import": []
@@ -319,10 +385,14 @@
       ]
     },
     "edge-11": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-8": {
+          "export": [],
+          "import": []
+        },
         "aggregation-9": {
           "export": [],
           "import": []
@@ -336,10 +406,14 @@
       ]
     },
     "edge-14": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-12": {
+          "export": [],
+          "import": []
+        },
         "aggregation-13": {
           "export": [],
           "import": []
@@ -353,10 +427,14 @@
       ]
     },
     "edge-15": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-12": {
+          "export": [],
+          "import": []
+        },
         "aggregation-13": {
           "export": [],
           "import": []
@@ -370,10 +448,14 @@
       ]
     },
     "edge-18": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-16": {
+          "export": [],
+          "import": []
+        },
         "aggregation-17": {
           "export": [],
           "import": []
@@ -387,10 +469,14 @@
       ]
     },
     "edge-19": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-16": {
+          "export": [],
+          "import": []
+        },
         "aggregation-17": {
           "export": [],
           "import": []
@@ -404,10 +490,14 @@
       ]
     },
     "edge-6": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-4": {
+          "export": [],
+          "import": []
+        },
         "aggregation-5": {
           "export": [],
           "import": []
@@ -421,10 +511,14 @@
       ]
     },
     "edge-7": {
-      "Assertions": [],
+      "Assertions": ["isValid"],
       "Consts": {},
       "Declarations": {},
       "Policies": {
+        "aggregation-4": {
+          "export": [],
+          "import": []
+        },
         "aggregation-5": {
           "export": [],
           "import": []

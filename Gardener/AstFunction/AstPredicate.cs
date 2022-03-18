@@ -7,7 +7,7 @@ namespace Gardener.AstFunction;
 /// A unary function from type T to bool, aka a predicate over type T.
 /// </summary>
 /// <typeparam name="T">The predicate's argument type.</typeparam>
-public class AstPredicate<T> : IRenameable
+public class AstPredicate<T> : IRenameable, IEvaluable<T, bool>
 {
   public AstPredicate(string arg, Expr<bool, T> expr)
   {
