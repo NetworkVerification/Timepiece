@@ -9,54 +9,57 @@ namespace Gardener;
 
 public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
 {
-  private IDictionary<string, TypeAlias> AliasToType { get; }
-  private IDictionary<string, TypeAlias> TyAliasToType { get; }
+  private static readonly Type State = typeof(TState);
 
-  private Type _state = typeof(TState);
-  // TODO: dynamically choose which type to use based on the given typeName for bindToType
-  private Type _timedState = typeof(Pair<TState, BigInteger>);
+  private static readonly Type TimedState = typeof(Pair<TState, BigInteger>);
 
-  public AstSerializationBinder()
+  /// <summary>
+  /// Return a TypeAlias for the given AST expression, statement or type if it can be found,
+  /// otherwise return null.
+  /// </summary>
+  /// <param name="alias">The given type name string to bind.</param>
+  /// <param name="timed">Whether the TypeAlias is for a timed program state or an untimed state.</param>
+  /// <returns>A TypeAlias if one exists, or null if not.</returns>
+  private static TypeAlias? GetAliasType(string alias, bool timed)
   {
-    // aliases to AST expressions and statements
-    AliasToType = new Dictionary<string, TypeAlias>
+    var s = timed ? TimedState : State;
+    return alias switch
     {
-      {"Return", new TypeAlias(typeof(Return<>), new Type?[] {null})},
-      {"Assign", new TypeAlias(typeof(Assign<>), new[] {_state})},
-      {"If", new TypeAlias(typeof(IfThenElse<,>), new[] {null, _state})},
-      {"Skip", new TypeAlias(typeof(Skip<>), new[] {_state})},
-      {"Seq", new TypeAlias(typeof(Seq<,>), new[] {null, _state})},
-      {"Var", new TypeAlias(typeof(Var<>), new Type?[] {null})},
-      {"True", new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), _state})},
-      {"False", new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), _state})},
-      {"And", new TypeAlias(typeof(And<>), new[] {_state})},
-      {"Or", new TypeAlias(typeof(Or<>), new[] {_state})},
-      {"Not", new TypeAlias(typeof(Not<>), new[] {_state})},
-      {"Havoc", new TypeAlias(typeof(Havoc<>), new[] {_state})},
-      {"Int32", new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(int), _state})},
-      {"Plus32", new TypeAlias(typeof(Plus<,>), new[] {typeof(int), _state})},
-      {"Pair", new TypeAlias(typeof(PairExpr<,,>), new[] {null, null, _state})},
-      {"First", new TypeAlias(typeof(First<,,>), new[] {null, null, _state})},
-      {"Second", new TypeAlias(typeof(Second<,,>), new[] {null, null, _state})},
-      // {"Some", new TypeAlias(typeof(Some<,>), new []{null, _state})},
-      // {"None", new TypeAlias(typeof(None<,>), new []{null, _state})},
-      {"GetField", new TypeAlias(typeof(GetField<,,>), new[] {null, null, _state})},
-      {"WithField", new TypeAlias(typeof(WithField<,,>), new[] {null, null, _state})},
-    };
-    // aliases to Zen types
-    TyAliasToType = new Dictionary<string, TypeAlias>
-    {
-      {"TRoute", new TypeAlias(typeof(TRoute), new Type?[] { })},
-      {"TPair", new TypeAlias(typeof(Pair<,>), new Type?[] {null, null})},
-      // {"RouteOption", typeof(Option<T>)},
-      {"TBool", new TypeAlias(typeof(bool), new Type?[] { })},
-      {"TInt32", new TypeAlias(typeof(int), new Type?[] { })},
-      {"TTime", new TypeAlias(typeof(BigInteger), new Type[] { })},
-      {"TString", new TypeAlias(typeof(string), new Type?[] { })},
-      {"TSet", new TypeAlias(typeof(FBag<>), new[] {typeof(string)})},
-      {"TUnit", new TypeAlias(typeof(Unit), new Type?[] { })},
+      "Return" => new TypeAlias(typeof(Return<>), new Type?[] {null}),
+      "Assign" => new TypeAlias(typeof(Assign<>), new[] {s}),
+      "If" => new TypeAlias(typeof(IfThenElse<,>), new[] {null, s}),
+      "Skip" => new TypeAlias(typeof(Skip<>), new[] {s}),
+      "Seq" => new TypeAlias(typeof(Seq<,>), new[] {null, s}),
+      "Var" => new TypeAlias(typeof(Var<>), new Type?[] {null}),
+      "True" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), s}),
+      "False" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), s}),
+      "And" => new TypeAlias(typeof(And<>), new[] {s}),
+      "Or" => new TypeAlias(typeof(Or<>), new[] {s}),
+      "Not" => new TypeAlias(typeof(Not<>), new[] {s}),
+      "Havoc" => new TypeAlias(typeof(Havoc<>), new[] {s}),
+      "Int32" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(int), s}),
+      "Plus32" => new TypeAlias(typeof(Plus<,>), new[] {typeof(int), s}),
+      "Pair" => new TypeAlias(typeof(PairExpr<,,>), new[] {null, null, s}),
+      "First" => new TypeAlias(typeof(First<,,>), new[] {null, null, s}),
+      "Second" => new TypeAlias(typeof(Second<,,>), new[] {null, null, s}),
+      // "Some" => new TypeAlias(typeof(Some<,>), new []{null, s}),
+      // "None" => new TypeAlias(typeof(None<,>), new []{null, s}),
+      "GetField" => new TypeAlias(typeof(GetField<,,>), new[] {null, null, s}),
+      "WithField" => new TypeAlias(typeof(WithField<,,>), new[] {null, null, s}),
+      // types
+      "TRoute" => new TypeAlias(typeof(TRoute), new Type?[] { }),
+      "TPair" => new TypeAlias(typeof(Pair<,>), new Type?[] {null, null}),
+      // "RouteOption" => typeof(Option<T>),
+      "TBool" => new TypeAlias(typeof(bool), new Type?[] { }),
+      "TInt32" => new TypeAlias(typeof(int), new Type?[] { }),
+      "TTime" => new TypeAlias(typeof(BigInteger), new Type[] { }),
+      "TString" => new TypeAlias(typeof(string), new Type?[] { }),
+      "TSet" => new TypeAlias(typeof(FBag<>), new[] {typeof(string)}),
+      "TUnit" => new TypeAlias(typeof(Unit), new Type?[] { }),
+      _ => null
     };
   }
+
 
   private static IEnumerable<string> ParseTypeArgs(string typeName)
   {
@@ -64,26 +67,14 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
     return regex.Matches(typeName).Select(match => match.Groups["term"].Value);
   }
 
-  private Type? BindToTypeAux(string alias, IEnumerator<string> typeArgs)
+  private static Type? BindToTypeAux(string alias, IEnumerator<string> typeArgs, bool timed)
   {
-    if (AliasToType.ContainsKey(alias))
-    {
-      var t = AliasToType[alias];
-      if (!t.Type.IsGenericTypeDefinition) return t.Type;
-      // recursively search for each argument
-      t.UpdateArgs(typeArgs, a => BindToTypeAux(a, typeArgs));
-      return t.MakeGenericType();
-    }
-
-    if (TyAliasToType.ContainsKey(alias))
-    {
-      var t = TyAliasToType[alias];
-      if (!t.Type.IsGenericTypeDefinition) return t.Type;
-      t.UpdateArgs(typeArgs, a => BindToTypeAux(a, typeArgs));
-      return t.MakeGenericType();
-    }
-
-    return null;
+    var t = GetAliasType(alias, timed);
+    if (!t.HasValue) return null;
+    if (!t.Value.Type.IsGenericTypeDefinition) return t.Value.Type;
+    // recursively search for each argument
+    t.Value.UpdateArgs(typeArgs, args => BindToTypeAux(args.Current, args, timed));
+    return t.Value.MakeGenericType();
   }
 
   public Type BindToType(string? assemblyName, string typeName)
@@ -96,7 +87,7 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
 
     var types = ParseTypeArgs(typeName).GetEnumerator();
     types.MoveNext();
-    return BindToTypeAux(types.Current, types) ?? throw new ArgumentException($"Unable to bind {typeName}");
+    return BindToTypeAux(types.Current, types, timed) ?? throw new ArgumentException($"Unable to bind {typeName}");
   }
 
   public void BindToName(Type serializedType, out string? assemblyName, out string? typeName)
@@ -144,13 +135,13 @@ internal readonly record struct TypeAlias
   /// </summary>
   /// <param name="typeAliases">An enumerator of string type aliases.</param>
   /// <param name="aliasLookup">A function to look up an alias string and potentially return a Type.</param>
-  public void UpdateArgs(IEnumerator<string> typeAliases, Func<string, Type?> aliasLookup)
+  public void UpdateArgs(IEnumerator<string> typeAliases, Func<IEnumerator<string>, Type?> aliasLookup)
   {
     for (var i = 0; i < Args.Length; i++)
     {
       if (Args[i] is null && typeAliases.MoveNext())
       {
-        Args[i] = aliasLookup(typeAliases.Current);
+        Args[i] = aliasLookup(typeAliases);
       }
     }
   }

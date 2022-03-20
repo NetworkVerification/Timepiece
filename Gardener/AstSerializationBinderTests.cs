@@ -13,8 +13,7 @@ public static class AstSerializationBinderTests
   /// <summary>
   /// The binder to use for the tests without time.
   /// </summary>
-  private static readonly AstSerializationBinder<BatfishBgpRoute, ZenRoute> AtemporalBinder = new();
-  private static readonly AstSerializationBinder<BatfishBgpRoute, Pair<ZenRoute, BigInteger>> TemporalBinder = new();
+  private static readonly AstSerializationBinder<BatfishBgpRoute, ZenRoute> Binder = new();
 
   [Theory]
   [InlineData("TRoute", typeof(BatfishBgpRoute))]
@@ -24,18 +23,14 @@ public static class AstSerializationBinderTests
   [InlineData("Var(TPair(TBool;TRoute))", typeof(Var<ZenRoute>))]
   [InlineData("If(TPair(TBool;TRoute))", typeof(IfThenElse<ZenRoute, ZenRoute>))]
   [InlineData("First(TBool;TRoute)", typeof(First<bool, BatfishBgpRoute, ZenRoute>))]
+  [InlineData("TPair(TPair(TBool;TInt32);TUnit", typeof(Pair<Pair<bool, int>, Unit>))]
+  [InlineData("Pair(TPair(TBool;TRoute);TInt32)", typeof(PairExpr<Pair<bool, BatfishBgpRoute>, int, ZenRoute>))]
+  [InlineData("!Pair(TPair(TBool;TRoute);TTime)",
+    typeof(PairExpr<ZenRoute, BigInteger, Pair<ZenRoute, BigInteger>>))]
+  [InlineData("!Var(TPair(TPair(TBool;TRoute);TTime)", typeof(Var<Pair<ZenRoute, BigInteger>>))]
   public static void BindToTypeReturnsCorrectType(string typeName, Type expectedType)
   {
-    var t = AtemporalBinder.BindToType(null, typeName);
-    Assert.Equal(expectedType, t);
-  }
-
-  [Theory]
-  [InlineData("Pair(TPair(TBool;TRoute);TTime)",
-    typeof(PairExpr<ZenRoute, BigInteger, Pair<ZenRoute, BigInteger>>))]
-  public static void BindToTypeReturnsCorrectTypeTemporal(string typeName, Type expectedType)
-  {
-    var t = TemporalBinder.BindToType(null, typeName);
+    var t = Binder.BindToType(null, typeName);
     Assert.Equal(expectedType, t);
   }
 }
