@@ -13,9 +13,4 @@ public abstract class Expr<T, TState> : IRenameable, IEvaluable<TState, T>
   /// <param name="oldVar">The variable name to rename.</param>
   /// <param name="newVar">The replacement variable name.</param>
   public abstract void Rename(string oldVar, string newVar);
-
-  public static Expr<T, TState2> Map<TState2>()
-  {
-    throw new NotImplementedException();
-  }
 }

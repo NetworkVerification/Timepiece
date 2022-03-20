@@ -9,33 +9,10 @@ namespace Gardener.AstFunction;
 /// A unary function of type T to Option T.
 /// </summary>
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
-public class AstFunction<T> : IRenameable
+public class AstFunction<T> : AstFunctionBase<T, Statement<T, T>>
 {
-  /// <summary>
-  /// The name of the argument to the function.
-  /// </summary>
-  public string Arg { get; set; }
-
-  /// <summary>
-  /// The body of the function.
-  /// </summary>
-  public Statement<T, T> Body { get; set; }
-
   [JsonConstructor]
-  public AstFunction(string arg, Statement<T, T> body)
-  {
-    Arg = arg;
-    Body = body;
-  }
-
-  public void Rename(string oldArg, string newArg)
-  {
-    if (Arg.Equals(oldArg))
-    {
-      Arg = newArg;
-    }
-    Body.Rename(oldArg, newArg);
-  }
+  public AstFunction(string arg, Statement<T, T> body) : base(arg, body) { }
 
   /// <summary>
   /// Generate an AstFunc that returns its argument unchanged.
@@ -57,8 +34,6 @@ public class AstFunction<T> : IRenameable
   public AstFunction<T> Compose(AstFunction<T> that)
   {
     // bind the result of this body to that argument
-    // FIXME: if this.Arg and that.Arg are equal, the behavior will diverge!
-    // TODO: check if this.Arg and that.Arg are equal, and rename that.Arg if so
     var bound = Body.Bind(that.Arg);
     return new AstFunction<T>(Arg, new Seq<T, T>(bound, that.Body));
   }
