@@ -5,9 +5,9 @@
       "expr": {
         "$type": "!First(TBool;TRoute)",
         "pair": {
-          "$type": "!First(TPair(TBool;TRoute); TTime)",
+          "$type": "!First(TPair(TBool;TRoute);TTime)",
           "pair": {
-            "$type": "!Var(TPair(TBool;TRoute))",
+            "$type": "!Var(TPair(TPair(TBool;TRoute);TTime)",
             "name": "rt"
           }
         }
@@ -16,7 +16,7 @@
   },
   "Nodes": {
     "aggregation-12": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -45,7 +45,7 @@
       ]
     },
     "aggregation-13": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -74,7 +74,7 @@
       ]
     },
     "aggregation-16": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -103,7 +103,7 @@
       ]
     },
     "aggregation-17": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -132,7 +132,7 @@
       ]
     },
     "aggregation-4": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -161,7 +161,7 @@
       ]
     },
     "aggregation-5": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -190,7 +190,7 @@
       ]
     },
     "aggregation-8": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -219,7 +219,7 @@
       ]
     },
     "aggregation-9": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -248,7 +248,7 @@
       ]
     },
     "core-0": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -277,7 +277,7 @@
       ]
     },
     "core-1": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -306,7 +306,7 @@
       ]
     },
     "core-2": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -335,7 +335,7 @@
       ]
     },
     "core-3": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -364,7 +364,7 @@
       ]
     },
     "edge-10": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -385,7 +385,7 @@
       ]
     },
     "edge-11": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -406,7 +406,7 @@
       ]
     },
     "edge-14": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -427,7 +427,7 @@
       ]
     },
     "edge-15": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -448,7 +448,7 @@
       ]
     },
     "edge-18": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -469,7 +469,7 @@
       ]
     },
     "edge-19": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -490,7 +490,7 @@
       ]
     },
     "edge-6": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -511,7 +511,7 @@
       ]
     },
     "edge-7": {
-      "Assertions": ["isValid"],
+      "Assert": "isValid",
       "Consts": {},
       "Declarations": {},
       "Policies": {
