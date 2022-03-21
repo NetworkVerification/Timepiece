@@ -31,10 +31,10 @@ var defaultExport =
 // default import behavior for a route
 var defaultImport = AstFunction<Route>.Identity();
 
-var destination = IPAddress.Parse("127.0.0.1");
 
-Zen<Route> InitFunction(List<IPAddressRange> prefixes) =>
-  Pair.Create<bool, BatfishBgpRoute>(prefixes.Any(range => range.Contains(destination)), new BatfishBgpRoute());
+
+Zen<Route> InitFunction(bool isDestination) =>
+  Pair.Create<bool, BatfishBgpRoute>(isDestination, new BatfishBgpRoute());
 
 JsonSerializer Serializer()
 {
@@ -44,6 +44,10 @@ JsonSerializer Serializer()
     SerializationBinder = new AstSerializationBinder<BatfishBgpRoute, Route>()
   };
 }
+// var destination = IPAddress.Parse("127.0.0.1");
+// var s = new JsonTextWriter(new StringWriter());
+// Serializer().Serialize(s, new IPAddress(127 * 256^3 + 1));
+// Console.WriteLine($"IPAddress: {s}");
 
 var file = args[0];
 var json = new JsonTextReader(new StreamReader(file));
@@ -51,8 +55,8 @@ var ast = Serializer().Deserialize<Ast<Route, Unit>>(json);
 Console.WriteLine($"Successfully deserialized JSON file {file}");
 json.Close();
 
-Console.WriteLine($"Parsed an AST with JSON:");
-Console.WriteLine(JsonConvert.SerializeObject(ast));
+// Console.WriteLine($"Parsed an AST with JSON:");
+// Console.WriteLine(JsonConvert.SerializeObject(ast));
 if (ast != null)
   Profile.RunCmp(ast.ToNetwork(InitFunction, BatfishBgpRouteExtensions.MinPair, defaultExport,
     defaultImport));

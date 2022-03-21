@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Numerics;
 using Gardener.AstFunction;
+using Karesansui;
 using NetTools;
 using Newtonsoft.Json.Linq;
 using ZenLib;
@@ -15,7 +16,7 @@ namespace Gardener;
 public class NodeProperties<T>
 {
   public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies<T>> policies,
-    string? assert, string? invariant, Dictionary<string, AstFunction<T>> declarations,
+    string? assert, AstTemporalOperator<T>? invariant, Dictionary<string, AstFunction<T>> declarations,
     Dictionary<string, JObject> constants)
   {
     Prefixes = prefixes;
@@ -37,7 +38,7 @@ public class NodeProperties<T>
   /// </summary>
   public Dictionary<string, JObject> Constants { get; set; }
 
-  public string? Invariant { get; set; }
+  public AstTemporalOperator<T>? Invariant { get; set; }
 
   public List<IPAddressRange> Prefixes { get; }
 
@@ -58,20 +59,19 @@ public class NodeProperties<T>
   }
 
   public KaresansuiNode<T> CreateNode(Func<List<IPAddressRange>, Zen<T>> initFunction,
-    Func<string, AstPredicate<Pair<T, BigInteger>>> assertFunction,
-    Func<string, AstPredicate<Pair<T, BigInteger>>> invariantFunction,
+    Func<string, AstPredicate<T>> predicateLookupFunction,
     AstFunction<T> defaultExport,
     AstFunction<T> defaultImport)
   {
     var init = initFunction(Prefixes);
 
     var safetyProperty = Assert is null
-      ? (_, _) => true
-      : assertFunction(Assert).EvaluateBinary(new State<Pair<T, BigInteger>>());
+      ? _ => true
+      : predicateLookupFunction(Assert).Evaluate(new State<T>());
 
     var invariant = Invariant is null
       ? (_, _) => true
-      : invariantFunction(Invariant).EvaluateBinary(new State<Pair<T, BigInteger>>());
+      : Invariant.Evaluate(predicateLookupFunction);
 
     var imports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
     var exports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();

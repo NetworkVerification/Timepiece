@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.RegularExpressions;
 using Gardener.AstExpr;
+using Gardener.AstFunction;
 using Gardener.AstStmt;
 using Newtonsoft.Json.Serialization;
 using ZenLib;
@@ -25,11 +26,13 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
     var s = timed ? TimedState : State;
     return alias switch
     {
+      // statements
       "Return" => new TypeAlias(typeof(Return<>), new Type?[] {null}),
       "Assign" => new TypeAlias(typeof(Assign<>), new[] {s}),
       "If" => new TypeAlias(typeof(IfThenElse<,>), new[] {null, s}),
       "Skip" => new TypeAlias(typeof(Skip<>), new[] {s}),
       "Seq" => new TypeAlias(typeof(Seq<,>), new[] {null, s}),
+      // expressions
       "Var" => new TypeAlias(typeof(Var<>), new Type?[] {null}),
       "True" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), s}),
       "False" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), s}),
@@ -42,20 +45,20 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "Pair" => new TypeAlias(typeof(PairExpr<,,>), new[] {null, null, s}),
       "First" => new TypeAlias(typeof(First<,,>), new[] {null, null, s}),
       "Second" => new TypeAlias(typeof(Second<,,>), new[] {null, null, s}),
-      // "Some" => new TypeAlias(typeof(Some<,>), new []{null, s}),
-      // "None" => new TypeAlias(typeof(None<,>), new []{null, s}),
+      "Some" => new TypeAlias(typeof(Some<,>), new[] {null, s}),
+      "None" => new TypeAlias(typeof(None<,>), new[] {null, s}),
       "GetField" => new TypeAlias(typeof(GetField<,,>), new[] {null, null, s}),
       "WithField" => new TypeAlias(typeof(WithField<,,>), new[] {null, null, s}),
       // types
-      "TRoute" => new TypeAlias(typeof(TRoute), new Type?[] { }),
+      "TRoute" => new TypeAlias(typeof(TRoute), Array.Empty<Type?>()),
       "TPair" => new TypeAlias(typeof(Pair<,>), new Type?[] {null, null}),
-      // "RouteOption" => typeof(Option<T>),
-      "TBool" => new TypeAlias(typeof(bool), new Type?[] { }),
-      "TInt32" => new TypeAlias(typeof(int), new Type?[] { }),
-      "TTime" => new TypeAlias(typeof(BigInteger), new Type[] { }),
-      "TString" => new TypeAlias(typeof(string), new Type?[] { }),
+      "TOption" => new TypeAlias(typeof(Option<>), new Type?[] {null}),
+      "TBool" => new TypeAlias(typeof(bool), Array.Empty<Type?>()),
+      "TInt32" => new TypeAlias(typeof(int), Array.Empty<Type?>()),
+      "TTime" => new TypeAlias(typeof(BigInteger), Array.Empty<Type>()),
+      "TString" => new TypeAlias(typeof(string), Array.Empty<Type?>()),
       "TSet" => new TypeAlias(typeof(FBag<>), new[] {typeof(string)}),
-      "TUnit" => new TypeAlias(typeof(Unit), new Type?[] { }),
+      "TUnit" => new TypeAlias(typeof(Unit), Array.Empty<Type?>()),
       _ => null
     };
   }
@@ -79,15 +82,24 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
 
   public Type BindToType(string? assemblyName, string typeName)
   {
-    var timed = typeName.StartsWith("!");
-    if (timed)
+    switch (typeName)
     {
-      typeName = typeName.TrimStart('!');
+      case "Finally":
+        return typeof(Finally<>).MakeGenericType(State);
+      case "Globally":
+        return typeof(Globally<>).MakeGenericType(State);
+      case "Until":
+        return typeof(Until<>).MakeGenericType(State);
+      default:
+        var timed = typeName.StartsWith("!");
+        if (timed)
+        {
+          typeName = typeName.TrimStart('!');
+        }
+        var types = ParseTypeArgs(typeName).GetEnumerator();
+        types.MoveNext();
+        return BindToTypeAux(types.Current, types, timed) ?? throw new ArgumentException($"Unable to bind {typeName}");
     }
-
-    var types = ParseTypeArgs(typeName).GetEnumerator();
-    types.MoveNext();
-    return BindToTypeAux(types.Current, types, timed) ?? throw new ArgumentException($"Unable to bind {typeName}");
   }
 
   public void BindToName(Type serializedType, out string? assemblyName, out string? typeName)

@@ -10,12 +10,12 @@ namespace Gardener;
 public readonly struct KaresansuiNode<T>
 {
   public readonly Zen<T> initialValue;
-  public readonly Func<Zen<T>, Zen<BigInteger>, Zen<bool>> safetyProperty;
+  public readonly Func<Zen<T>, Zen<bool>> safetyProperty;
   public readonly Func<Zen<T>, Zen<BigInteger>, Zen<bool>> annotation;
   public readonly ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> imports;
   public readonly ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> exports;
 
-  public KaresansuiNode(Zen<T> initialValue, Func<Zen<T>, Zen<BigInteger>, Zen<bool>> safetyProperty,
+  public KaresansuiNode(Zen<T> initialValue, Func<Zen<T>, Zen<bool>> safetyProperty,
     Func<Zen<T>, Zen<BigInteger>, Zen<bool>> annotation, ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> imports,
     ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> exports)
   {

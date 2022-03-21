@@ -1,15 +1,15 @@
 {
+  "Destination": {
+    "Address": "70.0.19.1"
+  },
   "Assertions": {
     "isValid": {
-      "arg": "rt",
+      "arg": "route",
       "expr": {
-        "$type": "!First(TBool;TRoute)",
+        "$type": "First(TBool;TRoute)",
         "pair": {
-          "$type": "!First(TPair(TBool;TRoute);TTime)",
-          "pair": {
-            "$type": "!Var(TPair(TPair(TBool;TRoute);TTime)",
-            "name": "rt"
-          }
+          "$type": "Var(TPair(TBool;TRoute))",
+          "name": "route"
         }
       }
     }
@@ -17,6 +17,11 @@
   "Nodes": {
     "aggregation-12": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 3,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
