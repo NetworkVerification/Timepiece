@@ -51,6 +51,11 @@
     },
     "aggregation-13": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 3,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -80,6 +85,11 @@
     },
     "aggregation-16": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 1,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -109,6 +119,11 @@
     },
     "aggregation-17": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 1,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -138,6 +153,11 @@
     },
     "aggregation-4": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 3,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -167,6 +187,11 @@
     },
     "aggregation-5": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 3,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -196,6 +221,11 @@
     },
     "aggregation-8": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 3,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -225,6 +255,11 @@
     },
     "aggregation-9": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 3,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -254,6 +289,11 @@
     },
     "core-0": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 2,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -283,6 +323,11 @@
     },
     "core-1": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 2,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -312,6 +357,11 @@
     },
     "core-2": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 2,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -341,6 +391,11 @@
     },
     "core-3": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 2,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -370,6 +425,11 @@
     },
     "edge-10": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 4,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -391,6 +451,11 @@
     },
     "edge-11": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 4,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -412,6 +477,11 @@
     },
     "edge-14": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 4,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -433,6 +503,11 @@
     },
     "edge-15": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 4,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -454,6 +529,11 @@
     },
     "edge-18": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 2,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -475,6 +555,10 @@
     },
     "edge-19": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Globally",
+        "p": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -496,6 +580,11 @@
     },
     "edge-6": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 4,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -517,6 +606,11 @@
     },
     "edge-7": {
       "Assert": "isValid",
+      "Invariant": {
+        "$type": "Finally",
+        "time": 4,
+        "then": "isValid"
+      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -544,6 +638,5 @@
     "prefix": "TIpAddress",
     "tag": "TInt32"
   },
-  "Symbolics": {},
-  "TemporalInvariants": {}
+  "Symbolics": {}
 }
