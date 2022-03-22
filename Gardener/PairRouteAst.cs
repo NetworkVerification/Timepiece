@@ -14,7 +14,7 @@ public class PairRouteAst : Ast<Route, Unit>
   /// <summary>
   /// Default predicates to test for this AST.
   /// </summary>
-  public new static readonly AstPredicate<Route> IsValid = new("route",
+  public static readonly AstPredicate<Route> IsValid = new("route",
     new First<bool, BatfishBgpRoute, Route>(new Var<Route>("route")));
 
   /// <summary>

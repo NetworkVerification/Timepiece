@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -105,6 +106,41 @@ public class Topology
     }
 
     return builder.ToString();
+  }
+
+  /// <summary>
+  /// Perform a breadth-first search of the topology, starting from start and ending at goal.
+  /// Return the distance to the goal from start.
+  /// </summary>
+  /// <param name="start">The starting node.</param>
+  /// <param name="goal">The goal node.</param>
+  /// <returns>The distance (number of edges) from the start node to the goal node.</returns>
+  /// <exception cref="ArgumentException">If the goal node is never reached.</exception>
+  public BigInteger BreadthFirstSearch(string start, string goal)
+  {
+    var q = new Queue<string>();
+    var visited = new Dictionary<string, BigInteger>
+    {
+      {start, 0}
+    };
+    q.Enqueue(start);
+    while (q.Count > 0)
+    {
+      var n = q.Dequeue();
+      var d = visited[n];
+      if (goal == n)
+      {
+        return d;
+      }
+
+      foreach (var m in Neighbors[n].Where(m => !visited.ContainsKey(m)))
+      {
+        visited.Add(m, d + 1);
+        q.Enqueue(m);
+      }
+    }
+
+    throw new ArgumentException($"BFS did not reach {goal} from {start}!");
   }
 }
 

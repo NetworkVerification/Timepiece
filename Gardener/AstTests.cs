@@ -31,39 +31,13 @@ public static class AstTests
     return IPAddressRange.Parse($"70.0.{index}.0/24");
   }
 
-  private static BigInteger BreadthFirstSearch(Topology topology, string start, string goal)
-  {
-    var q = new Queue<string>();
-    var visited = new Dictionary<string, BigInteger>
-    {
-      {start, 0}
-    };
-    q.Enqueue(start);
-    while (q.Count > 0)
-    {
-      var n = q.Dequeue();
-      var d = visited[n];
-      if (goal == n)
-      {
-        return d;
-      }
-
-      foreach (var m in topology[n].Where(m => !visited.ContainsKey(m)))
-      {
-        visited.Add(m, d + 1);
-        q.Enqueue(m);
-      }
-    }
-
-    return BigInteger.MinusOne;
-  }
-
   [Fact]
   public static void TestSpAstGoodAnnotations()
   {
     var topology = Default.FatTree(4);
     const string dest = "edge-19";
-    var props = topology.ForAllNodes(n => GenerateProperties(n, topology[n], BreadthFirstSearch(topology, dest, n)));
+    var props = topology.ForAllNodes(n =>
+      GenerateProperties(n, topology[n], topology.BreadthFirstSearch(dest, n)));
     var ast = new PairRouteAst(props, D);
     Assert.False(ast.ToNetwork().CheckAnnotations().HasValue);
   }
