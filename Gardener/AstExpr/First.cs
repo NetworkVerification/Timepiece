@@ -12,7 +12,8 @@ public class First<TA, TB, TState> : Expr<TA, TState>
   private Expr<Pair<TA, TB>, TState> Pair { get; set; }
   public override Func<Zen<TState>, Zen<TA>> Evaluate(State<TState> state)
   {
-    return s => Pair.Evaluate(state)(s).Item1();
+    var f = Pair.Evaluate(state);
+    return s => f(s).Item1();
   }
 
   public override void Rename(string oldVar, string newVar)
