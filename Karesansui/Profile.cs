@@ -22,13 +22,22 @@ public static class Profile
 
   public static void RunMono<T, TS>(Network<T, TS> network)
   {
-    if (!network.CheckMonolithic()) Console.WriteLine("Error, monolithic verification failed!");
+    var s = network.CheckMonolithic();
+    if (!s.HasValue) return;
+    s.Value.ReportCheckFailure();
+    Console.WriteLine("Error, monolithic verification failed!");
   }
 
   public static void RunAnnotated<T, TS>(Network<T, TS> network)
   {
-    if (network.CheckAnnotations().HasValue)
-      Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+    var s = network.CheckAnnotations();
+    if (!s.HasValue)
+    {
+      Console.WriteLine("    All the modular checks passed!");
+      return;
+    }
+    s.Value.ReportCheckFailure();
+    Console.WriteLine("Error, unsound annotations provided or assertions failed!");
   }
 
   private static long Time<T, TS>(Action<Network<T, TS>> f, Network<T, TS> network)

@@ -30,7 +30,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     Symbolics(topology, failedEdges, numFailed))
   {
     this.failedEdges = failedEdges;
-    this.annotations = annotations(symbolics);
+    this.Annotations = annotations(symbolics);
     TransferFunction = Transfer(transferFunction, symbolics);
   }
 
@@ -46,7 +46,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     new Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(), modularProperties, monolithicProperties,
     Symbolics(net.Topology, failedEdges, numFailed))
   {
-    this.annotations = annotations(symbolics);
+    this.Annotations = annotations(symbolics);
     TransferFunction = Transfer(net.TransferFunction, symbolics);
   }
 

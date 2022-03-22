@@ -14,6 +14,7 @@ public class State<T, TS>
   private Option<string> _focusedNode = Option.None<string>();
   public Option<BigInteger> time;
   public Dictionary<string, TS> symbolicStates;
+  public string Check;
 
   /// <summary>
   /// Reconstruct the network state from the given model, focused on the given node.
@@ -23,9 +24,11 @@ public class State<T, TS>
   /// <param name="route">The Zen variable referring to this node's route.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
+  /// <param name="check">Which check led to the generation of this state.</param>
   public State(ZenSolution model, string node, Zen<T> route, Option<Zen<BigInteger>> time,
-    IEnumerable<SymbolicValue<TS>> symbolics)
+    IEnumerable<SymbolicValue<TS>> symbolics, string check)
   {
+    Check = check;
     this.time = time.Select(model.Get);
     nodeStates = new Dictionary<string, T> {{node, model.Get(route)}};
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
@@ -39,9 +42,11 @@ public class State<T, TS>
   /// <param name="neighborStates">The Zen variables referring to this node's neighbors' routes.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
+  /// <param name="check">Which check led to the generation of this state.</param>
   public State(ZenSolution model, string node, IEnumerable<KeyValuePair<string, Zen<T>>> neighborStates,
-    Option<Zen<BigInteger>> time, IEnumerable<SymbolicValue<TS>> symbolics)
+    Option<Zen<BigInteger>> time, IEnumerable<SymbolicValue<TS>> symbolics, string check)
   {
+    Check = check;
     this.time = time.Select(model.Get);
     _focusedNode = Option.Some(node);
     nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
@@ -55,9 +60,11 @@ public class State<T, TS>
   /// <param name="nodeStates">The Zen variables referring to each node and its route.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
+  /// <param name="check">Which check led to the generation of this state.</param>
   public State(ZenSolution model, IEnumerable<KeyValuePair<string, Zen<T>>> nodeStates, Option<Zen<BigInteger>> time,
-    IEnumerable<SymbolicValue<TS>> symbolics)
+    IEnumerable<SymbolicValue<TS>> symbolics, string check)
   {
+    Check = check;
     this.time = time.Select(model.Get);
     this.nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
@@ -85,11 +92,10 @@ public class State<T, TS>
   /// <summary>
   /// Print the state to the console, identifying which check fails to hold for this state.
   /// </summary>
-  /// <param name="check">A string specifying the failing check (monolithic, base, assertion or inductive).</param>
-  public void ReportCheckFailure(string check)
+  public void ReportCheckFailure()
   {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"{check} check failed!");
+    Console.WriteLine($"{Check} check failed!");
     Console.WriteLine(ToString());
     Console.ResetColor();
   }
