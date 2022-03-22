@@ -3,6 +3,7 @@ using Gardener.AstFunction;
 using Karesansui;
 using Karesansui.Networks;
 using NetTools;
+using Newtonsoft.Json;
 using ZenLib;
 
 namespace Gardener;
@@ -25,19 +26,19 @@ public class Ast<T, TS>
   public Dictionary<string, AstPredicate<TS>> Symbolics { get; }
 
   /// <summary>
-  /// Assertions over routes, irrespective of time.
+  /// Predicates over routes, irrespective of time.
   /// </summary>
-  public Dictionary<string, AstPredicate<T>> Assertions { get; }
+  public Dictionary<string, AstPredicate<T>> Predicates { get; }
 
 
-  [System.Text.Json.Serialization.JsonConstructor]
+  [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<T>> nodes,
     Dictionary<string, AstPredicate<TS>> symbolics,
-    Dictionary<string, AstPredicate<T>> assertions, Destination? destination)
+    Dictionary<string, AstPredicate<T>> predicates, Destination? destination)
   {
     Nodes = nodes;
     Symbolics = symbolics;
-    Assertions = assertions;
+    Predicates = predicates;
     Destination = destination;
   }
 
@@ -59,10 +60,11 @@ public class Ast<T, TS>
     });
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
-    // this also means inlining constants and evaluating and inlining assertions where possible
+    // this also means inlining constants and evaluating and inlining predicates where possible
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(p => initGenerator(isDestination(p)), s => Assertions[s],
+      var details = props.CreateNode(p => initGenerator(isDestination(p)),
+        s => Predicates[s],
         defaultExport, defaultImport);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
       monolithicProperties[node] = details.safetyProperty;

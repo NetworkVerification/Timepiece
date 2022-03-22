@@ -12,10 +12,10 @@ namespace Gardener;
 /// Representation of the properties of a node as parsed from JSON.
 /// Tracks the node's prefixes and its routing policies.
 /// </summary>
-/// <typeparam name="T">The type of routes in the node's RoutingPolicies.</typeparam>
+/// <typeparam name="T">The type of routes for the node.</typeparam>
 public class NodeProperties<T>
 {
-  public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies<T>> policies,
+  public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
     string? assert, AstTemporalOperator<T>? invariant, Dictionary<string, AstFunction<T>> declarations,
     Dictionary<string, JObject> constants)
   {
@@ -42,7 +42,7 @@ public class NodeProperties<T>
 
   public List<IPAddressRange> Prefixes { get; }
 
-  public Dictionary<string, RoutingPolicies<T>> Policies { get; }
+  public Dictionary<string, RoutingPolicies> Policies { get; }
 
   public string? Assert { get; }
 
