@@ -58,7 +58,15 @@ public class NodeProperties<T>
     }
   }
 
-  public KaresansuiNode<T> CreateNode(Func<List<IPAddressRange>, Zen<T>> initFunction,
+  /// <summary>
+  /// Construct a node storing all the relevant information for creating a network.
+  /// </summary>
+  /// <param name="initFunction"></param>
+  /// <param name="predicateLookupFunction"></param>
+  /// <param name="defaultExport"></param>
+  /// <param name="defaultImport"></param>
+  /// <returns></returns>
+  public NetworkNode<T> CreateNode(Func<List<IPAddressRange>, Zen<T>> initFunction,
     Func<string, AstPredicate<T>> predicateLookupFunction,
     AstFunction<T> defaultExport,
     AstFunction<T> defaultImport)
@@ -83,7 +91,7 @@ public class NodeProperties<T>
       imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate(new State<T>());
     }
 
-    return new KaresansuiNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
+    return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
       exports.ToImmutableDictionary());
   }
 }

@@ -30,6 +30,10 @@ public class Ast<T, TS>
   /// </summary>
   public Dictionary<string, AstPredicate<T>> Predicates { get; }
 
+  /// <summary>
+  /// An optional convergence time.
+  /// </summary>
+  public BigInteger? ConvergeTime { get; set; }
 
   [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<T>> nodes,
@@ -42,11 +46,6 @@ public class Ast<T, TS>
     Destination = destination;
     ConvergeTime = convergeTime;
   }
-
-  /// <summary>
-  /// An optional convergence time.
-  /// </summary>
-  public BigInteger? ConvergeTime { get; set; }
 
   /// <summary>
   /// Print validation stats for the AST, including warnings if variables are uninitialized.
@@ -70,6 +69,7 @@ public class Ast<T, TS>
     {
       Console.WriteLine($"Converge time: {ConvergeTime}");
     }
+
     foreach (var (node, props) in Nodes)
     {
       Console.Write($"Node {node}: ");
@@ -97,6 +97,7 @@ public class Ast<T, TS>
     {
       Console.Write($" {predicateName};");
     }
+
     Console.WriteLine();
 
     Console.Write("Symbolics defined:");
@@ -104,6 +105,7 @@ public class Ast<T, TS>
     {
       Console.Write($" {symbolicName};");
     }
+
     Console.WriteLine();
   }
 
@@ -171,7 +173,7 @@ public class Ast<T, TS>
     var topology = new Topology(edges);
     // construct a reasonable estimate of the modular properties by checking that the monolithic properties
     // will eventually hold at a time equal to the number of nodes in the network (i.e. the longest path possible)
-    var convergeTime = ConvergeTime is null ? new BigInteger(topology.NEdges) : ConvergeTime;
+    var convergeTime = ConvergeTime ?? new BigInteger(topology.NEdges);
     var modularProperties =
       topology.ForAllNodes<Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>(n =>
         Lang.Finally(convergeTime, monolithicProperties[n]));

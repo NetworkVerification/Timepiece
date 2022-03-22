@@ -5,9 +5,9 @@ using ZenLib;
 namespace Gardener;
 
 /// <summary>
-/// An immutable struct storing all information needed from a given AST node to produce a Karesansui network.
+/// An immutable struct storing all information needed from a given AST node to produce a network.
 /// </summary>
-public readonly struct KaresansuiNode<T>
+public readonly struct NetworkNode<T>
 {
   public readonly Zen<T> initialValue;
   public readonly Func<Zen<T>, Zen<bool>> safetyProperty;
@@ -15,7 +15,7 @@ public readonly struct KaresansuiNode<T>
   public readonly ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> imports;
   public readonly ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> exports;
 
-  public KaresansuiNode(Zen<T> initialValue, Func<Zen<T>, Zen<bool>> safetyProperty,
+  public NetworkNode(Zen<T> initialValue, Func<Zen<T>, Zen<bool>> safetyProperty,
     Func<Zen<T>, Zen<BigInteger>, Zen<bool>> annotation, ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> imports,
     ImmutableDictionary<string, Func<Zen<T>, Zen<T>>> exports)
   {
