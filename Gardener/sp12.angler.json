@@ -10521,7 +10521,7 @@
       "expr": {
         "$type": "First(TBool;TRoute)",
         "pair": {
-          "$type": "Var(TPair(TBool,TRoute))",
+          "$type": "Var(TPair(TBool;TRoute))",
           "name": "route"
         }
       }

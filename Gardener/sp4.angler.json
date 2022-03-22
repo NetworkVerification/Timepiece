@@ -4,7 +4,7 @@
   },
   "Nodes": {
     "aggregation-12": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -40,7 +40,7 @@
       }
     },
     "aggregation-13": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-2": {
@@ -76,7 +76,7 @@
       }
     },
     "aggregation-16": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -112,7 +112,7 @@
       }
     },
     "aggregation-17": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-2": {
@@ -148,7 +148,7 @@
       }
     },
     "aggregation-4": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -184,7 +184,7 @@
       }
     },
     "aggregation-5": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-2": {
@@ -220,7 +220,7 @@
       }
     },
     "aggregation-8": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -256,7 +256,7 @@
       }
     },
     "aggregation-9": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-2": {
@@ -292,7 +292,7 @@
       }
     },
     "core-0": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-12": {
@@ -328,7 +328,7 @@
       }
     },
     "core-1": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-12": {
@@ -364,7 +364,7 @@
       }
     },
     "core-2": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-13": {
@@ -400,7 +400,7 @@
       }
     },
     "core-3": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-13": {
@@ -436,7 +436,7 @@
       }
     },
     "edge-10": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-8": {
@@ -464,7 +464,7 @@
       }
     },
     "edge-11": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-8": {
@@ -492,7 +492,7 @@
       }
     },
     "edge-14": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-12": {
@@ -520,7 +520,7 @@
       }
     },
     "edge-15": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-12": {
@@ -548,7 +548,7 @@
       }
     },
     "edge-18": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -576,7 +576,7 @@
       }
     },
     "edge-19": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -603,7 +603,7 @@
       }
     },
     "edge-6": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-4": {
@@ -631,7 +631,7 @@
       }
     },
     "edge-7": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-4": {
@@ -663,10 +663,13 @@
     "isValid": {
       "arg": "route",
       "expr": {
-        "$type": "First(TBool;TRoute)",
-        "pair": {
-          "$type": "Var(TPair(TBool,TRoute))",
-          "name": "route"
+        "$type": "Not",
+        "expr": {
+          "$type": "First(TBool;TRoute)",
+          "pair": {
+            "$type": "Var(TPair(TBool;TRoute))",
+            "name": "route"
+          }
         }
       }
     }
