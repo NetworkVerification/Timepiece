@@ -2,6 +2,7 @@
   "Destination": {
     "address": "70.0.19.1"
   },
+  "ConvergeTime": 5,
   "Nodes": {
     "aggregation-12": {
       "Constants": {},
@@ -30,12 +31,10 @@
           "End": "70.0.12.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
@@ -66,12 +65,10 @@
           "End": "70.0.13.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
@@ -102,12 +99,10 @@
           "End": "70.0.16.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 1
       }
     },
@@ -138,12 +133,10 @@
           "End": "70.0.17.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 1
       }
     },
@@ -174,12 +167,10 @@
           "End": "70.0.4.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
@@ -210,12 +201,10 @@
           "End": "70.0.5.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
@@ -246,12 +235,10 @@
           "End": "70.0.8.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
@@ -282,12 +269,10 @@
           "End": "70.0.9.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
@@ -318,12 +303,10 @@
           "End": "70.0.0.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
@@ -354,12 +337,10 @@
           "End": "70.0.1.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
@@ -390,12 +371,10 @@
           "End": "70.0.2.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
@@ -426,12 +405,10 @@
           "End": "70.0.3.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
@@ -454,12 +431,10 @@
           "End": "70.0.10.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
@@ -482,12 +457,10 @@
           "End": "70.0.11.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
@@ -510,12 +483,10 @@
           "End": "70.0.14.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
@@ -538,12 +509,10 @@
           "End": "70.0.15.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
@@ -566,12 +535,10 @@
           "End": "70.0.18.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
@@ -594,12 +561,10 @@
           "End": "70.0.19.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Globally",
-        "p": "isValid"
+        "p": "pred"
       }
     },
     "edge-6": {
@@ -621,12 +586,10 @@
           "End": "70.0.6.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
@@ -649,27 +612,22 @@
           "End": "70.0.7.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     }
   },
   "Predicates": {
-    "isValid": {
+    "pred": {
       "arg": "route",
       "expr": {
-        "$type": "Not",
-        "expr": {
-          "$type": "First(TBool;TRoute)",
-          "pair": {
-            "$type": "Var(TPair(TBool;TRoute))",
-            "name": "route"
-          }
+        "$type": "First(TBool;TRoute)",
+        "pair": {
+          "$type": "Var(TPair(TBool;TRoute))",
+          "name": "route"
         }
       }
     }

@@ -4,14 +4,20 @@ using Karesansui;
 using NetTools;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using ZenLib;
 
 namespace Gardener;
 
-using Route = ZenLib.Pair<bool, BatfishBgpRoute>;
+using Route = Pair<bool, BatfishBgpRoute>;
 
 public static class AstTests
 {
   private static readonly Destination D = new("70.0.19.1");
+
+  private static readonly Dictionary<string, AstPredicate<Route>> Predicates = new()
+  {
+    {"IsValid", PairRouteAst.IsValid}
+  };
 
   private static NodeProperties<Route> GenerateProperties(string node,
     IEnumerable<string> neighbors, BigInteger time)
@@ -38,7 +44,7 @@ public static class AstTests
     const string dest = "edge-19";
     var props = topology.ForAllNodes(n =>
       GenerateProperties(n, topology[n], topology.BreadthFirstSearch(dest, n)));
-    var ast = new PairRouteAst(props, D);
+    var ast = new PairRouteAst(props, D, Predicates, new Dictionary<string, AstPredicate<Unit>>(), 5);
     Assert.False(ast.ToNetwork().CheckAnnotations().HasValue);
   }
 }

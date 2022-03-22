@@ -18,6 +18,9 @@ foreach (var file in args)
   Console.WriteLine($"Successfully deserialized JSON file {file}");
   json.Close();
   if (ast != null)
+  {
+    // ast.Validate();
     Profile.RunCmp(ast.ToNetwork());
+  }
   else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
 }

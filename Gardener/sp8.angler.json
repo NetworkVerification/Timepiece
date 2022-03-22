@@ -2,9 +2,10 @@
   "Destination": {
     "address": "70.0.79.1"
   },
+  "ConvergeTime": 5,
   "Nodes": {
     "aggregation-16": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -46,17 +47,15 @@
           "End": "70.0.16.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-17": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -98,17 +97,15 @@
           "End": "70.0.17.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-18": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -150,17 +147,15 @@
           "End": "70.0.18.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-19": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -202,17 +197,15 @@
           "End": "70.0.19.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-24": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -254,17 +247,15 @@
           "End": "70.0.24.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-25": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -306,17 +297,15 @@
           "End": "70.0.25.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-26": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -358,17 +347,15 @@
           "End": "70.0.26.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-27": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -410,17 +397,15 @@
           "End": "70.0.27.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-32": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -462,17 +447,15 @@
           "End": "70.0.32.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-33": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -514,17 +497,15 @@
           "End": "70.0.33.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-34": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -566,17 +547,15 @@
           "End": "70.0.34.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-35": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -618,17 +597,15 @@
           "End": "70.0.35.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-40": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -670,17 +647,15 @@
           "End": "70.0.40.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-41": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -722,17 +697,15 @@
           "End": "70.0.41.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-42": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -774,17 +747,15 @@
           "End": "70.0.42.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-43": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -826,17 +797,15 @@
           "End": "70.0.43.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-48": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -878,17 +847,15 @@
           "End": "70.0.48.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-49": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -930,17 +897,15 @@
           "End": "70.0.49.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-50": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -982,17 +947,15 @@
           "End": "70.0.50.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-51": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -1034,17 +997,15 @@
           "End": "70.0.51.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-56": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -1086,17 +1047,15 @@
           "End": "70.0.56.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-57": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -1138,17 +1097,15 @@
           "End": "70.0.57.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-58": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -1190,17 +1147,15 @@
           "End": "70.0.58.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-59": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -1242,17 +1197,15 @@
           "End": "70.0.59.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-64": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -1294,17 +1247,15 @@
           "End": "70.0.64.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-65": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -1346,17 +1297,15 @@
           "End": "70.0.65.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-66": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -1398,17 +1347,15 @@
           "End": "70.0.66.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-67": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -1450,17 +1397,15 @@
           "End": "70.0.67.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 3
       }
     },
     "aggregation-72": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-0": {
@@ -1502,17 +1447,15 @@
           "End": "70.0.72.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 1
       }
     },
     "aggregation-73": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-4": {
@@ -1554,17 +1497,15 @@
           "End": "70.0.73.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 1
       }
     },
     "aggregation-74": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-10": {
@@ -1606,17 +1547,15 @@
           "End": "70.0.74.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 1
       }
     },
     "aggregation-75": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "core-12": {
@@ -1658,17 +1597,15 @@
           "End": "70.0.75.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 1
       }
     },
     "core-0": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -1710,17 +1647,15 @@
           "End": "70.0.0.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-1": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -1762,17 +1697,15 @@
           "End": "70.0.1.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-10": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-18": {
@@ -1814,17 +1747,15 @@
           "End": "70.0.10.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-11": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-18": {
@@ -1866,17 +1797,15 @@
           "End": "70.0.11.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-12": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-19": {
@@ -1918,17 +1847,15 @@
           "End": "70.0.12.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-13": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-19": {
@@ -1970,17 +1897,15 @@
           "End": "70.0.13.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-14": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-19": {
@@ -2022,17 +1947,15 @@
           "End": "70.0.14.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-15": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-19": {
@@ -2074,17 +1997,15 @@
           "End": "70.0.15.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-2": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -2126,17 +2047,15 @@
           "End": "70.0.2.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-3": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -2178,17 +2097,15 @@
           "End": "70.0.3.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-4": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-17": {
@@ -2230,17 +2147,15 @@
           "End": "70.0.4.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-5": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-17": {
@@ -2282,17 +2197,15 @@
           "End": "70.0.5.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-6": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-17": {
@@ -2334,17 +2247,15 @@
           "End": "70.0.6.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-7": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-17": {
@@ -2386,17 +2297,15 @@
           "End": "70.0.7.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-8": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-18": {
@@ -2438,17 +2347,15 @@
           "End": "70.0.8.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "core-9": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-18": {
@@ -2490,17 +2397,15 @@
           "End": "70.0.9.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "edge-20": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -2526,17 +2431,15 @@
           "End": "70.0.20.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-21": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -2562,17 +2465,15 @@
           "End": "70.0.21.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-22": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -2598,17 +2499,15 @@
           "End": "70.0.22.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-23": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-16": {
@@ -2634,17 +2533,15 @@
           "End": "70.0.23.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-28": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-24": {
@@ -2670,17 +2567,15 @@
           "End": "70.0.28.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-29": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-24": {
@@ -2706,17 +2601,15 @@
           "End": "70.0.29.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-30": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-24": {
@@ -2742,17 +2635,15 @@
           "End": "70.0.30.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-31": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-24": {
@@ -2778,17 +2669,15 @@
           "End": "70.0.31.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-36": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-32": {
@@ -2814,17 +2703,15 @@
           "End": "70.0.36.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-37": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-32": {
@@ -2850,17 +2737,15 @@
           "End": "70.0.37.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-38": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-32": {
@@ -2886,17 +2771,15 @@
           "End": "70.0.38.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-39": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-32": {
@@ -2922,17 +2805,15 @@
           "End": "70.0.39.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-44": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-40": {
@@ -2958,17 +2839,15 @@
           "End": "70.0.44.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-45": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-40": {
@@ -2994,17 +2873,15 @@
           "End": "70.0.45.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-46": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-40": {
@@ -3030,17 +2907,15 @@
           "End": "70.0.46.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-47": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-40": {
@@ -3066,17 +2941,15 @@
           "End": "70.0.47.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-52": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-48": {
@@ -3102,17 +2975,15 @@
           "End": "70.0.52.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-53": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-48": {
@@ -3138,17 +3009,15 @@
           "End": "70.0.53.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-54": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-48": {
@@ -3174,17 +3043,15 @@
           "End": "70.0.54.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-55": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-48": {
@@ -3210,17 +3077,15 @@
           "End": "70.0.55.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-60": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-56": {
@@ -3246,17 +3111,15 @@
           "End": "70.0.60.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-61": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-56": {
@@ -3282,17 +3145,15 @@
           "End": "70.0.61.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-62": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-56": {
@@ -3318,17 +3179,15 @@
           "End": "70.0.62.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-63": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-56": {
@@ -3354,17 +3213,15 @@
           "End": "70.0.63.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-68": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-64": {
@@ -3390,17 +3247,15 @@
           "End": "70.0.68.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-69": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-64": {
@@ -3426,17 +3281,15 @@
           "End": "70.0.69.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-70": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-64": {
@@ -3462,17 +3315,15 @@
           "End": "70.0.70.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-71": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-64": {
@@ -3498,17 +3349,15 @@
           "End": "70.0.71.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 4
       }
     },
     "edge-76": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-72": {
@@ -3534,17 +3383,15 @@
           "End": "70.0.76.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "edge-77": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-72": {
@@ -3570,17 +3417,15 @@
           "End": "70.0.77.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "edge-78": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-72": {
@@ -3606,17 +3451,15 @@
           "End": "70.0.78.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Finally",
-        "then": "isValid",
+        "then": "pred",
         "time": 2
       }
     },
     "edge-79": {
-      "Consts": {},
+      "Constants": {},
       "Declarations": {},
       "Policies": {
         "aggregation-72": {
@@ -3642,22 +3485,20 @@
           "End": "70.0.79.255"
         }
       ],
-      "Stable": [
-        "isValid"
-      ],
+      "Stable": "pred",
       "Temporal": {
         "$type": "Globally",
-        "p": "isValid"
+        "p": "pred"
       }
     }
   },
   "Predicates": {
-    "isValid": {
+    "pred": {
       "arg": "route",
       "expr": {
         "$type": "First(TBool;TRoute)",
         "pair": {
-          "$type": "Var(TPair(TBool,TRoute))",
+          "$type": "Var(TPair(TBool;TRoute))",
           "name": "route"
         }
       }

@@ -23,4 +23,9 @@ public class Until<T> : AstTemporalOperator<T>
     var afterF = getter(After).Evaluate(new State<T>());
     return Lang.Until(Time, beforeF, afterF);
   }
+
+  public override string ToString()
+  {
+    return $"Until({Time}, {Before}, {After})";
+  }
 }

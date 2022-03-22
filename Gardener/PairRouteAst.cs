@@ -1,3 +1,4 @@
+using System.Numerics;
 using Gardener.AstExpr;
 using Gardener.AstFunction;
 using Gardener.AstStmt;
@@ -35,11 +36,10 @@ public class PairRouteAst : Ast<Route, Unit>
             new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
             "AsPathLength"), new ConstantExpr<int, Route>(1))))));
 
-  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Destination? destination) : base(nodes,
-    new Dictionary<string, AstPredicate<Unit>>(), new Dictionary<string, AstPredicate<Route>>
-    {
-      {"IsValid", IsValid}
-    }, destination)
+  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Destination? destination,
+    Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
+    BigInteger? convergeTime) : base(nodes,
+    symbolics, predicates, destination, convergeTime)
   {
   }
 

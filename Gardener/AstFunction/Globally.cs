@@ -18,4 +18,9 @@ public class Globally<T> : AstTemporalOperator<T>
     var f = getter(Predicate).Evaluate(new State<T>());
     return Lang.Globally(f);
   }
+
+  public override string ToString()
+  {
+    return $"Globally({Predicate})";
+  }
 }

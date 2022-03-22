@@ -22,4 +22,9 @@ public class Finally<T> : AstTemporalOperator<T>
     var f = getter(Then).Evaluate(new State<T>());
     return Lang.Finally(Time, f);
   }
+
+  public override string ToString()
+  {
+    return $"Finally({Time}, {Then})";
+  }
 }

@@ -16,13 +16,13 @@ namespace Gardener;
 public class NodeProperties<T>
 {
   public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
-    string? assert, AstTemporalOperator<T>? invariant, Dictionary<string, AstFunction<T>> declarations,
+    string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
     Dictionary<string, JObject> constants)
   {
     Prefixes = prefixes;
     Policies = policies;
-    Assert = assert;
-    Invariant = invariant;
+    Stable = stable;
+    Temporal = temporal;
     Declarations = declarations;
     Constants = constants;
     DisambiguateVariableNames();
@@ -38,13 +38,13 @@ public class NodeProperties<T>
   /// </summary>
   public Dictionary<string, JObject> Constants { get; set; }
 
-  public AstTemporalOperator<T>? Invariant { get; set; }
+  public AstTemporalOperator<T>? Temporal { get; set; }
 
   public List<IPAddressRange> Prefixes { get; }
 
   public Dictionary<string, RoutingPolicies> Policies { get; }
 
-  public string? Assert { get; }
+  public string? Stable { get; }
 
   /// <summary>
   /// Make the arguments to all AstFunctions unique.
@@ -65,13 +65,13 @@ public class NodeProperties<T>
   {
     var init = initFunction(Prefixes);
 
-    var safetyProperty = Assert is null
+    var safetyProperty = Stable is null
       ? _ => true
-      : predicateLookupFunction(Assert).Evaluate(new State<T>());
+      : predicateLookupFunction(Stable).Evaluate(new State<T>());
 
-    var invariant = Invariant is null
+    var invariant = Temporal is null
       ? (_, _) => true
-      : Invariant.Evaluate(predicateLookupFunction);
+      : Temporal.Evaluate(predicateLookupFunction);
 
     var imports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
     var exports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
