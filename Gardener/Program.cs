@@ -1,21 +1,11 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Net;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Gardener;
 using Gardener.AstExpr;
 using Gardener.AstFunction;
 using Gardener.AstStmt;
 using Karesansui;
-using NetTools;
 using ZenLib;
 using Route = ZenLib.Pair<bool, Gardener.BatfishBgpRoute>;
-
-if (args.Length == 0)
-{
-  Console.WriteLine("No JSON file provided, exiting now...");
-  return;
-}
 
 // default export behavior for a route
 var defaultExport =
@@ -31,8 +21,6 @@ var defaultExport =
 // default import behavior for a route
 var defaultImport = AstFunction<Route>.Identity();
 
-
-
 Zen<Route> InitFunction(bool isDestination) =>
   Pair.Create<bool, BatfishBgpRoute>(isDestination, new BatfishBgpRoute());
 
@@ -44,20 +32,15 @@ JsonSerializer Serializer()
     SerializationBinder = new AstSerializationBinder<BatfishBgpRoute, Route>()
   };
 }
-// var destination = IPAddress.Parse("127.0.0.1");
-// var s = new JsonTextWriter(new StringWriter());
-// Serializer().Serialize(s, new IPAddress(127 * 256^3 + 1));
-// Console.WriteLine($"IPAddress: {s}");
 
-var file = args[0];
-var json = new JsonTextReader(new StreamReader(file));
-var ast = Serializer().Deserialize<Ast<Route, Unit>>(json);
-Console.WriteLine($"Successfully deserialized JSON file {file}");
-json.Close();
-
-// Console.WriteLine($"Parsed an AST with JSON:");
-// Console.WriteLine(JsonConvert.SerializeObject(ast));
-if (ast != null)
-  Profile.RunCmp(ast.ToNetwork(InitFunction, BatfishBgpRouteExtensions.MinPair, defaultExport,
-    defaultImport));
-else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
+foreach (var file in args)
+{
+  var json = new JsonTextReader(new StreamReader(file));
+  var ast = Serializer().Deserialize<Ast<Route, Unit>>(json);
+  Console.WriteLine($"Successfully deserialized JSON file {file}");
+  json.Close();
+  if (ast != null)
+    Profile.RunCmp(ast.ToNetwork(InitFunction, BatfishBgpRouteExtensions.MinPair, defaultExport,
+      defaultImport));
+  else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
+}

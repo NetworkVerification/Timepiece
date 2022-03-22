@@ -1,27 +1,9 @@
 {
   "Destination": {
-    "Address": "70.0.19.1"
-  },
-  "Assertions": {
-    "isValid": {
-      "arg": "route",
-      "expr": {
-        "$type": "First(TBool;TRoute)",
-        "pair": {
-          "$type": "Var(TPair(TBool;TRoute))",
-          "name": "route"
-        }
-      }
-    }
+    "address": "70.0.19.1"
   },
   "Nodes": {
     "aggregation-12": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 3,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -47,15 +29,17 @@
           "Begin": "70.0.12.0",
           "End": "70.0.12.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 3
+      }
     },
     "aggregation-13": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 3,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -81,15 +65,17 @@
           "Begin": "70.0.13.0",
           "End": "70.0.13.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 3
+      }
     },
     "aggregation-16": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 1,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -115,15 +101,17 @@
           "Begin": "70.0.16.0",
           "End": "70.0.16.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 1
+      }
     },
     "aggregation-17": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 1,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -149,15 +137,17 @@
           "Begin": "70.0.17.0",
           "End": "70.0.17.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 1
+      }
     },
     "aggregation-4": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 3,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -183,15 +173,17 @@
           "Begin": "70.0.4.0",
           "End": "70.0.4.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 3
+      }
     },
     "aggregation-5": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 3,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -217,15 +209,17 @@
           "Begin": "70.0.5.0",
           "End": "70.0.5.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 3
+      }
     },
     "aggregation-8": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 3,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -251,15 +245,17 @@
           "Begin": "70.0.8.0",
           "End": "70.0.8.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 3
+      }
     },
     "aggregation-9": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 3,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -285,15 +281,17 @@
           "Begin": "70.0.9.0",
           "End": "70.0.9.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 3
+      }
     },
     "core-0": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 2,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -319,15 +317,17 @@
           "Begin": "70.0.0.0",
           "End": "70.0.0.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 2
+      }
     },
     "core-1": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 2,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -353,15 +353,17 @@
           "Begin": "70.0.1.0",
           "End": "70.0.1.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 2
+      }
     },
     "core-2": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 2,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -387,15 +389,17 @@
           "Begin": "70.0.2.0",
           "End": "70.0.2.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 2
+      }
     },
     "core-3": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 2,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -421,15 +425,17 @@
           "Begin": "70.0.3.0",
           "End": "70.0.3.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 2
+      }
     },
     "edge-10": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 4,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -447,15 +453,17 @@
           "Begin": "70.0.10.0",
           "End": "70.0.10.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 4
+      }
     },
     "edge-11": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 4,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -473,15 +481,17 @@
           "Begin": "70.0.11.0",
           "End": "70.0.11.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 4
+      }
     },
     "edge-14": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 4,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -499,15 +509,17 @@
           "Begin": "70.0.14.0",
           "End": "70.0.14.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 4
+      }
     },
     "edge-15": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 4,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -525,15 +537,17 @@
           "Begin": "70.0.15.0",
           "End": "70.0.15.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 4
+      }
     },
     "edge-18": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 2,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -551,14 +565,17 @@
           "Begin": "70.0.18.0",
           "End": "70.0.18.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 2
+      }
     },
     "edge-19": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Globally",
-        "p": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -576,15 +593,16 @@
           "Begin": "70.0.19.0",
           "End": "70.0.19.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Globally",
+        "p": "isValid"
+      }
     },
     "edge-6": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 4,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -602,15 +620,17 @@
           "Begin": "70.0.6.0",
           "End": "70.0.6.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 4
+      }
     },
     "edge-7": {
-      "Assert": "isValid",
-      "Invariant": {
-        "$type": "Finally",
-        "time": 4,
-        "then": "isValid"
-      },
       "Consts": {},
       "Declarations": {},
       "Policies": {
@@ -628,7 +648,27 @@
           "Begin": "70.0.7.0",
           "End": "70.0.7.255"
         }
-      ]
+      ],
+      "Stable": [
+        "isValid"
+      ],
+      "Temporal": {
+        "$type": "Finally",
+        "then": "isValid",
+        "time": 4
+      }
+    }
+  },
+  "Predicates": {
+    "isValid": {
+      "arg": "route",
+      "expr": {
+        "$type": "First(TBool;TRoute)",
+        "pair": {
+          "$type": "Var(TPair(TBool,TRoute))",
+          "name": "route"
+        }
+      }
     }
   },
   "Route": {
