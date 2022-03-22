@@ -65,10 +65,10 @@ public class Network<T, TS>
     Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties,
     SymbolicValue<TS>[] symbolics)
   {
-    this.Topology = topology;
-    this.TransferFunction = transferFunction;
-    this.MergeFunction = mergeFunction;
-    this.InitialValues = initialValues;
+    Topology = topology;
+    TransferFunction = transferFunction;
+    MergeFunction = mergeFunction;
+    InitialValues = initialValues;
     this.symbolics = symbolics;
     this.annotations = annotations;
     this.modularProperties = modularProperties;

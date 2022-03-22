@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Karesansui;
@@ -87,6 +88,24 @@ public class Topology
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr));
     return edges.Aggregate(initial, f);
   }
+
+  public override string ToString()
+  {
+    var builder = new StringBuilder();
+    builder.Append($"{Nodes.Length} nodes and {NEdges} edges");
+    builder.AppendLine();
+    foreach (var (node, neighbors) in Neighbors)
+    {
+      builder.Append($"{node}: ");
+      foreach (var neighbor in neighbors)
+      {
+        builder.Append($"{neighbor}; ");
+      }
+      builder.AppendLine();
+    }
+
+    return builder.ToString();
+  }
 }
 
 public static class Default
@@ -137,6 +156,61 @@ public static class Default
     foreach (var (node, adj) in neighbors)
       // add all other nodes except the current one
       adj.AddRange(nodes.Where(n => n != node));
+
+    return new Topology(neighbors);
+  }
+
+  /// <summary>
+  /// Create a fattree topology of numPods pods.
+  /// </summary>
+  /// <param name="numPods">Number of pods in the fattree.</param>
+  /// <returns></returns>
+  public static Topology FatTree(int numPods)
+  {
+    var neighbors = new Dictionary<string, List<string>>();
+    var coreNodes = (int) Math.Floor(Math.Pow(numPods / 2.0, 2));
+    for (var i = 0; i < coreNodes; i++) neighbors.Add($"core-{i}", new List<string>());
+    for (var p = 0; p < numPods; p++)
+    {
+      var aggregates = new List<string>();
+      var edges = new List<string>();
+      var firstAggregateNode = neighbors.Count;
+      var firstEdgeNode = firstAggregateNode + numPods / 2;
+      var lastEdgeNode = firstEdgeNode + numPods / 2;
+      for (var j = firstAggregateNode; j < firstEdgeNode; j++)
+      {
+        var name = $"aggregate-{j}";
+        aggregates.Add(name);
+        neighbors.Add(name, new List<string>());
+      }
+
+      for (var k = firstEdgeNode; k < lastEdgeNode; k++)
+      {
+        var name = $"edge-{k}";
+        edges.Add(name);
+        neighbors.Add(name, new List<string>());
+      }
+
+      foreach (var aggregate in aggregates)
+      {
+        foreach (var edge in edges)
+        {
+          neighbors[aggregate].Add(edge);
+          neighbors[edge].Add(aggregate);
+        }
+      }
+    }
+
+    for (var c = 0; c < coreNodes; c++)
+    {
+      var coreNode = $"core-{c}";
+      for (var p = 0; p < numPods; p++)
+      {
+        var aggregateNode = $"aggregate-{coreNodes + c / (numPods / 2) + p * numPods}";
+        neighbors[coreNode].Add(aggregateNode);
+        neighbors[aggregateNode].Add(coreNode);
+      }
+    }
 
     return new Topology(neighbors);
   }
