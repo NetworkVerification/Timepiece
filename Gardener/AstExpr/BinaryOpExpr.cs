@@ -2,14 +2,14 @@ using ZenLib;
 
 namespace Gardener.AstExpr;
 
-public class BinaryOpExpr<TArg, TResult, TState> : Expr<TResult, TState>
+public class BinaryOpExpr<TArg1, TArg2, TResult, TState> : Expr<TResult, TState>
 {
-  private readonly Expr<TArg, TState> _e1;
-  private readonly Expr<TArg, TState> _e2;
-  private readonly Func<Zen<TArg>, Zen<TArg>, Zen<TResult>> _binaryOp;
+  private readonly Expr<TArg1, TState> _e1;
+  private readonly Expr<TArg2, TState> _e2;
+  private readonly Func<Zen<TArg1>, Zen<TArg2>, Zen<TResult>> _binaryOp;
 
-  internal BinaryOpExpr(Expr<TArg, TState> e1, Expr<TArg, TState> e2,
-    Func<Zen<TArg>, Zen<TArg>, Zen<TResult>> binaryOp)
+  internal BinaryOpExpr(Expr<TArg1, TState> e1, Expr<TArg2, TState> e2,
+    Func<Zen<TArg1>, Zen<TArg2>, Zen<TResult>> binaryOp)
   {
     _e1 = e1;
     _e2 = e2;
@@ -32,7 +32,7 @@ public class BinaryOpExpr<TArg, TResult, TState> : Expr<TResult, TState>
 
 public static class BinaryOpExprExtensions
 {
-  public static BinaryOpExpr<T, T, TState> Aggregate<T, TState>(this IEnumerable<Expr<T, TState>> es,
+  public static BinaryOpExpr<T, T, T, TState> Aggregate<T, TState>(this IEnumerable<Expr<T, TState>> es,
     Expr<T, TState> defaultExpr, Func<Zen<T>, Zen<T>, Zen<T>> binaryOp)
   {
     var operands = es.ToArray();
@@ -41,7 +41,7 @@ public static class BinaryOpExprExtensions
       throw new ArgumentException("Binary op expression given fewer than 2 elements.");
     }
 
-    return new BinaryOpExpr<T, T, TState>(operands[0],
+    return new BinaryOpExpr<T, T, T, TState>(operands[0],
       operands.Length > 1 ? Aggregate(operands.Skip(1), defaultExpr, binaryOp) : defaultExpr, binaryOp);
   }
 }

@@ -18,7 +18,9 @@ public class WithField<T1, T2, TState> : Expr<T1, TState>
 
   public override Func<Zen<TState>, Zen<T1>> Evaluate(State<TState> state)
   {
-    return r => Record.Evaluate(state)(r).WithField<T1, T2>(FieldName, FieldValue.Evaluate(state)(r));
+    var rf = Record.Evaluate(state);
+    var vf = FieldValue.Evaluate(state);
+    return r => rf(r).WithField<T1, T2>(FieldName, vf(r));
   }
 
   public override void Rename(string oldVar, string newVar)
