@@ -18,7 +18,7 @@ public class Network<T, TS>
   /// <summary>
   /// The initial values for each node.
   /// </summary>
-  public Dictionary<string, Zen<T>> InitialValues { get; protected init; }
+  protected Dictionary<string, Zen<T>> InitialValues { get; init; }
 
   /// <summary>
   /// The merge function for routes.
@@ -53,7 +53,7 @@ public class Network<T, TS>
   /// <summary>
   /// The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
   /// </summary>
-  protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations;
+  protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; init; }
 
   public Network(
     Topology topology,
@@ -75,6 +75,12 @@ public class Network<T, TS>
     _monolithicProperties = monolithicProperties;
   }
 
+  public Option<State<T, TS>> CheckAnnotations(string node)
+  {
+    // TODO: add inductive check
+    return CheckBaseCase(node).OrElse(() => CheckAssertions(node));
+  }
+
   /// <summary>
   /// Check that the annotations are sound.
   /// </summary>
@@ -92,7 +98,7 @@ public class Network<T, TS>
     var check = Implies(route == InitialValues[node],
       Annotations[node](route, new BigInteger(0)));
 
-    // negate and try to prove unsat.
+    // negate and try to prove unsatisfiable.
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
@@ -128,7 +134,7 @@ public class Network<T, TS>
     // ensure the inductive invariant implies the assertions we want to prove.
     var check = Implies(Annotations[node](route, time), _modularProperties[node](route, time));
 
-    // negate and try to prove unsat.
+    // negate and try to prove unsatisfiable.
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
@@ -143,13 +149,12 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckInductive()
   {
     // create symbolic values for each node.
-    var routes = new Dictionary<string, Zen<T>>();
-    foreach (var node in Topology.Nodes) routes[node] = Symbolic<T>();
+    var routes = Topology.ForAllNodes(_ => Symbolic<T>());
 
     // create a symbolic time variable.
     var time = Symbolic<BigInteger>();
 
-    // check the inductiveness of the invariant for each node.
+    // check the inductive invariant for each node.
     return Topology.Nodes.Aggregate(Option.None<State<T, TS>>(),
       (current, node) => current.OrElse(() => CheckInductive(node, routes, time)));
   }
@@ -157,11 +162,12 @@ public class Network<T, TS>
   /// <summary>
   /// Test the inductive check for the given node.
   /// </summary>
-  /// <param name="node"></param>
-  /// <param name="routes"></param>
-  /// <param name="time"></param>
-  /// <returns></returns>
-  public Option<State<T, TS>> CheckInductive(string node, Dictionary<string, Zen<T>> routes, Zen<BigInteger> time)
+  /// <param name="node">The node to test.</param>
+  /// <param name="routes">A dictionary mapping nodes to symbolic routes.</param>
+  /// <param name="time">The symbolic time to test.</param>
+  /// <returns>Some State if a counterexample is returned where the inductive check does not hold,
+  /// and otherwise None.</returns>
+  public Option<State<T, TS>> CheckInductive(string node, IReadOnlyDictionary<string, Zen<T>> routes, Zen<BigInteger> time)
   {
     // get the new route as the merge of all neighbors
     var newNodeRoute = UpdateNodeRoute(node, routes);
@@ -174,7 +180,7 @@ public class Network<T, TS>
     // now we need to ensure the new route after merging implies the annotation for this node.
     var check = Implies(And(assume.ToArray()), Annotations[node](newNodeRoute, time));
 
-    // negate and try to prove unsat.
+    // negate and try to prove unsatisfiable.
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
@@ -190,8 +196,7 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckMonolithic()
   {
     // create symbolic values for each node.
-    var routes = new Dictionary<string, Zen<T>>();
-    foreach (var node in Topology.Nodes) routes[node] = Symbolic<T>();
+    var routes = Topology.ForAllNodes(_ => Symbolic<T>());
 
     // add the assertions
     var assertions = Topology.Nodes.Select(node => _monolithicProperties[node](routes[node]));
@@ -202,7 +207,7 @@ public class Network<T, TS>
 
     var check = And(GetAssumptions(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
 
-    // negate and try to prove unsat.
+    // negate and try to prove unsatisfiable.
     var model = check.Solve();
 
     if (model.IsSatisfiable())
