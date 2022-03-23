@@ -9,49 +9,49 @@ using static ZenLib.Zen;
 namespace Karesansui.Networks;
 
 /// <summary>
-///     Represents an NV network.
+/// Represents an NV network.
 /// </summary>
 /// <typeparam name="T">The type of the routes.</typeparam>
 /// <typeparam name="TS">The type of symbolic values associated with the network.</typeparam>
 public class Network<T, TS>
 {
   /// <summary>
-  ///     The initial values for each node.
+  /// The initial values for each node.
   /// </summary>
   public Dictionary<string, Zen<T>> InitialValues { get; protected init; }
 
   /// <summary>
-  ///     The merge function for routes.
+  /// The merge function for routes.
   /// </summary>
   public Func<Zen<T>, Zen<T>, Zen<T>> MergeFunction { get; }
 
   /// <summary>
-  ///     The modular safety properties that we want to check (includes time).
+  /// The modular safety properties that we want to check (includes time).
   /// </summary>
   private readonly Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> _modularProperties;
 
   /// <summary>
-  ///     The monolithic safety properties that we want to check (assumes stable states).
+  /// The monolithic safety properties that we want to check (assumes stable states).
   /// </summary>
   private readonly Dictionary<string, Func<Zen<T>, Zen<bool>>> _monolithicProperties;
 
   /// <summary>
-  ///     Any additional symbolics on the network's components.
+  /// Any additional symbolics on the network's components.
   /// </summary>
   protected SymbolicValue<TS>[] symbolics;
 
   /// <summary>
-  ///     The topology of the network.
+  /// The topology of the network.
   /// </summary>
   public Topology Topology { get; }
 
   /// <summary>
-  ///     The transfer function for each edge.
+  /// The transfer function for each edge.
   /// </summary>
   public Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
 
   /// <summary>
-  ///     The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
+  /// The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
   /// </summary>
   protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations;
 
@@ -76,7 +76,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  ///     Check that the annotations are sound.
+  /// Check that the annotations are sound.
   /// </summary>
   /// <returns>True if the annotations pass, false otherwise.</returns>
   public Option<State<T, TS>> CheckAnnotations()
@@ -111,7 +111,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  ///     Ensure that the inductive invariants imply the assertions.
+  /// Ensure that the inductive invariants imply the assertions.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckAssertions()
@@ -137,7 +137,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  ///     Ensure that the inductive checks all pass.
+  /// Ensure that the inductive checks all pass.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckInductive()
@@ -184,9 +184,9 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  ///     Check the network using a stable routes encoding.
+  /// Check the network using a stable routes encoding.
   /// </summary>
-  /// <returns>True if the network verifies, false otherwise.</returns>
+  /// <returns>Some state if verification fails with a counterexample, and None otherwise.</returns>
   public Option<State<T, TS>> CheckMonolithic()
   {
     // create symbolic values for each node.

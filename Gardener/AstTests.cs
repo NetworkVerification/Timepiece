@@ -37,14 +37,26 @@ public static class AstTests
     return IPAddressRange.Parse($"70.0.{index}.0/24");
   }
 
+  private static readonly PairRouteAst SpAst = GenerateSpAst(4, "edge-19");
+
+  private static PairRouteAst GenerateSpAst(int numPods, string destNode)
+  {
+    var topology = Default.FatTree(numPods);
+    var distances = topology.BreadthFirstSearch(destNode);
+    var props = topology.ForAllNodes(n =>
+      GenerateProperties(n, topology[n], distances[n]));
+    return new PairRouteAst(props, D, Predicates, new Dictionary<string, AstPredicate<Unit>>(), 5);
+  }
+
   [Fact]
   public static void TestSpAstGoodAnnotations()
   {
-    var topology = Default.FatTree(4);
-    const string dest = "edge-19";
-    var props = topology.ForAllNodes(n =>
-      GenerateProperties(n, topology[n], topology.BreadthFirstSearch(dest, n)));
-    var ast = new PairRouteAst(props, D, Predicates, new Dictionary<string, AstPredicate<Unit>>(), 5);
-    Assert.False(ast.ToNetwork().CheckAnnotations().HasValue);
+    Assert.False(SpAst.ToNetwork().CheckAnnotations().HasValue);
+  }
+
+  [Fact]
+  public static void TestSpAstGoodMonolithic()
+  {
+    Assert.False(SpAst.ToNetwork().CheckMonolithic().HasValue);
   }
 }
