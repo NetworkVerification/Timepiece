@@ -50,10 +50,10 @@ public class AstFunction<T> : AstFunctionBase<T, Statement<T, T>>
     return functions.Aggregate(seed, (current, ff) => current.Compose(ff));
   }
 
-  public Func<Zen<T>, Zen<T>> Evaluate(State<T> state)
+  public Func<Zen<T>, Zen<T>> Evaluate(AstState<T> astState)
   {
-    state.Add(Arg, t => t);
-    var finalState = Body.Evaluate(state);
+    astState.Add(Arg, t => t);
+    var finalState = Body.Evaluate(astState);
     return finalState.Return ??
            throw new InvalidOperationException("No value returned by function.");
   }

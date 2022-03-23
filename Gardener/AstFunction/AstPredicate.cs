@@ -11,19 +11,19 @@ public class AstPredicate<T> : AstFunctionBase<T, Expr<bool, T>>, IEvaluable<T, 
 {
   public AstPredicate(string arg, Expr<bool, T> expr) : base(arg, expr) { }
 
-  public Func<Zen<T>, Zen<bool>> Evaluate(State<T> state)
+  public Func<Zen<T>, Zen<bool>> Evaluate(AstState<T> astState)
   {
-    state.Add(Arg, t => t);
-    return Body.Evaluate(state);
+    astState.Add(Arg, t => t);
+    return Body.Evaluate(astState);
   }
 }
 
 public static class AstPredicateExtensions
 {
   public static Func<Zen<T1>, Zen<T2>, Zen<bool>> EvaluateBinary<T1, T2>(this AstPredicate<Pair<T1, T2>> f,
-    State<Pair<T1, T2>> state)
+    AstState<Pair<T1, T2>> astState)
   {
-    var pairPredicate = f.Evaluate(state);
+    var pairPredicate = f.Evaluate(astState);
     return (t1, t2) => pairPredicate(Pair.Create(t1, t2));
   }
 }

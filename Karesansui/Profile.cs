@@ -28,6 +28,7 @@ public static class Profile
     Console.WriteLine("Error, monolithic verification failed!");
   }
 
+  // TODO: add an option to run annotated checks and report times taken by individual nodes
   public static void RunAnnotated<T, TS>(Network<T, TS> network)
   {
     var s = network.CheckAnnotations();

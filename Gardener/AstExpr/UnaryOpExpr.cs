@@ -12,9 +12,9 @@ public class UnaryOpExpr<TArg, TResult, TState> : Expr<TResult, TState>
     _e = e;
     _unaryOp = unaryOp;
   }
-  public override Func<Zen<TState>, Zen<TResult>> Evaluate(State<TState> state)
+  public override Func<Zen<TState>, Zen<TResult>> Evaluate(AstState<TState> astState)
   {
-    var f = _e.Evaluate(state);
+    var f = _e.Evaluate(astState);
     return t => _unaryOp(f(t));
   }
 

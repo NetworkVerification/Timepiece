@@ -4,7 +4,7 @@ namespace Gardener.AstStmt;
 
 public abstract class Statement<T, TState> : IRenameable
 {
-  public abstract State<TState> Evaluate(State<TState> state);
+  public abstract AstState<TState> Evaluate(AstState<TState> astState);
 
   /// <summary>
   /// Convert the statement to an assignment to a given variable.

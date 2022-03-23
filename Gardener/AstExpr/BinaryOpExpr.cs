@@ -16,10 +16,10 @@ public class BinaryOpExpr<TArg1, TArg2, TResult, TState> : Expr<TResult, TState>
     _binaryOp = binaryOp;
   }
 
-  public override Func<Zen<TState>, Zen<TResult>> Evaluate(State<TState> state)
+  public override Func<Zen<TState>, Zen<TResult>> Evaluate(AstState<TState> astState)
   {
-    var f1 = _e1.Evaluate(state);
-    var f2 = _e2.Evaluate(state);
+    var f1 = _e1.Evaluate(astState);
+    var f2 = _e2.Evaluate(astState);
     return t => _binaryOp(f1(t), f2(t));
   }
 

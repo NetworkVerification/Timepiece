@@ -25,7 +25,7 @@ public static class AstFunctionTests
       new IfThenElse<BatfishBgpRoute, BatfishBgpRoute>(new Havoc<BatfishBgpRoute>(),
         new Return<BatfishBgpRoute>(increment),
         new Return<BatfishBgpRoute>(rVar)));
-    var zenF = f.Evaluate(new State<BatfishBgpRoute>());
+    var zenF = f.Evaluate(new AstState<BatfishBgpRoute>());
     // since the if is a havoc, we have that zenF(r) is either incremented or the same:
     var model = Zen.Not(Zen.And(Zen.Eq(zenF(r), r), Zen.Eq(zenF(r), rIncremented))).Solve();
     Assert.True(model.IsSatisfiable());
@@ -40,7 +40,7 @@ public static class AstFunctionTests
     var f2 = new AstFunction<int>("x",
       new Return<int>(new Plus<int, int>(new Var<int>("x"), new ConstantExpr<int, int>(3))));
     f1.Rename("x", "y");
-    var f = f1.Compose(f2).Evaluate(new State<int>());
+    var f = f1.Compose(f2).Evaluate(new AstState<int>());
     var x = Zen.Symbolic<int>();
     var model = Zen.Eq(f(x), x + 4).Solve();
     Assert.True(model.IsSatisfiable());

@@ -16,10 +16,10 @@ public class WithField<T1, T2, TState> : Expr<T1, TState>
     FieldValue = fieldValue;
   }
 
-  public override Func<Zen<TState>, Zen<T1>> Evaluate(State<TState> state)
+  public override Func<Zen<TState>, Zen<T1>> Evaluate(AstState<TState> astState)
   {
-    var rf = Record.Evaluate(state);
-    var vf = FieldValue.Evaluate(state);
+    var rf = Record.Evaluate(astState);
+    var vf = FieldValue.Evaluate(astState);
     return r => rf(r).WithField<T1, T2>(FieldName, vf(r));
   }
 

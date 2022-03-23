@@ -12,10 +12,10 @@ public class Return<T>: Statement<T, T>
 
   public Expr<T, T> Expr { get; set; }
 
-  public override State<T> Evaluate(State<T> state)
+  public override AstState<T> Evaluate(AstState<T> astState)
   {
-    state.Return = Expr.Evaluate(state);
-    return state;
+    astState.Return = Expr.Evaluate(astState);
+    return astState;
   }
 
   public override Statement<Unit, T> Bind(string var)

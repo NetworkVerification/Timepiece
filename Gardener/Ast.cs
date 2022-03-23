@@ -186,6 +186,6 @@ public class Ast<T, TS>
       modularProperties,
       monolithicProperties,
       Symbolics.Select(nameConstraint =>
-        new SymbolicValue<TS>(nameConstraint.Key, nameConstraint.Value.Evaluate(new State<TS>()))).ToArray());
+        new SymbolicValue<TS>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstState<TS>()))).ToArray());
   }
 }

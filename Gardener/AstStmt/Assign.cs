@@ -21,10 +21,10 @@ public class Assign<T> : Statement<Unit, T>
   /// </summary>
   public string Var { get; set; }
 
-  public override State<T> Evaluate(State<T> state)
+  public override AstState<T> Evaluate(AstState<T> astState)
   {
-    state[Var] = Expr.Evaluate(state);
-    return state;
+    astState[Var] = Expr.Evaluate(astState);
+    return astState;
   }
 
   public override Statement<Unit, T> Bind(string var)

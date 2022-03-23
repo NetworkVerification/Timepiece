@@ -67,6 +67,6 @@ public static class AllPairsTests
         });
     var net = Net(annotations);
 
-    NetworkAssert.CheckUnsound(net);
+    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
   }
 }

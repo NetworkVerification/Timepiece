@@ -11,7 +11,7 @@ public class ConstantExpr<T, TState> : Expr<T, TState>
     _value = value;
   }
 
-  public override Func<Zen<TState>, Zen<T>> Evaluate(State<TState> state)
+  public override Func<Zen<TState>, Zen<T>> Evaluate(AstState<TState> astState)
   {
     return _ => Zen.Constant(_value);
   }

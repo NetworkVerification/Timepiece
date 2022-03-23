@@ -75,10 +75,10 @@ public class Network<T, TS>
     _monolithicProperties = monolithicProperties;
   }
 
-  public Option<State<T, TS>> CheckAnnotations(string node)
+  public Option<State<T, TS>> CheckAnnotations(string node, IReadOnlyDictionary<string, Zen<T>> routes,
+    Zen<BigInteger> time)
   {
-    // TODO: add inductive check
-    return CheckBaseCase(node).OrElse(() => CheckAssertions(node));
+    return CheckBaseCase(node).OrElse(() => CheckInductive(node, routes, time)).OrElse(() => CheckAssertions(node));
   }
 
   /// <summary>
@@ -87,7 +87,7 @@ public class Network<T, TS>
   /// <returns>True if the annotations pass, false otherwise.</returns>
   public Option<State<T, TS>> CheckAnnotations()
   {
-    return CheckBaseCase().OrElse(CheckAssertions).OrElse(CheckInductive);
+    return CheckBaseCase().OrElse(CheckInductive).OrElse(CheckAssertions);
   }
 
   public Option<State<T, TS>> CheckBaseCase(string node)
@@ -102,7 +102,7 @@ public class Network<T, TS>
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
-    var state = new State<T, TS>(model, node, route, Option.None<Zen<BigInteger>>(), symbolics, "base");
+    var state = new State<T, TS>(model, node, route, Option.None<Zen<BigInteger>>(), symbolics, SmtCheck.Base);
     return Option.Some(state);
   }
 
@@ -138,7 +138,7 @@ public class Network<T, TS>
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
-    var state = new State<T, TS>(model, node, route, Option.Some(time), symbolics, "assertion");
+    var state = new State<T, TS>(model, node, route, Option.Some(time), symbolics, SmtCheck.Safety);
     return Option.Some(state);
   }
 
@@ -167,7 +167,8 @@ public class Network<T, TS>
   /// <param name="time">The symbolic time to test.</param>
   /// <returns>Some State if a counterexample is returned where the inductive check does not hold,
   /// and otherwise None.</returns>
-  public Option<State<T, TS>> CheckInductive(string node, IReadOnlyDictionary<string, Zen<T>> routes, Zen<BigInteger> time)
+  public Option<State<T, TS>> CheckInductive(string node, IReadOnlyDictionary<string, Zen<T>> routes,
+    Zen<BigInteger> time)
   {
     // get the new route as the merge of all neighbors
     var newNodeRoute = UpdateNodeRoute(node, routes);
@@ -185,7 +186,7 @@ public class Network<T, TS>
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
     var neighborRoutes = routes.Where(pair => Topology[node].Contains(pair.Key));
-    var state = new State<T, TS>(model, node, neighborRoutes, Option.Some(time), symbolics, "inductive");
+    var state = new State<T, TS>(model, node, neighborRoutes, time, symbolics);
     return Option.Some(state);
   }
 
@@ -212,7 +213,7 @@ public class Network<T, TS>
 
     if (model.IsSatisfiable())
     {
-      return Option.Some(new State<T, TS>(model, routes, Option.None<Zen<BigInteger>>(), symbolics, "monolithic"));
+      return Option.Some(new State<T, TS>(model, routes, symbolics));
     }
 
     Console.WriteLine("    The monolithic checks passed!");

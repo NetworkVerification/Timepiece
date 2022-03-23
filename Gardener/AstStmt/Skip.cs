@@ -4,9 +4,9 @@ namespace Gardener.AstStmt;
 
 public class Skip<T> : Statement<Unit, T>
 {
-  public override State<T> Evaluate(State<T> state)
+  public override AstState<T> Evaluate(AstState<T> astState)
   {
-    return state;
+    return astState;
   }
 
   public override Statement<Unit, T> Bind(string var)

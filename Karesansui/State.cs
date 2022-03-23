@@ -10,11 +10,11 @@ namespace Karesansui;
 
 public class State<T, TS>
 {
-  public Dictionary<string, T> nodeStates;
+  public readonly Dictionary<string, T> nodeStates;
   private Option<string> _focusedNode = Option.None<string>();
   public Option<BigInteger> time;
-  public Dictionary<string, TS> symbolicStates;
-  public string Check;
+  public readonly Dictionary<string, TS> symbolicStates;
+  public readonly SmtCheck check;
 
   /// <summary>
   /// Reconstruct the network state from the given model, focused on the given node.
@@ -26,46 +26,42 @@ public class State<T, TS>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
   /// <param name="check">Which check led to the generation of this state.</param>
   public State(ZenSolution model, string node, Zen<T> route, Option<Zen<BigInteger>> time,
-    IEnumerable<SymbolicValue<TS>> symbolics, string check)
+    IEnumerable<SymbolicValue<TS>> symbolics, SmtCheck check)
   {
-    Check = check;
+    this.check = check;
     this.time = time.Select(model.Get);
     nodeStates = new Dictionary<string, T> {{node, model.Get(route)}};
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
   }
 
   /// <summary>
-  /// Reconstruct the network state from the given model, focused on the given node and its neighbors.
+  /// Reconstruct the network state from the given inductive check model, focused on the given node and its neighbors.
   /// </summary>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="node">The node this solution pertains to.</param>
   /// <param name="neighborStates">The Zen variables referring to this node's neighbors' routes.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  /// <param name="check">Which check led to the generation of this state.</param>
   public State(ZenSolution model, string node, IEnumerable<KeyValuePair<string, Zen<T>>> neighborStates,
-    Option<Zen<BigInteger>> time, IEnumerable<SymbolicValue<TS>> symbolics, string check)
+    Zen<BigInteger> time, IEnumerable<SymbolicValue<TS>> symbolics)
   {
-    Check = check;
-    this.time = time.Select(model.Get);
+    check = SmtCheck.Inductive;
+    this.time = Option.Some(model.Get(time));
     _focusedNode = Option.Some(node);
     nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
   }
 
   /// <summary>
-  /// Reconstruct the network state from the given model for all given nodes.
+  /// Reconstruct the network state from the given monolithic check model for all given nodes.
   /// </summary>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="nodeStates">The Zen variables referring to each node and its route.</param>
-  /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  /// <param name="check">Which check led to the generation of this state.</param>
-  public State(ZenSolution model, IEnumerable<KeyValuePair<string, Zen<T>>> nodeStates, Option<Zen<BigInteger>> time,
-    IEnumerable<SymbolicValue<TS>> symbolics, string check)
+  public State(ZenSolution model, IEnumerable<KeyValuePair<string, Zen<T>>> nodeStates,
+    IEnumerable<SymbolicValue<TS>> symbolics)
   {
-    Check = check;
-    this.time = time.Select(model.Get);
+    check = SmtCheck.Monolithic;
     this.nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
   }
@@ -95,7 +91,15 @@ public class State<T, TS>
   public void ReportCheckFailure()
   {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"{Check} check failed!");
+    var whichCheck = check switch
+    {
+      SmtCheck.Base => "Base",
+      SmtCheck.Monolithic => "Monolithic",
+      SmtCheck.Inductive => "Inductive",
+      SmtCheck.Safety => "Safety",
+      _ => throw new ArgumentOutOfRangeException()
+    };
+    Console.WriteLine($"{whichCheck} check failed!");
     Console.WriteLine(ToString());
     Console.ResetColor();
   }

@@ -15,11 +15,11 @@ public class IfThenElse<T, TState> : Statement<T, TState>
     FalseStatement = falseStatement;
   }
 
-  public override State<TState> Evaluate(State<TState> state)
+  public override AstState<TState> Evaluate(AstState<TState> astState)
   {
-    var trueState = TrueStatement.Evaluate(state);
-    var falseState = FalseStatement.Evaluate(state);
-    trueState.Join(falseState, Guard.Evaluate(state));
+    var trueState = TrueStatement.Evaluate(astState);
+    var falseState = FalseStatement.Evaluate(astState);
+    trueState.Join(falseState, Guard.Evaluate(astState));
     return trueState;
   }
 

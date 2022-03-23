@@ -4,7 +4,7 @@ namespace Gardener.AstExpr;
 
 public abstract class Expr<T, TState> : IRenameable, IEvaluable<TState, T>
 {
-  public abstract Func<Zen<TState>, Zen<T>> Evaluate(State<TState> state);
+  public abstract Func<Zen<TState>, Zen<T>> Evaluate(AstState<TState> astState);
 
   /// <summary>
   /// Rename (in-place) all instances of assignments to a variable oldVar in the expression

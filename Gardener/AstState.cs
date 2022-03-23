@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Gardener;
 
-public class State<T>
+public class AstState<T>
 {
   /// <summary>
   /// A mapping from variable names to values.
@@ -16,12 +16,12 @@ public class State<T>
   /// <summary>
   /// Return a new state with no bindings.
   /// </summary>
-  public State()
+  public AstState()
   {
     Variables = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
   }
 
-  public State(bool debug)
+  public AstState(bool debug)
   {
     Variables = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
     Debug = debug;
@@ -60,9 +60,9 @@ public class State<T>
   /// when it is true, this state's value holds;
   /// when it is false, the other state's value holds.
   /// </summary>
-  /// <param name="other">Another State to use.</param>
+  /// <param name="other">Another AstState to use.</param>
   /// <param name="guard">A boolean expression acting as the guard.</param>
-  public void Join(State<T> other, Func<Zen<T>, Zen<bool>> guard)
+  public void Join(AstState<T> other, Func<Zen<T>, Zen<bool>> guard)
   {
     // make both states have the same keys
     foreach (var key in Variables.Keys.Where(key => !other.ContainsVar(key)))

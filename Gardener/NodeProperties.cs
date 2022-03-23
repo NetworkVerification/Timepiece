@@ -75,7 +75,7 @@ public class NodeProperties<T>
 
     var safetyProperty = Stable is null
       ? _ => true
-      : predicateLookupFunction(Stable).Evaluate(new State<T>());
+      : predicateLookupFunction(Stable).Evaluate(new AstState<T>());
 
     var invariant = Temporal is null
       ? (_, _) => true
@@ -87,8 +87,8 @@ public class NodeProperties<T>
     {
       var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
       var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate(new State<T>());
-      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate(new State<T>());
+      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate(new AstState<T>());
+      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate(new AstState<T>());
     }
 
     return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
