@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Transactions;
 using Karesansui.Datatypes;
 using ZenLib;
 using static ZenLib.Zen;
@@ -73,6 +74,19 @@ public class Network<T, TS>
     Annotations = annotations;
     _modularProperties = modularProperties;
     _monolithicProperties = monolithicProperties;
+  }
+
+  /// <summary>
+  /// Check that the annotations are sound, calling the given function f on each node's check.
+  /// </summary>
+  /// <param name="f"></param>
+  /// <returns></returns>
+  public Option<State<T, TS>> CheckAnnotationsWith(Func<string, Func<Option<State<T, TS>>>, Func<Option<State<T, TS>>>> f)
+  {
+    var routes = Topology.ForAllNodes(_ => Symbolic<T>());
+    var time = Symbolic<BigInteger>();
+    return Topology.Nodes.Aggregate(Option.None<State<T, TS>>(), (current, node) =>
+      current.OrElse(f(node, () => CheckAnnotations(node, routes, time))));
   }
 
   public Option<State<T, TS>> CheckAnnotations(string node, IReadOnlyDictionary<string, Zen<T>> routes,

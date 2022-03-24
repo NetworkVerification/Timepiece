@@ -20,7 +20,7 @@ foreach (var file in args)
   if (ast != null)
   {
     // ast.Validate();
-    Profile.RunCmp(ast.ToNetwork());
+    Profile.RunCmpPerNode(ast.ToNetwork());
   }
   else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
 }
