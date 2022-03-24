@@ -12,16 +12,19 @@ public record struct BatfishBgpRoute
     AsPathLength = 0;
     Med = 0;
     OriginType = new Int2(0);
+    // TODO: how to set the maximum depth?
+    Communities = new FBag<string>();
   }
 
   [JsonConstructor]
-  public BatfishBgpRoute(int adminDist, int lp, int asPathLength, int med, Int2 originType)
+  public BatfishBgpRoute(int adminDist, int lp, int asPathLength, int med, Int2 originType, FBag<string> communities)
   {
     AdminDist = adminDist;
     Lp = lp;
     AsPathLength = asPathLength;
     Med = med;
     OriginType = originType;
+    Communities = communities;
   }
 
   /// <summary>
@@ -51,6 +54,11 @@ public record struct BatfishBgpRoute
   /// 3 = internal
   /// </summary>
   public Int2 OriginType { get; set; }
+
+  /// <summary>
+  /// Representation of community tags as strings.
+  /// </summary>
+  public FBag<string> Communities { get; set; }
 }
 
 public static class BatfishBgpRouteExtensions
@@ -93,6 +101,16 @@ public static class BatfishBgpRouteExtensions
   public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<Int2> originType)
   {
     return b.WithField("OriginType", originType);
+  }
+
+  public static Zen<FBag<string>> GetCommunities(this Zen<BatfishBgpRoute> b)
+  {
+    return b.GetField<BatfishBgpRoute, FBag<string>>("Communities");
+  }
+
+  public static Zen<BatfishBgpRoute> WithCommunities(this Zen<BatfishBgpRoute> b, Zen<FBag<string>> communities)
+  {
+    return b.WithField("Communities", communities);
   }
 
   private static Func<Zen<T>, Zen<T>, Zen<T>> MinBy<T, TKey>(Func<Zen<T>, Zen<TKey>> keyAccessor,

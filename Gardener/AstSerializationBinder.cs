@@ -49,6 +49,9 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "None" => new TypeAlias(typeof(None<,>), new[] {null, s}),
       "GetField" => new TypeAlias(typeof(GetField<,,>), new[] {null, null, s}),
       "WithField" => new TypeAlias(typeof(WithField<,,>), new[] {null, null, s}),
+      "SetContains" => new TypeAlias(typeof(SetContains<>), new[] {s}),
+      "SetAdd" => new TypeAlias(typeof(SetAdd<>), new[] {s}),
+      "EmptySet" => new TypeAlias(typeof(EmptySet<>), new[] {s}),
       // types
       "TRoute" => new TypeAlias(typeof(TRoute), Array.Empty<Type?>()),
       "TPair" => new TypeAlias(typeof(Pair<,>), new Type?[] {null, null}),
@@ -96,6 +99,7 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
         {
           typeName = typeName.TrimStart('!');
         }
+
         var types = ParseTypeArgs(typeName).GetEnumerator();
         types.MoveNext();
         return BindToTypeAux(types.Current, types, timed) ?? throw new ArgumentException($"Unable to bind {typeName}");

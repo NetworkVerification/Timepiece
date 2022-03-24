@@ -15,4 +15,15 @@ public static class AstExprTests
     var model = f(Zen.False()).Solve();
     Assert.True(model.IsSatisfiable());
   }
+
+  [Fact]
+  public static void TestAssociativeBinaryExprs()
+  {
+    var e1 = new And<bool>(new[] {new ConstantExpr<bool, bool>(true)});
+    var e2 = new Or<bool>(new Expr<bool, bool>[]
+      {new ConstantExpr<bool, bool>(true), new ConstantExpr<bool, bool>(false), e1});
+    var f = e2.Evaluate(new AstState<bool>());
+    var model = f(Zen.False()).Solve();
+    Assert.True(model.IsSatisfiable());
+  }
 }
