@@ -9,11 +9,6 @@ namespace Karesansui.Networks;
 
 public class FaultTolerance<T> : Network<Option<T>, (string, string)>
 {
-  /// <summary>
-  /// Edges which may fail in the given topology.
-  /// </summary>
-  private Zen<FSeq<(string, string)>> failedEdges;
-
   public FaultTolerance(Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
@@ -27,11 +22,10 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     Lang.Omap2(mergeFunction), initialValues,
     new Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(),
     modularProperties, monolithicProperties,
-    Symbolics(topology, failedEdges, numFailed))
+    CreateSymbolics(topology, failedEdges, numFailed))
   {
-    this.failedEdges = failedEdges;
-    this.Annotations = annotations(symbolics);
-    TransferFunction = Transfer(transferFunction, symbolics);
+    Annotations = annotations(Symbolics);
+    TransferFunction = Transfer(transferFunction, Symbolics);
   }
 
   public FaultTolerance(Network<T, object> net,
@@ -44,10 +38,10 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     new Dictionary<(string, string), Func<Zen<Option<T>>, Zen<Option<T>>>>(), Lang.Omap2(net.MergeFunction),
     initialValues,
     new Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(), modularProperties, monolithicProperties,
-    Symbolics(net.Topology, failedEdges, numFailed))
+    CreateSymbolics(net.Topology, failedEdges, numFailed))
   {
-    this.Annotations = annotations(symbolics);
-    TransferFunction = Transfer(net.TransferFunction, symbolics);
+    Annotations = annotations(Symbolics);
+    TransferFunction = Transfer(net.TransferFunction, Symbolics);
   }
 
   /// <summary>
@@ -61,7 +55,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     return failedEdges.Aggregate(False(), (current, e) => Or(current, e.EqualsValue(edge)));
   }
 
-  private static SymbolicValue<(string, string)>[] Symbolics(
+  private static SymbolicValue<(string, string)>[] CreateSymbolics(
     Topology topology,
     Zen<FSeq<(string, string)>> failedEdges,
     uint numFailed)

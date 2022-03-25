@@ -5,6 +5,7 @@ using Gardener.AstFunction;
 using Gardener.AstStmt;
 using Newtonsoft.Json.Serialization;
 using ZenLib;
+using Regex = System.Text.RegularExpressions.Regex;
 
 namespace Gardener;
 

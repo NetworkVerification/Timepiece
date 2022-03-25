@@ -1,40 +1,29 @@
-using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
 namespace Karesansui.Datatypes;
 
-public record struct Bgp
+public record struct Bgp(BigInteger Lp, BigInteger AsLength, FSeq<string> Tags)
 {
-  public Bgp(BigInteger lp, BigInteger asLength, FSeq<string> tags)
+  public Bgp() : this(default, default, default)
   {
-    Lp = lp;
-    AsLength = asLength;
-    Tags = tags;
-  }
-
-  public Bgp()
-  {
-    Lp = default;
-    AsLength = default;
-    Tags = default;
   }
 
   /// <summary>
   /// Local preference of the given BGP announcement.
   /// </summary>
-  public BigInteger Lp { get; set; }
+  public BigInteger Lp { get; set; } = Lp;
 
   /// <summary>
   /// Abstract AS length of the given BGP announcement.
   /// </summary>
-  public BigInteger AsLength { get; set; }
+  public BigInteger AsLength { get; set; } = AsLength;
 
   /// <summary>
   /// List of community tags.
   /// </summary>
-  public FSeq<string> Tags { get; set; }
+  public FSeq<string> Tags { get; set; } = Tags;
 
   public override string ToString()
   {

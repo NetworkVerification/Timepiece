@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Transactions;
 using Karesansui.Datatypes;
 using ZenLib;
 using static ZenLib.Zen;
@@ -39,7 +39,7 @@ public class Network<T, TS>
   /// <summary>
   /// Any additional symbolics on the network's components.
   /// </summary>
-  protected SymbolicValue<TS>[] symbolics;
+  public SymbolicValue<TS>[] Symbolics { get; set; }
 
   /// <summary>
   /// The topology of the network.
@@ -70,7 +70,7 @@ public class Network<T, TS>
     TransferFunction = transferFunction;
     MergeFunction = mergeFunction;
     InitialValues = initialValues;
-    this.symbolics = symbolics;
+    this.Symbolics = symbolics;
     Annotations = annotations;
     _modularProperties = modularProperties;
     _monolithicProperties = monolithicProperties;
@@ -81,12 +81,30 @@ public class Network<T, TS>
   /// </summary>
   /// <param name="f"></param>
   /// <returns></returns>
-  public Option<State<T, TS>> CheckAnnotationsWith(Func<string, Func<Option<State<T, TS>>>, Func<Option<State<T, TS>>>> f)
+  public Option<State<T, TS>> CheckAnnotationsWith(
+    Func<string, Func<Option<State<T, TS>>>, Func<Option<State<T, TS>>>> f)
   {
     var routes = Topology.ForAllNodes(_ => Symbolic<T>());
     var time = Symbolic<BigInteger>();
-    return Topology.Nodes.Aggregate(Option.None<State<T, TS>>(), (current, node) =>
-      current.OrElse(f(node, () => CheckAnnotations(node, routes, time))));
+    var timer = new Stopwatch();
+    timer.Start();
+    // foreach (var node in Topology.Nodes)
+    // {
+    // var s = f(node, () => CheckAnnotations(node, routes, time))();
+    // if (s.HasValue)
+    // {
+    // Console.WriteLine($"Verification took: {timer.ElapsedMilliseconds}ms");
+    // return s;
+    // }
+    // }
+
+    var s = Topology.Nodes.AsParallel().WithDegreeOfParallelism(8)
+      // .Select(node => f(node, () => CheckAnnotations(node, routes, time))())
+      .Select(node => CheckAnnotations(node, routes, time))
+      .Aggregate(Option.None<State<T, TS>>(), (current, s) =>
+        current.OrElse(() => s));
+    Console.WriteLine($"Modular verification took: {timer.ElapsedMilliseconds}ms");
+    return s;
   }
 
   public Option<State<T, TS>> CheckAnnotations(string node, IReadOnlyDictionary<string, Zen<T>> routes,
@@ -116,7 +134,7 @@ public class Network<T, TS>
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
-    var state = new State<T, TS>(model, node, route, Option.None<Zen<BigInteger>>(), symbolics, SmtCheck.Base);
+    var state = new State<T, TS>(model, node, route, Option.None<Zen<BigInteger>>(), Symbolics, SmtCheck.Base);
     return Option.Some(state);
   }
 
@@ -126,7 +144,7 @@ public class Network<T, TS>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckBaseCase()
   {
-    return Topology.Nodes.Aggregate(Option.None<State<T, TS>>(),
+    return Topology.Nodes.AsParallel().Aggregate(Option.None<State<T, TS>>(),
       (current, node) => current.OrElse(() => CheckBaseCase(node)));
   }
 
@@ -136,7 +154,7 @@ public class Network<T, TS>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckAssertions()
   {
-    return Topology.Nodes.Aggregate(Option.None<State<T, TS>>(),
+    return Topology.Nodes.AsParallel().Aggregate(Option.None<State<T, TS>>(),
       (current, node) => current.OrElse(() => CheckAssertions(node)));
   }
 
@@ -152,7 +170,7 @@ public class Network<T, TS>
     var model = And(GetAssumptions(), Not(check)).Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
-    var state = new State<T, TS>(model, node, route, Option.Some(time), symbolics, SmtCheck.Safety);
+    var state = new State<T, TS>(model, node, route, Option.Some(time), Symbolics, SmtCheck.Safety);
     return Option.Some(state);
   }
 
@@ -169,8 +187,10 @@ public class Network<T, TS>
     var time = Symbolic<BigInteger>();
 
     // check the inductive invariant for each node.
-    return Topology.Nodes.Aggregate(Option.None<State<T, TS>>(),
-      (current, node) => current.OrElse(() => CheckInductive(node, routes, time)));
+    // Parallel.ForEach(Topology.Nodes, node => CheckInductive(node, routes, time))
+    return Topology.Nodes.AsParallel().Select(
+        node => CheckInductive(node, routes, time))
+      .Aggregate(Option.None<State<T, TS>>(), (current, s) => current.OrElse(() => s));
   }
 
   /// <summary>
@@ -200,7 +220,7 @@ public class Network<T, TS>
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
     var neighborRoutes = routes.Where(pair => Topology[node].Contains(pair.Key));
-    var state = new State<T, TS>(model, node, neighborRoutes, time, symbolics);
+    var state = new State<T, TS>(model, node, neighborRoutes, time, Symbolics);
     return Option.Some(state);
   }
 
@@ -227,7 +247,7 @@ public class Network<T, TS>
 
     if (model.IsSatisfiable())
     {
-      return Option.Some(new State<T, TS>(model, routes, symbolics));
+      return Option.Some(new State<T, TS>(model, routes, Symbolics));
     }
 
     Console.WriteLine("    The monolithic checks passed!");
@@ -243,6 +263,6 @@ public class Network<T, TS>
 
   private Zen<bool> GetAssumptions()
   {
-    return And(symbolics.Where(p => p.HasConstraint()).Select(p => p.Encode()).ToArray());
+    return And(Symbolics.Where(p => p.HasConstraint()).Select(p => p.Encode()).ToArray());
   }
 }

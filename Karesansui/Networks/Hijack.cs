@@ -55,7 +55,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
     InitialValues = topology.ForAllNodes(n =>
       n == hijacker ? HijackRoute.Value :
       n == dest ? DestRoute : Option.Null<TaggedRoute>());
-    symbolics = new[] {HijackRoute};
+    Symbolics = new[] {HijackRoute};
     this.Annotations = annotations(HijackRoute);
     HijackRoute.Constraint = DeriveHijackConstraint();
   }

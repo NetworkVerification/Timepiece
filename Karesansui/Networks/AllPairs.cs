@@ -23,7 +23,7 @@ public class AllPairs : ShortestPath<string>
   {
     InitialValues =
       topology.ForAllNodes(n => If(D.EqualsValue(n), Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>()));
-    symbolics = new[] {D};
+    Symbolics = new[] {D};
     this.Annotations = annotations(D);
     D.Constraint = DeriveDestConstraint(topology);
   }

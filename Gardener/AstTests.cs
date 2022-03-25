@@ -14,9 +14,11 @@ public static class AstTests
 {
   private static readonly Destination D = new("70.0.19.1");
 
+  private const string IsValid = "IsValid";
+
   private static readonly Dictionary<string, AstPredicate<Route>> Predicates = new()
   {
-    {"IsValid", PairRouteAst.IsValid}
+    {IsValid, PairRouteAst.IsValid}
   };
 
   private static NodeProperties<Route> GenerateProperties(string node,
@@ -27,7 +29,7 @@ public static class AstTests
     return new NodeProperties<Route>(new List<IPAddressRange>
       {
         GetAddressRange(node)
-      }, policies, "IsValid", new Finally<Route>(time, "IsValid"), new Dictionary<string, AstFunction<Route>>(),
+      }, policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
       new Dictionary<string, JObject>());
   }
 
@@ -58,5 +60,13 @@ public static class AstTests
   public static void TestSpAstGoodMonolithic()
   {
     Assert.False(SpAst.ToNetwork().CheckMonolithic().HasValue);
+  }
+
+  [Fact]
+  public static void TestSpAstBadAnnotations()
+  {
+    var badSp = SpAst;
+    badSp.Nodes["edge-19"].Temporal = new Finally<Route>(5, IsValid);
+    Assert.True(badSp.ToNetwork().CheckInductive().HasValue);
   }
 }
