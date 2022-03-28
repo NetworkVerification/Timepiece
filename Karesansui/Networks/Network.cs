@@ -103,7 +103,7 @@ public class Network<T, TS>
       .Select(node => CheckAnnotations(node, routes, time))
       .Aggregate(Option.None<State<T, TS>>(), (current, s) =>
         current.OrElse(() => s));
-    Console.WriteLine($"Modular verification took: {timer.ElapsedMilliseconds}ms");
+    Console.WriteLine($"Modular verification took {timer.ElapsedMilliseconds}ms");
     return s;
   }
 
