@@ -43,7 +43,7 @@ public static class AstTests
 
   private static PairRouteAst GenerateSpAst(int numPods, string destNode)
   {
-    var topology = Default.FatTree(numPods);
+    var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destNode);
     var props = topology.ForAllNodes(n =>
       GenerateProperties(n, topology[n], distances[n]));

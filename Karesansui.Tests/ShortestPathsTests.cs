@@ -12,7 +12,7 @@ public static class ShortestPathsTests
   private static ShortestPath<Unit> NonSymbolic(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    var topology = Default.Path(3);
+    var topology = Topologies.Path(3);
 
     var initialValues = new Dictionary<string, Zen<Option<BigInteger>>>
     {
@@ -30,7 +30,7 @@ public static class ShortestPathsTests
   private static ShortestPath<BigInteger> SymbolicDest(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    var topology = Default.Complete(3);
+    var topology = Topologies.Complete(3);
 
     var initialValues = new Dictionary<string, Zen<Option<BigInteger>>>
     {

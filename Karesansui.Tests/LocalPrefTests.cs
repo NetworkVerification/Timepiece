@@ -15,7 +15,7 @@ public static class LocalPrefTests
   private static LocalPref Net(
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    var topology = Default.Path(2);
+    var topology = Topologies.Path(2);
 
     var initialValues = new Dictionary<string, Zen<LpRoute>>
     {

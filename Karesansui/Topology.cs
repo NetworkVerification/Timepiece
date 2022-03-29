@@ -139,7 +139,7 @@ public class Topology
   }
 }
 
-public static class Default
+public static class Topologies
 {
   // helper method to generate node names ala Excel columns
   // adapted from https://stackoverflow.com/a/5384627

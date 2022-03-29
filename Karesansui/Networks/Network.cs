@@ -29,12 +29,12 @@ public class Network<T, TS>
   /// <summary>
   /// The modular safety properties that we want to check (includes time).
   /// </summary>
-  private readonly Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> _modularProperties;
+  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> ModularProperties { get; }
 
   /// <summary>
   /// The monolithic safety properties that we want to check (assumes stable states).
   /// </summary>
-  private readonly Dictionary<string, Func<Zen<T>, Zen<bool>>> _monolithicProperties;
+  public Dictionary<string, Func<Zen<T>, Zen<bool>>> MonolithicProperties { get; }
 
   /// <summary>
   /// Any additional symbolics on the network's components.
@@ -70,10 +70,10 @@ public class Network<T, TS>
     TransferFunction = transferFunction;
     MergeFunction = mergeFunction;
     InitialValues = initialValues;
-    this.Symbolics = symbolics;
+    Symbolics = symbolics;
     Annotations = annotations;
-    _modularProperties = modularProperties;
-    _monolithicProperties = monolithicProperties;
+    ModularProperties = modularProperties;
+    MonolithicProperties = monolithicProperties;
   }
 
   /// <summary>
@@ -88,21 +88,11 @@ public class Network<T, TS>
     var time = Symbolic<BigInteger>();
     var timer = new Stopwatch();
     timer.Start();
-    // foreach (var node in Topology.Nodes)
-    // {
-    // var s = f(node, () => CheckAnnotations(node, routes, time))();
-    // if (s.HasValue)
-    // {
-    // Console.WriteLine($"Verification took: {timer.ElapsedMilliseconds}ms");
-    // return s;
-    // }
-    // }
-
-    var s = Topology.Nodes.AsParallel().WithDegreeOfParallelism(8)
+    // var s = Topology.Nodes.AsParallel().WithDegreeOfParallelism(8)
+    var s = Topology.Nodes
       // .Select(node => f(node, () => CheckAnnotations(node, routes, time))())
       .Select(node => CheckAnnotations(node, routes, time))
-      .Aggregate(Option.None<State<T, TS>>(), (current, s) =>
-        current.OrElse(() => s));
+      .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
     Console.WriteLine($"Modular verification took {timer.ElapsedMilliseconds}ms");
     return s;
   }
@@ -164,7 +154,7 @@ public class Network<T, TS>
     var time = Symbolic<BigInteger>();
 
     // ensure the inductive invariant implies the assertions we want to prove.
-    var check = Implies(Annotations[node](route, time), _modularProperties[node](route, time));
+    var check = Implies(Annotations[node](route, time), ModularProperties[node](route, time));
 
     // negate and try to prove unsatisfiable.
     var model = And(GetAssumptions(), Not(check)).Solve();
@@ -234,7 +224,7 @@ public class Network<T, TS>
     var routes = Topology.ForAllNodes(_ => Symbolic<T>());
 
     // add the assertions
-    var assertions = Topology.Nodes.Select(node => _monolithicProperties[node](routes[node]));
+    var assertions = Topology.Nodes.Select(node => MonolithicProperties[node](routes[node]));
 
     // add constraints for each node, that its route is the merge of all the neighbors and init
     var constraints = Topology.Nodes.Select(node =>

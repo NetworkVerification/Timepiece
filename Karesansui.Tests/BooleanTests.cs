@@ -13,7 +13,7 @@ public static class BooleanTests
   private static BooleanNetwork<Unit> Net(
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    var topology = Default.Path(2);
+    var topology = Topologies.Path(2);
 
     var initialValues = topology.ForAllNodes(n => Eq<string>(n, "A"));
 

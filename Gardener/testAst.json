@@ -4,10 +4,8 @@
       "policies": {
         "1": {
           "export": [
-            "identity"
           ],
           "import": [
-            "identity"
           ]
         }
       },
@@ -17,60 +15,41 @@
           "End": "127.0.0.1"
         }
       ],
-      "assert": "isValid"
+      "stable": "isValid"
     },
     "1": {
       "policies": {
         "0": {
           "import": [
-            "identity"
           ],
           "export": [
-            "identity"
           ]
         },
         "2": {
           "import": [
-            "identity"
           ],
           "export": [
-            "identity"
           ]
         }
       },
       "prefixes": [],
-      "assert": "isValid"
+      "stable": "isValid"
     },
     "2": {
       "policies": {
         "1": {
           "import": [
-            "identity"
           ],
           "export": [
-            "identity"
           ]
         }
       },
       "prefixes": [],
-      "assert": "isValid"
+      "stable": "isValid"
     }
   },
-  "declarations": {
-    "identity": {
-      "arg": "x",
-      "body": {
-        "$type": "Return(TPair(TBool;TRoute))",
-        "return_value": {
-          "$type": "Var(TPair(TBool;TRoute))",
-          "name": "x"
-        }
-      }
-    }
-  },
-  "constants": {},
   "symbolics": {},
-  "assertions": {
+  "predicates": {
     "isValid": {
       "arg": "route",
       "expr": {
@@ -78,19 +57,6 @@
         "pair": {
           "$type": "Var(TPair(TBool;TRoute))",
           "name": "route"
-        }
-      }
-    }
-  },
-  "invariants": {
-    "isValidFinally": {
-      "arg": "rt",
-      "expr": {
-        "$type": "Finally(TRoute)",
-        "time": 2,
-        "predicate": {
-          "$type": "Call(Assertion)",
-          "name": "isValid"
         }
       }
     }

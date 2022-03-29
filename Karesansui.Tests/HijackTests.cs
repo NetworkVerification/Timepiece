@@ -15,7 +15,7 @@ public static class HijackTests
     Func<SymbolicValue<Option<TaggedRoute>>,
       Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>> annotations)
   {
-    var topology = Default.Path(4);
+    var topology = Topologies.Path(4);
     const string dest = "A";
     const string hijacker = "D";
     var convergeTime = new BigInteger(4);

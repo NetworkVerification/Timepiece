@@ -13,7 +13,7 @@ public static class DisagreeTests
   private static Network<BigInteger, Unit> Net(
     Dictionary<string, Func<Zen<BigInteger>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    var topology = Default.Complete(3);
+    var topology = Topologies.Complete(3);
 
     var initialValues = new Dictionary<string, Zen<BigInteger>>
     {

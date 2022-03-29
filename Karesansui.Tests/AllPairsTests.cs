@@ -14,7 +14,7 @@ public static class AllPairsTests
     Func<SymbolicValue<string>, Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>>
       annotations)
   {
-    var topology = Default.Path(3);
+    var topology = Topologies.Path(3);
 
     var convergeTime = new BigInteger(4);
 

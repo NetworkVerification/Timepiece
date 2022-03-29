@@ -13,7 +13,7 @@ public static class FaultToleranceTests
     Func<SymbolicValue<(string, string)>[], Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>>
       annotations)
   {
-    var topology = Default.Complete(3);
+    var topology = Topologies.Complete(3);
 
     var initialValues = new Dictionary<string, Zen<Option<Unit>>>
     {

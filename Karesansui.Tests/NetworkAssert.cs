@@ -12,6 +12,11 @@ public static class NetworkAssert
     Assert.Equal(Option.None<State<T, TS>>(), net.CheckAnnotations());
   }
 
+  public static void CheckSoundMonolithic<T, TS>(Network<T, TS> net)
+  {
+    Assert.Equal(Option.None<State<T, TS>>(), net.CheckMonolithic());
+  }
+
   public static void CheckUnsound<T, TS>(Network<T, TS> net)
   {
     Assert.True(net.CheckAnnotations().HasValue);
