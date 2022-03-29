@@ -15,13 +15,11 @@ public class Assign<T> : Statement<Unit, T>
   /// <summary>
   /// Right-hand side of the assignment.
   /// </summary>
-  [JsonRequired]
   public Expr<T, T> Expr { get; set; }
 
   /// <summary>
   /// The variable to assign.
   /// </summary>
-  [JsonRequired]
   public string Var { get; set; }
 
   public override AstState<T> Evaluate(AstState<T> astState)

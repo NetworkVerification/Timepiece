@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Gardener.AstExpr;
 using Newtonsoft.Json;
 using ZenLib;
@@ -11,7 +12,6 @@ public class Return<T>: Statement<T, T>
     Expr = expr;
   }
 
-  [JsonRequired]
   public Expr<T, T> Expr { get; set; }
 
   public override AstState<T> Evaluate(AstState<T> astState)
