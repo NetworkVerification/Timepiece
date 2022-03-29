@@ -29,12 +29,12 @@ public class Network<T, TS>
   /// <summary>
   /// The modular safety properties that we want to check (includes time).
   /// </summary>
-  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> ModularProperties { get; }
+  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> ModularProperties { get; set; }
 
   /// <summary>
   /// The monolithic safety properties that we want to check (assumes stable states).
   /// </summary>
-  public Dictionary<string, Func<Zen<T>, Zen<bool>>> MonolithicProperties { get; }
+  public Dictionary<string, Func<Zen<T>, Zen<bool>>> MonolithicProperties { get; set; }
 
   /// <summary>
   /// Any additional symbolics on the network's components.

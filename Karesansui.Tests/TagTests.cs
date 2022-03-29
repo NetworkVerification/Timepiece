@@ -7,47 +7,70 @@ using ZenLib;
 
 namespace Karesansui.Tests;
 
+using FBagRoute = Pair<int, FBag<string>>;
+using FBagAdd = Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>>;
+using SetRoute = Pair<int, Set<string>>;
+using SetAdd = Func<Zen<Set<string>>, Zen<string>, Zen<Set<string>>>;
+
 public static class TagTests
 {
-  public static Network<Pair<int, FBag<string>>, Unit> BagNet(
-    Func<(string, string), Func<Zen<Pair<int, FBag<string>>>, Zen<Pair<int, FBag<string>>>>> transfer,
-    Dictionary<string, Func<Zen<Pair<int, FBag<string>>>, Zen<BigInteger>, Zen<bool>>> annotations)
+  private static Network<FBagRoute, Unit> BagNet(
+    Func<(string, string), Func<Zen<FBagRoute>, Zen<FBagRoute>>> transfer,
+    Dictionary<string, Func<Zen<FBagRoute>, Zen<bool>>> monolithicProperties,
+    Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(3);
     var start = Pair.Create(Zen.Constant(0), FBag.Create<string>());
-    var initial = new Dictionary<string, Zen<Pair<int, FBag<string>>>>
+    var initial = new Dictionary<string, Zen<FBagRoute>>
     {
       {"A", start},
       {"B", Pair.Create(Zen.Constant(int.MaxValue), FBag.Create<string>())},
       {"C", Pair.Create(Zen.Constant(int.MaxValue), FBag.Create<string>())}
     };
-    var monolithicProperties = new Dictionary<string, Func<Zen<Pair<int, FBag<string>>>, Zen<bool>>>
-    {
-      {"A", p => Zen.And(p.Item1() == 0, p.Item2().IsEmpty())},
-      {"B", p => Zen.And(p.Item1() == 1, p.Item2().Contains("A"))},
-      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("B"), p.Item2().Contains("C"))},
-    };
-    var modularProperties = new Dictionary<string, Func<Zen<Pair<int, FBag<string>>>, Zen<BigInteger>, Zen<bool>>>
+    var modularProperties = new Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>>
     {
       {"A", Lang.Equals(start)},
       {"B", Lang.Finally(new BigInteger(1), monolithicProperties["B"])},
       {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
     };
 
-    return new Network<Pair<int, FBag<string>>, Unit>(topology, topology.ForAllEdges(e => transfer(e)), Merge, initial,
+    return new Network<FBagRoute, Unit>(topology, topology.ForAllEdges(transfer), Merge, initial,
       annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Func<Zen<Pair<int, FBag<string>>>, Zen<Pair<int, FBag<string>>>> TransferAdd((string, string) edge)
+  private static Network<SetRoute, Unit> SetNet(Dictionary<string, Func<Zen<SetRoute>, Zen<bool>>> monolithicProperties,
+    Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    return r => Pair.Create(r.Item1() + 1, r.Item2().Add(edge.Item1));
+    var topology = Topologies.Path(3);
+    var start = Pair.Create(Zen.Constant(0), Set.Empty<string>());
+    var initial = new Dictionary<string, Zen<SetRoute>>
+    {
+      {"A", start},
+      {"B", Pair.Create(Zen.Constant(int.MaxValue), Set.Empty<string>())},
+      {"C", Pair.Create(Zen.Constant(int.MaxValue), Set.Empty<string>())}
+    };
+    var modularProperties = new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"A", Lang.Equals(start)},
+      {"B", Lang.Finally(new BigInteger(1), monolithicProperties["B"])},
+      {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
+    };
+
+    return new Network<SetRoute, Unit>(topology, topology.ForAllEdges(SetTransfer), Merge, initial,
+      annotations,
+      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Func<Zen<Pair<int, FBag<string>>>, Zen<Pair<int, FBag<string>>>> TransferAddIfSpace(
-    (string, string) edge)
+  private static Func<(string, string), Func<Zen<FBagRoute>, Zen<FBagRoute>>> FBagTransferWithBehavior(
+    Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>> addBehavior)
   {
-    return r => Pair.Create(r.Item1() + 1, r.Item2().AddIfSpace(edge.Item1));
+    return edge => r => Pair.Create(r.Item1() + 1, addBehavior(r.Item2(), edge.Item1));
+  }
+
+  private static Func<Zen<SetRoute>, Zen<SetRoute>> SetTransfer((string, string) edge)
+  {
+    return r => Pair.Create(r.Item1() + 1, r.Item2().Add(edge.Item1));
   }
 
   private static Zen<Pair<int, T>> Merge<T>(Zen<Pair<int, T>> r1, Zen<Pair<int, T>> r2)
@@ -55,19 +78,81 @@ public static class TagTests
     return Zen.If(r1.Item1() < r2.Item1(), r1, r2);
   }
 
-  [Fact]
-  public static void BagNetAddPassesMonoChecks()
+  private static void BagNetPassesGoodMonoChecks(FBagAdd addBehavior)
   {
-    var net = BagNet(TransferAdd,
-      new Dictionary<string, Func<Zen<Pair<int, FBag<string>>>, Zen<BigInteger>, Zen<bool>>>());
+    var monolithicProperties = new Dictionary<string, Func<Zen<FBagRoute>, Zen<bool>>>
+    {
+      {"A", p => Zen.And(p.Item1() == 0, p.Item2().IsEmpty())},
+      {"B", p => Zen.And(p.Item1() == 1, p.Item2().Contains("A"))},
+      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))},
+    };
+    var net = BagNet(FBagTransferWithBehavior(addBehavior), monolithicProperties,
+      new Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>>());
     NetworkAssert.CheckSoundMonolithic(net);
   }
 
   [Fact]
-  public static void BagNetAddIfSpacePassesMonoChecks()
+  public static void BagNetAddPassesGoodMonoChecks()
   {
-    var net = BagNet(TransferAddIfSpace,
-      new Dictionary<string, Func<Zen<Pair<int, FBag<string>>>, Zen<BigInteger>, Zen<bool>>>());
+    BagNetPassesGoodMonoChecks(FBag.Add);
+  }
+
+  [Fact]
+  public static void BagNetAddIfSpacePassesGoodMonoChecks()
+  {
+    BagNetPassesGoodMonoChecks(FBag.AddIfSpace);
+  }
+
+  private static void BagNetFailsBadMonoChecks(Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>> addBehavior)
+  {
+    var monolithicProperties = new Dictionary<string, Func<Zen<FBagRoute>, Zen<bool>>>
+    {
+      {"A", p => p.Item1() == 0},
+      {"B", p => p.Item1() == 0},
+      {"C", p => p.Item1() == 0},
+    };
+    var net = BagNet(FBagTransferWithBehavior(addBehavior), monolithicProperties,
+      new Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>>());
+    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+  }
+
+  [Fact]
+  public static void BagNetAddFailsBadMonoChecks()
+  {
+    BagNetFailsBadMonoChecks(FBag.Add);
+  }
+
+  [Fact]
+  public static void BagNetAddIfSpaceFailsBadMonoChecks()
+  {
+    BagNetFailsBadMonoChecks(FBag.AddIfSpace);
+  }
+
+  [Fact]
+  public static void SetNetPassesGoodMonoChecks()
+  {
+    var monolithicProperties = new Dictionary<string, Func<Zen<SetRoute>, Zen<bool>>>
+    {
+      {"A", p => Zen.And(p.Item1() == 0, p.Item2() == Set.Empty<string>())},
+      {"B", p => Zen.And(p.Item1() == 1, p.Item2().Contains("A"))},
+      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))},
+    };
+    var net = SetNet(monolithicProperties,
+      new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>());
     NetworkAssert.CheckSoundMonolithic(net);
+  }
+
+  [Fact]
+  public static void SetNetFailsBadMonoChecks()
+  {
+    var monolithicProperties = new Dictionary<string, Func<Zen<SetRoute>, Zen<bool>>>
+    {
+      {"A", p => p.Item1() == 0},
+      {"B", p => p.Item1() == 0},
+      {"C", p => p.Item1() == 0},
+    };
+    var net = SetNet(monolithicProperties,
+      new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>());
+    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
   }
 }
