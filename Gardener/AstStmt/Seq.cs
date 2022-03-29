@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using ZenLib;
 
 namespace Gardener.AstStmt;
@@ -17,8 +18,9 @@ public class Seq<T, TState> : Statement<T, TState>
     Second = second;
   }
 
-  public Statement<Unit, TState> First { get; set; }
-  public Statement<T, TState> Second { get; set; }
+  [JsonRequired] public Statement<Unit, TState> First { get; set; }
+
+  [JsonRequired] public Statement<T, TState> Second { get; set; }
 
   public override AstState<TState> Evaluate(AstState<TState> astState)
   {

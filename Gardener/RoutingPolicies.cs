@@ -5,7 +5,7 @@ namespace Gardener;
 /// <summary>
 /// A collection of import and export policies for routing at a particular node.
 /// </summary>
-public class RoutingPolicies
+public readonly struct RoutingPolicies
 {
   [JsonConstructor]
   public RoutingPolicies(List<string> import, List<string> export)
@@ -20,7 +20,7 @@ public class RoutingPolicies
     Export = new List<string>();
   }
 
-  public List<string> Import { get; set; }
+  public List<string> Import { get; }
 
-  public List<string> Export { get; set; }
+  public List<string> Export { get; }
 }

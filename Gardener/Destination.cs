@@ -1,16 +1,18 @@
 using System.Net;
+using Newtonsoft.Json;
 
 namespace Gardener;
 
 /// <summary>
 /// A routing destination
 /// </summary>
-public class Destination
+public readonly struct Destination
 {
-  public IPAddress Address;
+  public readonly IPAddress address;
 
+  [JsonConstructor]
   public Destination(string address)
   {
-    Address = IPAddress.Parse(address);
+    this.address = IPAddress.Parse(address);
   }
 }

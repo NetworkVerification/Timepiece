@@ -6,8 +6,11 @@ JsonSerializer Serializer()
 {
   return new JsonSerializer
   {
+    // use $type for type names, and the given binder
     TypeNameHandling = TypeNameHandling.All,
-    SerializationBinder = PairRouteAst.Binder()
+    SerializationBinder = PairRouteAst.Binder(),
+    // throw an error when members are missing instead of ignoring them
+    // MissingMemberHandling = MissingMemberHandling.Error
   };
 }
 

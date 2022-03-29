@@ -18,6 +18,7 @@ public class Ast<T, TS>
   /// <summary>
   /// The nodes of the network with their associated policies.
   /// </summary>
+  [JsonRequired]
   public Dictionary<string, NodeProperties<T>> Nodes { get; }
 
   /// <summary>
@@ -52,13 +53,13 @@ public class Ast<T, TS>
   /// </summary>
   public void Validate()
   {
-    if (Destination is null)
+    if (Destination.HasValue)
     {
-      WarnLine("No destination given.");
+      Console.WriteLine($"Destination: {Destination.Value.address}");
     }
     else
     {
-      Console.WriteLine($"Destination: {Destination.Address}");
+      WarnLine("No destination given.");
     }
 
     if (ConvergeTime is null)
@@ -137,7 +138,7 @@ public class Ast<T, TS>
 
     var isDestination = new Func<List<IPAddressRange>, bool>(prefixes =>
     {
-      return Destination is not null && prefixes.Any(p => p.Contains(Destination.Address));
+      return Destination.HasValue && prefixes.Any(p => p.Contains(Destination.Value.address));
     });
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
