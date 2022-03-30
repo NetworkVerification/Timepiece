@@ -8,10 +8,21 @@ using System.Text.Json.Serialization;
 namespace Karesansui;
 
 /// <summary>
-///     Represents the topology of an NV network.
+/// Represents the topology of an NV network.
 /// </summary>
 public class Topology
 {
+  /// <summary>
+  /// Construct a Topology given a mapping from nodes to their predecessors.
+  /// </summary>
+  [JsonConstructor]
+  public Topology(Dictionary<string, List<string>> neighbors)
+  {
+    Neighbors = neighbors;
+    NEdges = Neighbors.Sum(p => p.Value.Count);
+    Nodes = Neighbors.Keys.ToArray();
+  }
+
   /// <summary>
   ///     The number of edges in the network.
   /// </summary>
@@ -29,17 +40,6 @@ public class Topology
   /// </summary>
   [JsonIgnore]
   public string[] Nodes { get; }
-
-  /// <summary>
-  ///     Construct a Topology given a mapping from nodes to their predecessors.
-  /// </summary>
-  [JsonConstructor]
-  public Topology(Dictionary<string, List<string>> neighbors)
-  {
-    Neighbors = neighbors;
-    NEdges = Neighbors.Sum(p => p.Value.Count);
-    Nodes = Neighbors.Keys.ToArray();
-  }
 
   public string this[uint id] => Nodes[id];
 
@@ -102,6 +102,7 @@ public class Topology
       {
         builder.Append($"{neighbor}; ");
       }
+
       builder.AppendLine();
     }
 
@@ -139,6 +140,31 @@ public class Topology
   }
 }
 
+/// <summary>
+/// Represents the topology of an NV network with node labels.
+/// </summary>
+public class LabelledTopology<T> : Topology
+{
+  /// <summary>
+  /// Labels for the nodes of the topology.
+  /// </summary>
+  public Dictionary<string, T> Labels { get; }
+
+  public LabelledTopology(Dictionary<string, List<string>> neighbors, Dictionary<string, T> labels) : base(neighbors)
+  {
+    Labels = labels;
+  }
+
+  /// <summary>
+  /// Convert the LabelledTopology to an unlabelled one.
+  /// </summary>
+  /// <returns>An equivalent Topology.</returns>
+  public Topology ToUnlabelled()
+  {
+    return new Topology(Neighbors);
+  }
+}
+
 public static class Topologies
 {
   // helper method to generate node names ala Excel columns
@@ -157,7 +183,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <returns></returns>
-  public static Topology Path(int numNodes)
+  public static Topology Path(uint numNodes)
   {
     var neighbors = new Dictionary<string, List<string>>();
     for (var i = 0; i < numNodes; i++) neighbors.Add(ToBase26(i + 1), new List<string>());
@@ -178,7 +204,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <returns></returns>
-  public static Topology Complete(int numNodes)
+  public static Topology Complete(uint numNodes)
   {
     var neighbors = new Dictionary<string, List<string>>();
     for (var i = 0; i < numNodes; i++) neighbors.Add(ToBase26(i + 1), new List<string>());
@@ -196,11 +222,29 @@ public static class Topologies
   /// </summary>
   /// <param name="numPods">Number of pods in the fattree.</param>
   /// <returns></returns>
-  public static Topology FatTree(int numPods)
+  public static Topology FatTree(uint numPods)
   {
+    return LabelledFatTree(numPods).ToUnlabelled();
+  }
+
+  /// <summary>
+  /// Create a labelled fattree topology of numPods pods.
+  /// Nodes are named "core-i", "aggregation-i" and "edge-i", where i is a non-negative integer.
+  /// Stores the pod number associated with each node: core nodes are in the last pod.
+  /// </summary>
+  /// <param name="numPods">Number of pods in the fattree.</param>
+  /// <returns></returns>
+  public static LabelledTopology<int> LabelledFatTree(uint numPods)
+  {
+    var podNumbers = new Dictionary<string, int>();
     var neighbors = new Dictionary<string, List<string>>();
-    var coreNodes = (int) Math.Floor(Math.Pow(numPods / 2.0, 2));
-    for (var i = 0; i < coreNodes; i++) neighbors.Add($"core-{i}", new List<string>());
+    var coreNodes = (uint) Math.Floor(Math.Pow(numPods / 2.0, 2));
+    for (var i = 0; i < coreNodes; i++)
+    {
+      var name = $"core-{i}";
+      podNumbers.Add(name, (int) numPods);
+      neighbors.Add(name, new List<string>());
+    }
     for (var p = 0; p < numPods; p++)
     {
       var aggregates = new List<string>();
@@ -211,6 +255,7 @@ public static class Topologies
       for (var j = firstAggregateNode; j < firstEdgeNode; j++)
       {
         var name = $"aggregate-{j}";
+        podNumbers.Add(name, p);
         aggregates.Add(name);
         neighbors.Add(name, new List<string>());
       }
@@ -218,6 +263,7 @@ public static class Topologies
       for (var k = firstEdgeNode; k < lastEdgeNode; k++)
       {
         var name = $"edge-{k}";
+        podNumbers.Add(name, p);
         edges.Add(name);
         neighbors.Add(name, new List<string>());
       }
@@ -243,6 +289,6 @@ public static class Topologies
       }
     }
 
-    return new Topology(neighbors);
+    return new LabelledTopology<int>(neighbors, podNumbers);
   }
 }

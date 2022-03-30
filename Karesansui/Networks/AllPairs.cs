@@ -16,15 +16,17 @@ public class AllPairs : ShortestPath<string>
   public AllPairs(Topology topology,
     Func<SymbolicValue<string>, Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>>
       annotations,
-    BigInteger convergeTime) : base(topology,
+    BigInteger convergeTime, Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> safetyProperties) : base(
+    topology,
     new Dictionary<string, Zen<Option<BigInteger>>>(),
     new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>(),
-    Array.Empty<SymbolicValue<string>>(), convergeTime)
+    Array.Empty<SymbolicValue<string>>(), convergeTime, safetyProperties)
   {
     InitialValues =
-      topology.ForAllNodes(n => If(D.EqualsValue(n), Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>()));
+      topology.ForAllNodes(n =>
+        If(D.EqualsValue(n), Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>()));
     Symbolics = new[] {D};
-    this.Annotations = annotations(D);
+    Annotations = annotations(D);
     D.Constraint = DeriveDestConstraint(topology);
   }
 

@@ -18,7 +18,8 @@ public static class AllPairsTests
 
     var convergeTime = new BigInteger(4);
 
-    return new AllPairs(topology, annotations, convergeTime);
+    var safetyProperties = topology.ForAllNodes(_ => Lang.IsSome<BigInteger>());
+    return new AllPairs(topology, annotations, convergeTime, safetyProperties);
   }
 
   [Fact]

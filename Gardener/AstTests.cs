@@ -42,7 +42,7 @@ public static class AstTests
 
   private static readonly PairRouteAst SpAst = GenerateSpAst(4, "edge-19");
 
-  private static PairRouteAst GenerateSpAst(int numPods, string destNode)
+  private static PairRouteAst GenerateSpAst(uint numPods, string destNode)
   {
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destNode);

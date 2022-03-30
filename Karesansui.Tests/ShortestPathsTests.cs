@@ -21,8 +21,31 @@ public static class ShortestPathsTests
       {"C", Option.None<BigInteger>()}
     };
 
+    var safetyProperties = topology.ForAllNodes(_ => Lang.IsSome<BigInteger>());
     return new ShortestPath<Unit>(topology, initialValues, annotations,
-      Array.Empty<SymbolicValue<Unit>>(), 4);
+      Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
+  }
+
+  private static ShortestPath<Unit> NonSymbolicPathLength(
+    Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
+  {
+    var topology = Topologies.Path(3);
+
+    var initialValues = new Dictionary<string, Zen<Option<BigInteger>>>
+    {
+      {"A", Option.Some(new BigInteger(0))},
+      {"B", Option.None<BigInteger>()},
+      {"C", Option.None<BigInteger>()}
+    };
+
+    var safetyProperties = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
+    {
+      {"A", Lang.IfSome<BigInteger>(r => r == BigInteger.Zero)},
+      {"B", Lang.IfSome<BigInteger>(r => r == BigInteger.One)},
+      {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))},
+    };
+    return new ShortestPath<Unit>(topology, initialValues, annotations,
+      Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
   }
 
   private static readonly SymbolicValue<BigInteger> D = new("d", r => r >= BigInteger.Zero);
@@ -41,7 +64,8 @@ public static class ShortestPathsTests
 
     var symbolics = new[] {D};
 
-    return new ShortestPath<BigInteger>(topology, initialValues, annotations, symbolics, 2);
+    var safetyProperties = topology.ForAllNodes(_ => Lang.IsSome<BigInteger>());
+    return new ShortestPath<BigInteger>(topology, initialValues, annotations, symbolics, 2, safetyProperties);
   }
 
   [Fact]
@@ -61,6 +85,25 @@ public static class ShortestPathsTests
     };
     var net = NonSymbolic(annotations);
 
+    NetworkAssert.CheckSound(net);
+  }
+
+  [Fact]
+  public static void SoundPathLengthAnnotationsPassChecks()
+  {
+    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0)))},
+      {
+        "B",
+        Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r == new BigInteger(1)))
+      },
+      {
+        "C",
+        Lang.Until(new BigInteger(2), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r == new BigInteger(2)))
+      }
+    };
+    var net = NonSymbolicPathLength(annotations);
     NetworkAssert.CheckSound(net);
   }
 
