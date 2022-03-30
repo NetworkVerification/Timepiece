@@ -29,12 +29,12 @@ public class PairRouteAst : Ast<Route, Unit>
   private static readonly AstFunction<Route> DefaultExport = new("arg", new Return<Route>(
     new PairExpr<bool, BatfishBgpRoute, Route>(
       new First<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-      new WithField<BatfishBgpRoute, int, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
+      new WithField<BatfishBgpRoute, BigInteger, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
         "AsPathLength",
-        new Plus<int, Route>(
-          new GetField<BatfishBgpRoute, int, Route>(
+        new Plus<BigInteger, Route>(
+          new GetField<BatfishBgpRoute, BigInteger, Route>(
             new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-            "AsPathLength"), new ConstantExpr<int, Route>(1))))));
+            "AsPathLength"), new ConstantExpr<BigInteger, Route>(1))))));
 
   public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Destination? destination,
     Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,

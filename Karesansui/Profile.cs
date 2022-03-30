@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Karesansui.Networks;
 using ZenLib;
@@ -37,14 +38,16 @@ public static class Profile
   }
 
   public static void RunAnnotatedWith<T, TS>(Network<T, TS> network,
-    Func<string, Func<Option<State<T, TS>>>, Func<Option<State<T, TS>>>> f)
+    Func<string, Dictionary<string, long>, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
   {
-    var s = network.CheckAnnotationsWith(f);
+    var nodeTimes = new Dictionary<string, long>();
+    var s = network.CheckAnnotationsWith(nodeTimes, f);
     if (!s.HasValue)
     {
       Console.WriteLine("    All the modular checks passed!");
       return;
     }
+
     s.Value.ReportCheckFailure();
     Console.WriteLine("Error, unsound annotations provided or assertions failed!");
   }
@@ -57,6 +60,7 @@ public static class Profile
       Console.WriteLine("    All the modular checks passed!");
       return;
     }
+
     s.Value.ReportCheckFailure();
     Console.WriteLine("Error, unsound annotations provided or assertions failed!");
   }
@@ -68,14 +72,14 @@ public static class Profile
     return timer.ElapsedMilliseconds;
   }
 
-  private static Func<Option<State<T, TS>>> ReportCheckTime<T, TS>(string node, Func<Option<State<T, TS>>> checkFunction)
+  private static Option<State<T, TS>> ReportCheckTime<T, TS>(string node,
+    Dictionary<string, long> times,
+    Func<Option<State<T, TS>>> checkFunction)
   {
-    return () =>
-    {
-      var timer = Stopwatch.StartNew();
-      var s = checkFunction();
-      Console.WriteLine($"Modular verification for node {node} took {timer.ElapsedMilliseconds}ms");
-      return s;
-    };
+    var timer = Stopwatch.StartNew();
+    var s = checkFunction();
+    // add the time to the dictionary
+    times.Add(node, timer.ElapsedMilliseconds);
+    return s;
   }
 }

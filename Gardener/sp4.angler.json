@@ -33,8 +33,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred3",
         "time": 3
       }
     },
@@ -67,8 +68,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred3",
         "time": 3
       }
     },
@@ -101,8 +103,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred1",
         "time": 1
       }
     },
@@ -135,8 +138,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred1",
         "time": 1
       }
     },
@@ -169,8 +173,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred3",
         "time": 3
       }
     },
@@ -203,8 +208,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred3",
         "time": 3
       }
     },
@@ -237,8 +243,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred3",
         "time": 3
       }
     },
@@ -271,8 +278,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred3",
         "time": 3
       }
     },
@@ -305,8 +313,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred2",
         "time": 2
       }
     },
@@ -339,8 +348,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred2",
         "time": 2
       }
     },
@@ -373,8 +383,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred2",
         "time": 2
       }
     },
@@ -407,8 +418,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred2",
         "time": 2
       }
     },
@@ -433,8 +445,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred",
         "time": 4
       }
     },
@@ -459,8 +472,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred",
         "time": 4
       }
     },
@@ -485,8 +499,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred",
         "time": 4
       }
     },
@@ -511,8 +526,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred",
         "time": 4
       }
     },
@@ -537,8 +553,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred2",
         "time": 2
       }
     },
@@ -564,7 +581,7 @@
       "Stable": "pred",
       "Temporal": {
         "$type": "Globally",
-        "p": "pred"
+        "p": "pred0"
       }
     },
     "edge-6": {
@@ -588,8 +605,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred",
         "time": 4
       }
     },
@@ -614,8 +632,9 @@
       ],
       "Stable": "pred",
       "Temporal": {
-        "$type": "Finally",
-        "then": "pred",
+        "$type": "Until",
+        "before": "predNull",
+        "after": "pred",
         "time": 4
       }
     }
@@ -624,10 +643,268 @@
     "pred": {
       "arg": "route",
       "expr": {
-        "$type": "First(TBool;TRoute)",
-        "pair": {
-          "$type": "Var(TPair(TBool;TRoute))",
-          "name": "route"
+        "$type": "And",
+        "es": [
+          {
+            "$type": "First(TBool;TRoute)",
+            "pair": {
+              "$type": "Var(TPair(TBool;TRoute))",
+              "name": "route"
+            }
+          },
+          {
+            "$type": "LessThanEqual(TBigInt)",
+            "expr1": {
+              "$type": "GetField(TRoute;TBigInt)",
+              "fieldName": "AsPathLength",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "BigInt",
+              "value": 4
+            }
+          },
+          {
+            "$type": "Equal(TUint32)",
+            "expr1": {
+              "$type": "GetField(TRoute;TUint32)",
+              "fieldName": "Lp",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "Uint32",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "pred1": {
+      "arg": "route",
+      "expr": {
+        "$type": "And",
+        "es": [
+          {
+            "$type": "First(TBool;TRoute)",
+            "pair": {
+              "$type": "Var(TPair(TBool;TRoute))",
+              "name": "route"
+            }
+          },
+          {
+            "$type": "LessThanEqual(TBigInt)",
+            "expr1": {
+              "$type": "GetField(TRoute;TBigInt)",
+              "fieldName": "AsPathLength",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "BigInt",
+              "value": 1
+            }
+          },
+          {
+            "$type": "Equal(TUint32)",
+            "expr1": {
+              "$type": "GetField(TRoute;TUint32)",
+              "fieldName": "Lp",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "Uint32",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "pred2": {
+      "arg": "route",
+      "expr": {
+        "$type": "And",
+        "es": [
+          {
+            "$type": "First(TBool;TRoute)",
+            "pair": {
+              "$type": "Var(TPair(TBool;TRoute))",
+              "name": "route"
+            }
+          },
+          {
+            "$type": "LessThanEqual(TBigInt)",
+            "expr1": {
+              "$type": "GetField(TRoute;TBigInt)",
+              "fieldName": "AsPathLength",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "BigInt",
+              "value": 2
+            }
+          },
+          {
+            "$type": "Equal(TUint32)",
+            "expr1": {
+              "$type": "GetField(TRoute;TUint32)",
+              "fieldName": "Lp",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "Uint32",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "pred3": {
+      "arg": "route",
+      "expr": {
+        "$type": "And",
+        "es": [
+          {
+            "$type": "First(TBool;TRoute)",
+            "pair": {
+              "$type": "Var(TPair(TBool;TRoute))",
+              "name": "route"
+            }
+          },
+          {
+            "$type": "LessThanEqual(TBigInt)",
+            "expr1": {
+              "$type": "GetField(TRoute;TBigInt)",
+              "fieldName": "AsPathLength",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "BigInt",
+              "value": 3
+            }
+          },
+          {
+            "$type": "Equal(TUint32)",
+            "expr1": {
+              "$type": "GetField(TRoute;TUint32)",
+              "fieldName": "Lp",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "Uint32",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "pred0": {
+      "arg": "route",
+      "expr": {
+        "$type": "And",
+        "es": [
+          {
+            "$type": "First(TBool;TRoute)",
+            "pair": {
+              "$type": "Var(TPair(TBool;TRoute))",
+              "name": "route"
+            }
+          },
+          {
+            "$type": "LessThanEqual(TBigInt)",
+            "expr1": {
+              "$type": "GetField(TRoute;TBigInt)",
+              "fieldName": "AsPathLength",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "BigInt",
+              "value": 0
+            }
+          },
+          {
+            "$type": "Equal(TUint32)",
+            "expr1": {
+              "$type": "GetField(TRoute;TUint32)",
+              "fieldName": "Lp",
+              "record": {
+                "$type": "Second(TBool;TRoute)",
+                "pair": {
+                  "$type": "Var(TPair(TBool;TRoute))",
+                  "name": "route"
+                }
+              }
+            },
+            "expr2": {
+              "$type": "Uint32",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "predNull": {
+      "arg": "route",
+      "expr": {
+        "$type": "Not",
+        "expr": {
+          "$type": "First(TBool;TRoute)",
+          "pair": {
+            "$type": "Var(TPair(TBool;TRoute))",
+            "name": "route"
+          }
         }
       }
     }

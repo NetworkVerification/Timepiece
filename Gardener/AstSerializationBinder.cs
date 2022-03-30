@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Gardener.AstExpr;
 using Gardener.AstFunction;
 using Gardener.AstStmt;
@@ -42,7 +41,12 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "Not" => new TypeAlias(typeof(Not<>), new[] {s}),
       "Havoc" => new TypeAlias(typeof(Havoc<>), new[] {s}),
       "Int32" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(int), s}),
-      "Plus32" => new TypeAlias(typeof(Plus<,>), new[] {typeof(int), s}),
+      "BigInt" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(BigInteger), s}),
+      "Uint32" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(uint), s}),
+      "Plus" => new TypeAlias(typeof(Plus<,>), new[] {null, s}),
+      "LessThan" => new TypeAlias(typeof(LessThan<,>), new[] {null, s}),
+      "LessThanEqual" => new TypeAlias(typeof(LessThanEqual<,>), new[] {null, s}),
+      "Equal" => new TypeAlias(typeof(Equal<,>), new[] {null, s}),
       "Pair" => new TypeAlias(typeof(PairExpr<,,>), new[] {null, null, s}),
       "First" => new TypeAlias(typeof(First<,,>), new[] {null, null, s}),
       "Second" => new TypeAlias(typeof(Second<,,>), new[] {null, null, s}),
@@ -59,7 +63,8 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "TOption" => new TypeAlias(typeof(Option<>), new Type?[] {null}),
       "TBool" => new TypeAlias(typeof(bool), Array.Empty<Type?>()),
       "TInt32" => new TypeAlias(typeof(int), Array.Empty<Type?>()),
-      "TTime" => new TypeAlias(typeof(BigInteger), Array.Empty<Type>()),
+      "TUint32" => new TypeAlias(typeof(uint), Array.Empty<Type?>()),
+      "TBigInt" => new TypeAlias(typeof(BigInteger), Array.Empty<Type?>()),
       "TString" => new TypeAlias(typeof(string), Array.Empty<Type?>()),
       "TSet" => new TypeAlias(typeof(FBag<>), new[] {typeof(string)}),
       "TUnit" => new TypeAlias(typeof(Unit), Array.Empty<Type?>()),

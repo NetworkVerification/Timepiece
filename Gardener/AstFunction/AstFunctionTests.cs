@@ -1,3 +1,4 @@
+using System.Numerics;
 using Gardener.AstExpr;
 using Gardener.AstStmt;
 using Xunit;
@@ -10,17 +11,17 @@ public static class AstFunctionTests
   [Fact]
   public static void TestHavoc()
   {
-    var one = new ConstantExpr<int, BatfishBgpRoute>(0);
+    var one = new ConstantExpr<BigInteger, BatfishBgpRoute>(0);
     var rVar = new Var<BatfishBgpRoute>("route");
     // AST representation of incrementing AsPathLength by 1
-    var increment = new WithField<BatfishBgpRoute, int, BatfishBgpRoute>(
+    var increment = new WithField<BatfishBgpRoute, BigInteger, BatfishBgpRoute>(
       rVar, "AsPathLength",
-      new Plus<int, BatfishBgpRoute>(
-        new GetField<BatfishBgpRoute, int, BatfishBgpRoute>(rVar, "AsPathLength"),
+      new Plus<BigInteger, BatfishBgpRoute>(
+        new GetField<BatfishBgpRoute, BigInteger, BatfishBgpRoute>(rVar, "AsPathLength"),
         one)
     );
     var r = Zen.Symbolic<BatfishBgpRoute>();
-    var rIncremented = r.WithAsPathLength(r.GetAsPathLength() + 1);
+    var rIncremented = r.WithAsPathLength(r.GetAsPathLength() + BigInteger.One);
     var f = new AstFunction<BatfishBgpRoute>("route",
       new IfThenElse<BatfishBgpRoute, BatfishBgpRoute>(new Havoc<BatfishBgpRoute>(),
         new Return<BatfishBgpRoute>(increment),

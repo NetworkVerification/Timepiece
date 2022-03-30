@@ -49,4 +49,21 @@ public static class BooleanTests
     NetworkAssert.CheckUnsound(net);
     // Assert.True(net.CheckAnnotations().HasValue, "Unsound boolean annotations should fail checks.");
   }
+
+  [Fact]
+  public static void FattreeMonoChecks()
+  {
+    var topology = Topologies.FatTree(4);
+    var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>();
+    Dictionary<string, Zen<bool>> initialValues = topology.ForAllNodes(n => Constant(n == "edge-19"));
+    var net = new BooleanNetwork<Unit>(topology, initialValues, annotations,
+      Array.Empty<SymbolicValue<Unit>>(), new BigInteger(4))
+    {
+      MonolithicProperties =
+      {
+        ["edge-7"] = _ => False()
+      }
+    };
+    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+  }
 }

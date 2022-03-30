@@ -1,4 +1,5 @@
 using System.Numerics;
+using Gardener.AstExpr;
 using Gardener.AstFunction;
 using Karesansui;
 using NetTools;
@@ -68,5 +69,13 @@ public static class AstTests
     var badSp = SpAst;
     badSp.Nodes["edge-19"].Temporal = new Finally<Route>(5, IsValid);
     Assert.True(badSp.ToNetwork().CheckInductive().HasValue);
+  }
+
+  [Fact]
+  public static void TestSpAstBadMonolithic()
+  {
+    var badSp = SpAst;
+    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr<bool, Route>(false));
+    Assert.True(badSp.ToNetwork().CheckMonolithic().HasValue);
   }
 }

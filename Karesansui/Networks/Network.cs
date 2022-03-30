@@ -79,10 +79,11 @@ public class Network<T, TS>
   /// <summary>
   /// Check that the annotations are sound, calling the given function f on each node's check.
   /// </summary>
+  /// <param name="collector"></param>
   /// <param name="f"></param>
   /// <returns></returns>
-  public Option<State<T, TS>> CheckAnnotationsWith(
-    Func<string, Func<Option<State<T, TS>>>, Func<Option<State<T, TS>>>> f)
+  public Option<State<T, TS>> CheckAnnotationsWith<TAcc>(TAcc collector,
+    Func<string, TAcc, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
   {
     var routes = Topology.ForAllNodes(_ => Symbolic<T>());
     var time = Symbolic<BigInteger>();
@@ -90,9 +91,14 @@ public class Network<T, TS>
     timer.Start();
     // var s = Topology.Nodes.AsParallel().WithDegreeOfParallelism(8)
     var s = Topology.Nodes
+      // .Aggregate((seed: collector, Option.None<State<T, TS>>()), (current, node) =>
+      // {
+      // var (acc, currentState) = current;
+      // return f(node, acc, () => currentState.OrElse(() => CheckAnnotations(node, routes, time)));
+      // });
       // .Select(node => f(node, () => CheckAnnotations(node, routes, time))())
       .Select(node => CheckAnnotations(node, routes, time))
-      .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
+    .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
     Console.WriteLine($"Modular verification took {timer.ElapsedMilliseconds}ms");
     return s;
   }

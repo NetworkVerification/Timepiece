@@ -3349,7 +3349,7 @@
           "End": "70.0.71.255"
         }
       ],
-      "Stable": "pred",
+      "Stable": "badPred",
       "Temporal": {
         "$type": "Finally",
         "then": "pred",
@@ -3501,6 +3501,12 @@
           "$type": "Var(TPair(TBool;TRoute))",
           "name": "route"
         }
+      }
+    },
+    "badPred": {
+      "arg": "route",
+      "expr": {
+        "$type": "False"
       }
     }
   },

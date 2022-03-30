@@ -4,8 +4,8 @@ namespace Gardener.AstExpr;
 
 public class AssociativeBinaryExpr<TArg, TState> : BinaryOpExpr<TArg, TArg, TArg, TState>
 {
-  internal AssociativeBinaryExpr(Expr<TArg, TState> e1, Expr<TArg, TState> e2,
-    Func<Zen<TArg>, Zen<TArg>, Zen<TArg>> binaryOp) : base(e1, e2, binaryOp)
+  internal AssociativeBinaryExpr(Expr<TArg, TState> expr1, Expr<TArg, TState> expr2,
+    Func<Zen<TArg>, Zen<TArg>, Zen<TArg>> binaryOp) : base(expr1, expr2, binaryOp)
   {
   }
 

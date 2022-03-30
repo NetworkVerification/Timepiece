@@ -1,0 +1,5725 @@
+{
+  "Nodes": {
+    "aggregation-12": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:2"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:2"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-0": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-1": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-14": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-15": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.12.0",
+          "End": "70.0.12.255"
+        }
+      ]
+    },
+    "aggregation-13": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:2"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:2"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-2": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-3": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-14": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-15": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.13.0",
+          "End": "70.0.13.255"
+        }
+      ]
+    },
+    "aggregation-16": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:3"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:3"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-0": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-1": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-18": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-19": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.16.0",
+          "End": "70.0.16.255"
+        }
+      ]
+    },
+    "aggregation-17": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:3"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:3"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-2": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-3": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-18": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-19": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.17.0",
+          "End": "70.0.17.255"
+        }
+      ]
+    },
+    "aggregation-4": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-0": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-1": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-6": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-7": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.4.0",
+          "End": "70.0.4.255"
+        }
+      ]
+    },
+    "aggregation-5": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-2": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-3": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-6": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-7": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.5.0",
+          "End": "70.0.5.255"
+        }
+      ]
+    },
+    "aggregation-8": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:1"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:1"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-0": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-1": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-10": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-11": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.8.0",
+          "End": "70.0.8.255"
+        }
+      ]
+    },
+    "aggregation-9": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "1:1"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "4:1"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "1:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "4:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "core-2": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "core-3": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-10": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "edge-11": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.9.0",
+          "End": "70.0.9.255"
+        }
+      ]
+    },
+    "core-0": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "3:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "6:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "3:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "6:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-12": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-16": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-4": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-8": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.0.0",
+          "End": "70.0.0.255"
+        }
+      ]
+    },
+    "core-1": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "3:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "6:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "3:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "6:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-12": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-16": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-4": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-8": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.1.0",
+          "End": "70.0.1.255"
+        }
+      ]
+    },
+    "core-2": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "3:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "6:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "3:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "6:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-13": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-17": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-5": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-9": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.2.0",
+          "End": "70.0.2.255"
+        }
+      ]
+    },
+    "core-3": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "3:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "6:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "3:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "6:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-13": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-17": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-5": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-9": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.3.0",
+          "End": "70.0.3.255"
+        }
+      ]
+    },
+    "edge-10": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:1"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:1"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-8": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-9": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.10.0",
+          "End": "70.0.10.255"
+        }
+      ]
+    },
+    "edge-11": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:1"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:1"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:1"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-8": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-9": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.11.0",
+          "End": "70.0.11.255"
+        }
+      ]
+    },
+    "edge-14": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:2"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:2"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-12": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-13": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.14.0",
+          "End": "70.0.14.255"
+        }
+      ]
+    },
+    "edge-15": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:2"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:2"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:2"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-12": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-13": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.15.0",
+          "End": "70.0.15.255"
+        }
+      ]
+    },
+    "edge-18": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:3"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:3"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-16": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-17": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.18.0",
+          "End": "70.0.18.255"
+        }
+      ]
+    },
+    "edge-19": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:3"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:3"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:3"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-16": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-17": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.19.0",
+          "End": "70.0.19.255"
+        }
+      ]
+    },
+    "edge-6": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-4": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-5": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.6.0",
+          "End": "70.0.6.255"
+        }
+      ]
+    },
+    "edge-7": {
+      "Constants": {
+        "list1": {
+          "$type": "String",
+          "Value": "2:0"
+        },
+        "list2": {
+          "$type": "String",
+          "Value": "5:0"
+        }
+      },
+      "Declarations": {
+        "route_in": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_in~10~",
+                "FalseStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "True"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list2"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Return(TPair(TBool;TRoute))",
+                  "Expr": {
+                    "$type": "Pair(TBool;TRoute)",
+                    "First": {
+                      "$type": "False"
+                    },
+                    "Second": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "route_out": {
+          "arg": "pair",
+          "body": {
+            "$type": "If(TPair(TBool;TRoute))",
+            "Comment": "bind",
+            "FalseStatement": {
+              "$type": "Return(TPair(TBool;TRoute))",
+              "Expr": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "Guard": {
+              "$type": "First(TBool;TRoute)",
+              "Pair": {
+                "$type": "Var(TPair(TBool;TRoute))",
+                "Name": "pair"
+              }
+            },
+            "TrueStatement": {
+              "$type": "Seq(TPair(TBool;TRoute))",
+              "First": {
+                "$type": "Assign(TRoute)",
+                "Expr": {
+                  "$type": "Second(TBool;TRoute)",
+                  "Pair": {
+                    "$type": "Var(TPair(TBool;TRoute))",
+                    "Name": "pair"
+                  }
+                },
+                "Var": {
+                  "$type": "Var(TRoute)",
+                  "Name": "route"
+                }
+              },
+              "Second": {
+                "$type": "If(TPair(TBool;TRoute))",
+                "Comment": "~RMCLAUSE~route_out~10~",
+                "FalseStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "2:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                },
+                "Guard": {
+                  "$type": "SetContains",
+                  "Search": {
+                    "$type": "Var(TString)",
+                    "Name": "list1"
+                  },
+                  "Set": {
+                    "$type": "GetField(TRoute;TSet)",
+                    "FieldName": "communities",
+                    "Record": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  }
+                },
+                "TrueStatement": {
+                  "$type": "Seq(TPair(TBool;TRoute))",
+                  "First": {
+                    "$type": "Assign(TRoute)",
+                    "Expr": {
+                      "$type": "WithField(TRoute;TSet)",
+                      "FieldName": "communities",
+                      "FieldVal": {
+                        "$type": "SetUnion",
+                        "Sets": [
+                          {
+                            "$type": "EmptySet"
+                          },
+                          {
+                            "$type": "SetAdd",
+                            "Expr": {
+                              "$type": "String",
+                              "Value": "5:0"
+                            },
+                            "Set": {
+                              "$type": "EmptySet"
+                            }
+                          }
+                        ]
+                      },
+                      "Record": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    },
+                    "Var": {
+                      "$type": "Var(TRoute)",
+                      "Name": "route"
+                    }
+                  },
+                  "Second": {
+                    "$type": "Return(TPair(TBool;TRoute))",
+                    "Expr": {
+                      "$type": "Pair(TBool;TRoute)",
+                      "First": {
+                        "$type": "True"
+                      },
+                      "Second": {
+                        "$type": "Var(TRoute)",
+                        "Name": "route"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Policies": {
+        "aggregation-4": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        },
+        "aggregation-5": {
+          "export": [
+            "route_out"
+          ],
+          "import": [
+            "route_in"
+          ]
+        }
+      },
+      "Prefixes": [
+        {
+          "Begin": "70.0.7.0",
+          "End": "70.0.7.255"
+        }
+      ]
+    }
+  },
+  "Predicates": {},
+  "Route": {
+    "communities": "TSet",
+    "lp": "TInt32",
+    "metric": "TInt32",
+    "prefix": "TIpAddress",
+    "tag": "TInt32"
+  },
+  "Symbolics": {}
+}

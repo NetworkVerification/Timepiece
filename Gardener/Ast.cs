@@ -146,7 +146,7 @@ public class Ast<T, TS>
     foreach (var (node, props) in Nodes)
     {
       var details = props.CreateNode(p => initGenerator(isDestination(p)),
-        s => Predicates[s],
+        s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException("Predicate {s} not found!"),
         defaultExport, defaultImport);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
       monolithicProperties[node] = details.safetyProperty;

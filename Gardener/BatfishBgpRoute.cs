@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Text.Json.Serialization;
 using ZenLib;
 
@@ -13,11 +14,11 @@ public record struct BatfishBgpRoute
     Med = 0;
     OriginType = new Int2(0);
     // TODO: how to set the maximum depth?
-    Communities = new FBag<string>();
+    Communities = new Set<string>();
   }
 
   [JsonConstructor]
-  public BatfishBgpRoute(int adminDist, int lp, int asPathLength, int med, Int2 originType, FBag<string> communities)
+  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, Int2 originType, Set<string> communities)
   {
     AdminDist = adminDist;
     Lp = lp;
@@ -30,22 +31,22 @@ public record struct BatfishBgpRoute
   /// <summary>
   /// 32-bit integer representation of administrative distance.
   /// </summary>
-  public int AdminDist { get; set; }
+  public uint AdminDist { get; set; }
 
   /// <summary>
   /// 32-bit integer representation of local preference.
   /// </summary>
-  public int Lp { get; set; }
+  public uint Lp { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of AS path length.
+  /// Integer representation of AS path length.
   /// </summary>
-  public int AsPathLength { get; set; }
+  public BigInteger AsPathLength { get; set; }
 
   /// <summary>
   /// 32-bit integer representation of the Multi-Exit Discriminator.
   /// </summary>
-  public int Med { get; set; }
+  public uint Med { get; set; }
 
   /// <summary>
   /// 2-bit integer representation of origin type.
@@ -58,37 +59,37 @@ public record struct BatfishBgpRoute
   /// <summary>
   /// Representation of community tags as strings.
   /// </summary>
-  public FBag<string> Communities { get; set; }
+  public Set<string> Communities { get; set; }
 }
 
 public static class BatfishBgpRouteExtensions
 {
-  public static Zen<int> GetLp(this Zen<BatfishBgpRoute> b)
+  public static Zen<uint> GetLp(this Zen<BatfishBgpRoute> b)
   {
-    return b.GetField<BatfishBgpRoute, int>("Lp");
+    return b.GetField<BatfishBgpRoute, uint>("Lp");
   }
 
-  public static Zen<BatfishBgpRoute> WithLp(this Zen<BatfishBgpRoute> b, Zen<int> lp)
+  public static Zen<BatfishBgpRoute> WithLp(this Zen<BatfishBgpRoute> b, Zen<uint> lp)
   {
     return b.WithField("Lp", lp);
   }
 
-  public static Zen<int> GetAsPathLength(this Zen<BatfishBgpRoute> b)
+  public static Zen<BigInteger> GetAsPathLength(this Zen<BatfishBgpRoute> b)
   {
-    return b.GetField<BatfishBgpRoute, int>("AsPathLength");
+    return b.GetField<BatfishBgpRoute, BigInteger>("AsPathLength");
   }
 
-  public static Zen<BatfishBgpRoute> WithAsPathLength(this Zen<BatfishBgpRoute> b, Zen<int> asPathLength)
+  public static Zen<BatfishBgpRoute> WithAsPathLength(this Zen<BatfishBgpRoute> b, Zen<BigInteger> asPathLength)
   {
     return b.WithField("AsPathLength", asPathLength);
   }
 
-  public static Zen<int> GetMed(this Zen<BatfishBgpRoute> b)
+  public static Zen<uint> GetMed(this Zen<BatfishBgpRoute> b)
   {
-    return b.GetField<BatfishBgpRoute, int>("Med");
+    return b.GetField<BatfishBgpRoute, uint>("Med");
   }
 
-  public static Zen<BatfishBgpRoute> WithMed(this Zen<BatfishBgpRoute> b, Zen<int> med)
+  public static Zen<BatfishBgpRoute> WithMed(this Zen<BatfishBgpRoute> b, Zen<uint> med)
   {
     return b.WithField("Med", med);
   }
@@ -103,12 +104,12 @@ public static class BatfishBgpRouteExtensions
     return b.WithField("OriginType", originType);
   }
 
-  public static Zen<FBag<string>> GetCommunities(this Zen<BatfishBgpRoute> b)
+  public static Zen<Set<string>> GetCommunities(this Zen<BatfishBgpRoute> b)
   {
-    return b.GetField<BatfishBgpRoute, FBag<string>>("Communities");
+    return b.GetField<BatfishBgpRoute, Set<string>>("Communities");
   }
 
-  public static Zen<BatfishBgpRoute> WithCommunities(this Zen<BatfishBgpRoute> b, Zen<FBag<string>> communities)
+  public static Zen<BatfishBgpRoute> WithCommunities(this Zen<BatfishBgpRoute> b, Zen<Set<string>> communities)
   {
     return b.WithField("Communities", communities);
   }
@@ -121,10 +122,10 @@ public static class BatfishBgpRouteExtensions
 
   public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
   {
-    var largerLp = MinBy<BatfishBgpRoute, int>(GetLp, Zen.Gt);
-    var smallerLength = MinBy<BatfishBgpRoute, int>(GetAsPathLength, Zen.Lt);
+    var largerLp = MinBy<BatfishBgpRoute, uint>(GetLp, Zen.Gt);
+    var smallerLength = MinBy<BatfishBgpRoute, BigInteger>(GetAsPathLength, Zen.Lt);
     var betterOrigin = MinBy<BatfishBgpRoute, Int2>(GetOriginType, Zen.Gt);
-    var lowerMed = MinBy<BatfishBgpRoute, int>(GetMed, Zen.Lt);
+    var lowerMed = MinBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt);
     return largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))));
     // return Zen.If(Zen.Not(b1.IsValid()), b2,
     // Zen.If(Zen.Not(b2.IsValid()), b1,

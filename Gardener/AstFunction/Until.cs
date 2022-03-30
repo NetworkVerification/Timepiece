@@ -1,5 +1,6 @@
 using System.Numerics;
 using Karesansui;
+using Newtonsoft.Json;
 using ZenLib;
 
 namespace Gardener.AstFunction;
@@ -10,9 +11,10 @@ public class Until<T> : AstTemporalOperator<T>
   public string Before { get; set; }
   public string After { get; set; }
 
-  public Until(BigInteger t, string before, string after)
+  [JsonConstructor]
+  public Until(BigInteger time, string before, string after)
   {
-    Time = t;
+    Time = time;
     Before = before;
     After = after;
   }

@@ -4,7 +4,7 @@ using static ZenLib.Zen;
 
 namespace Karesansui.Datatypes;
 
-public record struct Bgp(BigInteger Lp, BigInteger AsLength, FBag<string> Tags)
+public record struct Bgp(BigInteger Lp, BigInteger AsLength, Set<string> Tags)
 {
   public Bgp() : this(default, default, default)
   {
@@ -23,7 +23,7 @@ public record struct Bgp(BigInteger Lp, BigInteger AsLength, FBag<string> Tags)
   /// <summary>
   /// List of community tags.
   /// </summary>
-  public FBag<string> Tags { get; set; } = Tags;
+  public Set<string> Tags { get; set; } = Tags;
 
   public override string ToString()
   {
@@ -49,9 +49,9 @@ public static class BgpExtensions
     return b.GetField<Bgp, BigInteger>("AsLength");
   }
 
-  public static Zen<FBag<string>> GetTags(this Zen<Bgp> b)
+  public static Zen<Set<string>> GetTags(this Zen<Bgp> b)
   {
-    return b.GetField<Bgp, FBag<string>>("Tags");
+    return b.GetField<Bgp, Set<string>>("Tags");
   }
 
   public static Zen<Bgp> SetLp(this Zen<Bgp> b, Zen<BigInteger> lp)
@@ -64,7 +64,7 @@ public static class BgpExtensions
     return b.WithField("AsLength", cost);
   }
 
-  public static Zen<Bgp> SetTags(this Zen<Bgp> b, Zen<FBag<string>> tags)
+  public static Zen<Bgp> SetTags(this Zen<Bgp> b, Zen<Set<string>> tags)
   {
     return b.WithField("Tags", tags);
   }

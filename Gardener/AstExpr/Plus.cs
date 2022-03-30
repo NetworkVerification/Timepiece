@@ -4,7 +4,7 @@ namespace Gardener.AstExpr;
 
 public class Plus<T, TState> : AssociativeBinaryExpr<T, TState>
 {
-  public Plus(Expr<T, TState> e1, Expr<T, TState> e2) : base(e1, e2, Zen.Plus)
+  public Plus(Expr<T, TState> expr1, Expr<T, TState> expr2) : base(expr1, expr2, Zen.Plus)
   {
   }
 

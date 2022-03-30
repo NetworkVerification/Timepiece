@@ -56,7 +56,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
       n == hijacker ? HijackRoute.Value :
       n == dest ? DestRoute : Option.Null<TaggedRoute>());
     Symbolics = new[] {HijackRoute};
-    this.Annotations = annotations(HijackRoute);
+    Annotations = annotations(HijackRoute);
     HijackRoute.Constraint = DeriveHijackConstraint();
   }
 
