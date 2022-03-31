@@ -11,8 +11,8 @@ namespace Karesansui;
 public class State<T, TS>
 {
   public readonly Dictionary<string, T> nodeStates;
-  private Option<string> _focusedNode = Option.None<string>();
-  public Option<BigInteger> time;
+  private readonly Option<(string, T)> _focusedNode = Option.None<(string, T)>();
+  public readonly Option<BigInteger> time;
   public readonly Dictionary<string, TS> symbolicStates;
   public readonly SmtCheck check;
 
@@ -42,12 +42,13 @@ public class State<T, TS>
   /// <param name="neighborStates">The Zen variables referring to this node's neighbors' routes.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  public State(ZenSolution model, string node, IEnumerable<KeyValuePair<string, Zen<T>>> neighborStates,
+  public State(ZenSolution model, string node, Zen<T> nodeRoute,
+    IEnumerable<KeyValuePair<string, Zen<T>>> neighborStates,
     Zen<BigInteger> time, IEnumerable<SymbolicValue<TS>> symbolics)
   {
     check = SmtCheck.Inductive;
     this.time = Option.Some(model.Get(time));
-    _focusedNode = Option.Some(node);
+    _focusedNode = Option.Some((node, model.Get(nodeRoute)));
     nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
   }
@@ -76,9 +77,15 @@ public class State<T, TS>
 
     time.May(t => sb.Append($"at time = {t}").AppendLine());
 
+    if (_focusedNode.HasValue)
+    {
+      var (focus, focusRoute) = _focusedNode.Value;
+      sb.AppendLine($"node {focus} had route := {focusRoute}");
+    }
+
     foreach (var (node, route) in nodeStates)
     {
-      var specifier = _focusedNode.HasValue ? $"neighbor {node} of {_focusedNode.Value}" : $"node {node}";
+      var specifier = _focusedNode.HasValue ? $"neighbor {node} of {_focusedNode.Value.Item1}" : $"node {node}";
       sb.AppendLine($"{specifier} had route := {route}");
     }
 

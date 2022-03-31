@@ -42,9 +42,7 @@ public static class Sp
 
   private static Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>> MaxLength(BigInteger x) =>
     Lang.IfSome<BatfishBgpRoute>(b =>
-      // Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= new BigInteger(0)));
-      Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= new BigInteger(0), b.GetLp() == 0, b.GetOriginType() == new UInt2(0)));
-      // Zen.And(b.GetAsPathLength() <= x, b.GetLp() == 0, b.GetOriginType() == new UInt2(0), b.GetMed() == 0));
+      Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= new BigInteger(0), b.GetLp() == 0));
 
   public static Sp<Unit> PathLength(Topology topology, string destination)
   {

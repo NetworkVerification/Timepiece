@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Text;
+using Microsoft.Z3;
 using ZenLib;
 
 namespace Karesansui.Benchmarks;
@@ -59,11 +61,18 @@ public record struct BatfishBgpRoute
   /// Representation of community tags as strings.
   /// </summary>
   public Set<string> Communities { get; set; }
+
+  public override string ToString()
+  {
+    var sb = new StringBuilder();
+    sb.Append(
+      $"BatfishBgpRoute {{ AdminDist = {AdminDist}, Lp = {Lp}, AsPathLength = {AsPathLength}, Med = {Med}, OriginType = {OriginType.ToLong()}, Communities = {Communities} }}");
+    return sb.ToString();
+  }
 }
 
 public static class BatfishBgpRouteExtensions
 {
-
   public static Zen<uint> GetLp(this Zen<BatfishBgpRoute> b)
   {
     return b.GetField<BatfishBgpRoute, uint>("Lp");
@@ -114,22 +123,56 @@ public static class BatfishBgpRouteExtensions
     return b.WithField("Communities", communities);
   }
 
-  private static Func<Zen<T>, Zen<T>, Zen<T>> MinBy<T, TKey>(Func<Zen<T>, Zen<TKey>> keyAccessor,
-    Func<Zen<TKey>, Zen<TKey>, Zen<bool>> keyComparator)
+  /// <summary>
+  /// Return a function comparing two objects of type T using the specified key accessor and the specified key comparator.
+  /// If the comparator returns true given object1 and object2, object1 is returned.
+  /// If the comparator returns false given object1 and object2, it tests object2 and object1 (in reverse order).
+  /// If the second comparison returns true, object2 is returned.
+  /// If the second comparison returns false, the fallthrough is executed on the two objects.
+  /// (A natural fallthrough in this case would be to return the second object, thereby replicating an If.
+  /// This method's benefit comes from using allowing us to chain comparisons in sequence.)
+  /// </summary>
+  /// <param name="keyAccessor">The function used to access the objects' keys.</param>
+  /// <param name="keyComparator">The function used to compare the keys.</param>
+  /// <param name="fallThrough">The function to call if the keyComparator returns false.</param>
+  /// <typeparam name="T">The type of objects.</typeparam>
+  /// <typeparam name="TKey">The type of keys.</typeparam>
+  /// <returns>
+  /// A function returning the first object if the comparator evaluates to true, and otherwise calling the fallthrough.
+  /// </returns>
+  private static Func<Zen<T>, Zen<T>, Zen<T>> CompareBy<T, TKey>(
+    Func<Zen<T>, Zen<TKey>> keyAccessor,
+    Func<Zen<TKey>, Zen<TKey>, Zen<bool>> keyComparator,
+    Func<Zen<T>, Zen<T>, Zen<T>> fallThrough)
   {
-    return (t1, t2) => Zen.If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1, t2);
+    return (t1, t2) => Zen.If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1,
+      Zen.If(keyComparator(keyAccessor(t2), keyAccessor(t1)), t2, fallThrough(t1, t2)));
   }
 
+  /// <summary>
+  /// Compare two BatfishBgpRoutes and return the minimum.
+  /// Ranking is done in the following order:
+  /// 1. Greatest local preference.
+  /// 2. Smallest AS path length.
+  /// 3. Best (greatest) origin type.
+  /// 4. Smallest MED.
+  /// </summary>
+  /// <param name="b1">The first route.</param>
+  /// <param name="b2">The second route.</param>
+  /// <returns>The minimum route by the ranking.</returns>
   public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
   {
-    var largerLp = MinBy<BatfishBgpRoute, uint>(GetLp, Zen.Gt);
-    var smallerLength = MinBy<BatfishBgpRoute, BigInteger>(GetAsPathLength, Zen.Lt);
-    var betterOrigin = MinBy<BatfishBgpRoute, UInt2>(GetOriginType, Zen.Gt);
-    var lowerMed = MinBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt);
-    return largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))));
-    // return Zen.If(Zen.Not(b1.IsValid()), b2,
-    // Zen.If(Zen.Not(b2.IsValid()), b1,
-    // largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))))));
+    // var returnSecond = new Func<Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>, Zen<BatfishBgpRoute>>((_, t2) => t2);
+    // return CompareBy(GetLp, Zen.Gt,
+    // CompareBy(GetAsPathLength, Zen.Lt, CompareBy(GetOriginType, Zen.Gt, CompareBy(GetMed, Zen.Lt, returnSecond))))(b1,
+    // b2);
+    return Zen.If(b1.GetLp() > b2.GetLp(), b1,
+      Zen.If(b2.GetLp() > b1.GetLp(), b2,
+        Zen.If(b1.GetAsPathLength() < b2.GetAsPathLength(), b1,
+          Zen.If(b2.GetAsPathLength() < b1.GetAsPathLength(), b2,
+            Zen.If(b1.GetOriginType() > b2.GetOriginType(), b1,
+              Zen.If(b2.GetOriginType() > b1.GetOriginType(), b2,
+                Zen.If(b1.GetMed() < b2.GetMed(), b1, b2)))))));
   }
 
   public static Zen<BatfishBgpRoute> IncrementAsPath(this Zen<BatfishBgpRoute> b)

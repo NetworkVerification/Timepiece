@@ -216,7 +216,7 @@ public class Network<T, TS>
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
     var neighborRoutes = routes.Where(pair => Topology[node].Contains(pair.Key));
-    var state = new State<T, TS>(model, node, neighborRoutes, time, Symbolics);
+    var state = new State<T, TS>(model, node, newNodeRoute, neighborRoutes, time, Symbolics);
     return Option.Some(state);
   }
 
