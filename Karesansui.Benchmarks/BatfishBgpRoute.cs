@@ -11,12 +11,13 @@ public record struct BatfishBgpRoute
     Lp = 0;
     AsPathLength = 0;
     Med = 0;
-    OriginType = new Int2(0);
+    OriginType = new UInt2(0);
     // TODO: how to set the maximum depth?
     Communities = new Set<string>();
   }
 
-  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, Int2 originType, Set<string> communities)
+  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, UInt2 originType,
+    Set<string> communities)
   {
     AdminDist = adminDist;
     Lp = lp;
@@ -52,7 +53,7 @@ public record struct BatfishBgpRoute
   /// 2 = external
   /// 3 = internal
   /// </summary>
-  public Int2 OriginType { get; set; }
+  public UInt2 OriginType { get; set; }
 
   /// <summary>
   /// Representation of community tags as strings.
@@ -62,6 +63,7 @@ public record struct BatfishBgpRoute
 
 public static class BatfishBgpRouteExtensions
 {
+
   public static Zen<uint> GetLp(this Zen<BatfishBgpRoute> b)
   {
     return b.GetField<BatfishBgpRoute, uint>("Lp");
@@ -92,12 +94,12 @@ public static class BatfishBgpRouteExtensions
     return b.WithField("Med", med);
   }
 
-  public static Zen<Int2> GetOriginType(this Zen<BatfishBgpRoute> b)
+  public static Zen<UInt2> GetOriginType(this Zen<BatfishBgpRoute> b)
   {
-    return b.GetField<BatfishBgpRoute, Int2>("OriginType");
+    return b.GetField<BatfishBgpRoute, UInt2>("OriginType");
   }
 
-  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<Int2> originType)
+  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<UInt2> originType)
   {
     return b.WithField("OriginType", originType);
   }
@@ -122,7 +124,7 @@ public static class BatfishBgpRouteExtensions
   {
     var largerLp = MinBy<BatfishBgpRoute, uint>(GetLp, Zen.Gt);
     var smallerLength = MinBy<BatfishBgpRoute, BigInteger>(GetAsPathLength, Zen.Lt);
-    var betterOrigin = MinBy<BatfishBgpRoute, Int2>(GetOriginType, Zen.Gt);
+    var betterOrigin = MinBy<BatfishBgpRoute, UInt2>(GetOriginType, Zen.Gt);
     var lowerMed = MinBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt);
     return largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))));
     // return Zen.If(Zen.Not(b1.IsValid()), b2,
