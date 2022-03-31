@@ -156,6 +156,16 @@ public class LabelledTopology<T> : Topology
   }
 
   /// <summary>
+  /// Return the given node's label.
+  /// </summary>
+  /// <param name="node">A node in the topology.</param>
+  /// <returns>The label for that node.</returns>
+  public T L(string node)
+  {
+    return Labels[node];
+  }
+
+  /// <summary>
   /// Convert the LabelledTopology to an unlabelled one.
   /// </summary>
   /// <returns>An equivalent Topology.</returns>
