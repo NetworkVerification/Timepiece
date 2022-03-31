@@ -31,25 +31,41 @@ public static class Profile
 
   public static void RunMono<T, TS>(Network<T, TS> network)
   {
-    var s = network.CheckMonolithic();
-    if (!s.HasValue) return;
-    s.Value.ReportCheckFailure();
-    Console.WriteLine("Error, monolithic verification failed!");
+    try
+    {
+      var s = network.CheckMonolithic();
+      if (!s.HasValue) return;
+      s.Value.ReportCheckFailure();
+      Console.WriteLine("Error, monolithic verification failed!");
+    }
+    catch (ZenException e)
+    {
+      Console.WriteLine("Error, monolithic verification did not complete:");
+      Console.WriteLine(e.Message);
+    }
   }
 
   public static void RunAnnotatedWith<T, TS>(Network<T, TS> network,
     Func<string, Dictionary<string, long>, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
   {
     var nodeTimes = new Dictionary<string, long>();
-    var s = network.CheckAnnotationsWith(nodeTimes, f);
-    if (!s.HasValue)
+    try
     {
-      Console.WriteLine("    All the modular checks passed!");
-      return;
-    }
+      var s = network.CheckAnnotationsWith(nodeTimes, f);
+      if (!s.HasValue)
+      {
+        Console.WriteLine("    All the modular checks passed!");
+        return;
+      }
 
-    s.Value.ReportCheckFailure();
-    Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+      s.Value.ReportCheckFailure();
+      Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+    }
+    catch (ZenException e)
+    {
+      Console.WriteLine("Error, modular verification did not complete:");
+      Console.WriteLine(e.Message);
+    }
   }
 
   public static void RunAnnotated<T, TS>(Network<T, TS> network)

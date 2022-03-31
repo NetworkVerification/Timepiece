@@ -70,8 +70,9 @@ public static class Vf
   {
     return topology.ForAllNodes(n =>
     {
-      var neighborTags = topology[n].Select(nbr => NodeTag1(topology, nbr));
-      var maximalSet = neighborTags.Aggregate(Set.Empty<string>(), (set, tag) => set.Add(tag));
+      // map each neighbor to its first tag
+      var maximalSet = topology[n].Select(nbr => NodeTag1(topology, nbr))
+        .Aggregate(Set.Empty<string>(), (set, tag) => set.Add(tag));
       return Lang.IfSome<BatfishBgpRoute>(b =>
         // neighborTags.Aggregate(Zen.True(), (current, tag) => Zen.And(current, Zen.Not(b.HasCommunity(tag)))));
         b.GetCommunities().IsSubsetOf(maximalSet));
