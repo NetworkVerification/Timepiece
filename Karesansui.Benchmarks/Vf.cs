@@ -3,12 +3,18 @@ using ZenLib;
 
 namespace Karesansui.Benchmarks;
 
-public class Vf<TS> : FatTree<TS>
+public class Vf<TS> : FatTree<Option<BatfishBgpRoute>, TS>
 {
-  internal Vf(LabelledTopology<int> topology, string destination,
+  public Vf(LabelledTopology<int> topology, string destination,
     Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties, SymbolicValue<TS>[] symbolics) :
-    base(topology, destination, Transfer(topology), annotations, safetyProperties, symbolics)
+    IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
+    SymbolicValue<TS>[] symbolics) :
+    base(topology, destination, Transfer(topology),
+      Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
+      Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()),
+      Option.None<BatfishBgpRoute>(),
+      annotations, stableProperties, safetyProperties, symbolics)
   {
   }
 
@@ -37,6 +43,14 @@ public class Vf<TS> : FatTree<TS>
     return r.Where(b => Zen.Not(b.HasCommunity(tag2)));
   }
 
+  /// <summary>
+  /// Return the transfer function for the given topology.
+  /// Composes the import and export functionality:
+  /// we export the route, adding a tag from the source (and incrementing the path length),
+  /// and then import the route, checking for the second tag of the sink.
+  /// </summary>
+  /// <param name="topology"></param>
+  /// <returns></returns>
   private static Dictionary<(string, string), Func<Zen<Option<BatfishBgpRoute>>, Zen<Option<BatfishBgpRoute>>>>
     Transfer(LabelledTopology<int> topology)
   {
@@ -61,32 +75,41 @@ public static class Vf
 {
   /// <summary>
   /// Return a predicate for each node in the network, where its route is constrained
-  /// to only contain the first tag of any of its neighbors.
+  /// to only contain the first tags of neighbors which are strictly closer to the destination than this node.
   /// </summary>
-  /// <param name="topology"></param>
-  /// <returns></returns>
-  private static Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> ValidTags(
-    LabelledTopology<int> topology)
+  /// <param name="topology">The topology containing the nodes.</param>
+  /// <param name="distances">The distance from each node to the destination.</param>
+  /// <returns>A dictionary from nodes to predicates over routes.</returns>
+  private static Dictionary<string, Func<Zen<BatfishBgpRoute>, Zen<bool>>> ValidTags(LabelledTopology<int> topology,
+    IReadOnlyDictionary<string, BigInteger> distances)
   {
     return topology.ForAllNodes(n =>
     {
-      // map each neighbor to its first tag
-      var maximalSet = topology[n].Select(nbr => NodeTag1(topology, nbr))
-        .Aggregate(Set.Empty<string>(), (set, tag) => set.Add(tag));
-      return Lang.IfSome<BatfishBgpRoute>(b =>
-        // neighborTags.Aggregate(Zen.True(), (current, tag) => Zen.And(current, Zen.Not(b.HasCommunity(tag)))));
-        b.GetCommunities().IsSubsetOf(maximalSet));
+      var dist = distances[n];
+      var closerNodeTags = distances
+        .Where(p => p.Value < dist)
+        .Select(p => p.Key)
+        .Aggregate(Set.Empty<string>(), (set, node) => set.Add(NodeTag1(topology, node)));
+      return new Func<Zen<BatfishBgpRoute>, Zen<bool>>(b => b.GetCommunities().IsSubsetOf(closerNodeTags));
     });
   }
 
   public static Vf<Unit> ValleyFreeReachable(LabelledTopology<int> topology, string destination)
   {
     var distances = topology.BreadthFirstSearch(destination);
-    var safetyProperties = ValidTags(topology);
+    var hasValidTags = ValidTags(topology, distances);
     var annotations =
-      distances.Select(p => (p.Key, Lang.Until(p.Value, Lang.IsNone<BatfishBgpRoute>(), safetyProperties[p.Key])))
-        .ToDictionary(p => p.Item1, p => p.Item2);
-    return new Vf<Unit>(topology, destination, annotations, topology.ForAllNodes(_ => Lang.IsSome<BatfishBgpRoute>()),
+      new Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>>(distances.Select(p =>
+        new KeyValuePair<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>>(p.Key,
+          Lang.Until(p.Value, Lang.IsNone<BatfishBgpRoute>(),
+            // require that the safety property holds at time t, and that the LP equals 0 and the path length equals t
+            Lang.IfSome<BatfishBgpRoute>(b =>
+              Zen.And(b.LpEquals(0U), b.GetAsPathLength() == p.Value, hasValidTags[p.Key](b)))
+          ))));
+    var safetyProperties =
+      topology.ForAllNodes(n => Lang.Union(Lang.IfSome(hasValidTags[n]), Lang.IsNone<BatfishBgpRoute>()));
+    var stableProperties = topology.ForAllNodes(_ => Lang.IsSome<BatfishBgpRoute>());
+    return new Vf<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       Array.Empty<SymbolicValue<Unit>>());
   }
 

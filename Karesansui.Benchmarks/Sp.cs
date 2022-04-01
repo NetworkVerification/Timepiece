@@ -3,23 +3,18 @@ using ZenLib;
 
 namespace Karesansui.Benchmarks;
 
-public class Sp<TS> : FatTree<TS>
+public class Sp<TS> : FatTree<Option<BatfishBgpRoute>, TS>
 {
-  public Sp(uint numPods, string destination,
+  public Sp(Topology topology, string destination,
     Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties, SymbolicValue<TS>[] symbolics) :
-    base(numPods, destination, Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath),
-      annotations, safetyProperties,
-      symbolics)
-  {
-  }
-
-  internal Sp(Topology topology, string destination,
-    Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties, SymbolicValue<TS>[] symbolics) :
+    IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
+    SymbolicValue<TS>[] symbolics) :
     base(topology, destination,
       topology.ForAllEdges(_ => Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath)),
-      annotations, safetyProperties, symbolics)
+      Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
+      Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()), Option.None<BatfishBgpRoute>(),
+      annotations, stableProperties, safetyProperties, symbolics)
   {
   }
 }
@@ -36,23 +31,27 @@ public static class Sp
     var annotations =
       distances.Select(p => (p.Key, Lang.Finally(p.Value, reachable)))
         .ToDictionary(p => p.Item1, p => p.Item2);
-    var safetyProperties = topology.ForAllNodes(_ => reachable);
-    return new Sp<Unit>(topology, destination, annotations, safetyProperties, Array.Empty<SymbolicValue<Unit>>());
+    var stableProperties = topology.ForAllNodes(_ => reachable);
+    // no safety property
+    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
+      Array.Empty<SymbolicValue<Unit>>());
   }
-
-  private static Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>> MaxLength(BigInteger x) =>
-    Lang.IfSome<BatfishBgpRoute>(b =>
-      Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= new BigInteger(0), b.GetLp() == 0));
 
   public static Sp<Unit> PathLength(Topology topology, string destination)
   {
     var distances = topology.BreadthFirstSearch(destination);
 
     var annotations =
-      distances.Select(p => (p.Key, Lang.Until(p.Value, Lang.IsNone<BatfishBgpRoute>(), MaxLength(p.Value))))
+      distances.Select(p => (p.Key, Lang.Until(p.Value,
+          Option.IsNone, BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value))))
         .ToDictionary(p => p.Item1, p => p.Item2);
 
-    var safetyProperties = topology.ForAllNodes(_ => MaxLength(4));
-    return new Sp<Unit>(topology, destination, annotations, safetyProperties, Array.Empty<SymbolicValue<Unit>>());
+    var stableProperties =
+      topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.ForAllNodes(_ =>
+      Lang.Union(Lang.IsNone<BatfishBgpRoute>(), Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
+    return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
+      Array.Empty<SymbolicValue<Unit>>());
   }
 }

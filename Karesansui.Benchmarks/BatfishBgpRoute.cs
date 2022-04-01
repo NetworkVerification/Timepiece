@@ -189,4 +189,24 @@ public static class BatfishBgpRouteExtensions
   {
     return b.WithCommunities(b.GetCommunities().Add(comm));
   }
+
+  /// <summary>
+  /// Return true if the AS path length is a non-negative number at most x, and false otherwise.
+  /// </summary>
+  /// <param name="b">The route.</param>
+  /// <param name="x">The maximum length.</param>
+  /// <returns>True if the AS path length of b is at most x, false otherwise.</returns>
+  public static Zen<bool> LengthAtMost(this Zen<BatfishBgpRoute> b, Zen<BigInteger> x) =>
+    Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= BigInteger.Zero);
+
+  /// <summary>
+  /// Return true if the LP equals lp, and false otherwise.
+  /// </summary>
+  /// <param name="b"></param>
+  /// <param name="lp"></param>
+  /// <returns></returns>
+  public static Zen<bool> LpEquals(this Zen<BatfishBgpRoute> b, Zen<uint> lp) => b.GetLp() == lp;
+
+  public static Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>> MaxLengthZeroLp(BigInteger x) =>
+    Lang.IfSome<BatfishBgpRoute>(b => Zen.And(b.LengthAtMost(x), b.LpEquals(0)));
 }
