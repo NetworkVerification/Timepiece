@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Karesansui.Networks;
 using ZenLib;
 
@@ -26,7 +27,7 @@ public static class Profile
   {
     Console.WriteLine($"Monolithic verification took {Time(RunMono, network)}ms");
 
-    RunAnnotatedWith(network, ReportCheckTime);
+    RunAnnotatedWithStats(network);
   }
 
   public static void RunMono<T, TS>(Network<T, TS> network)
@@ -45,19 +46,18 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotatedWith<T, TS>(Network<T, TS> network,
-    Func<string, Dictionary<string, long>, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
+  public static void RunAnnotatedWithStats<T, TS>(Network<T, TS> network)
   {
     var nodeTimes = new Dictionary<string, long>();
     try
     {
-      var s = network.CheckAnnotationsWith(nodeTimes, f);
+      var s = network.CheckAnnotationsWith(nodeTimes, LogCheckTime);
       if (!s.HasValue)
       {
         Console.WriteLine("    All the modular checks passed!");
+        ReportCheckTimes(nodeTimes, Statistics.Summary);
         return;
       }
-
       s.Value.ReportCheckFailure();
       Console.WriteLine("Error, unsound annotations provided or assertions failed!");
     }
@@ -88,7 +88,7 @@ public static class Profile
     return timer.ElapsedMilliseconds;
   }
 
-  private static Option<State<T, TS>> ReportCheckTime<T, TS>(string node,
+  public static Option<State<T, TS>> LogCheckTime<T, TS>(string node,
     Dictionary<string, long> times,
     Func<Option<State<T, TS>>> checkFunction)
   {
@@ -98,4 +98,70 @@ public static class Profile
     times.Add(node, timer.ElapsedMilliseconds);
     return s;
   }
+
+  /// <summary>
+  /// Available statistics to query on modular checks.
+  /// </summary>
+  [Flags]
+  private enum Statistics
+  {
+    None = 0,
+    Maximum = 1,
+    Minimum = 2,
+    Average = 4,
+    Total = 8,
+    Individual = 16,
+    Summary = Maximum | Minimum | Average | Total,
+    All = Summary | Individual
+  }
+
+  /// <summary>
+  /// Report the time taken by all the checks.
+  /// </summary>
+  /// <param name="times"></param>
+  /// <param name="stats"></param>
+  /// <exception cref="ArgumentOutOfRangeException"></exception>
+  private static void ReportCheckTimes(Dictionary<string, long> times, Statistics stats)
+  {
+    Console.WriteLine("Check statistics:");
+    foreach (Statistics stat in Enum.GetValues(typeof(Statistics)))
+    {
+      if ((stats & stat) == stat)
+      {
+        switch (stat)
+        {
+          case Statistics.None:
+            break;
+          case Statistics.Maximum:
+            var (maxNode, maxTime) = times.MaxBy(p => p.Value);
+            Console.WriteLine($"Maximum check time: node {maxNode} in {maxTime}ms");
+            break;
+          case Statistics.Minimum:
+            var (minNode, minTime) = times.MinBy(p => p.Value);
+            Console.WriteLine($"Maximum check time: node {minNode} in {minTime}ms");
+            break;
+          case Statistics.Average:
+            var avg = times.Average(p => p.Value);
+            Console.WriteLine($"Average check time: {avg}ms");
+            break;
+          case Statistics.Total:
+            var total = times.Sum(p => p.Value);
+            Console.WriteLine($"Total check time: {total}ms");
+            break;
+          case Statistics.Individual:
+            foreach (var (node, time) in times)
+            {
+              Console.WriteLine($"Node {node} took {time}ms");
+            }
+            break;
+          case Statistics.Summary:
+          case Statistics.All:
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
+    }
+  }
 }
+
