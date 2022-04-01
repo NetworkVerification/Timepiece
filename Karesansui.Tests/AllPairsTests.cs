@@ -31,23 +31,23 @@ public static class AllPairsTests
         {
           {
             "A",
-            Lang.Until(
+            Lang.Until<Option<BigInteger>>(
               If(d.EqualsValue("A"), new BigInteger(0),
                 If<BigInteger>(d.EqualsValue("B"), new BigInteger(1), new BigInteger(2))),
-              Lang.IsNone<BigInteger>(), Lang.IsSome<BigInteger>())
+              Option.IsNone, Option.IsSome)
           },
           {
             "B",
-            Lang.Until(
+            Lang.Until<Option<BigInteger>>(
               If<BigInteger>(d.DoesNotEqualValue("B"), new BigInteger(1), new BigInteger(0)),
-              Lang.IsNone<BigInteger>(), Lang.IsSome<BigInteger>())
+              Option.IsNone, Option.IsSome)
           },
           {
             "C",
-            Lang.Until(
+            Lang.Until<Option<BigInteger>>(
               If(d.EqualsValue("A"), new BigInteger(2),
                 If<BigInteger>(d.EqualsValue("B"), new BigInteger(1), new BigInteger(0))),
-              Lang.IsNone<BigInteger>(), Lang.IsSome<BigInteger>())
+              Option.IsNone, Option.IsSome)
           }
         });
     var net = Net(annotations);
@@ -62,9 +62,9 @@ public static class AllPairsTests
       new Func<SymbolicValue<string>, Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>>(
         _ => new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
         {
-          {"A", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())},
-          {"B", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())},
-          {"C", Lang.Finally(new BigInteger(1), Lang.IsSome<BigInteger>())},
+          {"A", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
+          {"B", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
+          {"C", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
         });
     var net = Net(annotations);
 

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
@@ -90,6 +91,11 @@ public static class Lang
     return r => r;
   }
 
+  public static Func<Zen<T>, Zen<bool>> True<T>()
+  {
+    return _ => Zen.True();
+  }
+
   /// <summary>
   /// Construct a function over tuples from functions over tuple elements.
   /// </summary>
@@ -112,15 +118,32 @@ public static class Lang
     return (prod1, prod2) => Pair.Create(f1(prod1.Item1(), prod2.Item1()), f2(prod1.Item2(), prod2.Item2()));
   }
 
+  /// <summary>
+  /// Return a predicate over a pair where f1 holds on the first element and f2 holds on the second element.
+  /// </summary>
+  /// <param name="f1"></param>
+  /// <param name="f2"></param>
+  /// <typeparam name="T1"></typeparam>
+  /// <typeparam name="T2"></typeparam>
+  /// <returns></returns>
   public static Func<Zen<Pair<T1, T2>>, Zen<bool>> Both<T1, T2>(Func<Zen<T1>, Zen<bool>> f1,
     Func<Zen<T2>, Zen<bool>> f2)
   {
     return prod => And(f1(prod.Item1()), f2(prod.Item2()));
   }
 
+  public static Func<Zen<Pair<T1, T2>>, Zen<bool>> First<T1, T2>(Func<Zen<T1>, Zen<bool>> f)
+  {
+    return prod => f(prod.Item1());
+  }
+
+  public static Func<Zen<Pair<T1, T2>>, Zen<bool>> Second<T1, T2>(Func<Zen<T2>, Zen<bool>> f)
+  {
+    return prod => f(prod.Item2());
+  }
+
   /// <summary>
-  ///     Construct a function that tests a given route and delegates to one of two cases based on the result
-  ///     of the test.
+  /// Construct a function that tests a given route and delegates to one of two cases based on the result of the test.
   /// </summary>
   /// <param name="test">A testing function from routes to bool.</param>
   /// <param name="trueCase">A function from routes to routes, executed when the test returns true.</param>
@@ -154,21 +177,22 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Construct a function that evaluates a predicate on a given optional route
-  ///     and returns true if it has some value and that value satisfies the predicate,
-  ///     otherwise false.
+  /// Construct a function that evaluates a predicate on a given optional route
+  /// and returns true if it has some value and that value satisfies the predicate,
+  /// otherwise false.
   /// </summary>
   /// <param name="f"></param>
   /// <typeparam name="T"></typeparam>
   /// <returns></returns>
   public static Func<Zen<Option<T>>, Zen<bool>> IfSome<T>(Func<Zen<T>, Zen<bool>> f)
   {
-    return r => And(r.IsSome(), f(r.Value()));
+    return r => r.Where(f).IsSome();
   }
 
   public static Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> Omap2<T>(Func<Zen<T>, Zen<T>, Zen<T>> f)
   {
-    return (r1, r2) => If(r1.IsSome(), If(r2.IsSome(), Option.Create(f(r1.Value(), r2.Value())), r1), r2);
+    return (r1, r2) => If(r1.IsSome(),
+      If(r2.IsSome(), Option.Create(f(r1.Value(), r2.Value())), r1), r2);
   }
 
   /// <summary>
@@ -182,12 +206,32 @@ public static class Lang
   }
 
   /// <summary>
-  ///     Construct a function that decrements a BigInteger by n.
+  /// Return the intersection of the given predicates,
+  /// i.e. return a predicate that returns true if all the fs hold for a given value.
   /// </summary>
-  /// <param name="n">The amount to decrement by.</param>
-  /// <returns>A function from BigInteger to BigInteger.</returns>
-  public static Func<Zen<BigInteger>, Zen<BigInteger>> Decr(BigInteger n)
+  /// <param name="fs">A variable-length array of predicate functions.</param>
+  /// <typeparam name="T">The type of the predicate arguments.</typeparam>
+  /// <returns>True if all the predicates hold, false otherwise.</returns>
+  public static Func<Zen<T>, Zen<bool>> Intersect<T>(params Func<Zen<T>, Zen<bool>>[] fs)
   {
-    return r => r - n;
+    return r => And(fs.Select(f => f(r)).ToArray());
+  }
+
+  /// <summary>
+  /// Return the intersection of the given predicates,
+  /// i.e. return a predicate that returns true if all the fs hold for a given value.
+  /// </summary>
+  /// <param name="fs">A variable-length array of predicate functions.</param>
+  /// <typeparam name="T">The type of the predicate arguments.</typeparam>
+  /// <returns>True if all the predicates hold, false otherwise.</returns>
+  public static Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Intersect<T>(
+    params Func<Zen<T>, Zen<BigInteger>, Zen<bool>>[] fs)
+  {
+    return (r, t) => And(fs.Select(f => f(r, t)).ToArray());
+  }
+
+  public static Func<Zen<T>, Zen<bool>> Union<T>(params Func<Zen<T>, Zen<bool>>[] fs)
+  {
+    return r => Or(fs.Select(f => f(r)).ToArray());
   }
 }

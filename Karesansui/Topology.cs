@@ -8,12 +8,12 @@ using System.Text.Json.Serialization;
 namespace Karesansui;
 
 /// <summary>
-/// Represents the topology of an NV network.
+/// Represents the topology of an NV network as a directed graph.
 /// </summary>
 public class Topology
 {
   /// <summary>
-  /// Construct a Topology given a mapping from nodes to their predecessors.
+  /// Construct a Topology given a mapping from nodes to their successors.
   /// </summary>
   [JsonConstructor]
   public Topology(Dictionary<string, List<string>> neighbors)
@@ -24,27 +24,27 @@ public class Topology
   }
 
   /// <summary>
-  ///     The number of edges in the network.
+  /// The number of edges in the network.
   /// </summary>
   [JsonIgnore]
-  public int NEdges { get; }
+  public int NEdges { get; private set; }
 
   /// <summary>
-  ///     The edges for each node in the network.
+  /// The edges for each node in the network.
   /// </summary>
   [JsonPropertyName("edges")]
-  public Dictionary<string, List<string>> Neighbors { get; }
+  public Dictionary<string, List<string>> Neighbors { get; set; }
 
   /// <summary>
-  ///     The nodes in the network and their names.
+  /// The nodes in the network and their names.
   /// </summary>
   [JsonIgnore]
-  public string[] Nodes { get; }
+  public string[] Nodes { get; set; }
 
   public string this[uint id] => Nodes[id];
 
   /// <summary>
-  ///     Return the predecessors of a given node.
+  /// Return the successors of a given node.
   /// </summary>
   public List<string> this[string node] => Neighbors[node];
 
@@ -210,7 +210,7 @@ public static class Topologies
   }
 
   /// <summary>
-  ///     Create a complete digraph topology.
+  /// Create a complete digraph topology.
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <returns></returns>

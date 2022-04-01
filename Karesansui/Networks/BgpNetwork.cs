@@ -15,7 +15,7 @@ public class BgpNetwork : Network<Option<Bgp>, Bgp>
     BigInteger convergeTime,
     SymbolicValue<Bgp>[] symbolics) : base(topology,
     topology.ForAllEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(BgpExtensions.Min),
-    initialValues, annotations, topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.IsSome<Bgp>())),
+    initialValues, annotations, topology.ForAllNodes(_ => Lang.Finally<Option<Bgp>>(convergeTime, Option.IsSome)),
     topology.ForAllNodes(_ => Lang.IsSome<Bgp>()), symbolics)
   {
   }

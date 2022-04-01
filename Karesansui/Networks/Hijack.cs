@@ -84,9 +84,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
   /// <returns>True if the route is not null and not external.</returns>
   public static Zen<bool> HasInternalRoute(Zen<Option<TaggedRoute>> r)
   {
-    return r.Case(
-      () => false,
-      tr => Not(tr.Item2()));
+    return r.Where(tr => Not(tr.Item2())).IsSome();
   }
 
   private static Func<Zen<Option<TaggedRoute>>, Zen<bool>> Property(string hijacker, string node)
