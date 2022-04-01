@@ -9,12 +9,14 @@ public static class CommandLine
     uint? size = null;
     string? destination = null;
     BenchmarkType? benchmark = null;
+    var timeout = -1;
 
     var p = new OptionSet
     {
       {"k|size=", "The {SIZE} of the benchmark", (uint k) => size = k},
       {"d|dest=", "The {DEST} node of the benchmark", n => destination = n},
-      {"b|bench=", "the {BENCHMARK} to test", s => benchmark = s.Parse()}
+      {"b|bench=", "the {BENCHMARK} to test", s => benchmark = s.Parse()},
+      {"t|timeout=", "the maximum {TIME} a benchmark should run for before it is cancelled", (int s) => timeout = s}
     };
     try
     {
@@ -31,6 +33,6 @@ public static class CommandLine
       return null;
     }
 
-    return new Benchmark((uint) size, destination, (BenchmarkType) benchmark);
+    return new Benchmark((uint) size, destination, (BenchmarkType) benchmark, timeout);
   }
 }

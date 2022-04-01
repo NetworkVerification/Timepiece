@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using Karesansui.Datatypes;
@@ -87,19 +86,10 @@ public class Network<T, TS>
   {
     var routes = Topology.ForAllNodes(_ => Symbolic<T>());
     var time = Symbolic<BigInteger>();
-    var timer = new Stopwatch();
-    timer.Start();
-    // var s = Topology.Nodes.AsParallel().WithDegreeOfParallelism(8)
     var s = Topology.Nodes
-      // .Aggregate((seed: collector, Option.None<State<T, TS>>()), (current, node) =>
-      // {
-      // var (acc, currentState) = current;
-      // return f(node, acc, () => currentState.OrElse(() => CheckAnnotations(node, routes, time)));
-      // });
-      // .Select(node => f(node, () => CheckAnnotations(node, routes, time))())
-      .Select(node => CheckAnnotations(node, routes, time))
-    .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
-    Console.WriteLine($"Modular verification took {timer.ElapsedMilliseconds}ms");
+      // call f for each node
+      .Select(node => f(node, collector, () => CheckAnnotations(node, routes, time)))
+      .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
     return s;
   }
 
