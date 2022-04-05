@@ -28,11 +28,11 @@ public static class CommandLine
       return null;
     }
 
-    if (size is null || destination is null || benchmark is null)
-    {
-      return null;
-    }
+    if (size is not null && destination is not null && benchmark is not null)
+      return new Benchmark((uint) size, destination, (BenchmarkType) benchmark, timeout);
 
-    return new Benchmark((uint) size, destination, (BenchmarkType) benchmark, timeout);
+    p.WriteOptionDescriptions(Console.Out);
+    return null;
+
   }
 }
