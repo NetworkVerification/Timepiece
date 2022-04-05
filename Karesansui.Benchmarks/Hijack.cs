@@ -59,10 +59,10 @@ public class Hijack : FatTree<TaggedRoute, Option<BatfishBgpRoute>>
     return new Topology(withHijacker);
   }
 
-  public static Hijack HijackFiltered(Topology topology, string destination)
+  public static Hijack HijackFiltered(uint numPods, string destination)
   {
     const string hijackNode = "hijacker";
-    topology = HijackTopology(hijackNode, topology);
+    var topology = HijackTopology(hijackNode, Topologies.FatTree(numPods));
     var distances = topology.BreadthFirstSearch(destination);
     Dictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<BigInteger>, Zen<bool>>> annotations =
       distances.Select(p => (p.Key,

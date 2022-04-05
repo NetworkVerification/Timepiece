@@ -1,3 +1,5 @@
+using Karesansui.Networks;
+
 namespace Karesansui.Benchmarks;
 
 public class Benchmark
@@ -10,24 +12,36 @@ public class Benchmark
     Timeout = timeout;
   }
 
-  public void Run()
+  public void Run(bool asMonolithic)
   {
     switch (Bench)
     {
       case BenchmarkType.SpReachable:
-        Profile.RunCmpPerNode(Sp.Reachability(Topologies.FatTree(N), Destination));
+        RunProfiler(Sp.Reachability(N, Destination), asMonolithic);
         break;
       case BenchmarkType.SpPathLength:
-        Profile.RunCmpPerNode(Sp.PathLength(Topologies.FatTree(N), Destination));
+        RunProfiler(Sp.PathLength(N, Destination), asMonolithic);
         break;
       case BenchmarkType.ValleyFree:
-        Profile.RunCmpPerNode(Vf.ValleyFreeReachable(Topologies.LabelledFatTree(N), Destination));
+        RunProfiler(Vf.ValleyFreeReachable(N, Destination), asMonolithic);
         break;
       case BenchmarkType.FatTreeHijack:
-        Profile.RunCmpPerNode(Hijack.HijackFiltered(Topologies.FatTree(N), Destination));
+        RunProfiler(Hijack.HijackFiltered(N, Destination), asMonolithic);
         break;
       default:
         throw new ArgumentOutOfRangeException(null, Bench, "Invalid argument is not a benchmark type");
+    }
+  }
+
+  private static void RunProfiler<T, TS>(Network<T, TS> net, bool asMonolithic)
+  {
+    if (asMonolithic)
+    {
+      Karesansui.Profile.RunMonoWithStats(net);
+    }
+    else
+    {
+      Karesansui.Profile.RunAnnotatedWithStats(net);
     }
   }
 

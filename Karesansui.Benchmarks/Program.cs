@@ -8,4 +8,4 @@ if (b is null)
   Console.WriteLine("Failed to parse benchmark.");
   return;
 }
-b.Run();
+b.Run(true);

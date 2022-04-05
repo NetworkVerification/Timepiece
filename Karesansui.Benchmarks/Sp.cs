@@ -24,8 +24,9 @@ public class Sp<TS> : FatTree<Option<BatfishBgpRoute>, TS>
 /// </summary>
 public static class Sp
 {
-  public static Sp<Unit> Reachability(Topology topology, string destination)
+  public static Sp<Unit> Reachability(uint numPods, string destination)
   {
+    var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
     var reachable = Lang.IsSome<BatfishBgpRoute>();
     var annotations =
@@ -38,8 +39,9 @@ public static class Sp
       Array.Empty<SymbolicValue<Unit>>());
   }
 
-  public static Sp<Unit> PathLength(Topology topology, string destination)
+  public static Sp<Unit> PathLength(uint numPods, string destination)
   {
+    var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
 
     var annotations =

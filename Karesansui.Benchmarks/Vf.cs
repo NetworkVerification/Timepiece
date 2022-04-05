@@ -94,8 +94,9 @@ public static class Vf
     });
   }
 
-  public static Vf<Unit> ValleyFreeReachable(LabelledTopology<int> topology, string destination)
+  public static Vf<Unit> ValleyFreeReachable(uint numPods, string destination)
   {
+    var topology = Topologies.LabelledFatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
     var hasValidTags = ValidTags(topology, distances);
     var annotations =

@@ -18,16 +18,20 @@ public static class Profile
   /// <typeparam name="TS"></typeparam>
   public static void RunCmp<T, TS>(Network<T, TS> network)
   {
-    Console.WriteLine($"Monolithic verification took {Time(RunMono, network)}ms");
+    RunMonoWithStats(network);
 
     Console.WriteLine($"Modular verification took {Time(RunAnnotated, network)}ms");
   }
 
   public static void RunCmpPerNode<T, TS>(Network<T, TS> network)
   {
-    Console.WriteLine($"Monolithic verification took {Time(RunMono, network)}ms");
-
+    RunMonoWithStats(network);
     RunAnnotatedWithStats(network);
+  }
+
+  public static void RunMonoWithStats<T, TS>(Network<T, TS> network)
+  {
+    Console.WriteLine($"Monolithic verification took {Time(RunMono, network)}ms");
   }
 
   public static void RunMono<T, TS>(Network<T, TS> network)
@@ -58,6 +62,7 @@ public static class Profile
         ReportCheckTimes(nodeTimes, Statistics.Summary);
         return;
       }
+
       s.Value.ReportCheckFailure();
       Console.WriteLine("Error, unsound annotations provided or assertions failed!");
     }
@@ -153,6 +158,7 @@ public static class Profile
             {
               Console.WriteLine($"Node {node} took {time}ms");
             }
+
             break;
           case Statistics.Summary:
           case Statistics.All:
@@ -164,4 +170,3 @@ public static class Profile
     }
   }
 }
-
