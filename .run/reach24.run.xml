@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="reach24" type="DotNetProject" factoryName=".NET Project" folderName="Reachability">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0/Karesansui.Benchmarks" />
-    <option name="PROGRAM_PARAMETERS" value="--size=24 --dest=edge-719 --bench=reach" />
+    <option name="PROGRAM_PARAMETERS" value="--size=24 --dest=edge-719 reach" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />

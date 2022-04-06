@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="length28" type="DotNetProject" factoryName=".NET Project" folderName="PathLength">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0/Karesansui.Benchmarks" />
-    <option name="PROGRAM_PARAMETERS" value="--size=28 --dest=edge-979 --bench=length" />
+    <option name="PROGRAM_PARAMETERS" value="--size=28 --dest=edge-979 length" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />

@@ -4,29 +4,30 @@ namespace Karesansui.Benchmarks;
 
 public class Benchmark
 {
-  public Benchmark(uint n, string destination, BenchmarkType type, int timeout)
+  public Benchmark(uint n, string destination, BenchmarkType type, int timeout, bool runMonolithic)
   {
     N = n;
     Destination = destination;
     Bench = type;
     Timeout = timeout;
+    RunMonolithic = runMonolithic;
   }
 
-  public void Run(bool asMonolithic)
+  public void Run()
   {
     switch (Bench)
     {
       case BenchmarkType.SpReachable:
-        RunProfiler(Sp.Reachability(N, Destination), asMonolithic);
+        RunProfiler(Sp.Reachability(N, Destination), RunMonolithic);
         break;
       case BenchmarkType.SpPathLength:
-        RunProfiler(Sp.PathLength(N, Destination), asMonolithic);
+        RunProfiler(Sp.PathLength(N, Destination), RunMonolithic);
         break;
       case BenchmarkType.ValleyFree:
-        RunProfiler(Vf.ValleyFreeReachable(N, Destination), asMonolithic);
+        RunProfiler(Vf.ValleyFreeReachable(N, Destination), RunMonolithic);
         break;
       case BenchmarkType.FatTreeHijack:
-        RunProfiler(Hijack.HijackFiltered(N, Destination), asMonolithic);
+        RunProfiler(Hijack.HijackFiltered(N, Destination), RunMonolithic);
         break;
       default:
         throw new ArgumentOutOfRangeException(null, Bench, "Invalid argument is not a benchmark type");
@@ -37,11 +38,11 @@ public class Benchmark
   {
     if (asMonolithic)
     {
-      Karesansui.Profile.RunMonoWithStats(net);
+      Profile.RunMonoWithStats(net);
     }
     else
     {
-      Karesansui.Profile.RunAnnotatedWithStats(net);
+      Profile.RunAnnotatedWithStats(net);
     }
   }
 
@@ -52,6 +53,8 @@ public class Benchmark
   public uint N { get; set; }
 
   public int Timeout { get; set; }
+
+  public bool RunMonolithic { get; set; }
 }
 
 public enum BenchmarkType
