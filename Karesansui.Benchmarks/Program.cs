@@ -3,9 +3,16 @@ using System.CommandLine;
 using Karesansui.Benchmarks;
 
 var rootCommand = new RootCommand("Karesansui benchmark runner");
-var sizeOption = new Option<int>(
+var sizeOption = new Option<uint>(
   new[] {"--size", "-k"},
-  description: "The size of the benchmark (number of pods for fattrees)")
+  description: "The size of the benchmark (number of pods for fattrees)",
+  parseArgument: result => {
+    if (int.TryParse(result.Tokens.Single().Value, out var size)) {
+      if (size >= 0) return (uint) size;
+    }
+    result.ErrorMessage = "Size must be a non-negative integer.";
+    return 0;
+  })
 {
   IsRequired = true
 };
@@ -26,7 +33,7 @@ rootCommand.Add(destOption);
 rootCommand.Add(benchArgument);
 rootCommand.Add(monoOption);
 
-rootCommand.SetHandler((int size, string dest, BenchmarkType bench, bool mono) =>
-  new Benchmark((uint) size, dest, bench, -1, mono).Run(), sizeOption, destOption, benchArgument, monoOption);
+rootCommand.SetHandler((uint size, string dest, BenchmarkType bench, bool mono) =>
+  new Benchmark(size, dest, bench, -1, mono).Run(), sizeOption, destOption, benchArgument, monoOption);
 
 await rootCommand.InvokeAsync(args);
