@@ -88,6 +88,7 @@ public class Network<T, TS>
     var time = Symbolic<BigInteger>();
     var s = Topology.Nodes
       // call f for each node
+      .AsParallel()
       .Select(node => f(node, collector, () => CheckAnnotations(node, routes, time)))
       .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
     return s;

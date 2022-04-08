@@ -72,10 +72,13 @@ public class Hijack : FatTree<TaggedRoute, Option<BatfishBgpRoute>>
               Lang.Both<Option<BatfishBgpRoute>, bool>(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value), Zen.Not))))
         .ToDictionary(p => p.Item1, p => p.Item2);
     IReadOnlyDictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<bool>>> stableProperties =
-      topology.ForAllNodes(_ => Lang.First<Option<BatfishBgpRoute>, bool>(Lang.IsSome<BatfishBgpRoute>()));
+      topology.ForAllNodes(n =>
+        n == hijackNode
+          ? Lang.True<TaggedRoute>()
+          : Lang.First<Option<BatfishBgpRoute>, bool>(Lang.IsSome<BatfishBgpRoute>()));
     IReadOnlyDictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<bool>>> safetyProperties =
       topology.ForAllNodes(n =>
-        n != hijackNode ? Lang.Second<Option<BatfishBgpRoute>, bool>(Zen.Not) : Lang.True<TaggedRoute>());
+        n == hijackNode ? Lang.True<TaggedRoute>() : Lang.Second<Option<BatfishBgpRoute>, bool>(Zen.Not));
     return new Hijack(topology, destination, hijackNode, annotations, stableProperties, safetyProperties);
   }
 }

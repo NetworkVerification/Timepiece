@@ -88,9 +88,11 @@ public class FatTree<T, TS> : Network<T, TS>
     transferFunction, mergeFunction,
     topology.ForAllNodes(n => n == destination ? destinationRoute : nullRoute),
     annotations,
+    // modular properties: Finally(stable) + Globally(safety)
     topology.ForAllNodes(n =>
-      Lang.Intersect(Lang.Finally(new BigInteger(4), safetyProperties[n]), Lang.Globally(safetyProperties[n]))),
-    topology.ForAllNodes(n => Lang.Intersect(safetyProperties[n], stableProperties[n])),
+      Lang.Intersect(Lang.Finally(new BigInteger(4), stableProperties[n]), Lang.Globally(safetyProperties[n]))),
+    // monolithic properties: stable + safety
+    topology.ForAllNodes(n => Lang.Intersect(stableProperties[n], safetyProperties[n])),
     symbolics)
   {
     // there are (k/2)^2 core nodes for k pods

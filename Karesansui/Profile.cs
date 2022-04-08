@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -52,24 +53,34 @@ public static class Profile
 
   public static void RunAnnotatedWithStats<T, TS>(Network<T, TS> network)
   {
-    var nodeTimes = new Dictionary<string, long>();
+    var processes = Environment.ProcessorCount;
+    Console.WriteLine($"Environment.ProcessorCount: {processes}");
+    var numNodes = network.Topology.Nodes.Length;
+    var nodeTimes = new ConcurrentDictionary<string, long>(processes * 2, numNodes);
     try
     {
-      var s = network.CheckAnnotationsWith(nodeTimes, LogCheckTime);
-      if (!s.HasValue)
+      var t = Time(net =>
       {
-        Console.WriteLine("    All the modular checks passed!");
-        ReportCheckTimes(nodeTimes, Statistics.Summary);
-        return;
-      }
+        var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
+        if (!s.HasValue)
+        {
+          Console.WriteLine("    All the modular checks passed!");
+          return;
+        }
 
-      s.Value.ReportCheckFailure();
-      Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+        s.Value.ReportCheckFailure();
+        Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+      }, network);
+      Console.WriteLine($"Modular verification took {t}ms");
     }
     catch (ZenException e)
     {
       Console.WriteLine("Error, modular verification did not complete:");
       Console.WriteLine(e.Message);
+    }
+    finally
+    {
+      ReportCheckTimes(nodeTimes, Statistics.Summary);
     }
   }
 
@@ -94,7 +105,7 @@ public static class Profile
   }
 
   public static Option<State<T, TS>> LogCheckTime<T, TS>(string node,
-    Dictionary<string, long> times,
+    IDictionary<string, long> times,
     Func<Option<State<T, TS>>> checkFunction)
   {
     var timer = Stopwatch.StartNew();
@@ -126,7 +137,7 @@ public static class Profile
   /// <param name="times"></param>
   /// <param name="stats"></param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
-  private static void ReportCheckTimes(Dictionary<string, long> times, Statistics stats)
+  private static void ReportCheckTimes(IDictionary<string, long> times, Statistics stats)
   {
     Console.WriteLine("Check statistics:");
     foreach (Statistics stat in Enum.GetValues(typeof(Statistics)))
