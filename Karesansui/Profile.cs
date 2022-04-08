@@ -80,7 +80,7 @@ public static class Profile
     }
     finally
     {
-      ReportCheckTimes(nodeTimes, Statistics.Summary);
+      if (!nodeTimes.IsEmpty) ReportCheckTimes(nodeTimes, Statistics.Summary);
     }
   }
 
