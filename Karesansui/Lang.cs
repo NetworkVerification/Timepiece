@@ -71,6 +71,29 @@ public static class Lang
   }
 
   /// <summary>
+  /// Compose two functions.
+  /// </summary>
+  /// <param name="f1">The first function.</param>
+  /// <param name="f2">The second function.</param>
+  /// <typeparam name="T">The type of their arguments.</typeparam>
+  /// <returns>A composition of both functions (call f1, then call f2 on f1's output).</returns>
+  public static Func<T, T> Compose<T>(Func<T, T> f1, Func<T, T> f2)
+  {
+    return t => f2(f1(t));
+  }
+
+  /// <summary>
+  /// Compose an arbitrary number of functions.
+  /// </summary>
+  /// <param name="fs">The sequence of functions to compose.</param>
+  /// <typeparam name="T">The type of their arguments.</typeparam>
+  /// <returns>A composition of the functions in order.</returns>
+  public static Func<T, T> Compose<T>(params Func<T, T>[] fs)
+  {
+    return fs.Aggregate(Compose);
+  }
+
+  /// <summary>
   /// Construct a function that ignores its argument and returns a constant route.
   /// </summary>
   /// <param name="val">The constant route to return.</param>
