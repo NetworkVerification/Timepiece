@@ -66,7 +66,27 @@ public class Vf<TS> : FatTree<Option<BatfishBgpRoute>, TS>
         new Func<Zen<Option<BatfishBgpRoute>>, Zen<Option<BatfishBgpRoute>>>(r =>
           Import(r, Vf.NodeTag2(topology, snk)));
       // compose the export and import functions
-      return new Func<Zen<Option<BatfishBgpRoute>>, Zen<Option<BatfishBgpRoute>>>(r => import(export(r)));
+      return Lang.Compose(export, import);
+    });
+  }
+
+  private static Dictionary<(string, string), Func<Zen<Option<BatfishBgpRoute>>, Zen<Option<BatfishBgpRoute>>>>
+    Transfer2(Topology topology)
+  {
+    const string down = "down";
+    const string up = "up";
+    return topology.ForAllEdges(e =>
+    {
+      var increment = Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath);
+      var (src, snk) = e;
+      // use the down tag if the edge is pointing down, otherwise use the up tag
+      var tag = ((src.StartsWith("aggregate") && snk.StartsWith("edge")) || src.StartsWith("core")) ? down : up;
+      var addTag = Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(b =>
+        b.WithCommunities(b.GetCommunities().Add(tag)));
+
+      var import = Lang.Bind<BatfishBgpRoute, BatfishBgpRoute>(b =>
+        Zen.If(Zen.And(b.HasCommunity(down), tag == up), Option.None<BatfishBgpRoute>(), Option.Create(b)));
+      return Lang.Compose(increment, addTag, import);
     });
   }
 }
