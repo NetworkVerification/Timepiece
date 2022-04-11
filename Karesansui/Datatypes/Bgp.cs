@@ -79,6 +79,11 @@ public static class BgpExtensions
     return b.SetTags(b.GetTags().Add(tag));
   }
 
+  public static Zen<Bgp> IncrementAsLength(this Zen<Bgp> b)
+  {
+    return b.SetAsLength(b.GetAsLength() + BigInteger.One);
+  }
+
   public static Zen<Bgp> Min(Zen<Bgp> b1, Zen<Bgp> b2)
   {
     return If(b1.GetLp() > b2.GetLp(), b1,
