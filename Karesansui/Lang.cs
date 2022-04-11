@@ -67,7 +67,7 @@ public static class Lang
   /// <returns>A predicate over a route and (ignored) time.</returns>
   public static Func<Zen<T>, Time, Zen<bool>> Never<T>(Func<Zen<T>, Zen<bool>> predicate)
   {
-    return (r, _) => Not(predicate(r));
+    return Globally(Not(predicate));
   }
 
   /// <summary>
@@ -212,6 +212,19 @@ public static class Lang
     return r => r.Where(f).IsSome();
   }
 
+  /// <summary>
+  /// Construct a function that evaluates a predicate on a given optional route
+  /// and returns true if it either has some value and that value satisfies the predicate,
+  /// or if it is None.
+  /// </summary>
+  /// <param name="f"></param>
+  /// <typeparam name="T"></typeparam>
+  /// <returns></returns>
+  public static Func<Zen<Option<T>>, Zen<bool>> OrSome<T>(Func<Zen<T>, Zen<bool>> f)
+  {
+    return r => r.Select(f).ValueOrDefault(true);
+  }
+
   public static Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> Omap2<T>(Func<Zen<T>, Zen<T>, Zen<T>> f)
   {
     return (r1, r2) => If(r1.IsSome(),
@@ -256,5 +269,10 @@ public static class Lang
   public static Func<Zen<T>, Zen<bool>> Union<T>(params Func<Zen<T>, Zen<bool>>[] fs)
   {
     return r => Or(fs.Select(f => f(r)).ToArray());
+  }
+
+  public static Func<Zen<T>, Zen<bool>> Not<T>(Func<Zen<T>, Zen<bool>> f)
+  {
+    return r => Zen.Not(f(r));
   }
 }

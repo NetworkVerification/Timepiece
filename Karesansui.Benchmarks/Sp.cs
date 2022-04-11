@@ -46,7 +46,7 @@ public static class Sp
 
     var annotations =
       distances.Select(p => (p.Key, Lang.Until(p.Value,
-          Option.IsNone, BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value))))
+          Option.IsNone, Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value)))))
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
