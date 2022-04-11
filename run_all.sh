@@ -27,7 +27,7 @@ do
     echo "Running benchmark k=$s with options:" "${@:3}"
     for t in $(seq $NTRIALS);
     do
-        echo "Trial $t of $NTRIALS"
+        echo "Trial $t of $NTRIALS started $(date -u)"
         timeout $TIMEOUT dotnet "$DLL" -k "$s" -d "${dests[$s]}" "${@:3}"
         if [ $? -eq 124 ]; then
             echo "Timed out after $TIMEOUT"
