@@ -125,9 +125,10 @@ public static class Profile
     Maximum = 1,
     Minimum = 2,
     Average = 4,
-    Total = 8,
-    Individual = 16,
-    Summary = Maximum | Minimum | Average | Total,
+    Median = 8,
+    Total = 16,
+    Individual = 32,
+    Summary = Maximum | Minimum | Average | Median | Total,
     All = Summary | Individual
   }
 
@@ -146,19 +147,22 @@ public static class Profile
       {
         switch (stat)
         {
-          case Statistics.None:
-            break;
           case Statistics.Maximum:
             var (maxNode, maxTime) = times.MaxBy(p => p.Value);
             Console.WriteLine($"Maximum check time: node {maxNode} in {maxTime}ms");
             break;
           case Statistics.Minimum:
             var (minNode, minTime) = times.MinBy(p => p.Value);
-            Console.WriteLine($"Maximum check time: node {minNode} in {minTime}ms");
+            Console.WriteLine($"Minimum check time: node {minNode} in {minTime}ms");
             break;
           case Statistics.Average:
             var avg = times.Average(p => p.Value);
             Console.WriteLine($"Average check time: {avg}ms");
+            break;
+          case Statistics.Median:
+            var midpoint = times.Count / 2;
+            var (medianNode, medianTime) = times.OrderBy(p => p.Value).ElementAt(midpoint);
+            Console.WriteLine($"Median check time: node {medianNode} in {medianTime}ms");
             break;
           case Statistics.Total:
             var total = times.Sum(p => p.Value);
@@ -171,6 +175,7 @@ public static class Profile
             }
 
             break;
+          case Statistics.None:
           case Statistics.Summary:
           case Statistics.All:
             break;
