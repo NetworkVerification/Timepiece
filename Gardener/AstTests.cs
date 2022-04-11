@@ -40,7 +40,7 @@ public static class AstTests
     return IPAddressRange.Parse($"70.0.{index}.0/24");
   }
 
-  private static readonly PairRouteAst SpAst = GenerateSpAst(4, "edge-19");
+  private static readonly PairRouteAst SpAst = GenerateSpAst(4, FatTree.FatTreeLayer.Edge.Node(19));
 
   private static PairRouteAst GenerateSpAst(uint numPods, string destNode)
   {
@@ -67,7 +67,7 @@ public static class AstTests
   public static void TestSpAstBadAnnotations()
   {
     var badSp = SpAst;
-    badSp.Nodes["edge-19"].Temporal = new Finally<Route>(5, IsValid);
+    badSp.Nodes[FatTree.FatTreeLayer.Edge.Node(19)].Temporal = new Finally<Route>(5, IsValid);
     Assert.True(badSp.ToNetwork().CheckInductive().HasValue);
   }
 

@@ -257,10 +257,10 @@ public static class Topologies
   {
     var podNumbers = new Dictionary<string, int>();
     var neighbors = new Dictionary<string, List<string>>();
-    var coreNodes = (uint) Math.Floor(Math.Pow(numPods / 2.0, 2));
+    var coreNodes = (int) Math.Floor(Math.Pow(numPods / 2.0, 2));
     for (var i = 0; i < coreNodes; i++)
     {
-      var name = $"core-{i}";
+      var name = Karesansui.FatTree.FatTreeLayer.Core.Node(i);
       podNumbers.Add(name, (int) numPods);
       neighbors.Add(name, new List<string>());
     }
@@ -274,7 +274,7 @@ public static class Topologies
       var lastEdgeNode = firstEdgeNode + numPods / 2;
       for (var j = firstAggregateNode; j < firstEdgeNode; j++)
       {
-        var name = $"aggregate-{j}";
+        var name = Karesansui.FatTree.FatTreeLayer.Aggregation.Node(j);
         podNumbers.Add(name, p);
         aggregates.Add(name);
         neighbors.Add(name, new List<string>());
@@ -282,7 +282,7 @@ public static class Topologies
 
       for (var k = firstEdgeNode; k < lastEdgeNode; k++)
       {
-        var name = $"edge-{k}";
+        var name = Karesansui.FatTree.FatTreeLayer.Edge.Node(k);
         podNumbers.Add(name, p);
         edges.Add(name);
         neighbors.Add(name, new List<string>());
@@ -300,10 +300,11 @@ public static class Topologies
 
     for (var c = 0; c < coreNodes; c++)
     {
-      var coreNode = $"core-{c}";
+      var coreNode = Karesansui.FatTree.FatTreeLayer.Core.Node(c);
       for (var p = 0; p < numPods; p++)
       {
-        var aggregateNode = $"aggregate-{coreNodes + c / (numPods / 2) + p * numPods}";
+        var aggregateNode =
+          Karesansui.FatTree.FatTreeLayer.Aggregation.Node(coreNodes + c / (numPods / 2) + p * numPods);
         neighbors[coreNode].Add(aggregateNode);
         neighbors[aggregateNode].Add(coreNode);
       }

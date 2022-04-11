@@ -25,7 +25,7 @@ public class Vf<TS> : FatTree<Option<BatfishBgpRoute>, TS>
     {
       var increment = Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath);
       var (src, snk) = e;
-      if ((src.StartsWith("aggregate") && snk.StartsWith("edge")) || src.StartsWith("core"))
+      if ((src.IsAggregation() && snk.IsEdge()) || src.IsCore())
       {
         // downward edge
         // add the tag on export if not already present
