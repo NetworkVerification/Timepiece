@@ -241,11 +241,11 @@ public class Network<T, TS>
     return Option.None<State<T, TS>>();
   }
 
-  private Zen<T> UpdateNodeRoute(string node, IReadOnlyDictionary<string, Zen<T>> neighborRoutes)
+  private Zen<T> UpdateNodeRoute(string node, IReadOnlyDictionary<string, Zen<T>> routes)
   {
     return Topology[node].Aggregate(InitialValues[node],
-      (current, neighbor) =>
-        MergeFunction(current, TransferFunction[(neighbor, node)](neighborRoutes[neighbor])));
+      (current, predecessor) =>
+        MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
 
   private Zen<bool> GetAssumptions()

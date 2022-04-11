@@ -9,11 +9,14 @@ namespace Karesansui;
 
 /// <summary>
 /// Represents the topology of an NV network as a directed graph.
+/// We represent nodes as strings, with an associated set of predecessors
+/// whose edges point to those nodes.
+/// Using predecessors makes it efficient to represent our network semantics.
 /// </summary>
 public class Topology
 {
   /// <summary>
-  /// Construct a Topology given a mapping from nodes to their successors.
+  /// Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
   [JsonConstructor]
   public Topology(Dictionary<string, List<string>> neighbors)
@@ -44,7 +47,7 @@ public class Topology
   public string this[uint id] => Nodes[id];
 
   /// <summary>
-  /// Return the successors of a given node.
+  /// Return the predecessors of a given node.
   /// </summary>
   public List<string> this[string node] => Neighbors[node];
 
@@ -75,19 +78,25 @@ public class Topology
     return Nodes.Aggregate(initial, f);
   }
 
+  /// <summary>
+  /// Return all the edges in the network.
+  /// </summary>
+  /// <returns></returns>
+  private IEnumerable<(string, string)> AllEdges()
+  {
+    return Neighbors
+      .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (nbr, node.Key));
+  }
+
   public Dictionary<(string, string), T> ForAllEdges<T>(Func<(string, string), T> edgeFunc)
   {
-    var edges = Neighbors
-      .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr))
-      .Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
+    var edges = AllEdges().Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
     return new Dictionary<(string, string), T>(edges);
   }
 
   public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (string, string), TAcc> f)
   {
-    var edges = Neighbors
-      .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (node.Key, nbr));
-    return edges.Aggregate(initial, f);
+    return AllEdges().Aggregate(initial, f);
   }
 
   public override string ToString()
@@ -110,20 +119,20 @@ public class Topology
   }
 
   /// <summary>
-  /// Perform a breadth-first search of the topology, starting from the start node.
-  /// Return the distance to each node from start.
-  /// Note that nodes that are not reachable from start will not appear in the returned dictionary.
+  /// Perform a backwards breadth-first search of the topology, starting from the goal node.
+  /// Return the distance from each node to the goal.
+  /// Note that nodes that cannot reach the goal will not appear in the returned dictionary.
   /// </summary>
-  /// <param name="start">The starting node.</param>
-  /// <returns>A dictionary from nodes to their distance (number of edges) from the start node.</returns>
-  public Dictionary<string, BigInteger> BreadthFirstSearch(string start)
+  /// <param name="goal">The goal node.</param>
+  /// <returns>A dictionary from nodes to their distance (number of edges) to the goal node.</returns>
+  public Dictionary<string, BigInteger> BreadthFirstSearch(string goal)
   {
     var q = new Queue<string>();
     var visited = new Dictionary<string, BigInteger>
     {
-      {start, 0}
+      {goal, 0}
     };
-    q.Enqueue(start);
+    q.Enqueue(goal);
     while (q.Count > 0)
     {
       var n = q.Dequeue();
@@ -255,6 +264,7 @@ public static class Topologies
       podNumbers.Add(name, (int) numPods);
       neighbors.Add(name, new List<string>());
     }
+
     for (var p = 0; p < numPods; p++)
     {
       var aggregates = new List<string>();
