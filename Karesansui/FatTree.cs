@@ -11,14 +11,16 @@ public static class FatTree
     Core,
   }
 
-  public static string ToString(this FatTreeLayer l)
+  // note: this needs to have a different name from ToString as we can't override that directly
+  // so we give it this different name instead
+  public static string ToLowerCaseString(this FatTreeLayer l)
   {
     return l switch
     {
       FatTreeLayer.Edge => "edge",
       FatTreeLayer.Aggregation => "aggregation",
       FatTreeLayer.Core => "core",
-      _ => throw new ArgumentOutOfRangeException(nameof(l), l, $"{l} has no ToString implementation.")
+      _ => throw new ArgumentOutOfRangeException(nameof(l), l, $"{l} has no ToLowerCaseString implementation.")
     };
   }
 
@@ -30,7 +32,7 @@ public static class FatTree
   /// <returns>A string identifying this node.</returns>
   public static string Node<T>(this FatTreeLayer l, T i)
   {
-    return $"{l}-{i}";
+    return $"{ToLowerCaseString(l)}-{i}";
   }
 
   public static FatTreeLayer Parse(this string s)
@@ -46,16 +48,16 @@ public static class FatTree
 
   public static bool IsCore(this string s)
   {
-    return s.StartsWith(FatTreeLayer.Core.ToString());
+    return s.StartsWith(FatTreeLayer.Core.ToLowerCaseString());
   }
 
   public static bool IsAggregation(this string s)
   {
-    return s.StartsWith(FatTreeLayer.Aggregation.ToString());
+    return s.StartsWith(FatTreeLayer.Aggregation.ToLowerCaseString());
   }
 
   public static bool IsEdge(this string s)
   {
-    return s.StartsWith(FatTreeLayer.Edge.ToString());
+    return s.StartsWith(FatTreeLayer.Edge.ToLowerCaseString());
   }
 }

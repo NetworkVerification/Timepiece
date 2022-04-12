@@ -166,6 +166,26 @@ public static class Lang
   }
 
   /// <summary>
+  /// Return a merge function lifted from the given merge function and an accessor function
+  /// to convert the new arguments to the original function's arguments.
+  /// </summary>
+  /// <param name="f">A merge function over T2.</param>
+  /// <param name="by">A function mapping T1 to T2.</param>
+  /// <typeparam name="T1">The new merge function's type.</typeparam>
+  /// <typeparam name="T2">The original merge function's type.</typeparam>
+  /// <returns></returns>
+  public static Func<Zen<T1>, Zen<T1>, Zen<T1>> MergeBy<T1, T2>(Func<Zen<T2>, Zen<T2>, Zen<T2>> f,
+    Func<Zen<T1>, Zen<T2>> by)
+  {
+    return (t1, t2) =>
+    {
+      var b1 = by(t1);
+      var b2 = by(t2);
+      return If(f(b1, b2) == b1, t1, t2);
+    };
+  }
+
+  /// <summary>
   /// Construct a function that tests a given route and delegates to one of two cases based on the result of the test.
   /// </summary>
   /// <param name="test">A testing function from routes to bool.</param>
@@ -222,7 +242,7 @@ public static class Lang
   /// <returns></returns>
   public static Func<Zen<Option<T>>, Zen<bool>> OrSome<T>(Func<Zen<T>, Zen<bool>> f)
   {
-    return r => r.Select(f).ValueOrDefault(true);
+    return r => r.Where(Not(f)).IsNone();
   }
 
   public static Func<Zen<Option<T>>, Zen<Option<T>>, Zen<Option<T>>> Omap2<T>(Func<Zen<T>, Zen<T>, Zen<T>> f)
