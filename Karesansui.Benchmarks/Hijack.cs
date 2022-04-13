@@ -9,7 +9,7 @@ using TaggedRoute = Pair<Option<BatfishBgpRoute>, bool>;
 public class Hijack : FatTree<TaggedRoute, Option<BatfishBgpRoute>>
 {
   public SymbolicValue<Option<BatfishBgpRoute>> HijackRoute { get; } = new("hijack");
-  public static Zen<uint> DestinationPrefix => Zen.Symbolic<uint>();
+  public static Zen<uint> DestinationPrefix => Zen.Constant(0U);
 
   protected Hijack(Topology topology, string destination, string hijacker,
     Dictionary<string, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -68,13 +68,23 @@ public class Hijack : FatTree<TaggedRoute, Option<BatfishBgpRoute>>
   private static Func<Zen<TaggedRoute>, Zen<bool>> MapInternal(Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>> f) =>
     Lang.Both<Option<BatfishBgpRoute>, bool>(f, Zen.Not);
 
-  private static Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>> Annotate(BigInteger dist)
+  /// <summary>
+  /// Return an annotation given a time step t.
+  /// Until t, the route should not have a route to the destination.
+  /// At and after t, the route should have a route to the destination and it should be internal.
+  /// </summary>
+  /// <param name="t">The time step at which a route to the destination is acquired.</param>
+  /// <returns>An annotation for a tagged route.</returns>
+  private static Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>> Annotate(BigInteger t)
   {
-    return Lang.Until(dist,
-      Lang.First<Option<BatfishBgpRoute>, bool>(o => o.Where(b => b.DestinationIs(DestinationPrefix)).IsNone()),
-      MapInternal(o => o.Where(b => Zen.And(b.DestinationIs(DestinationPrefix), b.LpEquals(0), b.LengthAtMost(dist)))
-        .IsSome()));
+    return Lang.Until(t,
+      p => Zen.Implies(HasDestinationRoute(p.Item1()), Zen.Not(p.Item2())),
+      // Lang.First<Option<BatfishBgpRoute>, bool>(o => o.Where(b => b.DestinationIs(DestinationPrefix)).IsNone()),
+      MapInternal(HasDestinationRoute));
   }
+
+  private static Zen<bool> HasDestinationRoute(Zen<Option<BatfishBgpRoute>> o) =>
+    o.Where(b => b.DestinationIs(DestinationPrefix)).IsSome();
 
   public static Hijack HijackFiltered(uint numPods, string destination)
   {
@@ -95,7 +105,7 @@ public class Hijack : FatTree<TaggedRoute, Option<BatfishBgpRoute>>
       topology.ForAllNodes(n =>
         n == hijackNode
           ? Lang.True<TaggedRoute>()
-          : p => Zen.Implies(p.Item1().Where(b => b.DestinationIs(DestinationPrefix)).IsSome(), Zen.Not(p.Item2())));
+          : p => Zen.Implies(HasDestinationRoute(p.Item1()), Zen.Not(p.Item2())));
     return new Hijack(topology, destination, hijackNode, annotations, stableProperties, safetyProperties);
   }
 }
