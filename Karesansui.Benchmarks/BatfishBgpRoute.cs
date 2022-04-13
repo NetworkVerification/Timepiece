@@ -209,6 +209,7 @@ public static class BatfishBgpRouteExtensions
   public static Zen<BatfishBgpRoute> MinPrefix(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2,
     Zen<uint> destination)
   {
+    Console.WriteLine(destination);
     // FIXME: is this working correctly?
     var d1 = b1.GetDestination();
     var d2 = b2.GetDestination();

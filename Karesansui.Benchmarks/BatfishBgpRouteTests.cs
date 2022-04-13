@@ -62,4 +62,28 @@ public static class BatfishBgpRouteTests
     var test = Zen.And(TestMed(r1, r2), TestMed(r2, r1));
     Assert.False(Zen.Not(test).Solve().IsSatisfiable());
   }
+
+  [Fact]
+  public static void MinPrefixEqualDestinations()
+  {
+    var d1 = Zen.Symbolic<uint>();
+    var d2 = Zen.Symbolic<uint>();
+    var r1 = BatfishBgpRouteExtensions.ToDestination(d1).WithLp(1);
+    var r2 = BatfishBgpRouteExtensions.ToDestination(d2);
+
+    var test = Zen.Implies(d1 == d2, Zen.And(r2.MinPrefix(r1, d1) == r1, r1.MinPrefix(r2, d1) == r1));
+    Assert.False(Zen.Not(test).Solve().IsSatisfiable());
+  }
+
+  [Fact]
+  public static void MinPrefixDifferentDestinations()
+  {
+    var d1 = Zen.Symbolic<uint>();
+    var d2 = Zen.Symbolic<uint>();
+    var r1 = BatfishBgpRouteExtensions.ToDestination(d1).WithLp(1);
+    var r2 = BatfishBgpRouteExtensions.ToDestination(d2);
+
+    var test = Zen.Implies(d1 != d2, Zen.And(r2.MinPrefix(r1, d1) == r1, r1.MinPrefix(r2, d1) == r1));
+    Assert.False(Zen.Not(test).Solve().IsSatisfiable());
+  }
 }
