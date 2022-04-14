@@ -39,6 +39,25 @@ public static class Sp
       Array.Empty<SymbolicValue<Unit>>());
   }
 
+  // slightly weaker path length property with simpler annotations
+  public static Sp<Unit> PathLengthNoSafety(uint numPods, string destination)
+  {
+    var topology = Topologies.FatTree(numPods);
+    var distances = topology.BreadthFirstSearch(destination);
+
+    var annotations =
+      distances.Select(p => (p.Key, Lang.Until(p.Value,
+          Lang.OrSome<BatfishBgpRoute>(b => Zen.And(b.LpEquals(0), b.GetAsPathLength() >= BigInteger.Zero)),
+          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value)))))
+        .ToDictionary(p => p.Item1, p => p.Item2);
+
+    var stableProperties =
+      topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
+      Array.Empty<SymbolicValue<Unit>>());
+  }
+
   public static Sp<Unit> PathLength(uint numPods, string destination)
   {
     var topology = Topologies.FatTree(numPods);
@@ -46,7 +65,8 @@ public static class Sp
 
     var annotations =
       distances.Select(p => (p.Key, Lang.Until(p.Value,
-          Option.IsNone, Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value)))))
+          Lang.IsNone<BatfishBgpRoute>(),
+          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value)))))
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =

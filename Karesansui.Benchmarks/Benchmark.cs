@@ -4,12 +4,20 @@ namespace Karesansui.Benchmarks;
 
 public class Benchmark
 {
-  public Benchmark(uint n, string destination, BenchmarkType type, int timeout, bool runMonolithic)
+  public Benchmark(uint n, string? destination, BenchmarkType type, bool runMonolithic)
   {
     N = n;
-    Destination = destination;
+    if (destination is null)
+    {
+      var edgeNode = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(n, 2) * 1.25 - 1));
+      Console.WriteLine($"Inferred destination node: {edgeNode}");
+      Destination = edgeNode;
+    }
+    else
+    {
+      Destination = destination;
+    }
     Bench = type;
-    Timeout = timeout;
     RunMonolithic = runMonolithic;
   }
 
@@ -23,8 +31,14 @@ public class Benchmark
       case BenchmarkType.SpPathLength:
         RunProfiler(Sp.PathLength(N, Destination), RunMonolithic);
         break;
+      case BenchmarkType.SpPathLengthWeak:
+        RunProfiler(Sp.PathLengthNoSafety(N, Destination), RunMonolithic);
+        break;
       case BenchmarkType.ValleyFree:
         RunProfiler(Vf.ValleyFreeReachable(N, Destination), RunMonolithic);
+        break;
+      case BenchmarkType.ValleyFreeLength:
+        RunProfiler(Vf.ValleyFreePathLength(N, Destination), RunMonolithic);
         break;
       case BenchmarkType.FatTreeHijack:
         RunProfiler(Hijack.HijackFiltered(N, Destination), RunMonolithic);
@@ -52,8 +66,6 @@ public class Benchmark
 
   public uint N { get; set; }
 
-  public int Timeout { get; set; }
-
   public bool RunMonolithic { get; set; }
 }
 
@@ -61,7 +73,9 @@ public enum BenchmarkType
 {
   SpReachable,
   SpPathLength,
+  SpPathLengthWeak,
   ValleyFree,
+  ValleyFreeLength,
   FatTreeHijack,
 }
 
@@ -71,11 +85,19 @@ public static class BenchmarkTypeExtensions
   {
     return s switch
     {
-      "r" or "reach" => BenchmarkType.SpReachable,
-      "l" or "length" => BenchmarkType.SpPathLength,
-      "v" or "valley" => BenchmarkType.ValleyFree,
-      "h" or "hijack" => BenchmarkType.FatTreeHijack,
-      _ => throw new ArgumentException($"{s} does not correspond to a valid BenchmarkType.")
+      "r" or "reach" or "SpReachable" => BenchmarkType.SpReachable,
+      "l" or "length" or "SpPathLength" => BenchmarkType.SpPathLength,
+      "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
+      "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
+      "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
+      "h" or "hijack" or "FatTreeHijack" => BenchmarkType.FatTreeHijack,
+      _ => throw new ArgumentException($"{s} does not correspond to a valid BenchmarkType. Acceptable values:\n" +
+                                       "- 'r'/'reach'/'SpReachable' for SpReachable\n" +
+                                       "- 'l'/'length'/'SpPathLength' for SpPathLength\n" +
+                                       "- 'lw'/'lengthWeak'/'SpPathLengthWeak' for SpPathLengthWeak\n" +
+                                       "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
+                                       "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
+                                       "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack")
     };
   }
 }

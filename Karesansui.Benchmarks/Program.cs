@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.CommandLine;
+using System.CommandLine.Builder;
 using Karesansui.Benchmarks;
 
 var rootCommand = new RootCommand("Karesansui benchmark runner");
@@ -24,27 +25,22 @@ var destOption = new Option<string>(
   new[] {"--dest", "-d"},
   description: "The destination node of the benchmark")
 {
-  IsRequired = true
+  IsRequired = false
 };
-var timeoutOption = new Option<int>(
-  aliases: new[] {"-t", "--timeout"},
-  description: "The number of seconds to run the benchmark before timing out",
-  getDefaultValue: () => -1);
 var monoOption = new Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically simulating Minesweeper");
 var benchArgument = new Argument<BenchmarkType>(
-  "The type of benchmark to test",
+  name: "benchmark",
+  description: "The type of benchmark to test (accepts short-hands: 'r', 'l', 'v', 'h'...)",
   parse: result => result.Tokens.Single().Value.Parse());
 rootCommand.Add(sizeOption);
 rootCommand.Add(destOption);
 rootCommand.Add(benchArgument);
 rootCommand.Add(monoOption);
-rootCommand.Add(timeoutOption);
 
 rootCommand.SetHandler(
-  (uint size, string dest, BenchmarkType bench, int timeout, bool mono) =>
-    new Benchmark(size, dest, bench, timeout, mono).Run(), sizeOption, destOption, benchArgument,
-  timeoutOption, monoOption);
+  (uint size, string dest, BenchmarkType bench, bool mono) =>
+    new Benchmark(size, dest, bench, mono).Run(), sizeOption, destOption, benchArgument, monoOption);
 
 await rootCommand.InvokeAsync(args);
