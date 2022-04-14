@@ -10,11 +10,10 @@ public record struct BatfishBgpRoute
   {
     Destination = 0;
     AdminDist = 0;
-    Lp = 0;
+    Lp = 100;
     AsPathLength = 0;
     Med = 0;
     OriginType = new UInt2(0);
-    // TODO: how to set the maximum depth?
     Communities = new Set<string>();
   }
 
@@ -84,6 +83,7 @@ public static class BatfishBgpRouteExtensions
     Zen<BatfishBgpRoute> b = new BatfishBgpRoute();
     return b.WithDestination(destination);
   }
+
   public static Zen<uint> GetDestination(this Zen<BatfishBgpRoute> b)
   {
     return b.GetField<BatfishBgpRoute, uint>("Destination");
@@ -145,32 +145,6 @@ public static class BatfishBgpRouteExtensions
   }
 
   /// <summary>
-  /// Return a function comparing two objects of type T using the specified key accessor and the specified key comparator.
-  /// If the comparator returns true given object1 and object2, object1 is returned.
-  /// If the comparator returns false given object1 and object2, it tests object2 and object1 (in reverse order).
-  /// If the second comparison returns true, object2 is returned.
-  /// If the second comparison returns false, the fallthrough is executed on the two objects.
-  /// (A natural fallthrough in this case would be to return the second object, thereby replicating an If.
-  /// This method's benefit comes from using allowing us to chain comparisons in sequence.)
-  /// </summary>
-  /// <param name="keyAccessor">The function used to access the objects' keys.</param>
-  /// <param name="keyComparator">The function used to compare the keys.</param>
-  /// <param name="fallThrough">The function to call if the keyComparator returns false.</param>
-  /// <typeparam name="T">The type of objects.</typeparam>
-  /// <typeparam name="TKey">The type of keys.</typeparam>
-  /// <returns>
-  /// A function returning the first object if the comparator evaluates to true, and otherwise calling the fallthrough.
-  /// </returns>
-  private static Func<Zen<T>, Zen<T>, Zen<T>> CompareBy<T, TKey>(
-    Func<Zen<T>, Zen<TKey>> keyAccessor,
-    Func<Zen<TKey>, Zen<TKey>, Zen<bool>> keyComparator,
-    Func<Zen<T>, Zen<T>, Zen<T>> fallThrough)
-  {
-    return (t1, t2) => Zen.If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1,
-      Zen.If(keyComparator(keyAccessor(t2), keyAccessor(t1)), t2, fallThrough(t1, t2)));
-  }
-
-  /// <summary>
   /// Compare two BatfishBgpRoutes and return the minimum.
   /// Ranking is done in the following order:
   /// 1. Greatest local preference.
@@ -183,19 +157,10 @@ public static class BatfishBgpRouteExtensions
   /// <returns>The minimum route by the ranking.</returns>
   public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
   {
-    return CompareBy(GetLp, Zen.Gt,
-      CompareBy(GetAsPathLength, Zen.Lt,
-        CompareBy(GetOriginType, Zen.Gt,
-          CompareBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt, (_, t2) => t2))))(b1, b2);
-/*
-    return Zen.If(b1.GetLp() > b2.GetLp(), b1,
-      Zen.If(b2.GetLp() > b1.GetLp(), b2,
-        Zen.If(b1.GetAsPathLength() < b2.GetAsPathLength(), b1,
-          Zen.If(b2.GetAsPathLength() < b1.GetAsPathLength(), b2,
-            Zen.If(b1.GetOriginType() > b2.GetOriginType(), b1,
-              Zen.If(b2.GetOriginType() > b1.GetOriginType(), b2,
-                Zen.If(b1.GetMed() < b2.GetMed(), b1, b2)))))));
-*/
+    return Lang.CompareBy(GetLp, Zen.Gt,
+      Lang.CompareBy(GetAsPathLength, Zen.Lt,
+        Lang.CompareBy(GetOriginType, Zen.Gt,
+          Lang.CompareBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt))))(b1, b2);
   }
 
   /// <summary>
@@ -261,6 +226,9 @@ public static class BatfishBgpRouteExtensions
   public static Zen<bool> DestinationIs(this Zen<BatfishBgpRoute> b, Zen<uint> destination) =>
     b.GetDestination() == destination;
 
-  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> MaxLengthZeroLp(BigInteger x) =>
-    b => Zen.And(b.LengthAtMost(x), b.LpEquals(0));
+  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> MaxLengthDefaultLp(BigInteger x) =>
+    b => Zen.And(b.LengthAtMost(x), b.LpEquals(100));
+
+  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> EqLengthDefaultLp(BigInteger x) =>
+    b => Zen.And(b.GetAsPathLength() == x, b.LpEquals(100));
 }

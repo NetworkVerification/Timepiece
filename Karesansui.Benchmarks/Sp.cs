@@ -47,8 +47,8 @@ public static class Sp
 
     var annotations =
       distances.Select(p => (p.Key, Lang.Until(p.Value,
-          Lang.OrSome<BatfishBgpRoute>(b => Zen.And(b.LpEquals(0), b.GetAsPathLength() >= BigInteger.Zero)),
-          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value)))))
+          Lang.OrSome<BatfishBgpRoute>(b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= BigInteger.Zero)),
+          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthDefaultLp(p.Value)))))
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
@@ -66,7 +66,7 @@ public static class Sp
     var annotations =
       distances.Select(p => (p.Key, Lang.Until(p.Value,
           Lang.IsNone<BatfishBgpRoute>(),
-          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthZeroLp(p.Value)))))
+          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthDefaultLp(p.Value)))))
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =

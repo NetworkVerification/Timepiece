@@ -280,8 +280,8 @@ public static class Lang
   /// <param name="fs">A variable-length array of predicate functions.</param>
   /// <typeparam name="T">The type of the predicate arguments.</typeparam>
   /// <returns>True if all the predicates hold, false otherwise.</returns>
-  public static Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Intersect<T>(
-    params Func<Zen<T>, Zen<BigInteger>, Zen<bool>>[] fs)
+  public static Func<Zen<T>, Time, Zen<bool>> Intersect<T>(
+    params Func<Zen<T>, Time, Zen<bool>>[] fs)
   {
     return (r, t) => And(fs.Select(f => f(r, t)).ToArray());
   }
@@ -294,5 +294,55 @@ public static class Lang
   public static Func<Zen<T>, Zen<bool>> Not<T>(Func<Zen<T>, Zen<bool>> f)
   {
     return r => Zen.Not(f(r));
+  }
+
+  /// <summary>
+  /// Return a function comparing two objects of type T using the specified key accessor and the specified key comparator.
+  /// If the comparator returns true given keyAccessor(object1) and keyAccessor(object2), object1 is returned.
+  /// If the comparator returns false given keyAccessor(object1) and keyAccessor(object2),
+  /// it tests object2 and object1 (in reverse order).
+  /// If the second comparison returns true, object2 is returned.
+  /// If the second comparison returns false, the fallthrough is executed on the two objects.
+  /// (A natural fallthrough in this case would be to return the second object, thereby replicating an If.
+  /// This method's benefit comes from allowing us to chain comparisons in sequence.)
+  /// </summary>
+  /// <param name="keyAccessor">The function used to access the objects' keys.</param>
+  /// <param name="keyComparator">The function used to compare the keys.</param>
+  /// <param name="fallThrough">The function to call if the keyComparator returns false.</param>
+  /// <typeparam name="T">The type of objects.</typeparam>
+  /// <typeparam name="TKey">The type of keys.</typeparam>
+  /// <returns>
+  /// A function returning the first object if the comparator evaluates to true,
+  /// returning the second if the comparator evaluates to true given the objects in reverse order,
+  /// and otherwise calling the fallthrough.
+  /// </returns>
+  public static Func<Zen<T>, Zen<T>, Zen<T>> CompareBy<T, TKey>(
+    Func<Zen<T>, Zen<TKey>> keyAccessor,
+    Func<Zen<TKey>, Zen<TKey>, Zen<bool>> keyComparator,
+    Func<Zen<T>, Zen<T>, Zen<T>> fallThrough)
+  {
+    return (t1, t2) => If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1,
+      If(keyComparator(keyAccessor(t2), keyAccessor(t1)), t2, fallThrough(t1, t2)));
+  }
+
+  /// <summary>
+  /// Return a function comparing two objects of type T using the specified key accessor and the specified key comparator.
+  /// If the comparator returns true given keyAccessor(object1) and keyAccessor(object2), object1 is returned;
+  /// otherwise, object2 is returned.
+  /// To use a comparison that tests both directions with a fall-through case, see the version of this function
+  /// with an additional fallThrough parameter.
+  /// </summary>
+  /// <param name="keyAccessor">The function used to access the objects' keys.</param>
+  /// <param name="keyComparator">The function used to compare the keys.</param>
+  /// <typeparam name="T">The type of objects.</typeparam>
+  /// <typeparam name="TKey">The type of keys.</typeparam>
+  /// <returns>
+  /// A function returning the first object if the comparator evaluates to true, and otherwise returning the second.
+  /// </returns>
+  public static Func<Zen<T>, Zen<T>, Zen<T>> CompareBy<T, TKey>(
+    Func<Zen<T>, Zen<TKey>> keyAccessor,
+    Func<Zen<TKey>, Zen<TKey>, Zen<bool>> keyComparator)
+  {
+    return (t1, t2) => If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1, t2);
   }
 }
