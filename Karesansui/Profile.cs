@@ -122,13 +122,14 @@ public static class Profile
   private enum Statistics
   {
     None = 0,
-    Maximum = 1,
-    Minimum = 2,
-    Average = 4,
-    Median = 8,
-    Total = 16,
-    Individual = 32,
-    Summary = Maximum | Minimum | Average | Median | Total,
+    Maximum = 1 << 0,
+    Minimum = 1 << 1,
+    Average = 1 << 2,
+    Median = 1 << 3,
+    NinetyNinthPercentile = 1 << 4,
+    Total = 1 << 5,
+    Individual = 1 << 6,
+    Summary = Maximum | Minimum | Average | Median | NinetyNinthPercentile | Total,
     All = Summary | Individual
   }
 
@@ -164,6 +165,11 @@ public static class Profile
             var (medianNode, medianTime) = times.OrderBy(p => p.Value).ElementAt(midpoint);
             Console.WriteLine($"Median check time: node {medianNode} in {medianTime}ms");
             break;
+          case Statistics.NinetyNinthPercentile:
+            var ninetyNinth = (int) (times.Count * 0.99);
+            var (ninetyNinthNode, ninetyNinthTime) = times.OrderBy(p => p.Value).ElementAt(ninetyNinth);
+            Console.WriteLine($"99th percentile check time: node {ninetyNinthNode} in {ninetyNinthTime}ms");
+            break;
           case Statistics.Total:
             var total = times.Sum(p => p.Value);
             Console.WriteLine($"Total check time: {total}ms");
@@ -180,7 +186,7 @@ public static class Profile
           case Statistics.All:
             break;
           default:
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(stats));
         }
       }
     }
