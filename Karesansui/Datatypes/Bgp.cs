@@ -33,7 +33,7 @@ public record struct Bgp(BigInteger Lp, BigInteger AsLength, Set<string> Tags)
         tagVal += $"{tag}";
       else
         tagVal += $", {tag}";
-    return $"Bgp(Lp={Lp},AsLengthAsLength={AsLength},Tags=[{tagVal}])";
+    return $"Bgp(Lp={Lp},AsLength={AsLength},Tags=[{tagVal}])";
   }
 }
 

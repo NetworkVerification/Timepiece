@@ -45,7 +45,7 @@ public static class BgpNetworkTests
         "C",
         Lang.Until(new BigInteger(2), Lang.IsNone<Bgp>(),
           Lang.IfSome<Bgp>(b =>
-            And(b.GetAsLength() == new BigInteger(1), b.GetLp() == new BigInteger(100), b.HasTag("B"))))
+            And(b.GetAsLength() == new BigInteger(2), b.GetLp() == new BigInteger(100), b.HasTag("B"))))
       }
     };
 
