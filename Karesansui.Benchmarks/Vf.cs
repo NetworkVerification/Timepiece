@@ -49,20 +49,16 @@ public static class Vf
   {
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
-    var hasDownTags = topology.ForAllNodes<Func<Zen<BatfishBgpRoute>, Zen<bool>>>(n =>
-    {
-      return distances[n] < 2 ? b => Zen.Not(b.HasCommunity(DownTag)) : Lang.True<BatfishBgpRoute>();
-    });
     var annotations =
-      new Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>>(distances.Select(p =>
-        new KeyValuePair<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>>(p.Key,
-          Lang.Until(p.Value,
-            Lang.IsNone<BatfishBgpRoute>(),
+      topology.ForAllNodes(n =>
+        Lang.Until(distances[n], Lang.IsNone<BatfishBgpRoute>(),
+          Lang.IfSome(distances[n] < 2
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
-            Lang.IfSome(Lang.Intersect(BatfishBgpRouteExtensions.EqLengthDefaultLp(p.Value), hasDownTags[p.Key])
-            )))));
+            ? b => Zen.And(Zen.Not(b.HasCommunity(DownTag)),
+              BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n])(b))
+            : BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
     var safetyProperties =
-      topology.ForAllNodes(n => Lang.Union(Lang.IfSome(hasDownTags[n]), Lang.IsNone<BatfishBgpRoute>()));
+      topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     var stableProperties =
       topology.ForAllNodes(_ => Lang.IsSome<BatfishBgpRoute>());
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
@@ -73,20 +69,16 @@ public static class Vf
   {
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
-    var hasDownTags = topology.ForAllNodes<Func<Zen<BatfishBgpRoute>, Zen<bool>>>(n =>
-    {
-      return distances[n] < 2 ? b => Zen.Not(b.HasCommunity(DownTag)) : Lang.True<BatfishBgpRoute>();
-    });
     var annotations =
-      new Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>>(distances.Select(p =>
-        new KeyValuePair<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>>(p.Key,
-          Lang.Until(p.Value,
-            Lang.IsNone<BatfishBgpRoute>(),
+      topology.ForAllNodes(n =>
+        Lang.Until(distances[n], Lang.IsNone<BatfishBgpRoute>(),
+          distances[n] < 2
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
-            Lang.IfSome(Lang.Intersect(BatfishBgpRouteExtensions.EqLengthDefaultLp(p.Value), hasDownTags[p.Key])
-            )))));
+            ? Lang.IfSome<BatfishBgpRoute>(b => Zen.And(Zen.Not(b.HasCommunity(DownTag)),
+              BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n])(b)))
+            : Lang.IfSome(BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
     var safetyProperties =
-      topology.ForAllNodes(n => Lang.Union(Lang.IfSome(hasDownTags[n]), Lang.IsNone<BatfishBgpRoute>()));
+      topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     var stableProperties =
       topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
