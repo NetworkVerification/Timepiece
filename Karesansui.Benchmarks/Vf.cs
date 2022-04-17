@@ -56,7 +56,7 @@ public static class Vf
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
             ? b => Zen.And(Zen.Not(b.HasCommunity(DownTag)),
               BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n])(b))
-            : BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
+            : BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n])))); //b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= distances[n]))));
     var safetyProperties =
       topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     var stableProperties =
