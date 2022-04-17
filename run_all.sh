@@ -20,15 +20,13 @@ if [ ! -e $DLL ]; then
     exit 1
 fi
 
-dests=([4]="edge-19" [8]="edge-79" [12]="edge-179" [16]="edge-319" [20]="edge-499" [24]="edge-719" [28]="edge-979"
-      [32]="edge-1279" [36]="edge-1619" [40]="edge-1999")
 for s in $SIZES;
 do
     echo "Running benchmark k=$s with options:" "${@:3}"
     for t in $(seq $NTRIALS);
     do
         echo "Trial $t of $NTRIALS started $(date -u)"
-        timeout $TIMEOUT dotnet "$DLL" -k "$s" -d "${dests[$s]}" "${@:3}"
+        timeout $TIMEOUT dotnet "$DLL" -k "$s" "${@:3}"
         if [ $? -eq 124 ]; then
             echo "Timed out after $TIMEOUT"
         fi
