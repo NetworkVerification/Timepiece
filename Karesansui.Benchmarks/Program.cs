@@ -41,6 +41,9 @@ rootCommand.Add(monoOption);
 
 rootCommand.SetHandler(
   (uint size, string dest, BenchmarkType bench, bool mono) =>
-    new Benchmark(size, dest, bench, mono).Run(), sizeOption, destOption, benchArgument, monoOption);
+  {
+    Console.WriteLine($"k={size}");
+    new Benchmark(size, dest, bench, mono).Run();
+  }, sizeOption, destOption, benchArgument, monoOption);
 
 await rootCommand.InvokeAsync(args);
