@@ -55,6 +55,17 @@ public class Network<T, TS>
   /// </summary>
   protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; init; }
 
+  /// <summary>
+  /// Construct a new Network.
+  /// </summary>
+  /// <param name="topology"></param>
+  /// <param name="transferFunction"></param>
+  /// <param name="mergeFunction"></param>
+  /// <param name="initialValues"></param>
+  /// <param name="annotations"></param>
+  /// <param name="modularProperties"></param>
+  /// <param name="monolithicProperties"></param>
+  /// <param name="symbolics"></param>
   public Network(
     Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
@@ -73,6 +84,41 @@ public class Network<T, TS>
     Annotations = annotations;
     ModularProperties = modularProperties;
     MonolithicProperties = monolithicProperties;
+  }
+
+  /// <summary>
+  /// Construct a new Network using an alternate properties definition.
+  /// For modular checking, for each node we check a property
+  /// Globally(safetyProperties[n]) and Finally(convergeTime, stableProperties[n]).
+  /// For monolithic checking, for each node we check a property
+  /// safetyProperties[n] and stableProperties[n].
+  /// </summary>
+  /// <param name="topology">The network topology.</param>
+  /// <param name="transferFunction"></param>
+  /// <param name="mergeFunction"></param>
+  /// <param name="initialValues"></param>
+  /// <param name="annotations"></param>
+  /// <param name="stableProperties">Properties which are true at convergence.</param>
+  /// <param name="safetyProperties">Properties which are always true (in the modular network).</param>
+  /// <param name="convergeTime">The convergence time of the network.</param>
+  /// <param name="symbolics"></param>
+  public Network(Topology topology,
+    Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
+    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
+    Dictionary<string, Zen<T>> initialValues,
+    Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> safetyProperties,
+    BigInteger convergeTime,
+    SymbolicValue<TS>[] symbolics) : this(topology,
+    transferFunction, mergeFunction, initialValues, annotations,
+    // modular properties: Finally(stable) + Globally(safety)
+    topology.ForAllNodes(n =>
+      Lang.Intersect(Lang.Finally(convergeTime, stableProperties[n]), Lang.Globally(safetyProperties[n]))),
+    // monolithic properties: stable + safety
+    topology.ForAllNodes(n => Lang.Intersect(stableProperties[n], safetyProperties[n])),
+    symbolics)
+  {
   }
 
   /// <summary>

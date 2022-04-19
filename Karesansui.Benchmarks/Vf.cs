@@ -1,20 +1,20 @@
 using System.Numerics;
+using Karesansui.Networks;
 using ZenLib;
 
 namespace Karesansui.Benchmarks;
 
-public class Vf<TS> : FatTree<Option<BatfishBgpRoute>, TS>
+public class Vf<TS> : Network<Option<BatfishBgpRoute>, TS>
 {
   public Vf(Topology topology, string destination, string tag,
     Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
     SymbolicValue<TS>[] symbolics) :
-    base(topology, destination, Transfer(topology, tag),
+    base(topology, Transfer(topology, tag),
       Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
-      Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()),
-      Option.None<BatfishBgpRoute>(),
-      annotations, stableProperties, safetyProperties, symbolics)
+      topology.ForAllNodes(n => n == destination ? Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()) : Option.None<BatfishBgpRoute>()),
+      annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
   {
   }
 

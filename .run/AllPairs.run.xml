@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Reachability" type="CompoundRunConfigurationType">
+    <toRun name="allpairs12" type="DotNetProject" />
+    <toRun name="allpairs16" type="DotNetProject" />
+    <toRun name="allpairs20" type="DotNetProject" />
+    <toRun name="allpairs24" type="DotNetProject" />
+    <toRun name="allpairs28" type="DotNetProject" />
+    <toRun name="allpairs32" type="DotNetProject" />
+    <toRun name="allpairs36" type="DotNetProject" />
+    <toRun name="allpairs4" type="DotNetProject" />
+    <toRun name="allpairs40" type="DotNetProject" />
+    <toRun name="allpairs8" type="DotNetProject" />
+    <method v="2" />
+  </configuration>
+</component>

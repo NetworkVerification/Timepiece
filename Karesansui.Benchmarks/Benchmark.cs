@@ -17,6 +17,7 @@ public class Benchmark
     {
       Destination = destination;
     }
+
     Bench = type;
     RunMonolithic = runMonolithic;
   }
@@ -33,6 +34,9 @@ public class Benchmark
         break;
       case BenchmarkType.SpPathLengthWeak:
         RunProfiler(Sp.PathLengthNoSafety(N, Destination), RunMonolithic);
+        break;
+      case BenchmarkType.ApReachable:
+        RunProfiler(Sp.AllPairsReachability(N), RunMonolithic);
         break;
       case BenchmarkType.ValleyFree:
         RunProfiler(Vf.ValleyFreeReachable(N, Destination), RunMonolithic);
@@ -74,6 +78,7 @@ public enum BenchmarkType
   SpReachable,
   SpPathLength,
   SpPathLengthWeak,
+  ApReachable,
   ValleyFree,
   ValleyFreeLength,
   FatTreeHijack,
@@ -88,6 +93,7 @@ public static class BenchmarkTypeExtensions
       "r" or "reach" or "SpReachable" => BenchmarkType.SpReachable,
       "l" or "length" or "SpPathLength" => BenchmarkType.SpPathLength,
       "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
+      "a" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
       "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
       "h" or "hijack" or "FatTreeHijack" => BenchmarkType.FatTreeHijack,
@@ -95,6 +101,7 @@ public static class BenchmarkTypeExtensions
                                        "- 'r'/'reach'/'SpReachable' for SpReachable\n" +
                                        "- 'l'/'length'/'SpPathLength' for SpPathLength\n" +
                                        "- 'lw'/'lengthWeak'/'SpPathLengthWeak' for SpPathLengthWeak\n" +
+                                       "- 'a'/'allReach'/'ApReachable' for ApReachable\n" +
                                        "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
                                        "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
                                        "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack")

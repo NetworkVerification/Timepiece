@@ -1,4 +1,5 @@
 using System.Numerics;
+using Karesansui.Networks;
 using ZenLib;
 
 namespace Karesansui.Benchmarks;
@@ -6,25 +7,29 @@ namespace Karesansui.Benchmarks;
 // a route which is tagged as internal (false) or external (true)
 using TaggedRoute = Pair<Option<BatfishBgpRoute>, bool>;
 
-public class Hijack : FatTree<TaggedRoute, Pair<Option<BatfishBgpRoute>, uint>>
+public class Hijack : Network<TaggedRoute, Pair<Option<BatfishBgpRoute>, uint>>
 {
   // TODO: should this not be static?
-  public static SymbolicValue<Pair<Option<BatfishBgpRoute>, uint>> HijackRouteAndPrefix { get; } =
+  private static SymbolicValue<Pair<Option<BatfishBgpRoute>, uint>> HijackRouteAndPrefix { get; } =
     new("hijackAndPrefix");
 
-  protected Hijack(Topology topology, string destination, string hijacker,
+  private Hijack(Topology topology, string destination, string hijacker,
     Dictionary<string, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<TaggedRoute>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<TaggedRoute>, Zen<bool>>> safetyProperties)
-    : base(topology, destination, Transfer(topology, hijacker, HijackRouteAndPrefix.Value.Item2()),
+    : base(topology, Transfer(topology, hijacker, HijackRouteAndPrefix.Value.Item2()),
       Merge(HijackRouteAndPrefix.Value.Item2()),
-      Pair.Create(Option.Create(BatfishBgpRouteExtensions.ToDestination(HijackRouteAndPrefix.Value.Item2())),
-        Zen.False()),
-      Pair.Create<Option<BatfishBgpRoute>, bool>(Option.None<BatfishBgpRoute>(), Zen.False()), annotations,
-      stableProperties, safetyProperties, Array.Empty<SymbolicValue<Pair<Option<BatfishBgpRoute>, uint>>>())
+      topology.ForAllNodes(n => n == destination
+        ? Pair.Create(Option.Create(BatfishBgpRouteExtensions.ToDestination(HijackRouteAndPrefix.Value.Item2())),
+          Zen.False())
+        : n == hijacker
+          ? Pair.Create(HijackRouteAndPrefix.Value.Item1(), Zen.True())
+          : Pair.Create<Option<BatfishBgpRoute>, bool>(Option.None<BatfishBgpRoute>(), Zen.False())
+      ),
+      annotations,
+      stableProperties, safetyProperties, new BigInteger(4),
+      new[] {HijackRouteAndPrefix})
   {
-    InitialValues[hijacker] = Pair.Create(HijackRouteAndPrefix.Value.Item1(), Zen.True());
-    Symbolics = new[] {HijackRouteAndPrefix};
   }
 
   private static Func<Zen<TaggedRoute>, Zen<TaggedRoute>, Zen<TaggedRoute>> Merge(Zen<uint> destinationPrefix) =>

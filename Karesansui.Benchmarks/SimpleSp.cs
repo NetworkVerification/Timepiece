@@ -1,22 +1,29 @@
 using System.Numerics;
+using Karesansui.Networks;
 using ZenLib;
 
 namespace Karesansui.Benchmarks;
 
-public class SimpleSp<TS> : FatTree<Option<SimpleBgpRoute>, TS>
+public class SimpleSp<TS> : Network<Option<SimpleBgpRoute>, TS>
 {
   public SimpleSp(Topology topology, string destination,
     Dictionary<string, Func<Zen<Option<SimpleBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<SimpleBgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<SimpleBgpRoute>>, Zen<bool>>> safetyProperties,
-    SymbolicValue<TS>[] symbolics) :
-    base(topology, destination,
-      topology.ForAllEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
-      Lang.Omap2<SimpleBgpRoute>(SimpleBgpRouteExtensions.Min),
-      Option.Create<SimpleBgpRoute>(new SimpleBgpRoute()), Option.None<SimpleBgpRoute>(),
-      annotations, stableProperties, safetyProperties, symbolics)
+    SymbolicValue<TS>[] symbolics) : base(topology,
+    topology.ForAllEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
+    Lang.Omap2<SimpleBgpRoute>(SimpleBgpRouteExtensions.Min),
+    topology.ForAllNodes(n =>
+      n == destination ? Option.Create<SimpleBgpRoute>(new SimpleBgpRoute()) : Option.None<SimpleBgpRoute>()),
+    annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
   {
   }
+
+  // base(topology,
+  // topology.ForAllEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
+  // Lang.Omap2<SimpleBgpRoute>(SimpleBgpRouteExtensions.Min),
+  // topology.ForAllNodes(n => n == destination ? Option.Create<SimpleBgpRoute>(new SimpleBgpRoute()) : Option.None<SimpleBgpRoute>()),
+  // annotations, stableProperties, safetyProperties, symbolics)
 }
 
 /// <summary>

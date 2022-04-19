@@ -1,4 +1,5 @@
 using System;
+using ZenLib;
 
 namespace Karesansui;
 
@@ -57,6 +58,21 @@ public static class FatTree
   }
 
   public static bool IsEdge(this string s)
+  {
+    return s.StartsWith(FatTreeLayer.Edge.ToLowerCaseString());
+  }
+
+  public static Zen<bool> IsCore(this Zen<string> s)
+  {
+    return s.StartsWith(FatTreeLayer.Core.ToLowerCaseString());
+  }
+
+  public static Zen<bool> IsAggregation(this Zen<string> s)
+  {
+    return s.StartsWith(FatTreeLayer.Aggregation.ToLowerCaseString());
+  }
+
+  public static Zen<bool> IsEdge(this Zen<string> s)
   {
     return s.StartsWith(FatTreeLayer.Edge.ToLowerCaseString());
   }
