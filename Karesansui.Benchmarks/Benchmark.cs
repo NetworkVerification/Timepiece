@@ -7,7 +7,11 @@ public class Benchmark
   public Benchmark(uint n, string? destination, BenchmarkType type, bool runMonolithic)
   {
     N = n;
-    if (destination is null)
+    if (type == BenchmarkType.ApReachable)
+    {
+      Destination = "[symbolic]";
+    }
+    else if (destination is null)
     {
       var edgeNode = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(n, 2) * 1.25 - 1));
       Console.WriteLine($"Inferred destination node: {edgeNode}");
