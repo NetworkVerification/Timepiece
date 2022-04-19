@@ -87,6 +87,7 @@ public static class BgpExtensions
   public static Zen<Bgp> Min(Zen<Bgp> b1, Zen<Bgp> b2)
   {
     return If(b1.GetLp() > b2.GetLp(), b1,
-      If(b2.GetLp() > b1.GetLp(), b2, If(b1.GetAsLength() < b2.GetAsLength(), b1, b2)));
+      If(b2.GetLp() > b1.GetLp(), b2,
+        If(b1.GetAsLength() < b2.GetAsLength(), b1, b2)));
   }
 }

@@ -21,7 +21,7 @@ public static class FilteringTests
     {
       {"n", new List<string>()},
       {"w", new List<string>()},
-      {"v", new List<string> {"n", "w"}},
+      {"v", new List<string> {"n", "w", "d"}},
       {"d", new List<string> {"v"}},
       {"e", new List<string> {"d"}}
     });
@@ -89,8 +89,8 @@ public static class FilteringTests
     {
       {"n", Lang.Globally(Lang.True<Option<Bgp>>())},
       {"w", Lang.Globally(Lang.IfSome<Bgp>(b => b.GetLp() == new BigInteger(100)))},
-      {"v", Lang.Finally(new BigInteger(1),Lang.IfSome<Bgp>(b => b.HasTag(Tag)))},
-      {"d", Lang.Finally(new BigInteger(2), Lang.IfSome<Bgp>(b => b.HasTag(Tag)))},
+      {"v", Lang.Until(new BigInteger(1), Lang.IsNone<Bgp>(), Lang.IfSome<Bgp>(b => b.HasTag(Tag)))},
+      {"d", Lang.Until(new BigInteger(2), Lang.IsNone<Bgp>(), Lang.IfSome<Bgp>(b => b.HasTag(Tag)))},
       {"e", Lang.Finally(new BigInteger(3), Lang.IsSome<Bgp>())},
     };
     var modularProperties = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>
@@ -110,6 +110,38 @@ public static class FilteringTests
       {"e", Lang.IsSome<Bgp>()},
     };
     var net = Net(annotations, modularProperties, monolithicProperties);
+    // NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
     NetworkAssert.CheckSound(net);
+  }
+
+  [Fact]
+  public static void BadAnnotationsFailToMakeEUnreachable()
+  {
+    var annotations = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"n", Lang.Globally(Lang.True<Option<Bgp>>())},
+      {"w", Lang.Globally(Lang.IfSome<Bgp>(b => b.GetLp() == new BigInteger(100)))},
+      {"v", Lang.Globally(Lang.OrSome<Bgp>(b => Zen.And(Zen.Not(b.HasTag(Tag)), b.GetLp() == new BigInteger(200))))},
+      {"d", Lang.Globally(Lang.OrSome<Bgp>(b => Zen.And(Zen.Not(b.HasTag(Tag)), b.GetLp() == new BigInteger(200))))},
+      {"e", Lang.Globally(Lang.IsNone<Bgp>())},
+    };
+    var modularProperties = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"n", Lang.Globally(Lang.True<Option<Bgp>>())},
+      {"w", Lang.Globally(Lang.True<Option<Bgp>>())},
+      {"v", Lang.Globally(Lang.True<Option<Bgp>>())},
+      {"d", Lang.Globally(Lang.True<Option<Bgp>>())},
+      {"e", Lang.Globally(Lang.IsNone<Bgp>())},
+    };
+    var monolithicProperties = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>>
+    {
+      {"n", Lang.True<Option<Bgp>>()},
+      {"w", Lang.True<Option<Bgp>>()},
+      {"v", Lang.True<Option<Bgp>>()},
+      {"d", Lang.True<Option<Bgp>>()},
+      {"e", Lang.IsNone<Bgp>()},
+    };
+    var net = Net(annotations, modularProperties, monolithicProperties);
+    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
   }
 }
