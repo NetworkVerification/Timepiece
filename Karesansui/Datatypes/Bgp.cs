@@ -6,7 +6,7 @@ namespace Karesansui.Datatypes;
 
 public record struct Bgp(BigInteger Lp, BigInteger AsLength, Set<string> Tags)
 {
-  public Bgp() : this(default, default, default)
+  public Bgp() : this(100, 0, new Set<string>())
   {
   }
 
