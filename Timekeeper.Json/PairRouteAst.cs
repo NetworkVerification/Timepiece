@@ -1,8 +1,9 @@
 using System.Numerics;
 using Newtonsoft.Json.Serialization;
-using Timekeeper.Json.AstExpr;
-using Timekeeper.Json.AstFunction;
-using Timekeeper.Json.AstStmt;
+using Timekeeper.Json.TypedAst;
+using Timekeeper.Json.TypedAst.AstExpr;
+using Timekeeper.Json.TypedAst.AstFunction;
+using Timekeeper.Json.TypedAst.AstStmt;
 using Timekeeper.Networks;
 using ZenLib;
 
