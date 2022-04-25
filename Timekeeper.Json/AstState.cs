@@ -11,20 +11,12 @@ public class AstState<T>
 
   public Func<Zen<T>, Zen<T>>? Return { get; set; }
 
-  public bool Debug { get; }
-
   /// <summary>
   /// Return a new state with no bindings.
   /// </summary>
   public AstState()
   {
     Variables = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
-  }
-
-  public AstState(bool debug)
-  {
-    Variables = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
-    Debug = debug;
   }
 
 
@@ -48,10 +40,6 @@ public class AstState<T>
   public void Add(string var, Func<Zen<T>, Zen<T>> val)
   {
     Variables.Add(var, val);
-    if (Debug)
-    {
-      Console.WriteLine($"Added {var} bound to {val}");
-    }
   }
 
   /// <summary>
