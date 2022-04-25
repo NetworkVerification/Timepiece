@@ -1,7 +1,7 @@
 using System.Net;
 using Newtonsoft.Json;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 /// <summary>
 /// A routing destination

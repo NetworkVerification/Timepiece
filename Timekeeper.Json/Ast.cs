@@ -1,12 +1,11 @@
 using System.Numerics;
-using Gardener.AstFunction;
-using Timekeeper;
-using Timekeeper.Networks;
 using NetTools;
 using Newtonsoft.Json;
+using Timekeeper.Json.AstFunction;
+using Timekeeper.Networks;
 using ZenLib;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 public class Ast<T, TS>
 {

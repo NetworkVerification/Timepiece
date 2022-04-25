@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener.AstExpr;
+namespace Timekeeper.Json.AstExpr;
 
 public class Some<T, TState> : UnaryOpExpr<T, Option<T>, TState>
 {

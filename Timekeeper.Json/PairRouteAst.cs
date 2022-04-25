@@ -1,16 +1,16 @@
 using System.Numerics;
-using Gardener.AstExpr;
-using Gardener.AstFunction;
-using Gardener.AstStmt;
-using Timekeeper.Networks;
 using Newtonsoft.Json.Serialization;
+using Timekeeper.Json.AstExpr;
+using Timekeeper.Json.AstFunction;
+using Timekeeper.Json.AstStmt;
+using Timekeeper.Networks;
 using ZenLib;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 using Route = Pair<bool, BatfishBgpRoute>;
 
-public class PairRouteAst : Ast<Route, Unit>
+public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
 {
   /// <summary>
   /// Default predicates to test for this AST.

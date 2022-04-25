@@ -1,7 +1,7 @@
-using Gardener.AstExpr;
+using Timekeeper.Json.AstExpr;
 using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 /// <summary>
 /// A unary function from type T to bool, aka a predicate over type T.

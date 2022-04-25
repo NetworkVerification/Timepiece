@@ -1,9 +1,8 @@
 using System.Numerics;
-using Timekeeper;
 using Newtonsoft.Json;
 using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 public class Until<T> : AstTemporalOperator<T>
 {

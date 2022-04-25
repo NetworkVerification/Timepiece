@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener.AstExpr;
+namespace Timekeeper.Json.AstExpr;
 
 public class AssociativeBinaryExpr<TArg, TState> : BinaryOpExpr<TArg, TArg, TArg, TState>
 {

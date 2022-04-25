@@ -1,10 +1,10 @@
 using System.Numerics;
-using Gardener.AstExpr;
-using Gardener.AstStmt;
+using Timekeeper.Json.AstExpr;
+using Timekeeper.Json.AstStmt;
 using Xunit;
 using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 public static class AstFunctionTests
 {

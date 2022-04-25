@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using Gardener.AstExpr;
-using Gardener.AstStmt;
+using Timekeeper.Json.AstExpr;
+using Timekeeper.Json.AstStmt;
 using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 /// <summary>
 /// A unary function of type T to Option T.

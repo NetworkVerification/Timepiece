@@ -1,8 +1,7 @@
-using Gardener.AstExpr;
-using Newtonsoft.Json;
+using Timekeeper.Json.AstExpr;
 using ZenLib;
 
-namespace Gardener.AstStmt;
+namespace Timekeeper.Json.AstStmt;
 
 public class IfThenElse<T, TState> : Statement<T, TState>
 {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 /// <summary>
 /// A collection of import and export policies for routing at a particular node.

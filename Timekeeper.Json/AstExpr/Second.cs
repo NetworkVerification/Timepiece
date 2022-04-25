@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener.AstExpr;
+namespace Timekeeper.Json.AstExpr;
 
 public class Second<TA, TB, TState> : UnaryOpExpr<Pair<TA, TB>, TB, TState>
 {

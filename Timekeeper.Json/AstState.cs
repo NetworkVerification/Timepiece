@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 public class AstState<T>
 {

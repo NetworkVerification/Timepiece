@@ -1,7 +1,6 @@
-using Newtonsoft.Json;
 using ZenLib;
 
-namespace Gardener.AstStmt;
+namespace Timekeeper.Json.AstStmt;
 
 /// <summary>
 /// A sequence of two statements.

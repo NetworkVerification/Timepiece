@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
-using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 public class AstFunctionBase<TArg, TBody> : IRenameable where TBody: IRenameable
 {

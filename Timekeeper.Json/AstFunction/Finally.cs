@@ -1,9 +1,7 @@
 using System.Numerics;
-using Gardener.AstExpr;
-using Timekeeper;
 using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 public class Finally<T> : AstTemporalOperator<T>
 {

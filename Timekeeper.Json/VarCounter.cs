@@ -1,4 +1,4 @@
-namespace Gardener;
+namespace Timekeeper.Json;
 
 public static class VarCounter
 {

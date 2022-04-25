@@ -1,7 +1,7 @@
 using Xunit;
 using ZenLib;
 
-namespace Gardener.AstExpr;
+namespace Timekeeper.Json.AstExpr;
 
 public static class AstExprTests
 {

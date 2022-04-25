@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener.AstExpr;
+namespace Timekeeper.Json.AstExpr;
 
 public class SetContains<TState> : BinaryOpExpr<string, FBag<string>, bool, TState>
 {

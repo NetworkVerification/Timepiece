@@ -2,7 +2,7 @@ using System.Numerics;
 using System.Text.Json.Serialization;
 using ZenLib;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 public record struct BatfishBgpRoute
 {

@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Gardener.AstStmt;
+namespace Timekeeper.Json.AstStmt;
 
 public abstract class Statement<T, TState> : IRenameable
 {

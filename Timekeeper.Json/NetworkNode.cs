@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Numerics;
 using ZenLib;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 /// <summary>
 /// An immutable struct storing all information needed from a given AST node to produce a network.

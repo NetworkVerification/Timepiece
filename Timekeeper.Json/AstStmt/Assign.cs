@@ -1,8 +1,7 @@
-using Gardener.AstExpr;
-using Newtonsoft.Json;
+using Timekeeper.Json.AstExpr;
 using ZenLib;
 
-namespace Gardener.AstStmt;
+namespace Timekeeper.Json.AstStmt;
 
 public class Assign<T> : Statement<Unit, T>
 {

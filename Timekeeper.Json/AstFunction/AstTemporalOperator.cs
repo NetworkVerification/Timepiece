@@ -1,7 +1,7 @@
 using System.Numerics;
 using ZenLib;
 
-namespace Gardener.AstFunction;
+namespace Timekeeper.Json.AstFunction;
 
 public abstract class AstTemporalOperator<T>
 {

@@ -1,7 +1,6 @@
-using Newtonsoft.Json;
 using ZenLib;
 
-namespace Gardener.AstExpr;
+namespace Timekeeper.Json.AstExpr;
 
 public class ConstantExpr<T, TState> : Expr<T, TState>
 {

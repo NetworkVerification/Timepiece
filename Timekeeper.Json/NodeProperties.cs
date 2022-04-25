@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
-using Gardener.AstFunction;
 using NetTools;
 using Newtonsoft.Json.Linq;
+using Timekeeper.Json.AstFunction;
 using ZenLib;
 
-namespace Gardener;
+namespace Timekeeper.Json;
 
 /// <summary>
 /// Representation of the properties of a node as parsed from JSON.
