@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Karesansui\Karesansui.csproj" />
+    <ProjectReference Include="..\Timekeeper\Timekeeper.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,15 +5,15 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Karesansui.Benchmarks</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Karesansui\Karesansui.csproj" />
+      <ProjectReference Include="..\Timekeeper\Timekeeper.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="IPAddressRange" Version="4.2.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
     </ItemGroup>
 
 </Project>

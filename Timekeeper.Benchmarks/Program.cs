@@ -4,7 +4,7 @@ using System.CommandLine;
 using System.CommandLine.Builder;
 using Karesansui.Benchmarks;
 
-var rootCommand = new RootCommand("Karesansui benchmark runner");
+var rootCommand = new RootCommand("Timekeeper benchmark runner");
 var sizeOption = new Option<uint>(
   new[] {"--size", "-k"},
   description: "The size of the benchmark (number of pods for fattrees)",

@@ -4,6 +4,7 @@
         <OutputType>Library</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <Platforms>AnyCPU;x64</Platforms>
+        <RootNamespace>Karesansui</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

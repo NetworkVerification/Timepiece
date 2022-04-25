@@ -12,7 +12,7 @@ public static class Profile
 {
   /// <summary>
   /// Run verification for the given network and print the resulting times for comparison
-  /// of Minesweeper-style versus Karesansui-style.
+  /// of Minesweeper-style versus Timekeeper-style.
   /// </summary>
   /// <param name="network"></param>
   /// <typeparam name="T"></typeparam>
