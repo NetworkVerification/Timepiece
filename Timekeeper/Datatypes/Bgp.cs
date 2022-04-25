@@ -2,7 +2,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Datatypes;
+namespace Timekeeper.Datatypes;
 
 public record struct Bgp(BigInteger Lp, BigInteger AsLength, Set<string> Tags)
 {

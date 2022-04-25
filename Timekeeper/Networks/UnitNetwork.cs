@@ -1,7 +1,7 @@
 using System;
 using ZenLib;
 
-namespace Karesansui.Networks;
+namespace Timekeeper.Networks;
 
 public class UnitNetwork : Network<Unit, object>
 {

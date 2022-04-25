@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Karesansui.Datatypes;
-using Karesansui.Networks;
+using Timekeeper.Datatypes;
+using Timekeeper.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Tests;
+namespace Timekeeper.Tests;
 
 public static class BgpNetworkTests
 {

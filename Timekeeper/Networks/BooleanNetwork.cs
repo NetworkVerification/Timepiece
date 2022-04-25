@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Networks;
+namespace Timekeeper.Networks;
 
 /// <summary>
 ///     A network with a boolean routing algebra.

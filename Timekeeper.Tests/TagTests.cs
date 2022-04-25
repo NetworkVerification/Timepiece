@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Karesansui.Networks;
+using Timekeeper.Networks;
 using Xunit;
 using ZenLib;
 
-namespace Karesansui.Tests;
+namespace Timekeeper.Tests;
 
 using FBagRoute = Pair<int, FBag<string>>;
 using FBagAdd = Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>>;

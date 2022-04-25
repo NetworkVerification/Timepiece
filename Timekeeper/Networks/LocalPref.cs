@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Networks;
+namespace Timekeeper.Networks;
 
 using LpRoute = Pair<BigInteger, BigInteger>;
 

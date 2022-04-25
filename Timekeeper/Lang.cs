@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui;
+namespace Timekeeper;
 
 using Time = Zen<BigInteger>;
 

@@ -1,8 +1,8 @@
 using System.Numerics;
-using Karesansui.Networks;
+using Timekeeper.Networks;
 using ZenLib;
 
-namespace Karesansui.Benchmarks;
+namespace Timekeeper.Benchmarks;
 
 public class AutonomousSystem<TS> : Network<Option<BatfishBgpRoute>, TS>
 {

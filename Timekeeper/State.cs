@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using Karesansui.Datatypes;
+using Timekeeper.Datatypes;
 using ZenLib;
 
-namespace Karesansui;
+namespace Timekeeper;
 
 public class State<T, TS>
 {

@@ -2,7 +2,7 @@ using System.Numerics;
 using System.Text;
 using ZenLib;
 
-namespace Karesansui.Benchmarks;
+namespace Timekeeper.Benchmarks;
 
 public record struct SimpleBgpRoute
 {

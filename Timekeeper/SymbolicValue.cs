@@ -2,7 +2,7 @@ using System;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui;
+namespace Timekeeper;
 
 /// <summary>
 /// A symbolic value with an associated name, for ease of reference.

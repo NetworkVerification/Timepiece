@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Networks;
+namespace Timekeeper.Networks;
 
 // a route which is tagged as external or internal
 using TaggedRoute = Pair<BigInteger, bool>;

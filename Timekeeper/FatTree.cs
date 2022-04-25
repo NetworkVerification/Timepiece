@@ -1,7 +1,7 @@
 using System;
 using ZenLib;
 
-namespace Karesansui;
+namespace Timekeeper;
 
 public static class FatTree
 {

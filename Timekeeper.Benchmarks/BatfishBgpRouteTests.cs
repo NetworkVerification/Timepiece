@@ -1,7 +1,7 @@
 using Xunit;
 using ZenLib;
 
-namespace Karesansui.Benchmarks;
+namespace Timekeeper.Benchmarks;
 
 public static class BatfishBgpRouteTests
 {

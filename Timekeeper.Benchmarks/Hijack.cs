@@ -1,8 +1,8 @@
 using System.Numerics;
-using Karesansui.Networks;
+using Timekeeper.Networks;
 using ZenLib;
 
-namespace Karesansui.Benchmarks;
+namespace Timekeeper.Benchmarks;
 
 // a route which is tagged as internal (false) or external (true)
 using TaggedRoute = Pair<Option<BatfishBgpRoute>, bool>;

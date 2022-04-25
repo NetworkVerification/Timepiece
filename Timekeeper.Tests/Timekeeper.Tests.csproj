@@ -6,7 +6,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>Karesansui.Tests</RootNamespace>
+    <RootNamespace>Timekeeper.Tests</RootNamespace>
 
     <Platforms>AnyCPU;x64</Platforms>
 

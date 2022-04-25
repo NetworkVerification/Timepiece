@@ -5,7 +5,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Networks;
+namespace Timekeeper.Networks;
 
 public class FaultTolerance<T> : Network<Option<T>, (string, string)>
 {

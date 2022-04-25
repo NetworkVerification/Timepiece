@@ -1,9 +1,9 @@
 using System;
-using Karesansui.Networks;
+using Timekeeper.Networks;
 using Xunit;
 using ZenLib;
 
-namespace Karesansui.Tests;
+namespace Timekeeper.Tests;
 
 public static class NetworkAssert
 {

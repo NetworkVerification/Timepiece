@@ -3,10 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Karesansui.Networks;
+using Timekeeper.Networks;
 using ZenLib;
 
-namespace Karesansui;
+namespace Timekeeper;
 
 public static class Profile
 {

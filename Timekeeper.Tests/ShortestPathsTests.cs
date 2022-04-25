@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Karesansui.Networks;
+using Timekeeper.Networks;
 using Xunit;
 using ZenLib;
 
-namespace Karesansui.Tests;
+namespace Timekeeper.Tests;
 
 public static class ShortestPathsTests
 {

@@ -1,8 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.CommandLine;
-using System.CommandLine.Builder;
-using Karesansui.Benchmarks;
+using Timekeeper.Benchmarks;
 
 var rootCommand = new RootCommand("Timekeeper benchmark runner");
 var sizeOption = new Option<uint>(

@@ -4,7 +4,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Karesansui.Networks;
+namespace Timekeeper.Networks;
 
 public class ShortestPath<TS> : Network<Option<BigInteger>, TS>
 {

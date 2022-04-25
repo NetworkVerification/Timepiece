@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ZenLib;
 
-namespace Karesansui.Datatypes;
+namespace Timekeeper.Datatypes;
 
 public static class DictExtensions
 {

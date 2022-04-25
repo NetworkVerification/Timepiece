@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using ZenLib;
 
-namespace Karesansui;
+namespace Timekeeper;
 
 /// <summary>
 /// Represents the topology of an NV network as a directed graph.
@@ -261,7 +261,7 @@ public static class Topologies
     var coreNodes = (int) Math.Floor(Math.Pow(numPods / 2.0, 2));
     for (var i = 0; i < coreNodes; i++)
     {
-      var name = Karesansui.FatTree.FatTreeLayer.Core.Node(i);
+      var name = Timekeeper.FatTree.FatTreeLayer.Core.Node(i);
       podNumbers.Add(name, (int) numPods);
       neighbors.Add(name, new List<string>());
     }
@@ -275,7 +275,7 @@ public static class Topologies
       var lastEdgeNode = firstEdgeNode + numPods / 2;
       for (var j = firstAggregateNode; j < firstEdgeNode; j++)
       {
-        var name = Karesansui.FatTree.FatTreeLayer.Aggregation.Node(j);
+        var name = Timekeeper.FatTree.FatTreeLayer.Aggregation.Node(j);
         podNumbers.Add(name, p);
         aggregates.Add(name);
         neighbors.Add(name, new List<string>());
@@ -283,7 +283,7 @@ public static class Topologies
 
       for (var k = firstEdgeNode; k < lastEdgeNode; k++)
       {
-        var name = Karesansui.FatTree.FatTreeLayer.Edge.Node(k);
+        var name = Timekeeper.FatTree.FatTreeLayer.Edge.Node(k);
         podNumbers.Add(name, p);
         edges.Add(name);
         neighbors.Add(name, new List<string>());
@@ -301,11 +301,11 @@ public static class Topologies
 
     for (var c = 0; c < coreNodes; c++)
     {
-      var coreNode = Karesansui.FatTree.FatTreeLayer.Core.Node(c);
+      var coreNode = Timekeeper.FatTree.FatTreeLayer.Core.Node(c);
       for (var p = 0; p < numPods; p++)
       {
         var aggregateNode =
-          Karesansui.FatTree.FatTreeLayer.Aggregation.Node(coreNodes + c / (numPods / 2) + p * numPods);
+          Timekeeper.FatTree.FatTreeLayer.Aggregation.Node(coreNodes + c / (numPods / 2) + p * numPods);
         neighbors[coreNode].Add(aggregateNode);
         neighbors[aggregateNode].Add(coreNode);
       }

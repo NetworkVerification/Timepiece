@@ -1,6 +1,6 @@
-using Karesansui.Networks;
+using Timekeeper.Networks;
 
-namespace Karesansui.Benchmarks;
+namespace Timekeeper.Benchmarks;
 
 public class Benchmark
 {

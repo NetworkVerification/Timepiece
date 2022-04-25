@@ -1,7 +1,7 @@
 using System;
 using ZenLib;
 
-namespace Karesansui.Datatypes;
+namespace Timekeeper.Datatypes;
 
 public static class OptionExtensions
 {
