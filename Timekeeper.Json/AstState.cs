@@ -57,6 +57,7 @@ public class AstState<T>
     {
       other.Add(key, t => t);
     }
+
     foreach (var key in other.Variables.Keys.Where(key => !ContainsVar(key)))
     {
       Add(key, t => t);
@@ -66,16 +67,7 @@ public class AstState<T>
     {
       var trueCase = this[key];
       var falseCase = value;
-      if (ContainsVar(key))
-      {
-        this[key] = (t => Zen.If(guard(t),
-          trueCase(t),
-          falseCase(t)));
-      }
-      else
-      {
-        this[key] = value;
-      }
+      this[key] = t => Zen.If(guard(t), trueCase(t), falseCase(t));
     }
   }
 }
