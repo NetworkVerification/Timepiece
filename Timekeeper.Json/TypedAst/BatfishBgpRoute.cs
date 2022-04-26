@@ -7,9 +7,9 @@ namespace Timekeeper.Json.TypedAst;
 
 public record struct BatfishBgpRoute
 {
-  public BatfishBgpRoute(IpPrefix prefix)
+  public BatfishBgpRoute()
   {
-    DestinationPrefix = prefix;
+    DestinationPrefix = new IpPrefix();
     AdminDist = 0;
     Lp = 0;
     AsPathLength = 0;

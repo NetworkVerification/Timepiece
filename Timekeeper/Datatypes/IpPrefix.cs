@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using NetTools;
@@ -25,7 +26,8 @@ public readonly struct IpPrefix
     var ipAddress = IPAddress.Parse(address);
     // convert the address bytes back into a number
     // shift over by 8 bits each time
-    prefix = ipAddress.GetAddressBytes().Aggregate(0U, (curr, b) => (curr << 8) | b);
+    prefix = ipAddress.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
+    Console.WriteLine($"Parsed {ipAddress} as {prefix}");
   }
 
   public override string ToString()

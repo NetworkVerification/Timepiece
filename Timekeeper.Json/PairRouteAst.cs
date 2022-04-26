@@ -45,9 +45,9 @@ public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
   {
   }
 
-  private static Zen<Route> InitFunction(bool isDestination, IpPrefix? destination)
+  private static Zen<Route> InitFunction(bool isDestination)
   {
-    return Pair.Create<bool, BatfishBgpRoute>(isDestination, new BatfishBgpRoute(destination ?? new IpPrefix()));
+    return Pair.Create<bool, BatfishBgpRoute>(isDestination, new BatfishBgpRoute());
   }
 
   public Network<Route, Unit> ToNetwork()

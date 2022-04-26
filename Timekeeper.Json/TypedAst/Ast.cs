@@ -102,7 +102,7 @@ public class Ast<T, TS>
     Console.ResetColor();
   }
 
-  public Network<T, TS> ToNetwork(Func<bool, IpPrefix?, Zen<T>> initGenerator,
+  public Network<T, TS> ToNetwork(Func<bool, Zen<T>> initGenerator,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, AstFunction<T> defaultExport,
     AstFunction<T> defaultImport)
   {
@@ -116,14 +116,14 @@ public class Ast<T, TS>
 
     var isDestination = new Func<List<IPAddressRange>, bool>(prefixes =>
     {
-      return Destination.HasValue && prefixes.Any(p => DestinationExt.Contains(p, Destination.Value));
+      return Destination.HasValue && prefixes.Any(p => p.Contains(Destination.Value));
     });
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
     // this also means inlining constants and evaluating and inlining predicates where possible
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(p => initGenerator(isDestination(p), Destination),
+      var details = props.CreateNode(p => initGenerator(isDestination(p)),
         s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException("Predicate {s} not found!"),
         defaultExport, defaultImport);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
