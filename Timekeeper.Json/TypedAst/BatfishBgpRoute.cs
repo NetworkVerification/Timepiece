@@ -1,25 +1,27 @@
 using System.Numerics;
 using System.Text.Json.Serialization;
+using Timekeeper.Datatypes;
 using ZenLib;
 
-namespace Timekeeper.Json;
+namespace Timekeeper.Json.TypedAst;
 
 public record struct BatfishBgpRoute
 {
-  public BatfishBgpRoute()
+  public BatfishBgpRoute(IpPrefix prefix)
   {
+    DestinationPrefix = prefix;
     AdminDist = 0;
     Lp = 0;
     AsPathLength = 0;
     Med = 0;
     OriginType = new Int2(0);
-    // TODO: how to set the maximum depth?
     Communities = new Set<string>();
   }
 
   [JsonConstructor]
-  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, Int2 originType, Set<string> communities)
+  public BatfishBgpRoute(IpPrefix destinationPrefix, uint adminDist, uint lp, BigInteger asPathLength, uint med, Int2 originType, Set<string> communities)
   {
+    DestinationPrefix = destinationPrefix;
     AdminDist = adminDist;
     Lp = lp;
     AsPathLength = asPathLength;
@@ -27,6 +29,11 @@ public record struct BatfishBgpRoute
     OriginType = originType;
     Communities = communities;
   }
+
+  /// <summary>
+  /// IP prefix representing the routing destination.
+  /// </summary>
+  public IpPrefix DestinationPrefix { get; set; }
 
   /// <summary>
   /// 32-bit integer representation of administrative distance.
@@ -114,22 +121,12 @@ public static class BatfishBgpRouteExtensions
     return b.WithField("Communities", communities);
   }
 
-  private static Func<Zen<T>, Zen<T>, Zen<T>> MinBy<T, TKey>(Func<Zen<T>, Zen<TKey>> keyAccessor,
-    Func<Zen<TKey>, Zen<TKey>, Zen<bool>> keyComparator)
-  {
-    return (t1, t2) => Zen.If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1, t2);
-  }
-
   public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
   {
-    var largerLp = MinBy<BatfishBgpRoute, uint>(GetLp, Zen.Gt);
-    var smallerLength = MinBy<BatfishBgpRoute, BigInteger>(GetAsPathLength, Zen.Lt);
-    var betterOrigin = MinBy<BatfishBgpRoute, Int2>(GetOriginType, Zen.Gt);
-    var lowerMed = MinBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt);
-    return largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))));
-    // return Zen.If(Zen.Not(b1.IsValid()), b2,
-    // Zen.If(Zen.Not(b2.IsValid()), b1,
-    // largerLp(b1, smallerLength(b1, betterOrigin(b1, lowerMed(b1, b2))))));
+    return Lang.CompareBy(GetLp, Zen.Gt,
+      Lang.CompareBy(GetAsPathLength, Zen.Lt,
+        Lang.CompareBy(GetOriginType, Zen.Gt,
+          Lang.CompareBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt))))(b1, b2);
   }
 
   public static Zen<Pair<bool, BatfishBgpRoute>> MinPair(this Zen<Pair<bool, BatfishBgpRoute>> b1,

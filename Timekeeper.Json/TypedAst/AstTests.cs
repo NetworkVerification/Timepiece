@@ -1,6 +1,7 @@
 using System.Numerics;
 using NetTools;
 using Newtonsoft.Json.Linq;
+using Timekeeper.Datatypes;
 using Timekeeper.Json.TypedAst.AstExpr;
 using Timekeeper.Json.TypedAst.AstFunction;
 using Xunit;
@@ -13,7 +14,7 @@ using Route = Pair<bool, BatfishBgpRoute>;
 public static class AstTests
 {
   private const string IsValid = "IsValid";
-  private static readonly Destination D = new("70.0.19.1");
+  private static readonly IpPrefix D = new("70.0.19.1");
 
   private static readonly Dictionary<string, AstPredicate<Route>> Predicates = new()
   {

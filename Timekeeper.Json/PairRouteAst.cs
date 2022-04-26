@@ -1,5 +1,6 @@
 using System.Numerics;
 using Newtonsoft.Json.Serialization;
+using Timekeeper.Datatypes;
 using Timekeeper.Json.TypedAst;
 using Timekeeper.Json.TypedAst.AstExpr;
 using Timekeeper.Json.TypedAst.AstFunction;
@@ -37,15 +38,17 @@ public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
             new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
             "AsPathLength"), new ConstantExpr<BigInteger, Route>(1))))));
 
-  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Destination? destination,
+  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, IpPrefix? destination,
     Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
     BigInteger? convergeTime) : base(nodes,
     symbolics, predicates, destination, convergeTime)
   {
   }
 
-  private static Zen<Route> InitFunction(bool isDestination) =>
-    Pair.Create<bool, BatfishBgpRoute>(isDestination, new BatfishBgpRoute());
+  private static Zen<Route> InitFunction(bool isDestination, IpPrefix? destination)
+  {
+    return Pair.Create<bool, BatfishBgpRoute>(isDestination, new BatfishBgpRoute(destination ?? new IpPrefix()));
+  }
 
   public Network<Route, Unit> ToNetwork()
   {

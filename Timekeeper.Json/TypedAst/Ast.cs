@@ -1,6 +1,7 @@
 using System.Numerics;
 using NetTools;
 using Newtonsoft.Json;
+using Timekeeper.Datatypes;
 using Timekeeper.Json.TypedAst.AstFunction;
 using Timekeeper.Networks;
 using ZenLib;
@@ -12,7 +13,7 @@ public class Ast<T, TS>
   [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<T>> nodes,
     Dictionary<string, AstPredicate<TS>> symbolics,
-    Dictionary<string, AstPredicate<T>> predicates, Destination? destination, BigInteger? convergeTime)
+    Dictionary<string, AstPredicate<T>> predicates, IpPrefix? destination, BigInteger? convergeTime)
   {
     Nodes = nodes;
     Symbolics = symbolics;
@@ -24,7 +25,7 @@ public class Ast<T, TS>
   /// <summary>
   ///   An optional routing destination prefix.
   /// </summary>
-  public Destination? Destination { get; }
+  public IpPrefix? Destination { get; }
 
   /// <summary>
   ///   The nodes of the network with their associated policies.
@@ -53,7 +54,7 @@ public class Ast<T, TS>
   public void Validate()
   {
     if (Destination.HasValue)
-      Console.WriteLine($"Destination: {Destination.Value.address}");
+      Console.WriteLine($"Destination: {Destination.Value}");
     else
       WarnLine("No destination given.");
 
@@ -101,7 +102,7 @@ public class Ast<T, TS>
     Console.ResetColor();
   }
 
-  public Network<T, TS> ToNetwork(Func<bool, Zen<T>> initGenerator,
+  public Network<T, TS> ToNetwork(Func<bool, IpPrefix?, Zen<T>> initGenerator,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, AstFunction<T> defaultExport,
     AstFunction<T> defaultImport)
   {
@@ -115,14 +116,14 @@ public class Ast<T, TS>
 
     var isDestination = new Func<List<IPAddressRange>, bool>(prefixes =>
     {
-      return Destination.HasValue && prefixes.Any(p => p.Contains(Destination.Value.address));
+      return Destination.HasValue && prefixes.Any(p => DestinationExt.Contains(p, Destination.Value));
     });
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
     // this also means inlining constants and evaluating and inlining predicates where possible
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(p => initGenerator(isDestination(p)),
+      var details = props.CreateNode(p => initGenerator(isDestination(p), Destination),
         s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException("Predicate {s} not found!"),
         defaultExport, defaultImport);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
