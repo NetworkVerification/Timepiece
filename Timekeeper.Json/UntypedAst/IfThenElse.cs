@@ -2,7 +2,7 @@ namespace Timekeeper.Json.UntypedAst;
 
 public class IfThenElse : Statement
 {
-  public IfThenElse(Expr guard, Statement thenCase, Statement elseCase)
+  public IfThenElse(Expr guard, List<Statement> thenCase, List<Statement> elseCase)
   {
     Guard = guard;
     ThenCase = thenCase;
@@ -10,13 +10,13 @@ public class IfThenElse : Statement
   }
 
   public Expr Guard { get; set; }
-  public Statement ThenCase { get; set; }
-  public Statement ElseCase { get; set; }
+  public List<Statement> ThenCase { get; set; }
+  public List<Statement> ElseCase { get; set; }
 
   public override void Rename(string oldVar, string newVar)
   {
     Guard.Rename(oldVar, newVar);
-    ThenCase.Rename(oldVar, newVar);
-    ElseCase.Rename(oldVar, newVar);
+    ThenCase.ForEach(s => s.Rename(oldVar, newVar));
+    ElseCase.ForEach(s => s.Rename(oldVar, newVar));
   }
 }
