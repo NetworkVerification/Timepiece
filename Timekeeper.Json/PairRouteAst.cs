@@ -38,7 +38,7 @@ public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
             new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
             "AsPathLength"), new ConstantExpr<BigInteger, Route>(1))))));
 
-  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, IpPrefix? destination,
+  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Ipv4Prefix? destination,
     Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
     BigInteger? convergeTime) : base(nodes,
     symbolics, predicates, destination, convergeTime)

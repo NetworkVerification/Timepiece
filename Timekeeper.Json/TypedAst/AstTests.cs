@@ -14,7 +14,7 @@ using Route = Pair<bool, BatfishBgpRoute>;
 public static class AstTests
 {
   private const string IsValid = "IsValid";
-  private static readonly IpPrefix D = new("70.0.19.1");
+  private static readonly Ipv4Prefix D = new("70.0.19.1");
 
   private static readonly Dictionary<string, AstPredicate<Route>> Predicates = new()
   {

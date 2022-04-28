@@ -13,7 +13,7 @@ public class Ast<T, TS>
   [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties<T>> nodes,
     Dictionary<string, AstPredicate<TS>> symbolics,
-    Dictionary<string, AstPredicate<T>> predicates, IpPrefix? destination, BigInteger? convergeTime)
+    Dictionary<string, AstPredicate<T>> predicates, Ipv4Prefix? destination, BigInteger? convergeTime)
   {
     Nodes = nodes;
     Symbolics = symbolics;
@@ -25,7 +25,7 @@ public class Ast<T, TS>
   /// <summary>
   ///   An optional routing destination prefix.
   /// </summary>
-  public IpPrefix? Destination { get; }
+  public Ipv4Prefix? Destination { get; }
 
   /// <summary>
   ///   The nodes of the network with their associated policies.
