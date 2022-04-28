@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using NetTools;
-using Newtonsoft.Json.Linq;
 using Timekeeper.Json.TypedAst.AstFunction;
 using ZenLib;
 
@@ -15,7 +14,7 @@ public class NodeProperties<T>
 {
   public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
     string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
-    Dictionary<string, JObject> constants)
+    Constants<T> constants)
   {
     Prefixes = prefixes;
     Policies = policies;
@@ -34,7 +33,7 @@ public class NodeProperties<T>
   /// <summary>
   ///   Additional constant declarations.
   /// </summary>
-  public Dictionary<string, JObject> Constants { get; set; }
+  public Constants<T> Constants { get; set; }
 
   public AstTemporalOperator<T>? Temporal { get; set; }
 

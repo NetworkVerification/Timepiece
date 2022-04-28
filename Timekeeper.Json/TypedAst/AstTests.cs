@@ -32,7 +32,7 @@ public static class AstTests
       {
         GetAddressRange(node)
       }, policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
-      new Dictionary<string, JObject>());
+      new Constants<Route>());
   }
 
   private static IPAddressRange GetAddressRange(string node)
