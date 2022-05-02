@@ -2,6 +2,11 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst;
 
+/// <summary>
+/// Representation of the AST state as a mapping from variable names to values.
+/// All values are unary functions with type T1 -> T2, for some fixed type T1
+/// and some arbitrary type T2.
+/// </summary>
 public class AstState
 {
   /// <summary>
@@ -65,4 +70,17 @@ public class AstState
       this[key] = new Func<Zen<T>, Zen<T>>(t => Zen.If(guard(t), trueCase(t), falseCase(t)));
     }
   }
+}
+
+internal struct AstVariable<T>
+{
+  public AstVariable(object value, Type ty)
+  {
+    Value = value;
+    Ty = ty;
+  }
+
+  public Type Ty { get; set; }
+
+  public object Value { get; set; }
 }

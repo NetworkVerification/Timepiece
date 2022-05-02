@@ -2,12 +2,17 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst;
 
-public interface IEvaluable<T1, T2>
+public interface IEvaluable<T1, T2> : IEvaluated<T1>
 {
-  Func<Zen<T1>, Zen<T2>> Evaluate(AstState astState);
+  public Func<Zen<T1>, Zen<T2>> Evaluate(AstState astState);
 }
 
-public interface IEvaluable<T1, T2, T3>
+public interface IEvaluatesTo<T2>
 {
-  Func<Zen<T1>, Zen<T2>, Zen<T3>> Evaluate(AstState astState);
+  public IEvaluable<T1, T2> Evaluate<T1>(AstState astState);
+}
+
+public interface IEvaluated<T1>
+{
+  public Func<Zen<T1>, Zen<T2>> Evaluate<T2>(AstState astState);
 }

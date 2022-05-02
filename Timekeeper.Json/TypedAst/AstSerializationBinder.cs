@@ -53,12 +53,14 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "Seq" => new TypeAlias(typeof(AstStmt.Seq<>), new Type?[] {null}),
       // expressions
       "Var" => new TypeAlias(typeof(Var<>), new Type?[] {null}),
+      // boolean expressions
       "True" => new TypeAlias(typeof(ConstantExpr<bool>)),
       "False" => new TypeAlias(typeof(ConstantExpr<bool>)),
       "And" => new TypeAlias(typeof(And)),
       "Or" => new TypeAlias(typeof(Or)),
       "Not" => new TypeAlias(typeof(Not)),
       "Havoc" => new TypeAlias(typeof(Havoc)),
+      // numeric expressions
       "Int32" => new TypeAlias(typeof(ConstantExpr<int>)),
       "BigInt" => new TypeAlias(typeof(ConstantExpr<BigInteger>)),
       "Uint32" => new TypeAlias(typeof(ConstantExpr<uint>)),
@@ -66,13 +68,17 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "LessThan" => new TypeAlias(typeof(LessThan<>), new Type?[] {null}),
       "LessThanEqual" => new TypeAlias(typeof(LessThanEqual<>), new Type?[] {null}),
       "Equal" => new TypeAlias(typeof(Equal<>), new Type?[] {null}),
+      // pair expressions
       "Pair" => new TypeAlias(typeof(PairExpr<,>), new Type?[] {null, null}),
       "First" => new TypeAlias(typeof(First<,>), new Type?[] {null, null}),
       "Second" => new TypeAlias(typeof(Second<,>), new Type?[] {null, null}),
+      // option expressions
       "Some" => new TypeAlias(typeof(Some<>), new Type?[] {null}),
       "None" => new TypeAlias(typeof(None<>), new Type?[] {null}),
+      // record expressions
       "GetField" => new TypeAlias(typeof(GetField<,>), new Type?[] {null, null}),
       "WithField" => new TypeAlias(typeof(WithField<,>), new Type?[] {null, null}),
+      // set expressions
       "String" => new TypeAlias(typeof(ConstantExpr<string>)),
       "SetContains" => new TypeAlias(typeof(SetContains)),
       "SetAdd" => new TypeAlias(typeof(SetAdd)),
