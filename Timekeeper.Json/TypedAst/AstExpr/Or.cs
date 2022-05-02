@@ -2,13 +2,13 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class Or<T> : AssociativeBinaryExpr<bool, T>
+public class Or : AssociativeBinaryExpr<bool>
 {
-  public Or(Expr<bool, T> expr1, Expr<bool, T> expr2) : base(expr1, expr2, Zen.Or)
+  public Or(Expr<bool> expr1, Expr<bool> expr2) : base(expr1, expr2, Zen.Or)
   {
   }
 
-  public Or(IEnumerable<Expr<bool, T>> es) : base(es, new ConstantExpr<bool, T>(false), Zen.Or)
+  public Or(IEnumerable<Expr<bool>> es) : base(es, new ConstantExpr<bool>(false), Zen.Or)
   {
   }
 }

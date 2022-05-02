@@ -12,8 +12,6 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
 {
   private static readonly Type State = typeof(TState);
 
-  private static readonly Type TimedState = typeof(Pair<TState, BigInteger>);
-
   public Type BindToType(string? assemblyName, string typeName)
   {
     switch (typeName)
@@ -25,12 +23,9 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       case "Until":
         return typeof(Until<>).MakeGenericType(State);
       default:
-        var timed = typeName.StartsWith("!");
-        if (timed) typeName = typeName.TrimStart('!');
-
         var types = ParseTypeArgs(typeName).GetEnumerator();
         types.MoveNext();
-        return BindToTypeAux(types.Current, types, timed) ?? throw new ArgumentException($"Unable to bind {typeName}");
+        return BindToTypeAux(types.Current, types);
     }
   }
 
@@ -41,60 +36,60 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
   }
 
   /// <summary>
-  ///   Return a TypeAlias for the given AST expression, statement or type if it can be found,
-  ///   otherwise return null.
+  /// Return a TypeAlias for the given string representing an AST expression, statement or type.
   /// </summary>
   /// <param name="alias">The given type name string to bind.</param>
-  /// <param name="timed">Whether the TypeAlias is for a timed program state or an untimed state.</param>
-  /// <returns>A TypeAlias if one exists, or null if not.</returns>
-  private static TypeAlias? GetAliasType(string alias, bool timed)
+  /// <returns>The relevant TypeAlias.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">If the given string does not match any known term.</exception>
+  private static TypeAlias GetAliasType(string alias)
   {
-    var s = timed ? TimedState : State;
     return alias switch
     {
       // statements
       "Return" => new TypeAlias(typeof(Return<>), new Type?[] {null}),
-      "Assign" => new TypeAlias(typeof(Assign<>), new[] {s}),
-      "If" => new TypeAlias(typeof(IfThenElse<,>), new[] {null, s}),
-      "Skip" => new TypeAlias(typeof(Skip<>), new[] {s}),
-      "Seq" => new TypeAlias(typeof(Seq<,>), new[] {null, s}),
+      "Assign" => new TypeAlias(typeof(Assign<>), new Type?[] {null}),
+      "If" => new TypeAlias(typeof(IfThenElse<>), new Type?[] {null}),
+      "Skip" => new TypeAlias(typeof(Skip)),
+      "Seq" => new TypeAlias(typeof(AstStmt.Seq<>), new Type?[] {null}),
       // expressions
       "Var" => new TypeAlias(typeof(Var<>), new Type?[] {null}),
-      "True" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), s}),
-      "False" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(bool), s}),
-      "And" => new TypeAlias(typeof(And<>), new[] {s}),
-      "Or" => new TypeAlias(typeof(Or<>), new[] {s}),
-      "Not" => new TypeAlias(typeof(Not<>), new[] {s}),
-      "Havoc" => new TypeAlias(typeof(Havoc<>), new[] {s}),
-      "Int32" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(int), s}),
-      "BigInt" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(BigInteger), s}),
-      "Uint32" => new TypeAlias(typeof(ConstantExpr<,>), new[] {typeof(uint), s}),
-      "Plus" => new TypeAlias(typeof(Plus<,>), new[] {null, s}),
-      "LessThan" => new TypeAlias(typeof(LessThan<,>), new[] {null, s}),
-      "LessThanEqual" => new TypeAlias(typeof(LessThanEqual<,>), new[] {null, s}),
-      "Equal" => new TypeAlias(typeof(Equal<,>), new[] {null, s}),
-      "Pair" => new TypeAlias(typeof(PairExpr<,,>), new[] {null, null, s}),
-      "First" => new TypeAlias(typeof(First<,,>), new[] {null, null, s}),
-      "Second" => new TypeAlias(typeof(Second<,,>), new[] {null, null, s}),
-      "Some" => new TypeAlias(typeof(Some<,>), new[] {null, s}),
-      "None" => new TypeAlias(typeof(None<,>), new[] {null, s}),
-      "GetField" => new TypeAlias(typeof(GetField<,,>), new[] {null, null, s}),
-      "WithField" => new TypeAlias(typeof(WithField<,,>), new[] {null, null, s}),
-      "SetContains" => new TypeAlias(typeof(SetContains<>), new[] {s}),
-      "SetAdd" => new TypeAlias(typeof(SetAdd<>), new[] {s}),
-      "EmptySet" => new TypeAlias(typeof(EmptySet<>), new[] {s}),
+      "True" => new TypeAlias(typeof(ConstantExpr<bool>)),
+      "False" => new TypeAlias(typeof(ConstantExpr<bool>)),
+      "And" => new TypeAlias(typeof(And)),
+      "Or" => new TypeAlias(typeof(Or)),
+      "Not" => new TypeAlias(typeof(Not)),
+      "Havoc" => new TypeAlias(typeof(Havoc)),
+      "Int32" => new TypeAlias(typeof(ConstantExpr<int>)),
+      "BigInt" => new TypeAlias(typeof(ConstantExpr<BigInteger>)),
+      "Uint32" => new TypeAlias(typeof(ConstantExpr<uint>)),
+      "Plus" => new TypeAlias(typeof(Plus<>), new Type?[] {null}),
+      "LessThan" => new TypeAlias(typeof(LessThan<>), new Type?[] {null}),
+      "LessThanEqual" => new TypeAlias(typeof(LessThanEqual<>), new Type?[] {null}),
+      "Equal" => new TypeAlias(typeof(Equal<>), new Type?[] {null}),
+      "Pair" => new TypeAlias(typeof(PairExpr<,>), new Type?[] {null, null}),
+      "First" => new TypeAlias(typeof(First<,>), new Type?[] {null, null}),
+      "Second" => new TypeAlias(typeof(Second<,>), new Type?[] {null, null}),
+      "Some" => new TypeAlias(typeof(Some<>), new Type?[] {null}),
+      "None" => new TypeAlias(typeof(None<>), new Type?[] {null}),
+      "GetField" => new TypeAlias(typeof(GetField<,>), new Type?[] {null, null}),
+      "WithField" => new TypeAlias(typeof(WithField<,>), new Type?[] {null, null}),
+      "String" => new TypeAlias(typeof(ConstantExpr<string>)),
+      "SetContains" => new TypeAlias(typeof(SetContains)),
+      "SetAdd" => new TypeAlias(typeof(SetAdd)),
+      "EmptySet" => new TypeAlias(typeof(EmptySet)),
+      "SetUnion" => new TypeAlias(typeof(SetUnion)),
       // types
-      "TRoute" => new TypeAlias(typeof(TRoute), Array.Empty<Type?>()),
+      "TRoute" => new TypeAlias(typeof(TRoute)),
       "TPair" => new TypeAlias(typeof(Pair<,>), new Type?[] {null, null}),
       "TOption" => new TypeAlias(typeof(Option<>), new Type?[] {null}),
-      "TBool" => new TypeAlias(typeof(bool), Array.Empty<Type?>()),
-      "TInt32" => new TypeAlias(typeof(int), Array.Empty<Type?>()),
-      "TUint32" => new TypeAlias(typeof(uint), Array.Empty<Type?>()),
-      "TBigInt" => new TypeAlias(typeof(BigInteger), Array.Empty<Type?>()),
-      "TString" => new TypeAlias(typeof(string), Array.Empty<Type?>()),
-      "TSet" => new TypeAlias(typeof(FBag<>), new[] {typeof(string)}),
-      "TUnit" => new TypeAlias(typeof(Unit), Array.Empty<Type?>()),
-      _ => null
+      "TBool" => new TypeAlias(typeof(bool)),
+      "TInt32" => new TypeAlias(typeof(int)),
+      "TUint32" => new TypeAlias(typeof(uint)),
+      "TTime" or "TBigInt" => new TypeAlias(typeof(BigInteger)),
+      "TString" => new TypeAlias(typeof(string)),
+      "TSet" => new TypeAlias(typeof(Set<string>)),
+      "TUnit" => new TypeAlias(typeof(Unit)),
+      _ => throw new ArgumentOutOfRangeException(nameof(alias))
     };
   }
 
@@ -105,14 +100,13 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
     return regex.Matches(typeName).Select(match => match.Groups["term"].Value);
   }
 
-  private static Type? BindToTypeAux(string alias, IEnumerator<string> typeArgs, bool timed)
+  private static Type BindToTypeAux(string alias, IEnumerator<string> typeArgs)
   {
-    var t = GetAliasType(alias, timed);
-    if (!t.HasValue) return null;
-    if (!t.Value.Type.IsGenericTypeDefinition) return t.Value.Type;
+    var t = GetAliasType(alias);
+    if (!t.Type.IsGenericTypeDefinition) return t.Type;
     // recursively search for each argument
-    t.Value.UpdateArgs(typeArgs, args => BindToTypeAux(args.Current, args, timed));
-    return t.Value.MakeGenericType();
+    t.UpdateArgs(typeArgs, args => BindToTypeAux(args.Current, args));
+    return t.MakeGenericType();
   }
 }
 
@@ -129,6 +123,9 @@ internal readonly record struct TypeAlias
   ///   An array of arguments to this type, which should be of the same size
   ///   as the type's expected number of generic parameters.
   /// </param>
+  /// <exception cref="ArgumentException">
+  /// If the number of arguments is not the same as the expected number of arguments.
+  /// </exception>
   public TypeAlias(Type type, Type?[] args)
   {
     if (type.IsGenericType && type.GetGenericArguments().Length != args.Length)
@@ -138,8 +135,18 @@ internal readonly record struct TypeAlias
     Args = args;
   }
 
+  /// <summary>
+  /// A TypeAlias for a closed type.
+  /// </summary>
+  /// <param name="type"></param>
+  public TypeAlias(Type type)
+  {
+    Type = type;
+    Args = Array.Empty<Type?>();
+  }
+
   /// <summary>A (possibly-generic) Type.</summary>
-  public Type Type { get; init; }
+  public Type Type { get; }
 
   /// <summary>
   ///   An array of arguments to this type, which should be of the same size

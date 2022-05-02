@@ -9,10 +9,10 @@ namespace Timekeeper.Json.TypedAst.AstFunction;
 ///   A unary function of type T to Option T.
 /// </summary>
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
-public class AstFunction<T> : AstFunctionBase<T, Statement<T, T>>
+public class AstFunction<T> : AstFunctionBase<T, Statement<T>>
 {
   [JsonConstructor]
-  public AstFunction(string arg, Statement<T, T> body) : base(arg, body)
+  public AstFunction(string arg, Statement<T> body) : base(arg, body)
   {
   }
 
@@ -37,7 +37,7 @@ public class AstFunction<T> : AstFunctionBase<T, Statement<T, T>>
   {
     // bind the result of this body to that argument
     var bound = Body.Bind(that.Arg);
-    return new AstFunction<T>(Arg, new Seq<T, T>(bound, that.Body));
+    return new AstFunction<T>(Arg, new AstStmt.Seq<T>(bound, that.Body));
   }
 
   /// <summary>
@@ -52,11 +52,11 @@ public class AstFunction<T> : AstFunctionBase<T, Statement<T, T>>
     return functions.Aggregate(seed, (current, ff) => current.Compose(ff));
   }
 
-  public Func<Zen<T>, Zen<T>> Evaluate(AstState<T> astState)
+  public Func<Zen<T>, Zen<T>> Evaluate(AstState astState)
   {
-    astState.Add(Arg, t => t);
-    var finalState = Body.Evaluate(astState);
-    return finalState.Return ??
-           throw new InvalidOperationException("No value returned by function.");
+    astState.Add(Arg, new Func<Zen<T>, Zen<T>>(t => t));
+    var finalState = Body.Evaluate<T>(astState);
+    return (Func<Zen<T>, Zen<T>>) (finalState.Return ??
+                                   throw new InvalidOperationException("No value returned by function."));
   }
 }

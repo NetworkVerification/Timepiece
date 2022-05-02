@@ -2,20 +2,20 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class UnaryOpExpr<TArg, TResult, TState> : Expr<TResult, TState>
+public class UnaryOpExpr<TArg, TResult> : Expr<TResult>
 {
-  private readonly Expr<TArg, TState> _expr;
+  private readonly Expr<TArg> _expr;
   private readonly Func<Zen<TArg>, Zen<TResult>> _unaryOp;
 
-  internal UnaryOpExpr(Expr<TArg, TState> expr, Func<Zen<TArg>, Zen<TResult>> unaryOp)
+  internal UnaryOpExpr(Expr<TArg> expr, Func<Zen<TArg>, Zen<TResult>> unaryOp)
   {
     _expr = expr;
     _unaryOp = unaryOp;
   }
 
-  public override Func<Zen<TState>, Zen<TResult>> Evaluate(AstState<TState> astState)
+  public override Func<Zen<TS>, Zen<TResult>> Evaluate<TS>(AstState astState)
   {
-    var f = _expr.Evaluate(astState);
+    var f = _expr.Evaluate<TS>(astState);
     return t => _unaryOp(f(t));
   }
 

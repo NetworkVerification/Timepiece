@@ -12,13 +12,13 @@ namespace Timekeeper.Json;
 
 using Route = Pair<bool, BatfishBgpRoute>;
 
-public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
+public class PairRouteAst : Ast<Route, Unit>
 {
   /// <summary>
   /// Default predicates to test for this AST.
   /// </summary>
   public static readonly AstPredicate<Route> IsValid = new("route",
-    new First<bool, BatfishBgpRoute, Route>(new Var<Route>("route")));
+    new First<bool, BatfishBgpRoute>(new Var<Route>("route")));
 
   /// <summary>
   /// Default import behavior for a route.
@@ -29,14 +29,14 @@ public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
   /// Default export behavior for a route.
   /// </summary>
   private static readonly AstFunction<Route> DefaultExport = new("arg", new Return<Route>(
-    new PairExpr<bool, BatfishBgpRoute, Route>(
-      new First<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-      new WithField<BatfishBgpRoute, BigInteger, Route>(new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
+    new PairExpr<bool, BatfishBgpRoute>(
+      new First<bool, BatfishBgpRoute>(new Var<Route>("arg")),
+      new WithField<BatfishBgpRoute, BigInteger>(new Second<bool, BatfishBgpRoute>(new Var<Route>("arg")),
         "AsPathLength",
-        new Plus<BigInteger, Route>(
-          new GetField<BatfishBgpRoute, BigInteger, Route>(
-            new Second<bool, BatfishBgpRoute, Route>(new Var<Route>("arg")),
-            "AsPathLength"), new ConstantExpr<BigInteger, Route>(1))))));
+        new Plus<BigInteger>(
+          new GetField<BatfishBgpRoute, BigInteger>(
+            new Second<bool, BatfishBgpRoute>(new Var<Route>("arg")),
+            "AsPathLength"), new ConstantExpr<BigInteger>(1))))));
 
   public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Ipv4Prefix? destination,
     Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
@@ -58,5 +58,10 @@ public class PairRouteAst : Ast<Pair<bool, BatfishBgpRoute>, Unit>
   public static ISerializationBinder Binder()
   {
     return new AstSerializationBinder<BatfishBgpRoute, Route>();
+  }
+
+  public static IContractResolver Resolver()
+  {
+    return new AstContractResolver();
   }
 }

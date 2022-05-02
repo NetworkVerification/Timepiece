@@ -1,6 +1,5 @@
 using System.Numerics;
 using NetTools;
-using Newtonsoft.Json.Linq;
 using Timekeeper.Datatypes;
 using Timekeeper.Json.TypedAst.AstExpr;
 using Timekeeper.Json.TypedAst.AstFunction;
@@ -32,7 +31,7 @@ public static class AstTests
       {
         GetAddressRange(node)
       }, policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
-      new Constants<Route>());
+      new Constants());
   }
 
   private static IPAddressRange GetAddressRange(string node)
@@ -74,7 +73,7 @@ public static class AstTests
   public static void TestSpAstBadMonolithic()
   {
     var badSp = SpAst;
-    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr<bool, Route>(false));
+    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr<bool>(false));
     Assert.True(badSp.ToNetwork().CheckMonolithic().HasValue);
   }
 }

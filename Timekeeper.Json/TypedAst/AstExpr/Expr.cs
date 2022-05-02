@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public abstract class Expr<T, TState> : IRenameable, IEvaluable<TState, T>
+public abstract class Expr<T> : IRenameable
 {
-  public abstract Func<Zen<TState>, Zen<T>> Evaluate(AstState<TState> astState);
+  public abstract Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState);
 
   /// <summary>
   ///   Rename (in-place) all instances of assignments to a variable oldVar in the expression

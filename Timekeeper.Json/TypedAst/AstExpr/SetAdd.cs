@@ -2,11 +2,10 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class SetAdd<TState> : BinaryOpExpr<string, FBag<string>, FBag<string>, TState>
+public class SetAdd : BinaryOpExpr<string, Set<string>, Set<string>>
 {
-  // TODO: change to AddIfSpace?
-  public SetAdd(Expr<string, TState> expr1, Expr<FBag<string>, TState> expr2) : base(expr1, expr2,
-    (s, set) => set.Add(s))
+  public SetAdd(Expr<string> expr, Expr<Set<string>> set) : base(expr, set,
+    (s, st) => st.Add(s))
   {
   }
 }

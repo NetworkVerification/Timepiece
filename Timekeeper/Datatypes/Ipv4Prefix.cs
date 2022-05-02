@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Net;
 using NetTools;
@@ -10,10 +9,10 @@ namespace Timekeeper.Datatypes;
 /// <summary>
 /// A Zen-friendly representation of an IPv4 prefix.
 /// </summary>
-public readonly struct Ipv4Prefix
+public struct Ipv4Prefix
 {
-  public uint Prefix { get; }
-  public UInt6 PrefixLength { get; }
+  public uint Prefix { get; set; }
+  public UInt6 PrefixLength { get; set; }
 
   public Ipv4Prefix()
   {

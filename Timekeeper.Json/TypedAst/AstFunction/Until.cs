@@ -20,8 +20,8 @@ public class Until<T> : AstTemporalOperator<T>
 
   public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter)
   {
-    var beforeF = getter(Before).Evaluate(new AstState<T>());
-    var afterF = getter(After).Evaluate(new AstState<T>());
+    var beforeF = getter(Before).Evaluate(new AstState());
+    var afterF = getter(After).Evaluate(new AstState());
     return Lang.Until(Time, beforeF, afterF);
   }
 

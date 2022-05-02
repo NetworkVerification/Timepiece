@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstStmt;
 
-public abstract class Statement<T, TState> : IRenameable
+public abstract class Statement<T> : IRenameable
 {
   /// <summary>
   ///   Rename all instances of assignments to a variable oldVar in the statement
@@ -13,7 +13,7 @@ public abstract class Statement<T, TState> : IRenameable
   /// <returns>The same statement but with a new variable name.</returns>
   public abstract void Rename(string oldVar, string newVar);
 
-  public abstract AstState<TState> Evaluate(AstState<TState> astState);
+  public abstract AstState Evaluate<TS>(AstState astState);
 
   /// <summary>
   ///   Convert the statement to an assignment to a given variable.
@@ -22,5 +22,5 @@ public abstract class Statement<T, TState> : IRenameable
   /// </summary>
   /// <param name="var">The name of the variable to bind.</param>
   /// <returns>A new statement assigning the result </returns>
-  public abstract Statement<Unit, TState> Bind(string var);
+  public abstract Statement<Unit> Bind(string var);
 }

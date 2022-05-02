@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class Call<T> : Expr<T, T>
+public class Call<T> : Expr<T>
 {
   public Call(string name)
   {
@@ -11,7 +11,7 @@ public class Call<T> : Expr<T, T>
 
   public string Name { get; set; }
 
-  public override Func<Zen<T>, Zen<T>> Evaluate(AstState<T> astState)
+  public override Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState)
   {
     throw new NotImplementedException();
   }

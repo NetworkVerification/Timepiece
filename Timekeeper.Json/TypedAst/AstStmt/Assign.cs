@@ -3,9 +3,9 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstStmt;
 
-public class Assign<T> : Statement<Unit, T>
+public class Assign<T> : Statement<Unit>
 {
-  public Assign(string var, Expr<T, T> expr)
+  public Assign(string var, Expr<T> expr)
   {
     Var = var;
     Expr = expr;
@@ -14,20 +14,20 @@ public class Assign<T> : Statement<Unit, T>
   /// <summary>
   ///   Right-hand side of the assignment.
   /// </summary>
-  public Expr<T, T> Expr { get; set; }
+  public Expr<T> Expr { get; set; }
 
   /// <summary>
   ///   The variable to assign.
   /// </summary>
   public string Var { get; set; }
 
-  public override AstState<T> Evaluate(AstState<T> astState)
+  public override AstState Evaluate<TS>(AstState astState)
   {
-    astState[Var] = Expr.Evaluate(astState);
+    astState[Var] = Expr.Evaluate<T>(astState);
     return astState;
   }
 
-  public override Statement<Unit, T> Bind(string var)
+  public override Statement<Unit> Bind(string var)
   {
     return this;
   }

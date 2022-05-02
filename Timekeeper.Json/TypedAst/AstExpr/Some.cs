@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class Some<T, TState> : UnaryOpExpr<T, Option<T>, TState>
+public class Some<T> : UnaryOpExpr<T, Option<T>>
 {
-  public Some(Expr<T, TState> value) : base(value, Option.Create)
+  public Some(Expr<T> value) : base(value, Option.Create)
   {
   }
 }

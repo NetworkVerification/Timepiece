@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using NetTools;
+using Newtonsoft.Json;
 using Timekeeper.Json.TypedAst.AstFunction;
 using ZenLib;
 
@@ -14,7 +15,7 @@ public class NodeProperties<T>
 {
   public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
     string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
-    Constants<T> constants)
+    Constants constants)
   {
     Prefixes = prefixes;
     Policies = policies;
@@ -33,7 +34,7 @@ public class NodeProperties<T>
   /// <summary>
   ///   Additional constant declarations.
   /// </summary>
-  public Constants<T> Constants { get; set; }
+  public Constants Constants { get; set; }
 
   public AstTemporalOperator<T>? Temporal { get; set; }
 
@@ -72,7 +73,7 @@ public class NodeProperties<T>
 
     var safetyProperty = Stable is null
       ? _ => true
-      : predicateLookupFunction(Stable).Evaluate(new AstState<T>());
+      : predicateLookupFunction(Stable).Evaluate(new AstState());
 
     var invariant = Temporal is null
       ? (_, _) => true
@@ -84,8 +85,8 @@ public class NodeProperties<T>
     {
       var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
       var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate(new AstState<T>());
-      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate(new AstState<T>());
+      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate(new AstState());
+      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate(new AstState());
     }
 
     return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),

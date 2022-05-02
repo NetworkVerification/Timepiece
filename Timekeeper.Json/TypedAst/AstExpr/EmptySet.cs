@@ -2,11 +2,11 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class EmptySet<TState> : Expr<FBag<string>, TState>
+public class EmptySet : Expr<Set<string>>
 {
-  public override Func<Zen<TState>, Zen<FBag<string>>> Evaluate(AstState<TState> astState)
+  public override Func<Zen<TS>, Zen<Set<string>>> Evaluate<TS>(AstState astState)
   {
-    return _ => Zen.Create<FBag<string>>();
+    return _ => Zen.Create<Set<string>>();
   }
 
   public override void Rename(string oldVar, string newVar)

@@ -3,30 +3,30 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstStmt;
 
-public class IfThenElse<T, TState> : Statement<T, TState>
+public class IfThenElse<T> : Statement<T>
 {
-  public IfThenElse(Expr<bool, TState> guard, Statement<T, TState> trueStatement, Statement<T, TState> falseStatement)
+  public IfThenElse(Expr<bool> guard, Statement<T> trueStatement, Statement<T> falseStatement)
   {
     Guard = guard;
     TrueStatement = trueStatement;
     FalseStatement = falseStatement;
   }
 
-  public Expr<bool, TState> Guard { get; }
-  public Statement<T, TState> TrueStatement { get; }
-  public Statement<T, TState> FalseStatement { get; }
+  public Expr<bool> Guard { get; }
+  public Statement<T> TrueStatement { get; }
+  public Statement<T> FalseStatement { get; }
 
-  public override AstState<TState> Evaluate(AstState<TState> astState)
+  public override AstState Evaluate<TS>(AstState astState)
   {
-    var trueState = TrueStatement.Evaluate(astState);
-    var falseState = FalseStatement.Evaluate(astState);
-    trueState.Join(falseState, Guard.Evaluate(astState));
+    var trueState = TrueStatement.Evaluate<TS>(astState);
+    var falseState = FalseStatement.Evaluate<TS>(astState);
+    trueState.Join(falseState, Guard.Evaluate<TS>(astState));
     return trueState;
   }
 
-  public override Statement<Unit, TState> Bind(string var)
+  public override Statement<Unit> Bind(string var)
   {
-    return new IfThenElse<Unit, TState>(Guard, TrueStatement.Bind(var), FalseStatement.Bind(var));
+    return new IfThenElse<Unit>(Guard, TrueStatement.Bind(var), FalseStatement.Bind(var));
   }
 
   public override void Rename(string oldVar, string newVar)

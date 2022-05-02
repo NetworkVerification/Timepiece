@@ -8,22 +8,22 @@ public static class AstExprTests
   [Fact]
   public static void TestBinaryOpExprs()
   {
-    var e1 = new And<bool>(new ConstantExpr<bool, bool>(true), new ConstantExpr<bool, bool>(false));
-    var e2 = new And<bool>(new ConstantExpr<bool, bool>(true), new Not<bool>(new ConstantExpr<bool, bool>(false)));
-    var e3 = new Or<bool>(e1, e2);
-    var f = e3.Evaluate(new AstState<bool>());
-    var model = f(Zen.False()).Solve();
+    var e1 = new And(new ConstantExpr<bool>(true), new ConstantExpr<bool>(false));
+    var e2 = new And(new ConstantExpr<bool>(true), new Not(new ConstantExpr<bool>(false)));
+    var e3 = new Or(e1, e2);
+    var f = e3.Evaluate<Unit>(new AstState());
+    var model = f(new Unit()).Solve();
     Assert.True(model.IsSatisfiable());
   }
 
   [Fact]
   public static void TestAssociativeBinaryExprs()
   {
-    var e1 = new And<bool>(new[] {new ConstantExpr<bool, bool>(true)});
-    var e2 = new Or<bool>(new Expr<bool, bool>[]
-      {new ConstantExpr<bool, bool>(true), new ConstantExpr<bool, bool>(false), e1});
-    var f = e2.Evaluate(new AstState<bool>());
-    var model = f(Zen.False()).Solve();
+    var e1 = new And(new[] {new ConstantExpr<bool>(true)});
+    var e2 = new Or(new Expr<bool>[]
+      {new ConstantExpr<bool>(true), new ConstantExpr<bool>(false), e1});
+    var f = e2.Evaluate<Unit>(new AstState());
+    var model = f(new Unit()).Solve();
     Assert.True(model.IsSatisfiable());
   }
 }

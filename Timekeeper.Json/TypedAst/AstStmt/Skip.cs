@@ -2,14 +2,14 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstStmt;
 
-public class Skip<T> : Statement<Unit, T>
+public class Skip : Statement<Unit>
 {
-  public override AstState<T> Evaluate(AstState<T> astState)
+  public override AstState Evaluate<TS>(AstState astState)
   {
     return astState;
   }
 
-  public override Statement<Unit, T> Bind(string var)
+  public override Statement<Unit> Bind(string var)
   {
     return this;
   }

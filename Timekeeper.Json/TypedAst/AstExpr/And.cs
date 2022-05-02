@@ -3,14 +3,14 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class And<T> : AssociativeBinaryExpr<bool, T>
+public class And : AssociativeBinaryExpr<bool>
 {
-  public And(Expr<bool, T> expr1, Expr<bool, T> expr2) : base(expr1, expr2, Zen.And)
+  public And(Expr<bool> expr1, Expr<bool> expr2) : base(expr1, expr2, Zen.And)
   {
   }
 
   [JsonConstructor]
-  public And(IEnumerable<Expr<bool, T>> es) : base(es, new ConstantExpr<bool, T>(true), Zen.And)
+  public And(IEnumerable<Expr<bool>> es) : base(es, new ConstantExpr<bool>(true), Zen.And)
   {
   }
 }

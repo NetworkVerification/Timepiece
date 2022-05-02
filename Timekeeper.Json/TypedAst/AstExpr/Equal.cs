@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class Equal<T, TState> : BinaryOpExpr<T, T, bool, TState>
+public class Equal<T> : BinaryOpExpr<T, T, bool>
 {
-  public Equal(Expr<T, TState> expr1, Expr<T, TState> expr2) : base(expr1, expr2, Zen.Eq)
+  public Equal(Expr<T> expr1, Expr<T> expr2) : base(expr1, expr2, Zen.Eq)
   {
   }
 }

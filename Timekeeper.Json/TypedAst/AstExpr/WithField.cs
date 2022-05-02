@@ -2,25 +2,25 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class WithField<T1, T2, TState> : Expr<T1, TState>
+public class WithField<T1, T2> : Expr<T1>
 {
-  public WithField(Expr<T1, TState> record, string fieldName, Expr<T2, TState> fieldValue)
+  public WithField(Expr<T1> record, string fieldName, Expr<T2> fieldValue)
   {
     Record = record;
     FieldName = fieldName;
     FieldValue = fieldValue;
   }
 
-  public Expr<T1, TState> Record { get; set; }
+  public Expr<T1> Record { get; set; }
   public string FieldName { get; set; }
 
-  public Expr<T2, TState> FieldValue { get; set; }
+  public Expr<T2> FieldValue { get; set; }
 
-  public override Func<Zen<TState>, Zen<T1>> Evaluate(AstState<TState> astState)
+  public override Func<Zen<TS>, Zen<T1>> Evaluate<TS>(AstState astState)
   {
-    var rf = Record.Evaluate(astState);
-    var vf = FieldValue.Evaluate(astState);
-    return r => rf(r).WithField(FieldName, vf(r));
+    var rf = Record.Evaluate<TS>(astState);
+    var vf = FieldValue.Evaluate<TS>(astState);
+    return t => rf(t).WithField(FieldName, vf(t));
   }
 
   public override void Rename(string oldVar, string newVar)

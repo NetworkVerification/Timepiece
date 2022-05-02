@@ -14,7 +14,7 @@ public class Globally<T> : AstTemporalOperator<T>
 
   public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter)
   {
-    var f = getter(Predicate).Evaluate(new AstState<T>());
+    var f = getter(Predicate).Evaluate(new AstState());
     return Lang.Globally(f);
   }
 

@@ -1,18 +1,17 @@
 using Newtonsoft.Json.Serialization;
-using Timekeeper.Json.TypedAst;
 
-namespace Timekeeper.Json;
+namespace Timekeeper.Json.TypedAst;
 
-public class AstContractResolver<TState> : DefaultContractResolver
+public class AstContractResolver : DefaultContractResolver
 {
-  public static readonly AstContractResolver<TState> Instance = new();
+  public static readonly AstContractResolver Instance = new();
 
   protected override JsonContract CreateContract(Type objectType)
   {
     var contract = base.CreateContract(objectType);
     if (objectType == typeof(Dictionary<string, object>))
     {
-      contract.Converter = new ConstantsConverter<TState>();
+      contract.Converter = new ConstantsConverter();
     }
 
     return contract;

@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class Second<TA, TB, TState> : UnaryOpExpr<Pair<TA, TB>, TB, TState>
+public class Second<TA, TB> : UnaryOpExpr<Pair<TA, TB>, TB>
 {
-  public Second(Expr<Pair<TA, TB>, TState> pair) : base(pair, p => p.Item2())
+  public Second(Expr<Pair<TA, TB>> pair) : base(pair, p => p.Item2())
   {
   }
 }

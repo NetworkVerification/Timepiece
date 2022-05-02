@@ -2,9 +2,9 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public class Havoc<TState> : Expr<bool, TState>
+public class Havoc : Expr<bool>
 {
-  public override Func<Zen<TState>, Zen<bool>> Evaluate(AstState<TState> astState)
+  public override Func<Zen<TS>, Zen<bool>> Evaluate<TS>(AstState astState)
   {
     return _ => Zen.Symbolic<bool>();
   }
