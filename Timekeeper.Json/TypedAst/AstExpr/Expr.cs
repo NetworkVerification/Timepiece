@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstExpr;
 
-public abstract class Expr<T> : IRenameable
+public abstract class Expr<T> : IRenameable, IExpr
 {
   public abstract Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState);
 

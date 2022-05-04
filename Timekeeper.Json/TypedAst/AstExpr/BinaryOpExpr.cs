@@ -4,29 +4,29 @@ namespace Timekeeper.Json.TypedAst.AstExpr;
 
 public class BinaryOpExpr<TArg1, TArg2, TResult> : Expr<TResult>
 {
-  private readonly Func<Zen<TArg1>, Zen<TArg2>, Zen<TResult>> _binaryOp;
-  private readonly Expr<TArg1> _expr1;
-  private readonly Expr<TArg2> _expr2;
+  public readonly Func<Zen<TArg1>, Zen<TArg2>, Zen<TResult>> binaryOp;
+  public readonly Expr<TArg1> expr1;
+  public readonly Expr<TArg2> expr2;
 
   internal BinaryOpExpr(Expr<TArg1> expr1, Expr<TArg2> expr2,
     Func<Zen<TArg1>, Zen<TArg2>, Zen<TResult>> binaryOp)
   {
-    _expr1 = expr1;
-    _expr2 = expr2;
-    _binaryOp = binaryOp;
+    this.expr1 = expr1;
+    this.expr2 = expr2;
+    this.binaryOp = binaryOp;
   }
 
   public override Func<Zen<TS>, Zen<TResult>> Evaluate<TS>(AstState astState)
   {
-    var f1 = _expr1.Evaluate<TS>(astState);
-    var f2 = _expr2.Evaluate<TS>(astState);
-    return t => _binaryOp(f1(t), f2(t));
+    var f1 = expr1.Evaluate<TS>(astState);
+    var f2 = expr2.Evaluate<TS>(astState);
+    return t => binaryOp(f1(t), f2(t));
   }
 
   public override void Rename(string oldVar, string newVar)
   {
-    _expr1.Rename(oldVar, newVar);
-    _expr2.Rename(oldVar, newVar);
+    expr1.Rename(oldVar, newVar);
+    expr2.Rename(oldVar, newVar);
   }
 }
 

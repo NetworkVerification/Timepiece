@@ -12,6 +12,7 @@ namespace Timekeeper.Datatypes;
 public struct Ipv4Prefix
 {
   public uint Prefix { get; set; }
+  // TODO: constrain to at most 32
   public UInt6 PrefixLength { get; set; }
 
   public Ipv4Prefix()

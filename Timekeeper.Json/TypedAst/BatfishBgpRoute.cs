@@ -5,7 +5,8 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst;
 
-public record struct BatfishBgpRoute
+[ZenObject]
+public class BatfishBgpRoute
 {
   public BatfishBgpRoute()
   {
@@ -71,62 +72,12 @@ public record struct BatfishBgpRoute
 
 public static class BatfishBgpRouteExtensions
 {
-  public static Zen<uint> GetLp(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, uint>("Lp");
-  }
-
-  public static Zen<BatfishBgpRoute> WithLp(this Zen<BatfishBgpRoute> b, Zen<uint> lp)
-  {
-    return b.WithField("Lp", lp);
-  }
-
-  public static Zen<BigInteger> GetAsPathLength(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, BigInteger>("AsPathLength");
-  }
-
-  public static Zen<BatfishBgpRoute> WithAsPathLength(this Zen<BatfishBgpRoute> b, Zen<BigInteger> asPathLength)
-  {
-    return b.WithField("AsPathLength", asPathLength);
-  }
-
-  public static Zen<uint> GetMed(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, uint>("Med");
-  }
-
-  public static Zen<BatfishBgpRoute> WithMed(this Zen<BatfishBgpRoute> b, Zen<uint> med)
-  {
-    return b.WithField("Med", med);
-  }
-
-  public static Zen<Int2> GetOriginType(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, Int2>("OriginType");
-  }
-
-  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<Int2> originType)
-  {
-    return b.WithField("OriginType", originType);
-  }
-
-  public static Zen<Set<string>> GetCommunities(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, Set<string>>("Communities");
-  }
-
-  public static Zen<BatfishBgpRoute> WithCommunities(this Zen<BatfishBgpRoute> b, Zen<Set<string>> communities)
-  {
-    return b.WithField("Communities", communities);
-  }
-
   public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
   {
-    return Lang.CompareBy(GetLp, Zen.Gt,
-      Lang.CompareBy(GetAsPathLength, Zen.Lt,
-        Lang.CompareBy(GetOriginType, Zen.Gt,
-          Lang.CompareBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt))))(b1, b2);
+    return Lang.CompareBy(b => b.GetLp(), Zen.Gt,
+      Lang.CompareBy(b => b.GetAsPathLength(), Zen.Lt,
+        Lang.CompareBy(b => b.GetOriginType(), Zen.Gt,
+          Lang.CompareBy<BatfishBgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
   }
 
   public static Zen<Pair<bool, BatfishBgpRoute>> MinPair(this Zen<Pair<bool, BatfishBgpRoute>> b1,

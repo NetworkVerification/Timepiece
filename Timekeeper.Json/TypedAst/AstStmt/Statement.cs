@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Timekeeper.Json.TypedAst.AstStmt;
 
-public abstract class Statement<T> : IRenameable
+public abstract class Statement<T> : IRenameable, IStatement
 {
   /// <summary>
   ///   Rename all instances of assignments to a variable oldVar in the statement

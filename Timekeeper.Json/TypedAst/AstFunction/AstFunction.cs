@@ -59,4 +59,14 @@ public class AstFunction<T> : AstFunctionBase<T, Statement<T>>
     return (Func<Zen<T>, Zen<T>>) (finalState.Return ??
                                    throw new InvalidOperationException("No value returned by function."));
   }
+
+  public Func<Zen<T>, Zen<T>> Evaluate(AstEnvironment env)
+  {
+    return t =>
+    {
+      var env1 = env.With(Arg, t);
+      var env2 = env1.EvaluateStmt(Body);
+      return (Zen<T>) env2["##return##"];
+    };
+  }
 }
