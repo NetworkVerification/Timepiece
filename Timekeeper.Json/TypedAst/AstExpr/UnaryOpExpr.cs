@@ -13,10 +13,10 @@ public class UnaryOpExpr<TArg, TResult> : Expr<TResult>
     this.unaryOp = unaryOp;
   }
 
-  public override Func<Zen<TS>, Zen<TResult>> Evaluate<TS>(AstState astState)
+  public override Zen<TResult> Evaluate(AstState astState)
   {
-    var f = expr.Evaluate<TS>(astState);
-    return t => unaryOp(f(t));
+    var t = expr.Evaluate(astState);
+    return unaryOp(t);
   }
 
   public override void Rename(string oldVar, string newVar)

@@ -4,9 +4,9 @@ namespace Timekeeper.Json.TypedAst.AstExpr;
 
 public class EmptySet : Expr<Set<string>>
 {
-  public override Func<Zen<TS>, Zen<Set<string>>> Evaluate<TS>(AstState astState)
+  public override Zen<Set<string>> Evaluate(AstState astState)
   {
-    return _ => Zen.Create<Set<string>>();
+    return Zen.Create<Set<string>>();
   }
 
   public override void Rename(string oldVar, string newVar)

@@ -11,12 +11,12 @@ public class Var<T> : Expr<T>
 
   public string Name { get; set; }
 
-  public override Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState)
+  public override Zen<T> Evaluate(AstState astState)
   {
     if (!astState.ContainsVar(Name))
       throw new ArgumentOutOfRangeException($"Variable {Name} unbound in the given astState.");
 
-    return (Func<Zen<TS>, Zen<T>>) astState[Name];
+    return astState[Name];
   }
 
   public override void Rename(string oldVar, string newVar)

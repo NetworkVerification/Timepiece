@@ -16,11 +16,11 @@ public class WithField<T1, T2> : Expr<T1>
 
   public Expr<T2> FieldValue { get; set; }
 
-  public override Func<Zen<TS>, Zen<T1>> Evaluate<TS>(AstState astState)
+  public override Zen<T1> Evaluate(AstState astState)
   {
-    var rf = Record.Evaluate<TS>(astState);
-    var vf = FieldValue.Evaluate<TS>(astState);
-    return t => rf(t).WithField(FieldName, vf(t));
+    var r = Record.Evaluate(astState);
+    var v = FieldValue.Evaluate(astState);
+    return r.WithField(FieldName, v);
   }
 
   public override void Rename(string oldVar, string newVar)

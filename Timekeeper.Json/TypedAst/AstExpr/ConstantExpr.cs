@@ -11,9 +11,9 @@ public class ConstantExpr<T> : Expr<T>
     this.value = value;
   }
 
-  public override Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState)
+  public override Zen<T> Evaluate(AstState astState)
   {
-    return _ => Zen.Constant(value);
+    return Zen.Constant(value);
   }
 
   public override void Rename(string oldVar, string newVar)
