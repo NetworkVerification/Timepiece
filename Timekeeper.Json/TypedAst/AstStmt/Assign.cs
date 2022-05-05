@@ -23,7 +23,7 @@ public class Assign<T> : Statement<Unit>
 
   public override AstState Evaluate<TS>(AstState astState)
   {
-    astState[Var] = Expr.Evaluate<T>(astState);
+    astState[Var] = Expr.Evaluate(astState);
     return astState;
   }
 

@@ -13,9 +13,13 @@ public class AstPredicate<T> : AstFunctionBase<T, Expr<bool>>
   {
   }
 
-  public Func<Zen<T>, Zen<bool>> Evaluate(AstState astState)
+  public Func<Zen<T>, Zen<bool>> Evaluate()
   {
-    astState.Add(Arg, new Func<Zen<T>, Zen<T>>(t => t));
-    return Body.Evaluate<T>(astState);
+    return t =>
+    {
+      var astState = new AstState();
+      astState.Add(Arg, t);
+      return Body.Evaluate(astState);
+    };
   }
 }

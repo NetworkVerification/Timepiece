@@ -4,7 +4,7 @@ namespace Timekeeper.Json.TypedAst.AstExpr;
 
 public abstract class Expr<T> : IRenameable, IExpr
 {
-  public abstract Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState);
+  public abstract Zen<T> Evaluate(AstState astState);
 
   /// <summary>
   ///   Rename (in-place) all instances of assignments to a variable oldVar in the expression

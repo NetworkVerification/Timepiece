@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using NetTools;
-using Newtonsoft.Json;
 using Timekeeper.Json.TypedAst.AstFunction;
 using ZenLib;
 
@@ -73,7 +72,7 @@ public class NodeProperties<T>
 
     var safetyProperty = Stable is null
       ? _ => true
-      : predicateLookupFunction(Stable).Evaluate(new AstState());
+      : predicateLookupFunction(Stable).Evaluate();
 
     var invariant = Temporal is null
       ? (_, _) => true
@@ -85,8 +84,8 @@ public class NodeProperties<T>
     {
       var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
       var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate(new AstState());
-      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate(new AstState());
+      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate();
+      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate();
     }
 
     return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),

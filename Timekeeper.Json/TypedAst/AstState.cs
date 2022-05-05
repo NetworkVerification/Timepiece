@@ -4,8 +4,7 @@ namespace Timekeeper.Json.TypedAst;
 
 /// <summary>
 /// Representation of the AST state as a mapping from variable names to values.
-/// All values are unary functions with type T1 -> T2, for some fixed type T1
-/// and some arbitrary type T2.
+/// All values are Zen values.
 /// </summary>
 public class AstState
 {
@@ -14,17 +13,17 @@ public class AstState
   /// </summary>
   public AstState()
   {
-    Variables = new Dictionary<string, object>();
+    Variables = new Dictionary<string, dynamic>();
   }
 
   /// <summary>
   ///   A mapping from variable names to values.
   /// </summary>
-  private Dictionary<string, object> Variables { get; }
+  private Dictionary<string, dynamic> Variables { get; }
 
-  public object? Return { get; set; }
+  public dynamic? Return { get; set; }
 
-  public object this[string var]
+  public dynamic this[string var]
   {
     get => Variables[var];
     set => Variables[var] = value;
@@ -41,7 +40,7 @@ public class AstState
   /// </summary>
   /// <param name="var">The name of the variable.</param>
   /// <param name="val">Its unary function to be bound to.</param>
-  public void Add(string var, object val)
+  public void Add(string var, dynamic val)
   {
     Variables.Add(var, val);
   }
@@ -54,7 +53,7 @@ public class AstState
   /// </summary>
   /// <param name="other">Another AstState to use.</param>
   /// <param name="guard">A boolean expression acting as the guard.</param>
-  public void Join<T>(AstState other, Func<Zen<T>, Zen<bool>> guard)
+  public void Join<T>(AstState other, Zen<bool> guard)
   {
     // make both states have the same keys
     foreach (var key in Variables.Keys.Where(key => !other.ContainsVar(key)))
@@ -63,11 +62,10 @@ public class AstState
     foreach (var key in other.Variables.Keys.Where(key => !ContainsVar(key)))
       Add(key, new Func<Zen<T>, Zen<T>>(t => t));
 
-    foreach (var (key, value) in other.Variables)
+    foreach (var (key, falseCase) in other.Variables)
     {
-      var trueCase = (Func<Zen<T>, Zen<T>>) this[key];
-      var falseCase = (Func<Zen<T>, Zen<T>>) value;
-      this[key] = new Func<Zen<T>, Zen<T>>(t => Zen.If(guard(t), trueCase(t), falseCase(t)));
+      var trueCase = this[key];
+      this[key] = Zen.If(guard, trueCase, falseCase);
     }
   }
 }

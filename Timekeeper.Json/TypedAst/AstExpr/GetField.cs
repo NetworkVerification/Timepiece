@@ -19,10 +19,10 @@ public class GetField<T1, T2> : Expr<T2>
   public Expr<T1> Record { get; set; }
   public string FieldName { get; set; }
 
-  public override Func<Zen<TS>, Zen<T2>> Evaluate<TS>(AstState astState)
+  public override Zen<T2> Evaluate(AstState astState)
   {
-    var f = Record.Evaluate<TS>(astState);
-    return t => f(t).GetField<T1, T2>(FieldName);
+    var r = Record.Evaluate(astState);
+    return r.GetField<T1, T2>(FieldName);
   }
 
   public override void Rename(string oldVar, string newVar)

@@ -11,7 +11,7 @@ public class Call<T> : Expr<T>
 
   public string Name { get; set; }
 
-  public override Func<Zen<TS>, Zen<T>> Evaluate<TS>(AstState astState)
+  public override Zen<T> Evaluate(AstState astState)
   {
     throw new NotImplementedException();
   }

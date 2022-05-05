@@ -14,7 +14,7 @@ public class Return<T> : Statement<T>
 
   public override AstState Evaluate<TS>(AstState astState)
   {
-    astState.Return = Expr.Evaluate<T>(astState);
+    astState.Return = Expr.Evaluate(astState);
     return astState;
   }
 

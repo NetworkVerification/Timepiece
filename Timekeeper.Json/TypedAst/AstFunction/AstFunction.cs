@@ -52,21 +52,14 @@ public class AstFunction<T> : AstFunctionBase<T, Statement<T>>
     return functions.Aggregate(seed, (current, ff) => current.Compose(ff));
   }
 
-  public Func<Zen<T>, Zen<T>> Evaluate(AstState astState)
-  {
-    astState.Add(Arg, new Func<Zen<T>, Zen<T>>(t => t));
-    var finalState = Body.Evaluate<T>(astState);
-    return (Func<Zen<T>, Zen<T>>) (finalState.Return ??
-                                   throw new InvalidOperationException("No value returned by function."));
-  }
-
-  public Func<Zen<T>, Zen<T>> Evaluate(AstEnvironment env)
+  public Func<Zen<T>, Zen<T>> Evaluate()
   {
     return t =>
     {
-      var env1 = env.With(Arg, t);
-      var env2 = env1.EvaluateStmt(Body);
-      return (Zen<T>) env2["##return##"];
+      var astState = new AstState();
+      astState.Add(Arg, t);
+      return (Zen<T>) (Body.Evaluate<T>(astState).Return ??
+                       throw new InvalidOperationException("No value returned by function."));
     };
   }
 }

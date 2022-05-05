@@ -16,11 +16,11 @@ public class BinaryOpExpr<TArg1, TArg2, TResult> : Expr<TResult>
     this.binaryOp = binaryOp;
   }
 
-  public override Func<Zen<TS>, Zen<TResult>> Evaluate<TS>(AstState astState)
+  public override Zen<TResult> Evaluate(AstState astState)
   {
-    var f1 = expr1.Evaluate<TS>(astState);
-    var f2 = expr2.Evaluate<TS>(astState);
-    return t => binaryOp(f1(t), f2(t));
+    var t1 = expr1.Evaluate(astState);
+    var t2 = expr2.Evaluate(astState);
+    return binaryOp(t1, t2);
   }
 
   public override void Rename(string oldVar, string newVar)

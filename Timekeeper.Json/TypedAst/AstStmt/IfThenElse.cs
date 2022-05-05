@@ -20,7 +20,7 @@ public class IfThenElse<T> : Statement<T>
   {
     var trueState = TrueStatement.Evaluate<TS>(astState);
     var falseState = FalseStatement.Evaluate<TS>(astState);
-    trueState.Join(falseState, Guard.Evaluate<TS>(astState));
+    trueState.Join<TS>(falseState, Guard.Evaluate(astState));
     return trueState;
   }
 
