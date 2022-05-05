@@ -24,9 +24,4 @@ public class Call : Expr
       argument.Rename(oldVar, newVar);
     }
   }
-
-  public override dynamic Evaluate(AstState state)
-  {
-    throw new NotImplementedException();
-  }
 }

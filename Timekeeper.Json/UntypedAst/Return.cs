@@ -8,13 +8,9 @@ public class Return : Statement
   }
 
   public Expr Expr { get; set; }
+
   public override void Rename(string oldVar, string newVar)
   {
     Expr.Rename(oldVar, newVar);
-  }
-
-  public virtual AstState Evaluate(AstState state)
-  {
-    throw new NotImplementedException();
   }
 }

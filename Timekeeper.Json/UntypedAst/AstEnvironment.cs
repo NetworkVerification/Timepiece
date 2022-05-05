@@ -1,9 +1,7 @@
 using System.Collections.Immutable;
-using Timekeeper.Json.TypedAst.AstExpr;
-using Timekeeper.Json.TypedAst.AstStmt;
 using ZenLib;
 
-namespace Timekeeper.Json.TypedAst;
+namespace Timekeeper.Json.UntypedAst;
 
 public class AstEnvironment
 {
@@ -17,37 +15,43 @@ public class AstEnvironment
 
   public object this[string var] => _env[var];
 
-  public AstEnvironment() : this(ImmutableDictionary<string, dynamic>.Empty) { }
+  public AstEnvironment() : this(ImmutableDictionary<string, dynamic>.Empty)
+  {
+  }
 
   public AstEnvironment With(string var, object val)
   {
     return new AstEnvironment(_env.SetItem(var, val));
   }
 
-  private dynamic EvaluateExpr2(IExpr e)
+  private dynamic EvaluateExpr(Expr e)
   {
     return e switch
     {
-      Var<dynamic> v => _env[v.Name],
+      Call => throw new NotImplementedException(),
+      ConstantExpr constant => Zen.Constant(constant.value),
+      Var v => this[v.Name],
       Havoc => Zen.Symbolic<bool>(),
-      ConstantExpr<int> c => Zen.Constant(c.value),
-      SetContains setContains => Set.Contains(EvaluateExpr2(setContains.expr2), EvaluateExpr2(setContains.expr1)),
+      UnaryOpExpr uoe => uoe.unaryOp(EvaluateExpr(uoe.expr)),
+      BinaryOpExpr boe => boe.binaryOp(EvaluateExpr(boe.expr1), EvaluateExpr(boe.expr2)),
       _ => throw new ArgumentOutOfRangeException(nameof(e))
+      // SetContains setContains => Set.Contains(EvaluateExpr2(setContains.expr2), EvaluateExpr2(setContains.expr1)),
     };
   }
 
-  public AstEnvironment EvaluateStmt(IStatement s)
+  public AstEnvironment EvaluateStmt(Statement s)
   {
     return s switch
     {
-      Assign<dynamic> a => With(a.Var, EvaluateExpr2(a.Expr)),
-      Skip => this,
-      IfThenElse<dynamic> ite => EvaluateStmt(ite.TrueStatement).Join(EvaluateStmt(ite.FalseStatement), EvaluateExpr2(ite.Guard)),
-      AstStmt.Seq<dynamic> seq => EvaluateStmt(seq.S1).EvaluateStmt(seq.S2),
-      Return<dynamic> rt => With(ReturnValue, EvaluateExpr2(rt.Expr)),
+      Assign a => With(a.Name, EvaluateExpr(a.Expr)),
+      IfThenElse ite => EvaluateStmts(ite.ThenCase).Join(EvaluateStmts(ite.ElseCase), EvaluateExpr(ite.Guard)),
+      Return rt => With(ReturnValue, EvaluateExpr(rt.Expr)),
       _ => throw new ArgumentOutOfRangeException(nameof(s))
     };
   }
+
+  public AstEnvironment EvaluateStmts(IEnumerable<Statement> statements) =>
+    statements.Aggregate(this, (env, s) => env.EvaluateStmt(s));
 
   private AstEnvironment Join(AstEnvironment other, Zen<bool> guard)
   {
