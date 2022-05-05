@@ -1,4 +1,4 @@
-namespace Timekeeper.Json.UntypedAst;
+namespace Timekeeper.Json.UntypedAst.AstExpr;
 
 public abstract class Expr
 {
