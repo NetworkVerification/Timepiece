@@ -54,8 +54,7 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       // expressions
       "Var" => new TypeAlias(typeof(Var<>), new Type?[] {null}),
       // boolean expressions
-      "True" => new TypeAlias(typeof(ConstantExpr<bool>)),
-      "False" => new TypeAlias(typeof(ConstantExpr<bool>)),
+      "Bool" => new TypeAlias(typeof(ConstantExpr<bool>)),
       "And" => new TypeAlias(typeof(And)),
       "Or" => new TypeAlias(typeof(Or)),
       "Not" => new TypeAlias(typeof(Not)),
