@@ -1,0 +1,79 @@
+using System.Numerics;
+using NetTools;
+using Timepiece.Angler.TypedAst.AstExpr;
+using Timepiece.Angler.TypedAst.AstFunction;
+using Timepiece.Datatypes;
+using Xunit;
+using ZenLib;
+
+namespace Timepiece.Angler.TypedAst;
+
+using Route = Pair<bool, BatfishBgpRoute>;
+
+public static class AstTests
+{
+  private const string IsValid = "IsValid";
+  private static readonly Ipv4Prefix D = new("70.0.19.1");
+
+  private static readonly Dictionary<string, AstPredicate<Route>> Predicates = new()
+  {
+    {IsValid, PairRouteAst.IsValid}
+  };
+
+  private static readonly PairRouteAst SpAst = GenerateSpAst(4, FatTree.FatTreeLayer.Edge.Node(19));
+
+  private static NodeProperties<Route> GenerateProperties(string node,
+    IEnumerable<string> neighbors, BigInteger time)
+  {
+    var policies = new Dictionary<string, RoutingPolicies>(neighbors.Select(nbr =>
+      new KeyValuePair<string, RoutingPolicies>(nbr, new RoutingPolicies())));
+    return new NodeProperties<Route>(new List<IPAddressRange>
+      {
+        GetAddressRange(node)
+      }, policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
+      new Constants());
+  }
+
+  private static IPAddressRange GetAddressRange(string node)
+  {
+    var index = int.Parse(node[(node.IndexOf('-') + 1)..]);
+    return IPAddressRange.Parse($"70.0.{index}.0/24");
+  }
+
+  private static PairRouteAst GenerateSpAst(uint numPods, string destNode)
+  {
+    var topology = Topologies.FatTree(numPods);
+    var distances = topology.BreadthFirstSearch(destNode);
+    var props = topology.ForAllNodes(n =>
+      GenerateProperties(n, topology[n], distances[n]));
+    return new PairRouteAst(props, D, Predicates, new Dictionary<string, AstPredicate<Unit>>(), 5);
+  }
+
+  [Fact]
+  public static void TestSpAstGoodAnnotations()
+  {
+    Assert.False(SpAst.ToNetwork().CheckAnnotations().HasValue);
+  }
+
+  [Fact]
+  public static void TestSpAstGoodMonolithic()
+  {
+    Assert.False(SpAst.ToNetwork().CheckMonolithic().HasValue);
+  }
+
+  [Fact]
+  public static void TestSpAstBadAnnotations()
+  {
+    var badSp = SpAst;
+    badSp.Nodes[FatTree.FatTreeLayer.Edge.Node(19)].Temporal = new Finally<Route>(5, IsValid);
+    Assert.True(badSp.ToNetwork().CheckInductive().HasValue);
+  }
+
+  [Fact]
+  public static void TestSpAstBadMonolithic()
+  {
+    var badSp = SpAst;
+    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr<bool>(false));
+    Assert.True(badSp.ToNetwork().CheckMonolithic().HasValue);
+  }
+}
