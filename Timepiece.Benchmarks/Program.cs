@@ -3,7 +3,7 @@
 using System.CommandLine;
 using Timepiece.Benchmarks;
 
-var rootCommand = new RootCommand("Timekeeper benchmark runner");
+var rootCommand = new RootCommand("Timepiece benchmark runner");
 var sizeOption = new Option<uint>(
   new[] {"--size", "-k"},
   description: "The size of the benchmark (number of pods for fattrees)",
