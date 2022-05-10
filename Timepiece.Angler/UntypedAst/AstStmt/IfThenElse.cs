@@ -4,7 +4,7 @@ namespace Timepiece.Angler.UntypedAst.AstStmt;
 
 public class IfThenElse : Statement
 {
-  public IfThenElse(Expr guard, List<Statement> thenCase, List<Statement> elseCase)
+  public IfThenElse(Expr guard, IEnumerable<Statement> thenCase, IEnumerable<Statement> elseCase)
   {
     Guard = guard;
     ThenCase = thenCase;
@@ -12,13 +12,25 @@ public class IfThenElse : Statement
   }
 
   public Expr Guard { get; set; }
-  public List<Statement> ThenCase { get; set; }
-  public List<Statement> ElseCase { get; set; }
+  public IEnumerable<Statement> ThenCase { get; set; }
+  public IEnumerable<Statement> ElseCase { get; set; }
 
   public override void Rename(string oldVar, string newVar)
   {
     Guard.Rename(oldVar, newVar);
-    ThenCase.ForEach(s => s.Rename(oldVar, newVar));
-    ElseCase.ForEach(s => s.Rename(oldVar, newVar));
+    foreach (var s in ThenCase)
+    {
+      s.Rename(oldVar, newVar);
+    }
+
+    foreach (var s in ElseCase)
+    {
+      s.Rename(oldVar, newVar);
+    }
+  }
+
+  public override Statement Bind(string variable)
+  {
+    return new IfThenElse(Guard, ThenCase.Select(s => s.Bind(variable)), ElseCase.Select(s => s.Bind(variable)));
   }
 }

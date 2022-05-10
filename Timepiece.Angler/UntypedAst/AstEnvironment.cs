@@ -35,9 +35,9 @@ public class AstEnvironment
       Call => throw new NotImplementedException(),
       ConstantExpr constant => Zen.Constant(constant.value),
       GetField getField =>
-        EvaluateExpr(getField.record).GetField(getField.fieldName),
-      // typeof(Zen<>).GetMethod("GetField")!.MakeGenericMethod(getField.recordTy, getField.fieldTy)
-      // .Invoke(null, new object[] {EvaluateExpr(getField.record), getField.fieldName})!,
+        // EvaluateExpr(getField.record).GetField(getField.fieldName),
+        typeof(Zen).GetMethod("GetField")!.MakeGenericMethod(getField.recordTy, getField.fieldTy)
+          .Invoke(null, new object[] {EvaluateExpr(getField.record), getField.fieldName})!,
       Var v => this[v.Name],
       WithField withField => EvaluateExpr(withField.record)
         .WithField(withField.fieldName, EvaluateExpr(withField.fieldValue)),

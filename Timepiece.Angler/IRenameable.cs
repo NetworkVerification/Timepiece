@@ -1,4 +1,4 @@
-namespace Timepiece.Angler.TypedAst;
+namespace Timepiece.Angler;
 
 public interface IRenameable
 {

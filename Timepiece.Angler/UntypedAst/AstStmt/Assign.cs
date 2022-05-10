@@ -21,4 +21,9 @@ public class Assign : Statement
       Name = newVar;
     }
   }
+
+  public override Statement Bind(string variable)
+  {
+    return this;
+  }
 }
