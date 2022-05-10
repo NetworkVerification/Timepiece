@@ -1,6 +1,4 @@
-using Timepiece.Angler.TypedAst;
-using Timepiece.Angler.TypedAst.AstExpr;
-using Timepiece.Angler.TypedAst.AstFunction;
+using Timepiece.Angler.UntypedAst.AstExpr;
 using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstFunction;
@@ -9,19 +7,23 @@ namespace Timepiece.Angler.UntypedAst.AstFunction;
 ///   A unary function from type T to bool, aka a predicate over type T.
 /// </summary>
 /// <typeparam name="T">The predicate's argument type.</typeparam>
-public class AstPredicate<T> : AstFunctionBase<T, Expr<bool>>
+public class AstPredicate<T>
 {
-  public AstPredicate(string arg, Expr<bool> expr) : base(arg, expr)
+  public AstPredicate(string arg, Expr body)
   {
+    Arg = arg;
+    Body = body;
   }
+
+  public string Arg { get; set; }
+  public Expr Body { get; set; }
 
   public Func<Zen<T>, Zen<bool>> Evaluate()
   {
     return t =>
     {
-      var astState = new AstState();
-      astState.Add(Arg, t);
-      return Body.Evaluate(astState);
+      var astState = new AstEnvironment().Update(Arg, t);
+      return astState.EvaluateExpr(Body);
     };
   }
 }

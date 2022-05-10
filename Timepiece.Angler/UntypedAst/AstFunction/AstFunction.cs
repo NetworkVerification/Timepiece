@@ -10,11 +10,25 @@ namespace Timepiece.Angler.UntypedAst.AstFunction;
 ///   A unary function of type T to Option T.
 /// </summary>
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
-public class AstFunction<T> : AstFunctionBase<IEnumerable<Statement>>
+public class AstFunction<T>
 {
   [JsonConstructor]
-  public AstFunction(string arg, IEnumerable<Statement> body) : base(arg, body)
+  public AstFunction(string arg, IEnumerable<Statement> body)
   {
+    Arg = arg;
+    Body = body;
+  }
+
+  public string Arg { get; set; }
+  public IEnumerable<Statement> Body { get; set; }
+
+  public void Rename(string oldArg, string newArg)
+  {
+    if (Arg.Equals(oldArg)) Arg = newArg;
+    foreach (var b in Body)
+    {
+      b.Rename(oldArg, newArg);
+    }
   }
 
   /// <summary>

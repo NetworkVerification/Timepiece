@@ -1,12 +1,13 @@
 using System.Numerics;
 using NetTools;
-using Timepiece.Angler.TypedAst.AstExpr;
-using Timepiece.Angler.TypedAst.AstFunction;
+using Timepiece.Angler.UntypedAst;
+using Timepiece.Angler.UntypedAst.AstExpr;
+using Timepiece.Angler.UntypedAst.AstFunction;
 using Timepiece.Datatypes;
 using Xunit;
 using ZenLib;
 
-namespace Timepiece.Angler.TypedAst;
+namespace Timepiece.Angler;
 
 using Route = Pair<bool, BatfishBgpRoute>;
 
@@ -73,7 +74,7 @@ public static class AstTests
   public static void TestSpAstBadMonolithic()
   {
     var badSp = SpAst;
-    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr<bool>(false));
+    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr(false));
     Assert.True(badSp.ToNetwork().CheckMonolithic().HasValue);
   }
 }

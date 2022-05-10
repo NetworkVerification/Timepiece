@@ -1,9 +1,13 @@
 using System.Numerics;
 using Newtonsoft.Json.Serialization;
-using Timepiece.Angler.TypedAst;
-using Timepiece.Angler.TypedAst.AstExpr;
-using Timepiece.Angler.TypedAst.AstFunction;
-using Timepiece.Angler.TypedAst.AstStmt;
+using Timepiece.Angler.UntypedAst;
+using Timepiece.Angler.UntypedAst.AstExpr;
+using Timepiece.Angler.UntypedAst.AstStmt;
+using Timepiece.Angler.UntypedAst.AstFunction;
+// using Timepiece.Angler.TypedAst;
+// using Timepiece.Angler.TypedAst.AstExpr;
+// using Timepiece.Angler.TypedAst.AstFunction;
+// using Timepiece.Angler.TypedAst.AstStmt;
 using Timepiece.Datatypes;
 using Timepiece.Networks;
 using ZenLib;
@@ -18,7 +22,7 @@ public class PairRouteAst : Ast<Route, Unit>
   /// Default predicates to test for this AST.
   /// </summary>
   public static readonly AstPredicate<Route> IsValid = new("route",
-    new First<bool, BatfishBgpRoute>(new Var<Route>("route")));
+    new First(new Var("route")));
 
   /// <summary>
   /// Default import behavior for a route.
@@ -28,15 +32,18 @@ public class PairRouteAst : Ast<Route, Unit>
   /// <summary>
   /// Default export behavior for a route.
   /// </summary>
-  private static readonly AstFunction<Route> DefaultExport = new("arg", new Return<Route>(
-    new PairExpr<bool, BatfishBgpRoute>(
-      new First<bool, BatfishBgpRoute>(new Var<Route>("arg")),
-      new WithField<BatfishBgpRoute, BigInteger>(new Second<bool, BatfishBgpRoute>(new Var<Route>("arg")),
-        "AsPathLength",
-        new Plus<BigInteger>(
-          new GetField<BatfishBgpRoute, BigInteger>(
-            new Second<bool, BatfishBgpRoute>(new Var<Route>("arg")),
-            "AsPathLength"), new ConstantExpr<BigInteger>(1))))));
+  private static readonly AstFunction<Route> DefaultExport = new("arg", new[]
+  {
+    new Return(
+      new PairExpr(
+        new First(new Var("arg")),
+        new WithField(typeof(BatfishBgpRoute), typeof(BigInteger), new Second(new Var("arg")),
+          "AsPathLength",
+          new Plus(
+            new GetField(typeof(BatfishBgpRoute), typeof(BigInteger),
+              new Second(new Var("arg")),
+              "AsPathLength"), new ConstantExpr(BigInteger.One)))))
+  });
 
   public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Ipv4Prefix? destination,
     Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
@@ -57,11 +64,6 @@ public class PairRouteAst : Ast<Route, Unit>
 
   public static ISerializationBinder Binder()
   {
-    return new AstSerializationBinder<BatfishBgpRoute, Route>();
-  }
-
-  public static IContractResolver Resolver()
-  {
-    return new AstContractResolver();
+    return new AstSerializationBinder<Route>();
   }
 }

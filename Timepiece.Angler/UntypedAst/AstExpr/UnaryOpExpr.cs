@@ -3,9 +3,9 @@ namespace Timepiece.Angler.UntypedAst.AstExpr;
 public class UnaryOpExpr : Expr
 {
   public readonly Expr expr;
-  public readonly dynamic unaryOp;
+  public readonly Func<dynamic,dynamic> unaryOp;
 
-  public UnaryOpExpr(Expr expr, dynamic unaryOp)
+  public UnaryOpExpr(Expr expr, Func<dynamic,dynamic> unaryOp)
   {
     this.expr = expr;
     this.unaryOp = unaryOp;

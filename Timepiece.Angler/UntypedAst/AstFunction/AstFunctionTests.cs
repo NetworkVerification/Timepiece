@@ -11,18 +11,19 @@ public static class AstFunctionTests
   [Fact]
   public static void TestHavoc()
   {
-    var one = new ConstantExpr(0);
-    var rVar = new Var("route");
+    const string pathLen = "AsPathLength";
+    const string route = "route";
+    var rVar = new Var(route);
     // AST representation of incrementing AsPathLength by 1
-    var increment = new WithField(
-      rVar, "AsPathLength",
-      new Plus<BigInteger>(
-        new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), rVar, "AsPathLength"),
-        one)
+    var increment = new WithField(typeof(BatfishBgpRoute), typeof(BigInteger),
+      rVar, pathLen,
+      new Plus(
+        new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), rVar, pathLen),
+        new ConstantExpr(BigInteger.One))
     );
     var r = Zen.Symbolic<BatfishBgpRoute>();
-    var rIncremented = r.WithAsPathLength(r.GetAsPathLength() + BigInteger.One);
-    var f = new AstFunction<BatfishBgpRoute>("route", new Statement[]
+    var rIncremented = r.IncrementAsPathLength(BigInteger.One);
+    var f = new AstFunction<BatfishBgpRoute>(route, new Statement[]
     {
       new IfThenElse(new Havoc(), new[] {new Return(increment)}, new[] {new Return(rVar)})
     });
@@ -35,18 +36,19 @@ public static class AstFunctionTests
   [Fact]
   public static void TestRename()
   {
-    var f1 = new AstFunction<int>("x", new Statement[]
+    const string oldArg = "x";
+    var f1 = new AstFunction<int>(oldArg, new Statement[]
     {
       new IfThenElse(new Havoc(),
-        new[] {new Assign("x", new Plus<int>(new Var("x"), new ConstantExpr(1)))},
-        new[] {new Assign("x", new ConstantExpr(0))}),
-      new Return(new Var("x"))
+        new[] {new Assign(oldArg, new Plus(new Var(oldArg), new ConstantExpr(1)))},
+        new[] {new Assign(oldArg, new ConstantExpr(0))}),
+      new Return(new Var(oldArg))
     });
-    var f2 = new AstFunction<int>("x", new[]
+    var f2 = new AstFunction<int>(oldArg, new[]
     {
-      new Return(new Plus<int>(new Var("x"), new ConstantExpr(3)))
+      new Return(new Plus(new Var(oldArg), new ConstantExpr(3)))
     });
-    f1.Rename("x", "y");
+    f1.Rename(oldArg, "y");
     var f = f1.Compose(f2).Evaluate();
     var x = Zen.Symbolic<int>();
     var model = Zen.Eq(f(x), x + 4).Solve();

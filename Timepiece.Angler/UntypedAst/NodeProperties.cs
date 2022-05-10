@@ -14,7 +14,7 @@ public class NodeProperties<T>
 {
   public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
     string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
-    TypedAst.Constants constants)
+    Constants constants)
   {
     Prefixes = prefixes;
     Policies = policies;
@@ -33,7 +33,7 @@ public class NodeProperties<T>
   /// <summary>
   ///   Additional constant declarations.
   /// </summary>
-  public TypedAst.Constants Constants { get; set; }
+  public Constants Constants { get; set; }
 
   public AstTemporalOperator<T>? Temporal { get; set; }
 

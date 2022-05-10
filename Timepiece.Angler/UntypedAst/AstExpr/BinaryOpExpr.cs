@@ -4,9 +4,9 @@ public class BinaryOpExpr : Expr
 {
   public readonly Expr expr1;
   public readonly Expr expr2;
-  public readonly dynamic binaryOp;
+  public readonly Func<dynamic,dynamic,dynamic> binaryOp;
 
-  public BinaryOpExpr(Expr expr1, Expr expr2, dynamic binaryOp)
+  public BinaryOpExpr(Expr expr1, Expr expr2, Func<dynamic,dynamic,dynamic> binaryOp)
   {
     this.expr1 = expr1;
     this.expr2 = expr2;
@@ -20,7 +20,7 @@ public class BinaryOpExpr : Expr
   }
 
   private static BinaryOpExpr FromEnumerable(IEnumerable<Expr> es,
-    Expr identity, dynamic binaryOp)
+    Expr identity, Func<dynamic,dynamic,dynamic> binaryOp)
   {
     var operands = es.ToArray();
     return operands.Length switch
