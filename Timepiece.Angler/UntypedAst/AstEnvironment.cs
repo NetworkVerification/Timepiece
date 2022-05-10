@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Timepiece.Angler.UntypedAst.AstExpr;
+using Timepiece.Angler.UntypedAst.AstStmt;
 using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst;

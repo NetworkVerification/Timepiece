@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Timepiece.Datatypes;
 using ZenLib;
 
-namespace Timepiece.Angler.TypedAst;
+namespace Timepiece.Angler;
 
 [ZenObject]
 public class BatfishBgpRoute

@@ -1,4 +1,4 @@
-namespace Timepiece.Angler.UntypedAst;
+namespace Timepiece.Angler.UntypedAst.AstStmt;
 
 public abstract class Statement
 {

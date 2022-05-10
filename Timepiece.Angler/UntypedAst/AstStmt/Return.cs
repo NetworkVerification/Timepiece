@@ -1,6 +1,6 @@
 using Timepiece.Angler.UntypedAst.AstExpr;
 
-namespace Timepiece.Angler.UntypedAst;
+namespace Timepiece.Angler.UntypedAst.AstStmt;
 
 public class Return : Statement
 {
