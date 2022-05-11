@@ -4,12 +4,12 @@ public class BinaryOpExpr : Expr
 {
   public readonly Expr expr1;
   public readonly Expr expr2;
-  public readonly Func<dynamic,dynamic,dynamic> binaryOp;
+  public readonly Func<dynamic, dynamic, dynamic> binaryOp;
 
-  public BinaryOpExpr(Expr expr1, Expr expr2, Func<dynamic,dynamic,dynamic> binaryOp)
+  public BinaryOpExpr(Expr operand1, Expr operand2, Func<dynamic, dynamic, dynamic> binaryOp)
   {
-    this.expr1 = expr1;
-    this.expr2 = expr2;
+    expr1 = operand1;
+    expr2 = operand2;
     this.binaryOp = binaryOp;
   }
 
@@ -17,18 +17,5 @@ public class BinaryOpExpr : Expr
   {
     expr1.Rename(oldVar, newVar);
     expr2.Rename(oldVar, newVar);
-  }
-
-  private static BinaryOpExpr FromEnumerable(IEnumerable<Expr> es,
-    Expr identity, Func<dynamic,dynamic,dynamic> binaryOp)
-  {
-    var operands = es.ToArray();
-    return operands.Length switch
-    {
-      0 => throw new ArgumentException("Invalid number of arguments to binary expression"),
-      1 => new BinaryOpExpr(operands[0], identity, binaryOp),
-      _ => new BinaryOpExpr(operands[0], FromEnumerable(operands[1..], identity, binaryOp),
-        binaryOp)
-    };
   }
 }

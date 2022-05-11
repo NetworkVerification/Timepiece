@@ -2,7 +2,8 @@ namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 public class Second : UnaryOpExpr
 {
-  public Second(Expr expr) : base(expr, e => e.Item2())
+  // FIXME: need to specify type arguments to Item2
+  public Second(Expr pair) : base(pair, e => e.Item2())
   {
   }
 }

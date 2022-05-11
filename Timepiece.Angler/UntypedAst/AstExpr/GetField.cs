@@ -1,16 +1,17 @@
+using ZenLib;
+
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
-public class GetField : Expr
+public class GetField : GenericExpr
 {
-  public Type recordTy;
-  public Type fieldTy;
   public Expr record;
   public string fieldName;
 
   public GetField(Type recordTy, Type fieldTy, Expr record, string fieldName)
   {
-    this.recordTy = recordTy;
-    this.fieldTy = fieldTy;
+    TypeArguments = new[] {recordTy, fieldTy};
+    BaseType = typeof(Zen);
+    MethodName = "GetField";
     this.record = record;
     this.fieldName = fieldName;
   }

@@ -4,7 +4,7 @@ namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 public class PairExpr : BinaryOpExpr
 {
-  public PairExpr(Expr expr1, Expr expr2) : base(expr1, expr2,
+  public PairExpr(Expr first, Expr second) : base(first, second,
     (e1, e2) => Pair.Create(e1, e2))
   {
   }
