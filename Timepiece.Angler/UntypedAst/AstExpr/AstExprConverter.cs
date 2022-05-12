@@ -59,9 +59,52 @@ public class AstExprConverter : JsonConverter<Expr>
       throw new JsonException();
     }
 
-    var exprAlias = TypeParsing.ParseType(reader.GetString()!);
+    var typeInfo = reader.GetString()!;
+    var exprAlias = TypeParsing.ParseType(typeInfo);
+    if (!Enum.TryParse(typeof(ExprType), typeInfo, true, out var exprType)) throw new JsonException();
     while (reader.Read())
     {
+      // TODO: figure out what fields we need
+      switch ((ExprType) exprType!)
+      {
+        case ExprType.Var:
+        case ExprType.Bool:
+        case ExprType.And:
+        case ExprType.Or:
+        case ExprType.Not:
+        case ExprType.Havoc:
+        case ExprType.Int32:
+        case ExprType.BigInt:
+        case ExprType.Uint32:
+        case ExprType.Plus:
+        case ExprType.LessThan:
+        case ExprType.LessThanEqual:
+        case ExprType.Equal:
+        case ExprType.Pair:
+          // var firstType = exprAlias.Args[0]!.Value.Type;
+          // var secondType = exprAlias.Args[1]!.Value.Type;
+          break;
+        case ExprType.First:
+          // var firstType = exprAlias.Args[0]!.Value.Type;
+          // var secondType = exprAlias.Args[1]!.Value.Type;
+          break;
+        case ExprType.Second:
+          // var firstType = exprAlias.Args[0]!.Value.Type;
+          // var secondType = exprAlias.Args[1]!.Value.Type;
+          break;
+        case ExprType.Some:
+        case ExprType.None:
+        case ExprType.GetField:
+        case ExprType.WithField:
+        case ExprType.String:
+        case ExprType.SetContains:
+        case ExprType.SetAdd:
+        case ExprType.EmptySet:
+        case ExprType.SetUnion:
+        default:
+          break;
+      }
+
       switch (reader.TokenType)
       {
         case JsonTokenType.EndObject:
@@ -75,6 +118,10 @@ public class AstExprConverter : JsonConverter<Expr>
             case "Value":
               var val = reader.GetString();
               // TODO: convert val based on the inner type of the ConstantExpr
+              return exprAlias.MakeType() switch
+              {
+                _ => throw new ArgumentOutOfRangeException()
+              };
               // ((ConstantExpr)expr).value = val;
               break;
             case "Expr":
