@@ -2,22 +2,13 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
-public class GetField : GenericExpr
+public class GetField : UnaryOpExpr
 {
-  public Expr record;
-  public string fieldName;
+  private static GenericMethod GetMethod(Type recordTy, Type fieldTy) =>
+    new(typeof(Zen), "GetField", recordTy, fieldTy);
 
-  public GetField(Type recordTy, Type fieldTy, Expr record, string fieldName)
+  public GetField(Type recordTy, Type fieldTy, Expr record, string fieldName) : base(record,
+    r => GetMethod(recordTy, fieldTy).Call(r, fieldName))
   {
-    TypeArguments = new[] {recordTy, fieldTy};
-    BaseType = typeof(Zen);
-    MethodName = "GetField";
-    this.record = record;
-    this.fieldName = fieldName;
-  }
-
-  public override void Rename(string oldVar, string newVar)
-  {
-    record.Rename(oldVar, newVar);
   }
 }

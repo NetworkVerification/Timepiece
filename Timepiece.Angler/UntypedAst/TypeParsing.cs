@@ -62,12 +62,12 @@ public static class TypeParsing
       "LessThanEqual" => new TypeAlias(typeof(BinaryOpExpr)),
       "Equal" => new TypeAlias(typeof(BinaryOpExpr)),
       // pair expressions
-      "Pair" => new TypeAlias(typeof(PairExpr)),
-      "First" => new TypeAlias(typeof(First)),
-      "Second" => new TypeAlias(typeof(Second)),
+      "Pair" => new TypeAlias(typeof(PairExpr), null, null),
+      "First" => new TypeAlias(typeof(First), null, null),
+      "Second" => new TypeAlias(typeof(Second), null, null),
       // option expressions
-      "Some" => new TypeAlias(typeof(Some)),
-      "None" => new TypeAlias(typeof(None)),
+      "Some" => new TypeAlias(typeof(Some), (TypeAlias?) null),
+      "None" => new TypeAlias(typeof(None), (TypeAlias?) null),
       // record expressions
       "GetField" => new TypeAlias(typeof(GetField), null, null),
       "WithField" => new TypeAlias(typeof(WithField), null, null),

@@ -2,12 +2,8 @@ using System.Numerics;
 using Newtonsoft.Json.Serialization;
 using Timepiece.Angler.UntypedAst;
 using Timepiece.Angler.UntypedAst.AstExpr;
-using Timepiece.Angler.UntypedAst.AstStmt;
 using Timepiece.Angler.UntypedAst.AstFunction;
-// using Timepiece.Angler.TypedAst;
-// using Timepiece.Angler.TypedAst.AstExpr;
-// using Timepiece.Angler.TypedAst.AstFunction;
-// using Timepiece.Angler.TypedAst.AstStmt;
+using Timepiece.Angler.UntypedAst.AstStmt;
 using Timepiece.Datatypes;
 using Timepiece.Networks;
 using ZenLib;
@@ -16,13 +12,13 @@ namespace Timepiece.Angler;
 
 using Route = Pair<bool, BatfishBgpRoute>;
 
-public class PairRouteAst : Ast<Route, Unit>
+public class PairRouteAst : UntypedAst.Ast<Route, Unit>
 {
   /// <summary>
   /// Default predicates to test for this AST.
   /// </summary>
   public static readonly AstPredicate<Route> IsValid = new("route",
-    new First(new Var("route")));
+    new First(typeof(bool), typeof(BatfishBgpRoute), new Var("route")));
 
   /// <summary>
   /// Default import behavior for a route.
@@ -36,16 +32,17 @@ public class PairRouteAst : Ast<Route, Unit>
   {
     new Return(
       new PairExpr(
-        new First(new Var("arg")),
-        new WithField(typeof(BatfishBgpRoute), typeof(BigInteger), new Second(new Var("arg")),
+        new First(typeof(bool), typeof(BatfishBgpRoute), new Var("arg")),
+        new WithField(typeof(BatfishBgpRoute), typeof(BigInteger),
+          new Second(typeof(bool), typeof(BatfishBgpRoute), new Var("arg")),
           "AsPathLength",
           new Plus(
             new GetField(typeof(BatfishBgpRoute), typeof(BigInteger),
-              new Second(new Var("arg")),
+              new Second(typeof(bool), typeof(BatfishBgpRoute), new Var("arg")),
               "AsPathLength"), new ConstantExpr(BigInteger.One)))))
   });
 
-  public PairRouteAst(Dictionary<string, NodeProperties<Route>> nodes, Ipv4Prefix? destination,
+  public PairRouteAst(Dictionary<string, UntypedAst.NodeProperties<Route>> nodes, Ipv4Prefix? destination,
     Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
     BigInteger? convergeTime) : base(nodes,
     symbolics, predicates, destination, convergeTime)
@@ -65,5 +62,10 @@ public class PairRouteAst : Ast<Route, Unit>
   public static ISerializationBinder Binder()
   {
     return new AstSerializationBinder<Route>();
+  }
+
+  public static IContractResolver Resolver()
+  {
+    return new AstContractResolver();
   }
 }

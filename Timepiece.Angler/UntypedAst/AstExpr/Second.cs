@@ -1,9 +1,12 @@
+using ZenLib;
+
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 public class Second : UnaryOpExpr
 {
-  // FIXME: need to specify type arguments to Item2
-  public Second(Expr pair) : base(pair, e => e.Item2())
+  private static GenericMethod GetMethod(Type type1, Type type2) => new(typeof(Pair), "Item2", type1, type2);
+
+  public Second(Type firstType, Type secondType, Expr pair) : base(pair, e => GetMethod(firstType, secondType).Call(e))
   {
   }
 }

@@ -28,9 +28,4 @@ public class IfThenElse : Statement
       s.Rename(oldVar, newVar);
     }
   }
-
-  public override Statement Bind(string variable)
-  {
-    return new IfThenElse(Guard, ThenCase.Select(s => s.Bind(variable)), ElseCase.Select(s => s.Bind(variable)));
-  }
 }

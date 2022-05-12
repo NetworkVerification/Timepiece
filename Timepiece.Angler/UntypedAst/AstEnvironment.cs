@@ -42,10 +42,7 @@ public class AstEnvironment
       Call => throw new NotImplementedException(),
       ConstantExpr constant => Zen.Constant(constant.value),
       EmptySet => Set.Empty<string>(),
-      GetField getField => getField.Op(EvaluateExpr(getField.record), getField.fieldName),
       Var v => this[v.Name],
-      WithField withField =>
-        withField.Op(EvaluateExpr(withField.record), withField.fieldName, EvaluateExpr(withField.fieldValue)),
       Havoc => Zen.Symbolic<bool>(),
       None n => typeof(Option).GetMethod("Null")!.MakeGenericMethod(n.innerType).Invoke(null, null)!,
       UnaryOpExpr uoe => uoe.unaryOp(EvaluateExpr(uoe.expr)),

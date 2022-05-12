@@ -104,8 +104,6 @@ public class AstExprConverter : JsonConverter<Expr>
         break;
       case ConstantExpr constantExpr:
         break;
-      case GetField getField:
-        break;
       case Havoc:
         writer.WriteString("$type", "Havoc");
         break;
@@ -113,15 +111,9 @@ public class AstExprConverter : JsonConverter<Expr>
         var ty = none.innerType.ToString();
         writer.WriteString("$type", $"None({ty})");
         break;
-      case Not not:
-        break;
-      case Some some:
-        break;
       case UnaryOpExpr unaryOpExpr:
         break;
       case Var var:
-        break;
-      case WithField withField:
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(value));
