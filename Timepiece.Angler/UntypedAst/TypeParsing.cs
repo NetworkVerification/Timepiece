@@ -1,4 +1,5 @@
 using System.Numerics;
+using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using ZenLib;
@@ -37,7 +38,7 @@ public static class TypeParsing
   /// <param name="alias">The given type name string to bind.</param>
   /// <returns>The relevant TypeAlias.</returns>
   /// <exception cref="ArgumentOutOfRangeException">If the given string does not match any known term.</exception>
-  private static bool TryParse(string s, out TypeAlias? alias)
+  public static bool TryParse(string s, out TypeAlias? alias)
   {
     alias = s switch
     {
@@ -91,5 +92,24 @@ public static class TypeParsing
       _ => (TypeAlias?) null, // we need to cast so that null doesn't get converted to a TypeAlias
     };
     return alias.HasValue;
+  }
+}
+
+public class TypeConverter : JsonConverter<TypeAlias>
+{
+  public override void WriteJson(JsonWriter writer, TypeAlias value, JsonSerializer serializer)
+  {
+    serializer.Serialize(writer, value.ToString());
+  }
+
+  public override TypeAlias ReadJson(JsonReader reader, Type objectType, TypeAlias existingValue, bool hasExistingValue,
+    JsonSerializer serializer)
+  {
+    if (objectType != typeof(string)) throw new JsonSerializationException("Cannot read non-string as type");
+    var s = (string?) reader.Value;
+    if (s is null) throw new JsonException();
+    if (TypeParsing.TryParse(s, out var alias) && alias.HasValue)
+      return alias.Value;
+    throw new JsonException($"Unable to deserialize TypeAlias from {s}");
   }
 }

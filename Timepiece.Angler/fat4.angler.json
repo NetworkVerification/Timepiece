@@ -29,20 +29,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -58,10 +62,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -74,10 +80,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -89,10 +97,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -118,20 +128,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -144,9 +158,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -165,7 +180,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -177,10 +193,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -193,10 +211,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -205,9 +225,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -226,7 +247,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -238,10 +260,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -321,20 +345,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -350,10 +378,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -366,10 +396,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -381,10 +413,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -410,20 +444,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -436,9 +474,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -457,7 +496,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -469,10 +509,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -485,10 +527,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -497,9 +541,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -518,7 +563,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -530,10 +576,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -613,20 +661,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -642,10 +694,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -658,10 +712,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -673,10 +729,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -702,20 +760,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -728,9 +790,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -749,7 +812,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -761,10 +825,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -777,10 +843,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -789,9 +857,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -810,7 +879,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -822,10 +892,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -905,20 +977,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -934,10 +1010,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -950,10 +1028,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -965,10 +1045,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -994,20 +1076,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1020,9 +1106,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1041,7 +1128,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1053,10 +1141,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1069,10 +1159,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1081,9 +1173,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1102,7 +1195,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1114,10 +1208,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -1197,20 +1293,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1226,10 +1326,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1242,10 +1344,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1257,10 +1361,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -1286,20 +1392,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1312,9 +1422,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1333,7 +1444,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1345,10 +1457,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1361,10 +1475,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1373,9 +1489,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1394,7 +1511,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1406,10 +1524,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -1489,20 +1609,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1518,10 +1642,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1534,10 +1660,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1549,10 +1677,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -1578,20 +1708,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1604,9 +1738,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1625,7 +1760,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1637,10 +1773,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1653,10 +1791,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1665,9 +1805,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1686,7 +1827,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1698,10 +1840,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -1781,20 +1925,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1810,10 +1958,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1826,10 +1976,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1841,10 +1993,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -1870,20 +2024,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -1896,9 +2054,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1917,7 +2076,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1929,10 +2089,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -1945,10 +2107,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -1957,9 +2121,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -1978,7 +2143,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -1990,10 +2156,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2073,20 +2241,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2102,10 +2274,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2118,10 +2292,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -2133,10 +2309,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2162,20 +2340,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2188,9 +2370,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -2209,7 +2392,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -2221,10 +2405,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2237,10 +2423,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -2249,9 +2437,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -2270,7 +2459,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -2282,10 +2472,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2365,20 +2557,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2394,10 +2590,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2410,10 +2608,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -2425,10 +2625,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2454,20 +2656,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2480,9 +2686,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -2501,7 +2708,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -2513,10 +2721,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2529,10 +2739,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -2541,9 +2753,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -2562,7 +2775,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -2574,10 +2788,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2657,20 +2873,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2686,10 +2906,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2702,10 +2924,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -2717,10 +2941,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2746,20 +2972,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2772,9 +3002,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -2793,7 +3024,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -2805,10 +3037,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2821,10 +3055,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -2833,9 +3069,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -2854,7 +3091,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -2866,10 +3104,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -2949,20 +3189,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -2978,10 +3222,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -2994,10 +3240,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3009,10 +3257,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3038,20 +3288,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3064,9 +3318,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3085,7 +3340,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3097,10 +3353,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3113,10 +3371,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3125,9 +3385,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3146,7 +3407,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3158,10 +3420,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3241,20 +3505,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3270,10 +3538,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3286,10 +3556,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3301,10 +3573,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3330,20 +3604,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3356,9 +3634,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3377,7 +3656,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3389,10 +3669,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3405,10 +3687,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3417,9 +3701,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3438,7 +3723,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3450,10 +3736,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3533,20 +3821,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3562,10 +3854,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3578,10 +3872,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3593,10 +3889,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3622,20 +3920,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3648,9 +3950,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3669,7 +3972,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3681,10 +3985,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3697,10 +4003,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3709,9 +4017,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3730,7 +4039,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3742,10 +4052,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3809,20 +4121,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3838,10 +4154,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3854,10 +4172,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3869,10 +4189,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -3898,20 +4220,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -3924,9 +4250,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -3945,7 +4272,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -3957,10 +4285,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -3973,10 +4303,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -3985,9 +4317,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4006,7 +4339,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4018,10 +4352,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4085,20 +4421,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4114,10 +4454,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4130,10 +4472,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4145,10 +4489,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4174,20 +4520,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4200,9 +4550,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4221,7 +4572,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4233,10 +4585,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4249,10 +4603,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4261,9 +4617,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4282,7 +4639,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4294,10 +4652,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4361,20 +4721,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4390,10 +4754,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4406,10 +4772,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4421,10 +4789,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4450,20 +4820,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4476,9 +4850,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4497,7 +4872,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4509,10 +4885,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4525,10 +4903,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4537,9 +4917,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4558,7 +4939,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4570,10 +4952,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4637,20 +5021,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4666,10 +5054,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4682,10 +5072,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4697,10 +5089,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4726,20 +5120,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4752,9 +5150,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4773,7 +5172,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4785,10 +5185,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4801,10 +5203,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4813,9 +5217,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -4834,7 +5239,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -4846,10 +5252,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -4913,20 +5321,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -4942,10 +5354,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -4958,10 +5372,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -4973,10 +5389,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -5002,20 +5420,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -5028,9 +5450,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -5049,7 +5472,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -5061,10 +5485,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -5077,10 +5503,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -5089,9 +5517,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -5110,7 +5539,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -5122,10 +5552,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -5189,20 +5621,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -5218,10 +5654,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -5234,10 +5672,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -5249,10 +5689,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -5278,20 +5720,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -5304,9 +5750,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -5325,7 +5772,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -5337,10 +5785,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -5353,10 +5803,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -5365,9 +5817,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -5386,7 +5839,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -5398,10 +5852,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -5465,20 +5921,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -5494,10 +5954,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -5510,10 +5972,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -5525,10 +5989,12 @@
                           "$type": "Bool",
                           "Value": false
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
@@ -5554,20 +6020,24 @@
               ],
               "Guard": {
                 "$type": "First(TBool;TRoute)",
+                "FirstType": "TBool",
                 "Pair": {
                   "$type": "Var(TPair(TBool;TRoute))",
                   "Name": "pair"
-                }
+                },
+                "SecondType": "TRoute"
               },
               "ThenCase": [
                 {
                   "$type": "Assign(TRoute)",
                   "Expr": {
                     "$type": "Second(TBool;TRoute)",
+                    "FirstType": "TBool",
                     "Pair": {
                       "$type": "Var(TPair(TBool;TRoute))",
                       "Name": "pair"
-                    }
+                    },
+                    "SecondType": "TRoute"
                   },
                   "Var": "route"
                 },
@@ -5580,9 +6050,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -5601,7 +6072,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -5613,10 +6085,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ],
@@ -5629,10 +6103,12 @@
                     "Operand2": {
                       "$type": "GetField(TRoute;TSet)",
                       "FieldName": "communities",
+                      "FieldType": "TSet",
                       "Record": {
                         "$type": "Var(TRoute)",
                         "Name": "route"
-                      }
+                      },
+                      "RecordType": "TRoute"
                     }
                   },
                   "ThenCase": [
@@ -5641,9 +6117,10 @@
                       "Expr": {
                         "$type": "WithField(TRoute;TSet)",
                         "FieldName": "communities",
+                        "FieldType": "TSet",
                         "FieldValue": {
                           "$type": "SetUnion",
-                          "Operands": [
+                          "Exprs": [
                             {
                               "$type": "EmptySet"
                             },
@@ -5662,7 +6139,8 @@
                         "Record": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "RecordType": "TRoute"
                       },
                       "Var": "route"
                     },
@@ -5674,10 +6152,12 @@
                           "$type": "Bool",
                           "Value": true
                         },
+                        "FirstType": "TBool",
                         "Second": {
                           "$type": "Var(TRoute)",
                           "Name": "route"
-                        }
+                        },
+                        "SecondType": "TRoute"
                       }
                     }
                   ]
