@@ -43,7 +43,7 @@ public static class SimpleSp
     // no safety property
     var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   // slightly weaker path length property with simpler annotations
@@ -62,7 +62,7 @@ public static class SimpleSp
       topology.ForAllNodes(_ => Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static SimpleSp<Unit> PathLength(uint numPods, string destination)
@@ -81,6 +81,6 @@ public static class SimpleSp
     var safetyProperties = topology.ForAllNodes(_ =>
       Lang.Union(Lang.IsNone<SimpleBgpRoute>(), Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 }

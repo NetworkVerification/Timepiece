@@ -23,7 +23,7 @@ public static class ShortestPathsTests
 
     var safetyProperties = topology.ForAllNodes(_ => Lang.IsSome<BigInteger>());
     return new ShortestPath<Unit>(topology, initialValues, annotations,
-      Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
+      System.Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
   }
 
   private static ShortestPath<Unit> NonSymbolicPathLength(
@@ -45,7 +45,7 @@ public static class ShortestPathsTests
       {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))},
     };
     return new ShortestPath<Unit>(topology, initialValues, annotations,
-      Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
+      System.Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
   }
 
   private static readonly SymbolicValue<BigInteger> D = new("d", r => r >= BigInteger.Zero);

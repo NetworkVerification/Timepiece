@@ -14,12 +14,12 @@ public struct Ipv4Prefix
   public uint Prefix { get; set; }
 
   // TODO: constrain to at most 32
-  public UInt6 PrefixLength { get; set; }
+  public UInt<_6> PrefixLength { get; set; }
 
   public Ipv4Prefix()
   {
     Prefix = 0;
-    PrefixLength = new UInt6(32);
+    PrefixLength = new UInt<_6>(32);
   }
 
   internal IPAddressRange AsAddressRange() => new(new IPAddress(Prefix), (int) PrefixLength.ToLong());
@@ -35,7 +35,7 @@ public struct Ipv4Prefix
     // convert the address bytes back into a number
     // shift over by 8 bits each time
     Prefix = range.Begin.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
-    PrefixLength = new UInt6(range.GetPrefixLength());
+    PrefixLength = new UInt<_6>(range.GetPrefixLength());
   }
 
   public override string ToString()

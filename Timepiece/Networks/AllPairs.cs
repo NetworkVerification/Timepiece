@@ -20,7 +20,7 @@ public class AllPairs : ShortestPath<string>
     topology,
     new Dictionary<string, Zen<Option<BigInteger>>>(),
     new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>(),
-    Array.Empty<SymbolicValue<string>>(), convergeTime, safetyProperties)
+    System.Array.Empty<SymbolicValue<string>>(), convergeTime, safetyProperties)
   {
     InitialValues =
       topology.ForAllNodes(n =>

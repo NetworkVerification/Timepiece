@@ -21,7 +21,7 @@ public class LocalPref : Network<LpRoute, UnitNetwork>
       annotations,
       topology.ForAllNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
       topology.ForAllNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
-      Array.Empty<SymbolicValue<UnitNetwork>>())
+      System.Array.Empty<SymbolicValue<UnitNetwork>>())
   {
   }
 

@@ -13,11 +13,11 @@ public record struct BatfishBgpRoute
     Lp = 100;
     AsPathLength = 0;
     Med = 0;
-    OriginType = new UInt2(0);
+    OriginType = new UInt<_2>(0);
     Communities = new Set<string>();
   }
 
-  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, UInt2 originType,
+  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, UInt<_2> originType,
     Set<string> communities, uint destination)
   {
     AdminDist = adminDist;
@@ -60,7 +60,7 @@ public record struct BatfishBgpRoute
   /// 2 = external
   /// 3 = internal
   /// </summary>
-  public UInt2 OriginType { get; set; }
+  public UInt<_2> OriginType { get; set; }
 
   /// <summary>
   /// Representation of community tags as strings.
@@ -124,12 +124,12 @@ public static class BatfishBgpRouteExtensions
     return b.WithField("Med", med);
   }
 
-  public static Zen<UInt2> GetOriginType(this Zen<BatfishBgpRoute> b)
+  public static Zen<UInt<_2>> GetOriginType(this Zen<BatfishBgpRoute> b)
   {
-    return b.GetField<BatfishBgpRoute, UInt2>("OriginType");
+    return b.GetField<BatfishBgpRoute, UInt<_2>>("OriginType");
   }
 
-  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<UInt2> originType)
+  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<UInt<_2>> originType)
   {
     return b.WithField("OriginType", originType);
   }

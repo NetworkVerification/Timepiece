@@ -36,7 +36,7 @@ public static class FilteringTests
     };
     return new Network<Option<Bgp>, Unit>(Topology, Transfer(), Lang.Omap2<Bgp>(BgpExtensions.Min),
       initialValues,
-      annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Network<Pair<Option<Bgp>, bool>, Unit> NetGhostState(
@@ -57,7 +57,7 @@ public static class FilteringTests
       Topology.ForAllEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
       Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(BgpExtensions.Min), p => p.Item1()),
       initialValues,
-      annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>> Transfer() =>

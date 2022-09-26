@@ -12,7 +12,7 @@ public record struct SimpleBgpRoute
     Lp = 100;
     AsPathLength = BigInteger.Zero;
     Med = 0;
-    OriginType = new UInt2(0);
+    OriginType = new UInt<_2>(0);
   }
 
   public uint AdminDist { get; set; }
@@ -23,7 +23,7 @@ public record struct SimpleBgpRoute
 
   public uint Med { get; set; }
 
-  public UInt2 OriginType { get; set; }
+  public UInt<_2> OriginType { get; set; }
 
   public override string ToString()
   {
@@ -66,12 +66,12 @@ public static class SimpleBgpRouteExtensions
     return b.WithField("Med", med);
   }
 
-  public static Zen<UInt2> GetOriginType(this Zen<SimpleBgpRoute> b)
+  public static Zen<UInt<_2>> GetOriginType(this Zen<SimpleBgpRoute> b)
   {
-    return b.GetField<SimpleBgpRoute, UInt2>("OriginType");
+    return b.GetField<SimpleBgpRoute, UInt<_2>>("OriginType");
   }
 
-  public static Zen<SimpleBgpRoute> WithOriginType(this Zen<SimpleBgpRoute> b, Zen<UInt2> originType)
+  public static Zen<SimpleBgpRoute> WithOriginType(this Zen<SimpleBgpRoute> b, Zen<UInt<_2>> originType)
   {
     return b.WithField("OriginType", originType);
   }

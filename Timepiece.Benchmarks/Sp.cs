@@ -44,13 +44,13 @@ public static class Sp
     var distances = topology.BreadthFirstSearch(destination);
     var reachable = Lang.IsSome<BatfishBgpRoute>();
     var annotations =
-      distances.Select(p => (p.Key, Lang.Finally(p.Value, reachable)))
+      distances.Select(p => (p.Key, Lang.Finally<Option<BatfishBgpRoute>>(p.Value, Option.IsSome)))
         .ToDictionary(p => p.Item1, p => p.Item2);
     var stableProperties = topology.ForAllNodes(_ => reachable);
     // no safety property
     var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   // slightly weaker path length property with simpler annotations
@@ -69,7 +69,7 @@ public static class Sp
       topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static Sp<Unit> PathLength(uint numPods, string destination)
@@ -88,7 +88,7 @@ public static class Sp
     var safetyProperties = topology.ForAllNodes(_ =>
       Lang.Union(Lang.IsNone<BatfishBgpRoute>(), Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Zen<BigInteger> ApproximateDistance(LabelledTopology<int> topology, string node,
@@ -98,8 +98,6 @@ public static class Sp
     var destPod = dest.Value.Item2();
     var nodePod = Zen.Constant(topology.L(node));
     // check that either the destination or the node satisfy the given relation
-    //var commute = new Func<Func<Zen<string>, Zen<bool>>, Func<Zen<string>, Zen<bool>>, Zen<bool>>((f1, f2) =>
-    //Zen.Or(Zen.And(f1(destNode), f2(Zen.Constant(node)), Zen.And(f1(Zen.Constant(node)), f2(destNode)))));
     return Zen.If(destNode == Zen.Constant(node), BigInteger.Zero,
       Zen.If(Zen.And(node.IsAggregation(), destPod == nodePod), new BigInteger(5),
         Zen.If(Zen.And(node.IsAggregation(), destPod != nodePod), new BigInteger(15),

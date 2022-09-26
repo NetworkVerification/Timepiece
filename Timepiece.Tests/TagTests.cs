@@ -7,36 +7,36 @@ using ZenLib;
 
 namespace Timepiece.Tests;
 
-using FBagRoute = Pair<int, FBag<string>>;
-using FBagAdd = Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>>;
+using CSetRoute = Pair<int, CSet<string>>;
+using CSetAdd = Func<Zen<CSet<string>>, string, Zen<CSet<string>>>;
 using SetRoute = Pair<int, Set<string>>;
 using SetAdd = Func<Zen<Set<string>>, Zen<string>, Zen<Set<string>>>;
 
 public static class TagTests
 {
-  private static Network<FBagRoute, Unit> BagNet(
-    Func<(string, string), Func<Zen<FBagRoute>, Zen<FBagRoute>>> transfer,
-    Dictionary<string, Func<Zen<FBagRoute>, Zen<bool>>> monolithicProperties,
-    Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
+  private static Network<CSetRoute, Unit> CSetNet(
+    Func<(string, string), Func<Zen<CSetRoute>, Zen<CSetRoute>>> transfer,
+    Dictionary<string, Func<Zen<CSetRoute>, Zen<bool>>> monolithicProperties,
+    Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(3);
-    var start = Pair.Create(Zen.Constant(0), FBag.Create<string>());
-    var initial = new Dictionary<string, Zen<FBagRoute>>
+    var start = Pair.Create(Zen.Constant(0), CSet.Empty<string>());
+    var initial = new Dictionary<string, Zen<CSetRoute>>
     {
       {"A", start},
-      {"B", Pair.Create(Zen.Constant(int.MaxValue), FBag.Create<string>())},
-      {"C", Pair.Create(Zen.Constant(int.MaxValue), FBag.Create<string>())}
+      {"B", Pair.Create(Zen.Constant(int.MaxValue), CSet.Empty<string>())},
+      {"C", Pair.Create(Zen.Constant(int.MaxValue), CSet.Empty<string>())}
     };
-    var modularProperties = new Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>>
+    var modularProperties = new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>
     {
       {"A", Lang.Equals(start)},
       {"B", Lang.Finally(new BigInteger(1), monolithicProperties["B"])},
       {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
     };
 
-    return new Network<FBagRoute, Unit>(topology, topology.ForAllEdges(transfer), Merge, initial,
+    return new Network<CSetRoute, Unit>(topology, topology.ForAllEdges(transfer), Merge, initial,
       annotations,
-      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Network<SetRoute, Unit> SetNet(Dictionary<string, Func<Zen<SetRoute>, Zen<bool>>> monolithicProperties,
@@ -59,11 +59,11 @@ public static class TagTests
 
     return new Network<SetRoute, Unit>(topology, topology.ForAllEdges(SetTransfer), Merge, initial,
       annotations,
-      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Func<(string, string), Func<Zen<FBagRoute>, Zen<FBagRoute>>> FBagTransferWithBehavior(
-    Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>> addBehavior)
+  private static Func<(string, string), Func<Zen<CSetRoute>, Zen<CSetRoute>>> CSetTransferWithBehavior(
+    CSetAdd addBehavior)
   {
     return edge => r => Pair.Create(r.Item1() + 1, addBehavior(r.Item2(), edge.Item1));
   }
@@ -78,54 +78,41 @@ public static class TagTests
     return Zen.If(r1.Item1() < r2.Item1(), r1, r2);
   }
 
-  private static void BagNetPassesGoodMonoChecks(FBagAdd addBehavior)
+  private static void CSetNetPassesGoodMonoChecks(CSetAdd addBehavior)
   {
-    var monolithicProperties = new Dictionary<string, Func<Zen<FBagRoute>, Zen<bool>>>
+    var monolithicProperties = new Dictionary<string, Func<Zen<CSetRoute>, Zen<bool>>>
     {
-      {"A", p => Zen.And(p.Item1() == 0, p.Item2().IsEmpty())},
+      {"A", p => Zen.And(p.Item1() == 0, p.Item2() == CSet.Empty<string>())},
       {"B", p => Zen.And(p.Item1() == 1, p.Item2().Contains("A"))},
       {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))},
     };
-    var net = BagNet(FBagTransferWithBehavior(addBehavior), monolithicProperties,
-      new Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>>());
+    var net = CSetNet(CSetTransferWithBehavior(addBehavior), monolithicProperties,
+      new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>());
     NetworkAssert.CheckSoundMonolithic(net);
   }
 
   [Fact]
-  public static void BagNetAddPassesGoodMonoChecks()
+  public static void CSetNetAddPassesGoodMonoChecks()
   {
-    BagNetPassesGoodMonoChecks(FBag.Add);
+    CSetNetPassesGoodMonoChecks(CSet.Add);
   }
-
-  [Fact]
-  public static void BagNetAddIfSpacePassesGoodMonoChecks()
+  private static void CSetNetFailsBadMonoChecks(CSetAdd addBehavior)
   {
-    BagNetPassesGoodMonoChecks(FBag.AddIfSpace);
-  }
-
-  private static void BagNetFailsBadMonoChecks(Func<Zen<FBag<string>>, Zen<string>, Zen<FBag<string>>> addBehavior)
-  {
-    var monolithicProperties = new Dictionary<string, Func<Zen<FBagRoute>, Zen<bool>>>
+    var monolithicProperties = new Dictionary<string, Func<Zen<CSetRoute>, Zen<bool>>>
     {
       {"A", p => p.Item1() == 0},
       {"B", p => p.Item1() == 0},
       {"C", p => p.Item1() == 0},
     };
-    var net = BagNet(FBagTransferWithBehavior(addBehavior), monolithicProperties,
-      new Dictionary<string, Func<Zen<FBagRoute>, Zen<BigInteger>, Zen<bool>>>());
+    var net = CSetNet(CSetTransferWithBehavior(addBehavior), monolithicProperties,
+      new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>());
     NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
   }
 
   [Fact]
-  public static void BagNetAddFailsBadMonoChecks()
+  public static void CSetNetAddFailsBadMonoChecks()
   {
-    BagNetFailsBadMonoChecks(FBag.Add);
-  }
-
-  [Fact]
-  public static void BagNetAddIfSpaceFailsBadMonoChecks()
-  {
-    BagNetFailsBadMonoChecks(FBag.AddIfSpace);
+    CSetNetFailsBadMonoChecks(CSet.Add);
   }
 
   [Fact]

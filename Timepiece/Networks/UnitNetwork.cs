@@ -10,7 +10,7 @@ public class UnitNetwork : Network<Unit, object>
     topology.ForAllNodes<Zen<Unit>>(_ => new Unit()),
     topology.ForAllNodes(_ => Lang.Globally(UnitPredicate())),
     topology.ForAllNodes(_ => Lang.Globally(UnitPredicate())),
-    topology.ForAllNodes(_ => UnitPredicate()), Array.Empty<SymbolicValue<object>>())
+    topology.ForAllNodes(_ => UnitPredicate()), System.Array.Empty<SymbolicValue<object>>())
   {
   }
 

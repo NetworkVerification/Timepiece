@@ -65,7 +65,7 @@ public static class Vf
     var stableProperties =
       topology.ForAllNodes(_ => Lang.IsSome<BatfishBgpRoute>());
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static Vf<Unit> ValleyFreePathLength(uint numPods, string destination)
@@ -85,6 +85,6 @@ public static class Vf
     var stableProperties =
       topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      System.Array.Empty<SymbolicValue<Unit>>());
   }
 }

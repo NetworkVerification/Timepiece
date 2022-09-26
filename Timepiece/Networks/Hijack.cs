@@ -41,7 +41,8 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
       new Dictionary<string, Zen<Option<TaggedRoute>>>(),
       new Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>(),
       topology.ForAllNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
-      topology.ForAllNodes(n => Property(hijacker, n)), Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
+      topology.ForAllNodes(n => Property(hijacker, n)),
+      System.Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
   {
     if (!topology.HasNode(hijacker))
     {

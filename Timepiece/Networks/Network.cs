@@ -296,6 +296,8 @@ public class Network<T, TS>
 
   private Zen<bool> GetAssumptions()
   {
-    return And(Symbolics.Where(p => p.HasConstraint()).Select(p => p.Encode()).ToArray());
+    var assumptions = Symbolics.Where(p => p.HasConstraint()).Select(p => p.Encode()).ToArray();
+    // And() with an empty array throws an error, so we check the length first
+    return assumptions.Length == 0 ? True() : And(assumptions);
   }
 }
