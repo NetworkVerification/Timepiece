@@ -2,10 +2,16 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
-public class Plus : BinaryOpExpr
+public class Plus : AssociativeBinaryOpExpr
 {
-  public Plus(Expr expr1, Expr expr2) : base(expr1, expr2,
-    (e1, e2) => Zen.Plus(e1, e2))
+  private static readonly Func<dynamic, dynamic, dynamic> Op = (e1, e2) => Zen.Plus(e1, e2);
+
+  public Plus(Expr operand1, Expr operand2) : base(operand1, operand2,
+    Op)
+  {
+  }
+
+  public Plus(IEnumerable<Expr> operands) : base(operands, new ConstantExpr(0), Op)
   {
   }
 }

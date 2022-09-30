@@ -37,6 +37,7 @@ public static class AstFunctionTests
   public static void TestRename()
   {
     const string oldArg = "x";
+    // randomly choose to increment the argument or set it to 0
     var f1 = new AstFunction<int>(oldArg, new Statement[]
     {
       new IfThenElse(new Havoc(),
@@ -44,14 +45,19 @@ public static class AstFunctionTests
         new[] {new Assign(oldArg, new ConstantExpr(0))}),
       new Return(new Var(oldArg))
     });
+    // return the argument with 3 added to it
     var f2 = new AstFunction<int>(oldArg, new[]
     {
       new Return(new Plus(new Var(oldArg), new ConstantExpr(3)))
     });
     f1.Rename(oldArg, "y");
-    var f = f1.Compose(f2).Evaluate();
+    var f = new Func<Zen<int>, Zen<int>>(t => f2.Evaluate()(f1.Evaluate()(t)));
     var x = Zen.Symbolic<int>();
-    var model = Zen.Eq(f(x), x + 4).Solve();
-    Assert.True(model.IsSatisfiable());
+    var y = Zen.Symbolic<int>();
+    // check that there does not exist a model where f(x) == y and y != x + 4 and y != 3
+    // note that we need to store the result of f(x) in y as separate calls to f(x) can choose
+    // to branch differently, meaning f(x) == 3 and f(x) != 3 is satisfiable (pick the else branch, pick the then branch)
+    var model = Zen.Not(Zen.Implies(Zen.Eq(f(x), y), Zen.Or(Zen.Eq(y, x + 4), Zen.Eq(y, 3)))).Solve();
+    Assert.False(model.IsSatisfiable());
   }
 }

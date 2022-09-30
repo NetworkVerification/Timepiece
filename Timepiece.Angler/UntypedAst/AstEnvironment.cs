@@ -41,16 +41,8 @@ public class AstEnvironment
     {
       Call => throw new NotImplementedException(),
       ConstantExpr constant => Zen.Constant(constant.value),
-      GetField getField =>
-        // we need to use reflection to access the relevant method
-        typeof(Zen).GetMethod("GetField")!.MakeGenericMethod(getField.recordTy, getField.fieldTy)
-          .Invoke(null, new object[] {EvaluateExpr(getField.record), getField.fieldName})!,
+      EmptySet => Set.Empty<string>(),
       Var v => this[v.Name],
-      WithField withField =>
-        typeof(Zen).GetMethod("WithField")!.MakeGenericMethod(withField.recordTy, withField.fieldTy)
-          .Invoke(null,
-            new object?[] {EvaluateExpr(withField.record), withField.fieldName, EvaluateExpr(withField.fieldValue)})!,
-      // EvaluateExpr(withField.record).WithField(withField.fieldName, EvaluateExpr(withField.fieldValue)),
       Havoc => Zen.Symbolic<bool>(),
       None n => typeof(Option).GetMethod("Null")!.MakeGenericMethod(n.innerType).Invoke(null, null)!,
       UnaryOpExpr uoe => uoe.unaryOp(EvaluateExpr(uoe.expr)),

@@ -59,29 +59,69 @@ public class AstExprConverter : JsonConverter<Expr>
       throw new JsonException();
     }
 
-    var exprAlias = TypeParsing.ParseType(reader.GetString()!);
+    var typeInfo = reader.GetString()!;
+    var exprAlias = TypeParsing.ParseType(typeInfo);
+    if (!Enum.TryParse(typeof(ExprType), typeInfo, true, out var exprType)) throw new JsonException();
+    var fields = (ExprType) exprType! switch
+    {
+      ExprType.Var => new List<string> {"Name"},
+      ExprType.Bool or ExprType.Int32 or ExprType.BigInt or ExprType.Uint32 or ExprType.String => new List<string>
+        {"Value"},
+      ExprType.And or ExprType.Or or ExprType.SetUnion => new List<string> {"Exprs"},
+      ExprType.Plus or ExprType.LessThan or ExprType.LessThanEqual or ExprType.Equal or ExprType.SetAdd
+        or ExprType.SetContains => new List<string> {"Operand1", "Operand2"},
+      ExprType.Not => new List<string> {"Expr"},
+      ExprType.Havoc => new List<string>(),
+      ExprType.Pair => new List<string> {"First", "Second"},
+      ExprType.First or ExprType.Second => new List<string> {"Pair"},
+      ExprType.Some => new List<string> {"Expr"},
+      ExprType.None => new List<string>(),
+      ExprType.GetField => new List<string> {"Record", "FieldName"},
+      ExprType.WithField => new List<string> {"Record", "FieldName", "FieldValue"},
+      ExprType.EmptySet => new List<string>(),
+      _ => throw new ArgumentOutOfRangeException()
+    };
+
+    var args = new List<dynamic>();
     while (reader.Read())
     {
+      // TODO: figure out what fields we need
+
+      Expr? expr = null;
       switch (reader.TokenType)
       {
         case JsonTokenType.EndObject:
           // TODO: construct the type from all collected information
-          return null;
+          return exprAlias switch
+          {
+            _ => throw new NotImplementedException()
+          };
         case JsonTokenType.PropertyName:
           propertyName = reader.GetString();
           reader.Read();
           switch (propertyName)
           {
             case "Value":
-              var val = reader.GetString();
               // TODO: convert val based on the inner type of the ConstantExpr
-              // ((ConstantExpr)expr).value = val;
+              var ty = exprAlias.MakeType();
+              if (ty == typeof(bool))
+              {
+                var val = reader.GetBoolean();
+                args.Add(val);
+              }
+              else if (ty == typeof(int))
+              {
+                var val = reader.GetInt32();
+                args.Add(val);
+              }
+
               break;
             case "Expr":
+              var e = Read(ref reader, typeof(Expr), options);
               throw new NotImplementedException();
-            case "Expr1":
+            case "Operand1":
               throw new NotImplementedException();
-            case "Expr2":
+            case "Operand2":
               throw new NotImplementedException();
           }
 
@@ -94,39 +134,6 @@ public class AstExprConverter : JsonConverter<Expr>
 
   public override void Write(Utf8JsonWriter writer, Expr value, JsonSerializerOptions options)
   {
-    writer.WriteStartObject();
-
-    switch (value)
-    {
-      case BinaryOpExpr binaryOpExpr:
-        break;
-      case Call call:
-        break;
-      case ConstantExpr constantExpr:
-        break;
-      case GetField getField:
-        break;
-      case Havoc:
-        writer.WriteString("$type", "Havoc");
-        break;
-      case None none:
-        var ty = none.innerType.ToString();
-        writer.WriteString("$type", $"None({ty})");
-        break;
-      case Not not:
-        break;
-      case Some some:
-        break;
-      case UnaryOpExpr unaryOpExpr:
-        break;
-      case Var var:
-        break;
-      case WithField withField:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException(nameof(value));
-    }
-
-    writer.WriteEndObject();
+    throw new NotImplementedException("Serialization not implemented");
   }
 }

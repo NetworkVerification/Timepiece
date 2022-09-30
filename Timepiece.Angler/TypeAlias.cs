@@ -47,7 +47,7 @@ public readonly struct TypeAlias
   ///   An array of arguments to this type, which should be of the same size
   ///   as the type's expected number of generic parameters.
   /// </summary>
-  private TypeAlias?[] Args { get; }
+  public TypeAlias?[] Args { get; }
 
   /// <summary>
   ///   Consume aliases from the given enumerator to fill in null arguments.

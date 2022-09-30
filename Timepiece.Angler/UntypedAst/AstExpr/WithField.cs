@@ -1,25 +1,14 @@
+using ZenLib;
+
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
-public class WithField : Expr
+public class WithField : BinaryOpExpr
 {
-  public Type recordTy;
-  public Type fieldTy;
-  public Expr record;
-  public string fieldName;
-  public Expr fieldValue;
+  private static GenericMethod GetMethod(Type recordTy, Type fieldTy) =>
+    new(typeof(Zen), "WithField", recordTy, fieldTy);
 
-  public WithField(Type recordTy, Type fieldTy, Expr record, string fieldName, Expr fieldValue)
+  public WithField(Type recordTy, Type fieldTy, Expr record, string fieldName, Expr fieldValue) : base(record,
+    fieldValue, (r, v) => GetMethod(recordTy, fieldTy).Call(r, fieldName, v))
   {
-    this.recordTy = recordTy;
-    this.fieldTy = fieldTy;
-    this.record = record;
-    this.fieldName = fieldName;
-    this.fieldValue = fieldValue;
-  }
-
-  public override void Rename(string oldVar, string newVar)
-  {
-    record.Rename(oldVar, newVar);
-    fieldValue.Rename(oldVar, newVar);
   }
 }

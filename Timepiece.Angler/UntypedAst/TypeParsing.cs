@@ -1,4 +1,5 @@
 using System.Numerics;
+using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using ZenLib;
@@ -37,7 +38,7 @@ public static class TypeParsing
   /// <param name="alias">The given type name string to bind.</param>
   /// <returns>The relevant TypeAlias.</returns>
   /// <exception cref="ArgumentOutOfRangeException">If the given string does not match any known term.</exception>
-  private static bool TryParse(string s, out TypeAlias? alias)
+  public static bool TryParse(string s, out TypeAlias? alias)
   {
     alias = s switch
     {
@@ -48,8 +49,7 @@ public static class TypeParsing
       // expressions
       "Var" => new TypeAlias(typeof(Var), (TypeAlias?) null),
       // boolean expressions
-      "True" => new TypeAlias(typeof(ConstantExpr), typeof(bool)),
-      "False" => new TypeAlias(typeof(ConstantExpr), typeof(bool)),
+      "Bool" => new TypeAlias(typeof(ConstantExpr), typeof(bool)),
       "And" => new TypeAlias(typeof(BinaryOpExpr), typeof(bool)),
       "Or" => new TypeAlias(typeof(BinaryOpExpr), typeof(bool)),
       "Not" => new TypeAlias(typeof(Not)),
@@ -58,26 +58,26 @@ public static class TypeParsing
       "Int32" => new TypeAlias(typeof(ConstantExpr)),
       "BigInt" => new TypeAlias(typeof(ConstantExpr)),
       "Uint32" => new TypeAlias(typeof(ConstantExpr)),
-      "Plus" => new TypeAlias(typeof(BinaryOpExpr)),
+      "Plus" => new TypeAlias(typeof(Plus)),
       "LessThan" => new TypeAlias(typeof(BinaryOpExpr)),
       "LessThanEqual" => new TypeAlias(typeof(BinaryOpExpr)),
       "Equal" => new TypeAlias(typeof(BinaryOpExpr)),
       // pair expressions
-      "Pair" => new TypeAlias(typeof(BinaryOpExpr)),
-      "First" => new TypeAlias(typeof(UnaryOpExpr)),
-      "Second" => new TypeAlias(typeof(UnaryOpExpr)),
+      "Pair" => new TypeAlias(typeof(PairExpr), null, null),
+      "First" => new TypeAlias(typeof(First), null, null),
+      "Second" => new TypeAlias(typeof(Second), null, null),
       // option expressions
-      "Some" => new TypeAlias(typeof(UnaryOpExpr)),
-      "None" => new TypeAlias(typeof(None)),
+      "Some" => new TypeAlias(typeof(Some), (TypeAlias?) null),
+      "None" => new TypeAlias(typeof(None), (TypeAlias?) null),
       // record expressions
-      "GetField" => new TypeAlias(typeof(GetField)),
-      "WithField" => new TypeAlias(typeof(WithField)),
+      "GetField" => new TypeAlias(typeof(GetField), null, null),
+      "WithField" => new TypeAlias(typeof(WithField), null, null),
       // set expressions
       "String" => new TypeAlias(typeof(ConstantExpr)),
-      "SetContains" => new TypeAlias(typeof(BinaryOpExpr)),
-      "SetAdd" => new TypeAlias(typeof(BinaryOpExpr)),
-      "EmptySet" => new TypeAlias(typeof(ConstantExpr)),
-      "SetUnion" => new TypeAlias(typeof(BinaryOpExpr)),
+      "SetContains" => new TypeAlias(typeof(SetContains)),
+      "SetAdd" => new TypeAlias(typeof(SetAdd)),
+      "EmptySet" => new TypeAlias(typeof(EmptySet)),
+      "SetUnion" => new TypeAlias(typeof(SetUnion)),
       // types
       "TRoute" => typeof(BatfishBgpRoute),
       "TPair" => new TypeAlias(typeof(Pair<,>), null, null),
@@ -92,5 +92,24 @@ public static class TypeParsing
       _ => (TypeAlias?) null, // we need to cast so that null doesn't get converted to a TypeAlias
     };
     return alias.HasValue;
+  }
+}
+
+public class TypeConverter : JsonConverter<TypeAlias>
+{
+  public override void WriteJson(JsonWriter writer, TypeAlias value, JsonSerializer serializer)
+  {
+    serializer.Serialize(writer, value.ToString());
+  }
+
+  public override TypeAlias ReadJson(JsonReader reader, Type objectType, TypeAlias existingValue, bool hasExistingValue,
+    JsonSerializer serializer)
+  {
+    if (objectType != typeof(string)) throw new JsonSerializationException("Cannot read non-string as type");
+    var s = (string?) reader.Value;
+    if (s is null) throw new JsonException();
+    if (TypeParsing.TryParse(s, out var alias) && alias.HasValue)
+      return alias.Value;
+    throw new JsonException($"Unable to deserialize TypeAlias from {s}");
   }
 }

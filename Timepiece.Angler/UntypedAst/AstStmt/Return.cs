@@ -15,9 +15,4 @@ public class Return : Statement
   {
     Expr.Rename(oldVar, newVar);
   }
-
-  public override Statement Bind(string variable)
-  {
-    return new Assign(variable, Expr);
-  }
 }

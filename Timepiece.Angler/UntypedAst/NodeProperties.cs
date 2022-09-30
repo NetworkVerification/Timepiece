@@ -82,8 +82,17 @@ public class NodeProperties<T>
     {
       var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
       var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      exports[neighbor] = AstFunction<T>.Compose(exportAstFunctions, defaultExport).Evaluate();
-      imports[neighbor] = AstFunction<T>.Compose(importAstFunctions, defaultImport).Evaluate();
+      exports[neighbor] = defaultExport.Evaluate();
+      foreach (var function in exportAstFunctions)
+      {
+        exports[neighbor] = t => exports[neighbor](function.Evaluate()(t));
+      }
+
+      imports[neighbor] = defaultExport.Evaluate();
+      foreach (var function in importAstFunctions)
+      {
+        imports[neighbor] = t => imports[neighbor](function.Evaluate()(t));
+      }
     }
 
     return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
