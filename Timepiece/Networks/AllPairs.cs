@@ -23,7 +23,7 @@ public class AllPairs : ShortestPath<string>
     System.Array.Empty<SymbolicValue<string>>(), convergeTime, safetyProperties)
   {
     InitialValues =
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         If(D.EqualsValue(n), Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>()));
     Symbolics = new[] {D};
     Annotations = annotations(D);

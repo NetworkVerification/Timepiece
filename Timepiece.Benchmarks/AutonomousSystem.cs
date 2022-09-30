@@ -13,7 +13,7 @@ public class AutonomousSystem<TS> : Network<Option<BatfishBgpRoute>, TS>
     IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
     BigInteger convergeTime, SymbolicValue<TS>[] symbolics) : base(topology, transferFunction,
     Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
-    topology.ForAllNodes(n =>
+    topology.MapNodes(n =>
       n == externalSrc ? Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()) : Option.None<BatfishBgpRoute>()),
     annotations, stableProperties, safetyProperties, convergeTime, symbolics)
   {
@@ -45,11 +45,11 @@ public class AutonomousSystem<TS> : Network<Option<BatfishBgpRoute>, TS>
   // const string BTE = "BTE";
   // var topology = AsWithExternalPeers(nodes, 2);
   // var sent = new SymbolicValue<Option<BatfishBgpRoute>>("sent");
-  // var transfer = topology.ForAllEdges(e =>
+  // var transfer = topology.MapEdges(e =>
   // Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath));
-  // var initialValues = topology.ForAllNodes(n => n == "external-0" ? sent.Value : Option.None<BatfishBgpRoute>());
-  // var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
-  // var stableProperties = topology.ForAllNodes(n =>
+  // var initialValues = topology.MapNodes(n => n == "external-0" ? sent.Value : Option.None<BatfishBgpRoute>());
+  // var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+  // var stableProperties = topology.MapNodes(n =>
   // Lang.IfSome(Zen.Implies(n == "external-1", sent.Value.Where(b => Zen.Not(b.HasCommunity(BTE))).IsNone())));
   // }
 
@@ -63,7 +63,7 @@ public class AutonomousSystem<TS> : Network<Option<BatfishBgpRoute>, TS>
     // add an edge to the external dest from the topology
     internalTopology.Add(externalDest, new List<string> {"B"});
     var topology = new Topology(internalTopology);
-    var transfer = topology.ForAllEdges(e =>
+    var transfer = topology.MapEdges(e =>
       e switch
       {
         ("externalSrc", "A") => Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath),
@@ -76,11 +76,11 @@ public class AutonomousSystem<TS> : Network<Option<BatfishBgpRoute>, TS>
       new("extSrc"),
       new("extDest")
     };
-    var stableProperties = topology.ForAllNodes(n =>
+    var stableProperties = topology.MapNodes(n =>
       n == externalDest ? NoTransitProperty(externalRelationships) : Lang.True<Option<BatfishBgpRoute>>());
-    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     var convergeTime = new BigInteger(4);
-    var annotations = topology.ForAllNodes(n =>
+    var annotations = topology.MapNodes(n =>
     {
       if (n == externalSrc)
       {

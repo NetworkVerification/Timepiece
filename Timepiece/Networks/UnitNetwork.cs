@@ -6,11 +6,11 @@ namespace Timepiece.Networks;
 public class UnitNetwork : Network<Unit, object>
 {
   public UnitNetwork(Topology topology) : base(topology,
-    topology.ForAllEdges(_ => Lang.Identity<Unit>()), (_, _) => new Unit(),
-    topology.ForAllNodes<Zen<Unit>>(_ => new Unit()),
-    topology.ForAllNodes(_ => Lang.Globally(UnitPredicate())),
-    topology.ForAllNodes(_ => Lang.Globally(UnitPredicate())),
-    topology.ForAllNodes(_ => UnitPredicate()), System.Array.Empty<SymbolicValue<object>>())
+    topology.MapEdges(_ => Lang.Identity<Unit>()), (_, _) => new Unit(),
+    topology.MapNodes<Zen<Unit>>(_ => new Unit()),
+    topology.MapNodes(_ => Lang.Globally(UnitPredicate())),
+    topology.MapNodes(_ => Lang.Globally(UnitPredicate())),
+    topology.MapNodes(_ => UnitPredicate()), System.Array.Empty<SymbolicValue<object>>())
   {
   }
 

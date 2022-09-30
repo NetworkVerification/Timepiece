@@ -122,7 +122,7 @@ public static class BgpNetworkTests
   {
     var topology = Topologies.FatTree(4);
     Dictionary<string, Zen<Option<Bgp>>> initialValues =
-      topology.ForAllNodes(n => n == FatTree.FatTreeLayer.Edge.Node(19) ? Start : Option.None<Bgp>());
+      topology.MapNodes(n => n == FatTree.FatTreeLayer.Edge.Node(19) ? Start : Option.None<Bgp>());
     var annotations = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>();
     var net = new BgpNetwork(topology, initialValues, annotations, new BigInteger(4),
       System.Array.Empty<SymbolicValue<Bgp>>())

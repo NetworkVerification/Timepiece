@@ -113,10 +113,10 @@ public class Network<T, TS>
     SymbolicValue<TS>[] symbolics) : this(topology,
     transferFunction, mergeFunction, initialValues, annotations,
     // modular properties: Finally(stable) + Globally(safety)
-    topology.ForAllNodes(n =>
+    topology.MapNodes(n =>
       Lang.Intersect(Lang.Finally(convergeTime, stableProperties[n]), Lang.Globally(safetyProperties[n]))),
     // monolithic properties: stable + safety
-    topology.ForAllNodes(n => Lang.Intersect(stableProperties[n], safetyProperties[n])),
+    topology.MapNodes(n => Lang.Intersect(stableProperties[n], safetyProperties[n])),
     symbolics)
   {
   }
@@ -130,7 +130,7 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckAnnotationsWith<TAcc>(TAcc collector,
     Func<string, TAcc, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
   {
-    var routes = Topology.ForAllNodes(_ => Symbolic<T>());
+    var routes = Topology.MapNodes(_ => Symbolic<T>());
     var time = Symbolic<BigInteger>();
     var s = Topology.Nodes
       // call f for each node
@@ -214,7 +214,7 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckInductive()
   {
     // create symbolic values for each node.
-    var routes = Topology.ForAllNodes(_ => Symbolic<T>());
+    var routes = Topology.MapNodes(_ => Symbolic<T>());
 
     // create a symbolic time variable.
     var time = Symbolic<BigInteger>();
@@ -264,7 +264,7 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckMonolithic()
   {
     // create symbolic values for each node.
-    var routes = Topology.ForAllNodes(_ => Symbolic<T>());
+    var routes = Topology.MapNodes(_ => Symbolic<T>());
 
     // add the assertions
     var assertions = Topology.Nodes.Select(node => MonolithicProperties[node](routes[node]));

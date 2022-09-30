@@ -36,12 +36,12 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
       Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>> annotations,
     BigInteger convergeTime)
     : base(topology,
-      topology.ForAllEdges(_ => Lang.Omap(Lang.Product(Lang.Incr(1), Lang.Identity<bool>()))),
+      topology.MapEdges(_ => Lang.Omap(Lang.Product(Lang.Incr(1), Lang.Identity<bool>()))),
       Lang.Omap2<TaggedRoute>(Merge),
       new Dictionary<string, Zen<Option<TaggedRoute>>>(),
       new Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>(),
-      topology.ForAllNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
-      topology.ForAllNodes(n => Property(hijacker, n)),
+      topology.MapNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
+      topology.MapNodes(n => Property(hijacker, n)),
       System.Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
   {
     if (!topology.HasNode(hijacker))
@@ -54,7 +54,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
       throw new ArgumentOutOfRangeException($"Hijack network does not contain the given destination node {dest}.");
     }
 
-    InitialValues = topology.ForAllNodes(n =>
+    InitialValues = topology.MapNodes(n =>
       n == hijacker ? HijackRoute.Value :
       n == dest ? DestRoute : Option.Null<TaggedRoute>());
     Symbolics = new[] {HijackRoute};

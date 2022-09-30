@@ -23,9 +23,9 @@ public static class DisagreeTests
     };
 
 
-    return new Network<BigInteger, Unit>(topology, topology.ForAllEdges(_ => Lang.Incr(1)), Merge, initialValues,
-      annotations, topology.ForAllNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
-      topology.ForAllNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),
+    return new Network<BigInteger, Unit>(topology, topology.MapEdges(_ => Lang.Incr(1)), Merge, initialValues,
+      annotations, topology.MapNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
+      topology.MapNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),
       System.Array.Empty<SymbolicValue<Unit>>());
   }
 

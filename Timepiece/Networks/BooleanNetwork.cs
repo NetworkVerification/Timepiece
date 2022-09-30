@@ -16,10 +16,10 @@ public class BooleanNetwork<TS> : Network<bool, TS>
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
     SymbolicValue<TS>[] symbolics,
     BigInteger convergeTime)
-    : base(topology, topology.ForAllEdges(_ => Lang.Identity<bool>()),
+    : base(topology, topology.MapEdges(_ => Lang.Identity<bool>()),
       Or, initialValues, annotations,
-      topology.ForAllNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
-      topology.ForAllNodes(_ => Lang.Identity<bool>()),
+      topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
+      topology.MapNodes(_ => Lang.Identity<bool>()),
       symbolics)
   {
   }

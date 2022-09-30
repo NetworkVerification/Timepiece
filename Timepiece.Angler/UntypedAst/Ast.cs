@@ -145,7 +145,7 @@ public class Ast<T, TS>
     // will eventually hold at a time equal to the number of nodes in the network (i.e. the longest path possible)
     var convergeTime = ConvergeTime ?? new BigInteger(topology.NEdges);
     var modularProperties =
-      topology.ForAllNodes<Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>(n =>
+      topology.MapNodes<Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>(n =>
         Lang.Finally(convergeTime, monolithicProperties[n]));
 
     return new Network<T, TS>(topology,

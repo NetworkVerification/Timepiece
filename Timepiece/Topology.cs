@@ -62,12 +62,12 @@ public class Topology
   }
 
   /// <summary>
-  ///     Return a dictionary mapping each node in the topology with a given function.
+  /// Return a dictionary mapping each node in the topology with a given function.
   /// </summary>
   /// <param name="nodeFunc">The function over every node.</param>
   /// <typeparam name="T">The return type of the function.</typeparam>
   /// <returns>A dictionary representing the result of the function for every node.</returns>
-  public Dictionary<string, T> ForAllNodes<T>(Func<string, T> nodeFunc)
+  public Dictionary<string, T> MapNodes<T>(Func<string, T> nodeFunc)
   {
     return new Dictionary<string, T>(
       Nodes.Select(node => new KeyValuePair<string, T>(node, nodeFunc(node))));
@@ -76,6 +76,11 @@ public class Topology
   public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, string, TAcc> f)
   {
     return Nodes.Aggregate(initial, f);
+  }
+
+  public bool ExistsNode(Func<string, bool> predicate)
+  {
+    return Nodes.Any(predicate);
   }
 
   /// <summary>
@@ -88,7 +93,13 @@ public class Topology
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (nbr, node.Key));
   }
 
-  public Dictionary<(string, string), T> ForAllEdges<T>(Func<(string, string), T> edgeFunc)
+  /// <summary>
+  /// Return a dictionary mapping each edge in the topology to a value according to the given function.
+  /// </summary>
+  /// <param name="edgeFunc"></param>
+  /// <typeparam name="T"></typeparam>
+  /// <returns></returns>
+  public Dictionary<(string, string), T> MapEdges<T>(Func<(string, string), T> edgeFunc)
   {
     var edges = AllEdges().Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
     return new Dictionary<(string, string), T>(edges);

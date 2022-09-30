@@ -54,7 +54,7 @@ public static class FilteringTests
     };
     var transfer = Transfer();
     return new Network<Pair<Option<Bgp>, bool>, Unit>(Topology,
-      Topology.ForAllEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
+      Topology.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
       Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(BgpExtensions.Min), p => p.Item1()),
       initialValues,
       annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
@@ -62,7 +62,7 @@ public static class FilteringTests
 
   private static Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>> Transfer() =>
     // add the tag on nv and wv, drop if tagged on de
-    Topology.ForAllEdges(e => e switch
+    Topology.MapEdges(e => e switch
     {
       ("w", "v") => Lang.Omap<Bgp, Bgp>(b => b.IncrementAsLength().AddTag(Tag)),
       ("n", "v") => _ => Option.None<Bgp>(),

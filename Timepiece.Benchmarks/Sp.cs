@@ -12,7 +12,7 @@ public class Sp<TS> : Network<Option<BatfishBgpRoute>, TS>
     IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
     SymbolicValue<TS>[] symbolics) :
     this(topology,
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         n == destination ? Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()) : Option.None<BatfishBgpRoute>()),
       annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
   {
@@ -25,7 +25,7 @@ public class Sp<TS> : Network<Option<BatfishBgpRoute>, TS>
     IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
     BigInteger convergeTime,
     SymbolicValue<TS>[] symbolics) : base(topology,
-    topology.ForAllEdges(_ => Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath)),
+    topology.MapEdges(_ => Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath)),
     Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
     initialValues,
     annotations, stableProperties, safetyProperties, convergeTime, symbolics)
@@ -46,9 +46,9 @@ public static class Sp
     var annotations =
       distances.Select(p => (p.Key, Lang.Finally<Option<BatfishBgpRoute>>(p.Value, Option.IsSome)))
         .ToDictionary(p => p.Item1, p => p.Item2);
-    var stableProperties = topology.ForAllNodes(_ => reachable);
+    var stableProperties = topology.MapNodes(_ => reachable);
     // no safety property
-    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -66,8 +66,8 @@ public static class Sp
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
-      topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+      topology.MapNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -84,48 +84,50 @@ public static class Sp
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
-      topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    var safetyProperties = topology.ForAllNodes(_ =>
+      topology.MapNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.MapNodes(_ =>
       Lang.Union(Lang.IsNone<BatfishBgpRoute>(), Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Zen<BigInteger> ApproximateDistance(LabelledTopology<int> topology, string node,
-    SymbolicValue<Pair<string, int>> dest)
+  /// <summary>
+  /// Return an integer representing the (possibly-symbolic) distance between a node and a destination edge-layer node
+  /// in a fattree topology.
+  /// </summary>
+  /// <param name="node">The given node.</param>
+  /// <param name="destination">The destination node.</param>
+  /// <param name="samePods">Whether or not the node and destination node are in the same pod.</param>
+  /// <returns></returns>
+  private static Zen<BigInteger> SymbolicDistance(string node, Zen<string> destination, Zen<bool> samePods)
   {
-    var destNode = dest.Value.Item1();
-    var destPod = dest.Value.Item2();
-    var nodePod = Zen.Constant(topology.L(node));
     // check that either the destination or the node satisfy the given relation
-    return Zen.If(destNode == Zen.Constant(node), BigInteger.Zero,
-      Zen.If(Zen.And(node.IsAggregation(), destPod == nodePod), new BigInteger(5),
-        Zen.If(Zen.And(node.IsAggregation(), destPod != nodePod), new BigInteger(15),
-          Zen.If<BigInteger>(Zen.And(node.IsEdge(), destPod != nodePod), new BigInteger(20),
-            new BigInteger(10))
-        )
-      )
-    );
+    return Zen.If(destination == node, BigInteger.Zero,
+      Zen.If(Zen.And(node.IsAggregation(), samePods), new BigInteger(1),
+        Zen.If(Zen.And(node.IsAggregation(), Zen.Not(samePods)), new BigInteger(3),
+          Zen.If<BigInteger>(Zen.And(node.IsEdge(), Zen.Not(samePods)), new BigInteger(4),
+            new BigInteger(2)))));
   }
 
   public static Sp<Pair<string, int>> AllPairsReachability(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
-    var stableProperties = topology.ForAllNodes(_ => Lang.IsSome<BatfishBgpRoute>());
-    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    var stableProperties = topology.MapNodes(_ => Lang.IsSome<BatfishBgpRoute>());
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     // dest must be an edge node in the network with the appropriate pod number
+    // TODO: add an ExistsNode somewhere to reuse this FoldNodes
     var dest = new SymbolicValue<Pair<string, int>>("dest",
       p =>
         topology.FoldNodes(Zen.False(),
           (disjuncts, n) => n.IsEdge()
-            ? Zen.Or(disjuncts,
-              Zen.And(p.Item1() == Zen.Constant(n), p.Item2() == Zen.Constant(topology.L(n))))
+            ? Zen.Or(disjuncts, Zen.And(p.Item1() == n, p.Item2() == topology.L(n)))
             : disjuncts));
-    var annotations = topology.ForAllNodes(n =>
-      Lang.Finally(ApproximateDistance(topology, n, dest), Lang.IsSome<BatfishBgpRoute>()));
+    var annotations = topology.MapNodes(n =>
+      Lang.Finally(SymbolicDistance(n, dest.Value.Item1(), topology.L(n) == dest.Value.Item2()),
+        Lang.IsSome<BatfishBgpRoute>()));
     // set a node to be the destination if it matches the symbolic
     var initialValues =
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()).Where(_ =>
           Zen.And(dest.Value.Item1() == Zen.Constant(n), dest.Value.Item2() == Zen.Constant(topology.L(n)))));
     return new Sp<Pair<string, int>>(topology, initialValues, annotations, stableProperties, safetyProperties,

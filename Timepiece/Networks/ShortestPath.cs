@@ -14,10 +14,10 @@ public class ShortestPath<TS> : Network<Option<BigInteger>, TS>
     SymbolicValue<TS>[] symbolics,
     BigInteger convergeTime,
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> safetyProperties
-  ) : base(topology, topology.ForAllEdges(_ => Lang.Omap(Lang.Incr(BigInteger.One))), Lang.Omap2<BigInteger>(Min),
+  ) : base(topology, topology.MapEdges(_ => Lang.Omap(Lang.Incr(BigInteger.One))), Lang.Omap2<BigInteger>(Min),
     initialValues,
     annotations,
-    topology.ForAllNodes(node => Lang.Finally(convergeTime, safetyProperties[node])),
+    topology.MapNodes(node => Lang.Finally(convergeTime, safetyProperties[node])),
     safetyProperties,
     symbolics)
   {

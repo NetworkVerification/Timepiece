@@ -15,7 +15,7 @@ public static class BooleanTests
   {
     var topology = Topologies.Path(2);
 
-    var initialValues = topology.ForAllNodes(n => Eq<string>(n, "A"));
+    var initialValues = topology.MapNodes(n => Eq<string>(n, "A"));
 
     var convergeTime = new BigInteger(2);
     return new BooleanNetwork<Unit>(topology, initialValues, annotations, System.Array.Empty<SymbolicValue<Unit>>(),
@@ -56,7 +56,7 @@ public static class BooleanTests
     var topology = Topologies.FatTree(4);
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>();
     Dictionary<string, Zen<bool>> initialValues =
-      topology.ForAllNodes(n => Constant(n == FatTree.FatTreeLayer.Edge.Node(19)));
+      topology.MapNodes(n => Constant(n == FatTree.FatTreeLayer.Edge.Node(19)));
     var net = new BooleanNetwork<Unit>(topology, initialValues, annotations,
       System.Array.Empty<SymbolicValue<Unit>>(), new BigInteger(4))
     {

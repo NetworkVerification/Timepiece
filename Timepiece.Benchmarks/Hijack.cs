@@ -19,7 +19,7 @@ public class Hijack : Network<TaggedRoute, Pair<Option<BatfishBgpRoute>, uint>>
     IReadOnlyDictionary<string, Func<Zen<TaggedRoute>, Zen<bool>>> safetyProperties)
     : base(topology, Transfer(topology, hijacker, HijackRouteAndPrefix.Value.Item2()),
       Merge(HijackRouteAndPrefix.Value.Item2()),
-      topology.ForAllNodes(n => n == destination
+      topology.MapNodes(n => n == destination
         ? Pair.Create(Option.Create(BatfishBgpRouteExtensions.ToDestination(HijackRouteAndPrefix.Value.Item2())),
           Zen.False())
         : n == hijacker
@@ -47,7 +47,7 @@ public class Hijack : Network<TaggedRoute, Pair<Option<BatfishBgpRoute>, uint>>
   /// <returns></returns>
   private static Dictionary<(string, string), Func<Zen<TaggedRoute>, Zen<TaggedRoute>>> Transfer(Topology topology,
     string hijacker, Zen<uint> destinationPrefix) =>
-    topology.ForAllEdges(e =>
+    topology.MapEdges(e =>
       Lang.Product(
         Lang.Test(
           Lang.IfSome<BatfishBgpRoute>(b => Zen.And(b.GetDestination() == destinationPrefix, e.Item1 == hijacker)),
@@ -116,9 +116,9 @@ public class Hijack : Network<TaggedRoute, Pair<Option<BatfishBgpRoute>, uint>>
                   HasDestinationRoute))))) //Lang.Until(p.Value, DestinationRouteIsInternal, MapInternal(HasDestinationRoute))))
         .ToDictionary(p => p.Item1, p => p.Item2);
     IReadOnlyDictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<bool>>> stableProperties =
-      topology.ForAllNodes(n => n == hijackNode ? Lang.True<TaggedRoute>() : MapInternal(HasDestinationRoute));
+      topology.MapNodes(n => n == hijackNode ? Lang.True<TaggedRoute>() : MapInternal(HasDestinationRoute));
     IReadOnlyDictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<bool>>> safetyProperties =
-      topology.ForAllNodes(_ => Lang.True<TaggedRoute>());
+      topology.MapNodes(_ => Lang.True<TaggedRoute>());
     return new Hijack(topology, destination, hijackNode, annotations, stableProperties, safetyProperties);
   }
 
@@ -133,12 +133,12 @@ public class Hijack : Network<TaggedRoute, Pair<Option<BatfishBgpRoute>, uint>>
           p.Key == hijackNode ? Lang.Globally(Lang.True<TaggedRoute>()) : Annotate(p.Value)))
         .ToDictionary(p => p.Item1, p => p.Item2);
     IReadOnlyDictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<bool>>> stableProperties =
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         n == hijackNode
           ? Lang.True<TaggedRoute>()
           : Lang.First<Option<BatfishBgpRoute>, bool>(Lang.IsSome<BatfishBgpRoute>()));
     IReadOnlyDictionary<string, Func<Zen<Pair<Option<BatfishBgpRoute>, bool>>, Zen<bool>>> safetyProperties =
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         n == hijackNode
           ? Lang.True<TaggedRoute>()
           : p => Zen.Implies(HasDestinationRoute(p.Item1()), Zen.Not(p.Item2())));

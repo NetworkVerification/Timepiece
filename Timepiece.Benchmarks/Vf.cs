@@ -13,7 +13,7 @@ public class Vf<TS> : Network<Option<BatfishBgpRoute>, TS>
     SymbolicValue<TS>[] symbolics) :
     base(topology, Transfer(topology, tag),
       Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         n == destination ? Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()) : Option.None<BatfishBgpRoute>()),
       annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
   {
@@ -22,7 +22,7 @@ public class Vf<TS> : Network<Option<BatfishBgpRoute>, TS>
   private static Dictionary<(string, string), Func<Zen<Option<BatfishBgpRoute>>, Zen<Option<BatfishBgpRoute>>>>
     Transfer(Topology topology, string tag)
   {
-    return topology.ForAllEdges(e =>
+    return topology.MapEdges(e =>
     {
       var increment = Lang.Omap<BatfishBgpRoute, BatfishBgpRoute>(BatfishBgpRouteExtensions.IncrementAsPath);
       var (src, snk) = e;
@@ -51,7 +51,7 @@ public static class Vf
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
     var annotations =
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         Lang.Until(distances[n], Lang.IsNone<BatfishBgpRoute>(),
           Lang.IfSome(distances[n] < 2
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
@@ -61,9 +61,9 @@ public static class Vf
               .EqLengthDefaultLp(
                 distances[n])))); //b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= distances[n]))));
     var safetyProperties =
-      topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+      topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     var stableProperties =
-      topology.ForAllNodes(_ => Lang.IsSome<BatfishBgpRoute>());
+      topology.MapNodes(_ => Lang.IsSome<BatfishBgpRoute>());
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -73,7 +73,7 @@ public static class Vf
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
     var annotations =
-      topology.ForAllNodes(n =>
+      topology.MapNodes(n =>
         Lang.Until(distances[n], Lang.IsNone<BatfishBgpRoute>(),
           distances[n] < 2
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
@@ -81,9 +81,9 @@ public static class Vf
               BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n])(b)))
             : Lang.IfSome(BatfishBgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
     var safetyProperties =
-      topology.ForAllNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+      topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     var stableProperties =
-      topology.ForAllNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+      topology.MapNodes(_ => Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }

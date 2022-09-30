@@ -34,7 +34,7 @@ public static class TagTests
       {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
     };
 
-    return new Network<CSetRoute, Unit>(topology, topology.ForAllEdges(transfer), Merge, initial,
+    return new Network<CSetRoute, Unit>(topology, topology.MapEdges(transfer), Merge, initial,
       annotations,
       modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -57,7 +57,7 @@ public static class TagTests
       {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
     };
 
-    return new Network<SetRoute, Unit>(topology, topology.ForAllEdges(SetTransfer), Merge, initial,
+    return new Network<SetRoute, Unit>(topology, topology.MapEdges(SetTransfer), Merge, initial,
       annotations,
       modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }

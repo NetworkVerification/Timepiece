@@ -15,12 +15,12 @@ public class LocalPref : Network<LpRoute, UnitNetwork>
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime)
     : base(topology,
-      topology.ForAllEdges(_ => Lang.Product(Lang.Identity<BigInteger>(), Lang.Incr(new BigInteger(1)))),
+      topology.MapEdges(_ => Lang.Product(Lang.Identity<BigInteger>(), Lang.Incr(new BigInteger(1)))),
       Merge,
       initialValues,
       annotations,
-      topology.ForAllNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
-      topology.ForAllNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
+      topology.MapNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
+      topology.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
       System.Array.Empty<SymbolicValue<UnitNetwork>>())
   {
   }

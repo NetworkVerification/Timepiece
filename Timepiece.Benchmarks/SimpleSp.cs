@@ -11,18 +11,18 @@ public class SimpleSp<TS> : Network<Option<SimpleBgpRoute>, TS>
     IReadOnlyDictionary<string, Func<Zen<Option<SimpleBgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<SimpleBgpRoute>>, Zen<bool>>> safetyProperties,
     SymbolicValue<TS>[] symbolics) : base(topology,
-    topology.ForAllEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
+    topology.MapEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
     Lang.Omap2<SimpleBgpRoute>(SimpleBgpRouteExtensions.Min),
-    topology.ForAllNodes(n =>
+    topology.MapNodes(n =>
       n == destination ? Option.Create<SimpleBgpRoute>(new SimpleBgpRoute()) : Option.None<SimpleBgpRoute>()),
     annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
   {
   }
 
   // base(topology,
-  // topology.ForAllEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
+  // topology.MapEdges(_ => Lang.Omap<SimpleBgpRoute, SimpleBgpRoute>(SimpleBgpRouteExtensions.IncrementAsPath)),
   // Lang.Omap2<SimpleBgpRoute>(SimpleBgpRouteExtensions.Min),
-  // topology.ForAllNodes(n => n == destination ? Option.Create<SimpleBgpRoute>(new SimpleBgpRoute()) : Option.None<SimpleBgpRoute>()),
+  // topology.MapNodes(n => n == destination ? Option.Create<SimpleBgpRoute>(new SimpleBgpRoute()) : Option.None<SimpleBgpRoute>()),
   // annotations, stableProperties, safetyProperties, symbolics)
 }
 
@@ -39,9 +39,9 @@ public static class SimpleSp
     var annotations =
       distances.Select(p => (p.Key, Lang.Finally(p.Value, reachable)))
         .ToDictionary(p => p.Item1, p => p.Item2);
-    var stableProperties = topology.ForAllNodes(_ => reachable);
+    var stableProperties = topology.MapNodes(_ => reachable);
     // no safety property
-    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -59,8 +59,8 @@ public static class SimpleSp
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
-      topology.ForAllNodes(_ => Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    var safetyProperties = topology.ForAllNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
+      topology.MapNodes(_ => Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -77,8 +77,8 @@ public static class SimpleSp
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
-      topology.ForAllNodes(_ => Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    var safetyProperties = topology.ForAllNodes(_ =>
+      topology.MapNodes(_ => Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.MapNodes(_ =>
       Lang.Union(Lang.IsNone<SimpleBgpRoute>(), Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
       System.Array.Empty<SymbolicValue<Unit>>());

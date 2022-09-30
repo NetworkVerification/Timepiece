@@ -45,7 +45,7 @@ public static class AstTests
   {
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destNode);
-    var props = topology.ForAllNodes(n =>
+    var props = topology.MapNodes(n =>
       GenerateProperties(n, topology[n], distances[n]));
     return new PairRouteAst(props, D, Predicates, new Dictionary<string, AstPredicate<Unit>>(), 5);
   }
