@@ -7,9 +7,10 @@ public class Benchmark
   public Benchmark(uint n, string? destination, BenchmarkType type, bool runMonolithic)
   {
     N = n;
-    if (type == BenchmarkType.ApReachable)
+    if (type.HasSymbolicDestination())
     {
-      Destination = "[symbolic]";
+      // NOTE: this should not match any real node names!
+      Destination = "~~[symbolic]~~";
     }
     else if (destination is null)
     {
@@ -41,6 +42,9 @@ public class Benchmark
         break;
       case BenchmarkType.ApReachable:
         RunProfiler(Sp.AllPairsReachability(N), RunMonolithic);
+        break;
+      case BenchmarkType.ApPathLength:
+        RunProfiler(Sp.AllPairsPathLength(N), RunMonolithic);
         break;
       case BenchmarkType.ValleyFree:
         RunProfiler(Vf.ValleyFreeReachable(N, Destination), RunMonolithic);
@@ -83,6 +87,7 @@ public enum BenchmarkType
   SpPathLength,
   SpPathLengthWeak,
   ApReachable,
+  ApPathLength,
   ValleyFree,
   ValleyFreeLength,
   FatTreeHijack,
@@ -97,7 +102,8 @@ public static class BenchmarkTypeExtensions
       "r" or "reach" or "SpReachable" => BenchmarkType.SpReachable,
       "l" or "length" or "SpPathLength" => BenchmarkType.SpPathLength,
       "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
-      "a" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
+      "ar" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
+      "al" or "allLength" or "ApPathLength" => BenchmarkType.ApPathLength,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
       "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
       "h" or "hijack" or "FatTreeHijack" => BenchmarkType.FatTreeHijack,
@@ -105,10 +111,27 @@ public static class BenchmarkTypeExtensions
                                        "- 'r'/'reach'/'SpReachable' for SpReachable\n" +
                                        "- 'l'/'length'/'SpPathLength' for SpPathLength\n" +
                                        "- 'lw'/'lengthWeak'/'SpPathLengthWeak' for SpPathLengthWeak\n" +
-                                       "- 'a'/'allReach'/'ApReachable' for ApReachable\n" +
+                                       "- 'ar'/'allReach'/'ApReachable' for ApReachable\n" +
+                                       "- 'al'/'allLength'/'ApPathLength' for ApPathLength\n" +
                                        "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
                                        "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
                                        "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack")
+    };
+  }
+
+  public static bool HasSymbolicDestination(this BenchmarkType t)
+  {
+    return t switch
+    {
+      BenchmarkType.SpReachable => false,
+      BenchmarkType.SpPathLength => false,
+      BenchmarkType.SpPathLengthWeak => false,
+      BenchmarkType.ApReachable => true,
+      BenchmarkType.ApPathLength => true,
+      BenchmarkType.ValleyFree => false,
+      BenchmarkType.ValleyFreeLength => false,
+      BenchmarkType.FatTreeHijack => false,
+      _ => throw new ArgumentOutOfRangeException(nameof(t), t, null)
     };
   }
 }

@@ -4,7 +4,8 @@ using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
-public record struct BatfishBgpRoute
+[ZenObject]
+public struct BatfishBgpRoute
 {
   public BatfishBgpRoute()
   {
@@ -14,11 +15,11 @@ public record struct BatfishBgpRoute
     AsPathLength = 0;
     Med = 0;
     OriginType = new UInt<_2>(0);
-    Communities = new Set<string>();
+    Communities = new CSet<string>();
   }
 
   public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, UInt<_2> originType,
-    Set<string> communities, uint destination)
+    CSet<string> communities, uint destination)
   {
     AdminDist = adminDist;
     Lp = lp;
@@ -65,7 +66,7 @@ public record struct BatfishBgpRoute
   /// <summary>
   /// Representation of community tags as strings.
   /// </summary>
-  public Set<string> Communities { get; set; }
+  public CSet<string> Communities { get; set; }
 
   public override string ToString()
   {
@@ -84,65 +85,6 @@ public static class BatfishBgpRouteExtensions
     return b.WithDestination(destination);
   }
 
-  public static Zen<uint> GetDestination(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, uint>("Destination");
-  }
-
-  public static Zen<BatfishBgpRoute> WithDestination(this Zen<BatfishBgpRoute> b, Zen<uint> destination)
-  {
-    return b.WithField("Destination", destination);
-  }
-
-  public static Zen<uint> GetLp(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, uint>("Lp");
-  }
-
-  public static Zen<BatfishBgpRoute> WithLp(this Zen<BatfishBgpRoute> b, Zen<uint> lp)
-  {
-    return b.WithField("Lp", lp);
-  }
-
-  public static Zen<BigInteger> GetAsPathLength(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, BigInteger>("AsPathLength");
-  }
-
-  public static Zen<BatfishBgpRoute> WithAsPathLength(this Zen<BatfishBgpRoute> b, Zen<BigInteger> asPathLength)
-  {
-    return b.WithField("AsPathLength", asPathLength);
-  }
-
-  public static Zen<uint> GetMed(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, uint>("Med");
-  }
-
-  public static Zen<BatfishBgpRoute> WithMed(this Zen<BatfishBgpRoute> b, Zen<uint> med)
-  {
-    return b.WithField("Med", med);
-  }
-
-  public static Zen<UInt<_2>> GetOriginType(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, UInt<_2>>("OriginType");
-  }
-
-  public static Zen<BatfishBgpRoute> WithOriginType(this Zen<BatfishBgpRoute> b, Zen<UInt<_2>> originType)
-  {
-    return b.WithField("OriginType", originType);
-  }
-
-  public static Zen<Set<string>> GetCommunities(this Zen<BatfishBgpRoute> b)
-  {
-    return b.GetField<BatfishBgpRoute, Set<string>>("Communities");
-  }
-
-  public static Zen<BatfishBgpRoute> WithCommunities(this Zen<BatfishBgpRoute> b, Zen<Set<string>> communities)
-  {
-    return b.WithField("Communities", communities);
-  }
 
   /// <summary>
   /// Compare two BatfishBgpRoutes and return the minimum.
@@ -157,10 +99,10 @@ public static class BatfishBgpRouteExtensions
   /// <returns>The minimum route by the ranking.</returns>
   public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
   {
-    return Lang.CompareBy(GetLp, Zen.Gt,
-      Lang.CompareBy(GetAsPathLength, Zen.Lt,
-        Lang.CompareBy(GetOriginType, Zen.Gt,
-          Lang.CompareBy<BatfishBgpRoute, uint>(GetMed, Zen.Lt))))(b1, b2);
+    return Lang.CompareBy(b => b.GetLp(), Zen.Gt,
+      Lang.CompareBy(b => b.GetAsPathLength(), Zen.Lt,
+        Lang.CompareBy(b => b.GetOriginType(), Zen.Gt,
+          Lang.CompareBy<BatfishBgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
   }
 
   /// <summary>
@@ -185,17 +127,17 @@ public static class BatfishBgpRouteExtensions
     return b.WithAsPathLength(b.GetAsPathLength() + BigInteger.One);
   }
 
-  public static Zen<bool> HasCommunity(this Zen<BatfishBgpRoute> b, Zen<string> comm)
+  public static Zen<bool> HasCommunity(this Zen<BatfishBgpRoute> b, string comm)
   {
     return b.GetCommunities().Contains(comm);
   }
 
-  public static Zen<BatfishBgpRoute> AddCommunity(this Zen<BatfishBgpRoute> b, Zen<string> comm)
+  public static Zen<BatfishBgpRoute> AddCommunity(this Zen<BatfishBgpRoute> b, string comm)
   {
     return b.WithCommunities(b.GetCommunities().Add(comm));
   }
 
-  public static Zen<Option<BatfishBgpRoute>> FilterCommunity(this Zen<BatfishBgpRoute> b, Zen<string> comm)
+  public static Zen<Option<BatfishBgpRoute>> FilterCommunity(this Zen<BatfishBgpRoute> b, string comm)
   {
     return Zen.If(b.HasCommunity(comm), Option.None<BatfishBgpRoute>(), Option.Create(b));
   }

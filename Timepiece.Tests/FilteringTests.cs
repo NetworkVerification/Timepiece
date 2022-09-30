@@ -29,12 +29,12 @@ public static class FilteringTests
     var initialValues = new Dictionary<string, Zen<Option<Bgp>>>
     {
       {"n", Option.None<Bgp>()},
-      {"w", Option.Create<Bgp>(new Bgp(100, BigInteger.Zero, new Set<string>()))},
+      {"w", Option.Create<Bgp>(new Bgp(100, BigInteger.Zero, new CSet<string>()))},
       {"v", Option.None<Bgp>()},
       {"d", Option.None<Bgp>()},
       {"e", Option.None<Bgp>()},
     };
-    return new Network<Option<Bgp>, Unit>(Topology, Transfer(), Lang.Omap2<Bgp>(BgpExtensions.Min),
+    return new Network<Option<Bgp>, Unit>(Topology, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
       initialValues,
       annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
@@ -47,7 +47,7 @@ public static class FilteringTests
     var initialValues = new Dictionary<string, Zen<Pair<Option<Bgp>, bool>>>
     {
       {"n", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())},
-      {"w", Pair.Create(Option.Create<Bgp>(new Bgp(100, BigInteger.Zero, new Set<string>())), Zen.True())},
+      {"w", Pair.Create(Option.Create<Bgp>(new Bgp()), Zen.True())},
       {"v", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())},
       {"d", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())},
       {"e", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())},
@@ -55,7 +55,7 @@ public static class FilteringTests
     var transfer = Transfer();
     return new Network<Pair<Option<Bgp>, bool>, Unit>(Topology,
       Topology.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
-      Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(BgpExtensions.Min), p => p.Item1()),
+      Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(Bgp.Min), p => p.Item1()),
       initialValues,
       annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }

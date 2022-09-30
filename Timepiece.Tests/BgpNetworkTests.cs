@@ -11,7 +11,7 @@ namespace Timepiece.Tests;
 
 public static class BgpNetworkTests
 {
-  private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp(100, 0, new Set<string>()));
+  private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp());
 
   private static BgpNetwork Net(Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
@@ -68,14 +68,14 @@ public static class BgpNetworkTests
         Lang.Until(new BigInteger(1), Lang.IsNone<Bgp>(),
           Lang.IfSome<Bgp>(b =>
             And(b.GetAsLength() == new BigInteger(1), b.GetLp() == new BigInteger(100),
-              b.GetTags() == Set.Empty<string>().Add(Constant("A")))))
+              b.GetTags() == CSet.Empty<string>().Add("A"))))
       },
       {
         "C",
         Lang.Until(new BigInteger(2), Lang.IsNone<Bgp>(),
           Lang.IfSome<Bgp>(b =>
             And(b.GetAsLength() == new BigInteger(2), b.GetLp() == new BigInteger(100),
-              b.GetTags() == Set.Empty<string>().Add(Constant("A")).Add(Constant("B")))))
+              b.GetTags() == CSet.Empty<string>().Add("A").Add("B"))))
       }
     };
     var net = Net(annotations);

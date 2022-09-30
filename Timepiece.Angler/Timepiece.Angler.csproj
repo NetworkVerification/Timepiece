@@ -15,7 +15,6 @@
       <PackageReference Include="IPAddressRange" Version="4.2.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="QuikGraph" Version="2.3.0" />
-      <PackageReference Include="ZenLib.Generators" Version="0.1.3" />
     </ItemGroup>
 
 </Project>

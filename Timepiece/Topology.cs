@@ -78,11 +78,6 @@ public class Topology
     return Nodes.Aggregate(initial, f);
   }
 
-  public bool ExistsNode(Func<string, bool> predicate)
-  {
-    return Nodes.Any(predicate);
-  }
-
   /// <summary>
   /// Return all the edges in the network.
   /// </summary>
@@ -260,10 +255,10 @@ public static class Topologies
   /// <summary>
   /// Create a labelled fattree topology of numPods pods.
   /// Nodes are named "core-i", "aggregation-i" and "edge-i", where i is a non-negative integer.
-  /// Stores the pod number associated with each node: core nodes are in the last pod.
+  /// Stores the pod number associated with each node: core nodes are each in their own k+i pod.
   /// </summary>
   /// <param name="numPods">Number of pods in the fattree.</param>
-  /// <returns></returns>
+  /// <returns>A fattree topology with pod labels.</returns>
   public static LabelledTopology<int> LabelledFatTree(uint numPods)
   {
     var podNumbers = new Dictionary<string, int>();
@@ -272,7 +267,7 @@ public static class Topologies
     for (var i = 0; i < coreNodes; i++)
     {
       var name = Timepiece.FatTree.FatTreeLayer.Core.Node(i);
-      podNumbers.Add(name, (int) numPods);
+      podNumbers.Add(name, (int) numPods + i);
       neighbors.Add(name, new List<string>());
     }
 
@@ -314,6 +309,7 @@ public static class Topologies
       var coreNode = Timepiece.FatTree.FatTreeLayer.Core.Node(c);
       for (var p = 0; p < numPods; p++)
       {
+        // TODO: use a system such as this to track which aggregate nodes go with which core nodes
         var aggregateNode =
           Timepiece.FatTree.FatTreeLayer.Aggregation.Node(coreNodes + c / (numPods / 2) + p * numPods);
         neighbors[coreNode].Add(aggregateNode);

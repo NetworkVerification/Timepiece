@@ -14,7 +14,7 @@ public class BgpNetwork : Network<Option<Bgp>, Bgp>
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime,
     SymbolicValue<Bgp>[] symbolics) : base(topology,
-    topology.MapEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(BgpExtensions.Min),
+    topology.MapEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(Bgp.Min),
     initialValues, annotations, topology.MapNodes(_ => Lang.Finally<Option<Bgp>>(convergeTime, Option.IsSome)),
     topology.MapNodes(_ => Lang.IsSome<Bgp>()), symbolics)
   {
@@ -24,6 +24,6 @@ public class BgpNetwork : Network<Option<Bgp>, Bgp>
   {
     var (src, snk) = edge;
     return x => If(x.HasTag(snk), Option.None<Bgp>(),
-      Option.Create(x.SetAsLength(x.GetAsLength() + new BigInteger(1)).AddTag(src)));
+      Option.Create(x.IncrementAsLength().AddTag(src)));
   }
 }
