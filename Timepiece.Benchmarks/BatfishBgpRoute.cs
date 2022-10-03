@@ -168,9 +168,9 @@ public static class BatfishBgpRouteExtensions
   public static Zen<bool> DestinationIs(this Zen<BatfishBgpRoute> b, Zen<uint> destination) =>
     b.GetDestination() == destination;
 
-  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> MaxLengthDefaultLp(BigInteger x) =>
+  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> MaxLengthDefaultLp(Zen<BigInteger> x) =>
     b => Zen.And(b.LengthAtMost(x), b.LpEquals(100));
 
-  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> EqLengthDefaultLp(BigInteger x) =>
+  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> EqLengthDefaultLp(Zen<BigInteger> x) =>
     b => Zen.And(b.GetAsPathLength() == x, b.LpEquals(100));
 }

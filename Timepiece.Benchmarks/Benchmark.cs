@@ -52,8 +52,14 @@ public class Benchmark
       case BenchmarkType.ValleyFreeLength:
         RunProfiler(Vf.ValleyFreePathLength(N, Destination), RunMonolithic);
         break;
+      case BenchmarkType.ApValleyFree:
+        RunProfiler(Vf.AllPairsValleyFreeReachable(N), RunMonolithic);
+        break;
       case BenchmarkType.FatTreeHijack:
         RunProfiler(Hijack.HijackFiltered(N, Destination), RunMonolithic);
+        break;
+      case BenchmarkType.ApFatTreeHijack:
+        RunProfiler(Hijack.AllPairsHijackFiltered(N), RunMonolithic);
         break;
       default:
         throw new ArgumentOutOfRangeException(null, Bench, "Invalid argument is not a benchmark type");
@@ -90,7 +96,9 @@ public enum BenchmarkType
   ApPathLength,
   ValleyFree,
   ValleyFreeLength,
+  ApValleyFree,
   FatTreeHijack,
+  ApFatTreeHijack,
 }
 
 public static class BenchmarkTypeExtensions
@@ -106,7 +114,9 @@ public static class BenchmarkTypeExtensions
       "al" or "allLength" or "ApPathLength" => BenchmarkType.ApPathLength,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
       "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
+      "av" or "allValley" or "ApValleyFree" => BenchmarkType.ApValleyFree,
       "h" or "hijack" or "FatTreeHijack" => BenchmarkType.FatTreeHijack,
+      "ah" or "allHijack" or "ApFatTreeHijack" => BenchmarkType.ApFatTreeHijack,
       _ => throw new ArgumentException($"{s} does not correspond to a valid BenchmarkType. Acceptable values:\n" +
                                        "- 'r'/'reach'/'SpReachable' for SpReachable\n" +
                                        "- 'l'/'length'/'SpPathLength' for SpPathLength\n" +
@@ -115,7 +125,9 @@ public static class BenchmarkTypeExtensions
                                        "- 'al'/'allLength'/'ApPathLength' for ApPathLength\n" +
                                        "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
                                        "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
-                                       "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack")
+                                       "- 'av'/'allValley'/'ApValleyFree' for ApValleyFree\n" +
+                                       "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack" +
+                                       "- 'ah'/'allHijack'/'ApFatTreeHijack' for ApFatTreeHijack\n")
     };
   }
 
@@ -130,7 +142,9 @@ public static class BenchmarkTypeExtensions
       BenchmarkType.ApPathLength => true,
       BenchmarkType.ValleyFree => false,
       BenchmarkType.ValleyFreeLength => false,
+      BenchmarkType.ApValleyFree => true,
       BenchmarkType.FatTreeHijack => false,
+      BenchmarkType.ApFatTreeHijack => true,
       _ => throw new ArgumentOutOfRangeException(nameof(t), t, null)
     };
   }
