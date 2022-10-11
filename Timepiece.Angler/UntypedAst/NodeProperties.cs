@@ -66,11 +66,23 @@ public class NodeProperties<T>
   public NetworkNode<T> CreateNode(Func<List<IPAddressRange>, Zen<T>> initFunction,
     Func<string, AstPredicate<T>> predicateLookupFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
   {
+    var env = new AstEnvironment();
+    foreach (var (key, val) in Constants.stringConstants)
+    {
+      env = env.Update(key, val);
+    }
+
+    foreach (var (key, val) in Constants.prefixConstants)
+    {
+      Console.WriteLine($"Adding prefix constant key {key} to the environment...");
+      env = env.Update(key, val);
+    }
+
     var init = initFunction(Prefixes);
 
     var safetyProperty = Stable is null
       ? _ => true
-      : predicateLookupFunction(Stable).Evaluate();
+      : predicateLookupFunction(Stable).Evaluate(env);
 
     var invariant = Temporal is null
       ? (_, _) => true
@@ -82,16 +94,16 @@ public class NodeProperties<T>
     {
       var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
       var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      exports[neighbor] = defaultExport.Evaluate();
+      exports[neighbor] = defaultExport.Evaluate(env);
       foreach (var function in exportAstFunctions)
       {
-        exports[neighbor] = t => exports[neighbor](function.Evaluate()(t));
+        exports[neighbor] = t => exports[neighbor](function.Evaluate(env)(t));
       }
 
-      imports[neighbor] = defaultExport.Evaluate();
+      imports[neighbor] = defaultImport.Evaluate(new AstEnvironment());
       foreach (var function in importAstFunctions)
       {
-        imports[neighbor] = t => imports[neighbor](function.Evaluate()(t));
+        imports[neighbor] = t => imports[neighbor](function.Evaluate(env)(t));
       }
     }
 

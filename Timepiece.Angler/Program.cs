@@ -10,7 +10,7 @@ JsonSerializer Serializer()
     TypeNameHandling = TypeNameHandling.All,
     SerializationBinder = PairRouteAst.Binder(),
     ContractResolver = PairRouteAst.Resolver(),
-    // throw an error when members are missing instead of ignoring them
+    // throw an error when members are missing from the object instead of ignoring them
     // MissingMemberHandling = MissingMemberHandling.Error
   };
 }

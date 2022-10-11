@@ -81,7 +81,7 @@ public class AstSerializationBinder<TRoute, TState> : ISerializationBinder
       "String" => typeof(ConstantExpr<string>),
       "SetContains" => typeof(SetContains),
       "SetAdd" => typeof(SetAdd),
-      "EmptySet" => typeof(EmptySet),
+      "LiteralSet" => typeof(EmptySet),
       "SetUnion" => typeof(SetUnion),
       // types
       "TRoute" => typeof(TRoute),

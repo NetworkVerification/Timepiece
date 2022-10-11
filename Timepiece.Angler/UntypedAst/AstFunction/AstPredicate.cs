@@ -12,17 +12,17 @@ public class AstPredicate<T>
   public AstPredicate(string arg, Expr body)
   {
     Arg = arg;
-    Body = body;
+    Body = body ?? throw new ArgumentNullException(nameof(body), "AstPredicate body must not be null.");
   }
 
   public string Arg { get; set; }
   public Expr Body { get; set; }
 
-  public Func<Zen<T>, Zen<bool>> Evaluate()
+  public Func<Zen<T>, Zen<bool>> Evaluate(AstEnvironment env)
   {
     return t =>
     {
-      var astState = new AstEnvironment().Update(Arg, t);
+      var astState = env.Update(Arg, t);
       return astState.EvaluateExpr(Body);
     };
   }

@@ -105,7 +105,7 @@
         }
       },
       "prefixes": [],
-      "stable": "bad",
+      "stable": "isValid",
       "temporal": {
         "$type": "Finally",
         "then": "isValid",
@@ -117,14 +117,17 @@
   "predicates": {
     "bad": {
       "arg": "route",
-      "expr": {
-        "$type": "False"
+      "body": {
+        "$type": "Bool",
+        "value": false
       }
     },
     "isValid": {
       "arg": "route",
-      "expr": {
+      "body": {
         "$type": "First(TBool;TRoute)",
+        "firstType": "TBool",
+        "secondType": "TRoute",
         "pair": {
           "$type": "Var(TPair(TBool;TRoute))",
           "name": "route"

@@ -1,7 +1,9 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
+using Timepiece.Datatypes;
 using ZenLib;
 using Regex = System.Text.RegularExpressions.Regex;
 
@@ -17,7 +19,7 @@ public static class TypeParsing
 
   private static TypeAlias ParseTypeAlias(string alias, IEnumerator<string> typeArgs)
   {
-    if (!TryParse(alias, out var t) || !t.HasValue) throw new ArgumentException(null, nameof(alias));
+    if (!TryParse(alias, out var t) || !t.HasValue) throw new ArgumentException($"{alias} not a valid type alias.", nameof(alias));
     if (!t.Value.Type.IsGenericTypeDefinition) return t.Value;
     // recursively search for each argument
     t.Value.UpdateArgs(typeArgs, args => ParseTypeAlias(args.Current, args).MakeType());
@@ -48,20 +50,22 @@ public static class TypeParsing
       "If" => typeof(IfThenElse),
       // expressions
       "Var" => new TypeAlias(typeof(Var), (TypeAlias?) null),
+      "Call" => typeof(Call),
       // boolean expressions
-      "Bool" => new TypeAlias(typeof(ConstantExpr), typeof(bool)),
-      "And" => new TypeAlias(typeof(BinaryOpExpr), typeof(bool)),
-      "Or" => new TypeAlias(typeof(BinaryOpExpr), typeof(bool)),
-      "Not" => new TypeAlias(typeof(Not)),
+      "Bool" => typeof(ConstantExpr),
+      "And" => typeof(And),
+      "Or" => typeof(Or),
+      "Not" => typeof(Not),
       "Havoc" => typeof(Havoc),
       // numeric expressions
       "Int32" => new TypeAlias(typeof(ConstantExpr)),
       "BigInt" => new TypeAlias(typeof(ConstantExpr)),
       "Uint32" => new TypeAlias(typeof(ConstantExpr)),
-      "Plus" => new TypeAlias(typeof(Plus)),
+      "Plus32" => new TypeAlias(typeof(Plus)),
+      "Sub32" => new TypeAlias(typeof(Sub)),
       "LessThan" => new TypeAlias(typeof(BinaryOpExpr)),
       "LessThanEqual" => new TypeAlias(typeof(BinaryOpExpr)),
-      "Equal" => new TypeAlias(typeof(BinaryOpExpr)),
+      "Equals32" => new TypeAlias(typeof(Equals)),
       // pair expressions
       "Pair" => new TypeAlias(typeof(PairExpr), null, null),
       "First" => new TypeAlias(typeof(First), null, null),
@@ -75,11 +79,18 @@ public static class TypeParsing
       // set expressions
       "String" => new TypeAlias(typeof(ConstantExpr)),
       "SetContains" => new TypeAlias(typeof(SetContains)),
+      "Subset" => typeof(Subset),
       "SetAdd" => new TypeAlias(typeof(SetAdd)),
-      "EmptySet" => new TypeAlias(typeof(EmptySet)),
+      "LiteralSet" => new TypeAlias(typeof(LiteralSet)),
       "SetUnion" => new TypeAlias(typeof(SetUnion)),
+      "SetRemove" => new TypeAlias(typeof(SetRemove)),
+      // prefix expressions
+      "PrefixContains" => typeof(PrefixContains),
       // types
       "TRoute" => typeof(BatfishBgpRoute),
+      "TIpAddress" => typeof(uint),
+      "TIpPrefix" => typeof(Ipv4Prefix),
+      "TPrefixSet" => typeof(CSet<Ipv4Prefix>),
       "TPair" => new TypeAlias(typeof(Pair<,>), null, null),
       "TOption" => new TypeAlias(typeof(Option<>), (TypeAlias?) null),
       "TBool" => typeof(bool),
@@ -87,7 +98,7 @@ public static class TypeParsing
       "TUint32" => typeof(uint),
       "TTime" or "TBigInt" => typeof(BigInteger),
       "TString" => typeof(string),
-      "TSet" => typeof(Set<string>),
+      "TSet" => typeof(CSet<string>),
       "TUnit" => typeof(Unit),
       _ => (TypeAlias?) null, // we need to cast so that null doesn't get converted to a TypeAlias
     };

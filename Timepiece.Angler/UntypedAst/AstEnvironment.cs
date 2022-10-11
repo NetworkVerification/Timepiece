@@ -37,17 +37,21 @@ public class AstEnvironment
 
   public dynamic EvaluateExpr(Expr e)
   {
+    if (e is null)
+    {
+      throw new ArgumentNullException(nameof(e), "Given a null expression.");
+    }
     return e switch
     {
       Call => throw new NotImplementedException(),
       ConstantExpr constant => Zen.Constant(constant.value),
-      EmptySet => Set.Empty<string>(),
+      LiteralSet s => s.exprs.Aggregate(CSet.Empty<string>(), (set, element) => CSet.Add(set, EvaluateExpr(element))),
       Var v => this[v.Name],
       Havoc => Zen.Symbolic<bool>(),
       None n => typeof(Option).GetMethod("Null")!.MakeGenericMethod(n.innerType).Invoke(null, null)!,
       UnaryOpExpr uoe => uoe.unaryOp(EvaluateExpr(uoe.expr)),
       BinaryOpExpr boe => boe.binaryOp(EvaluateExpr(boe.expr1), EvaluateExpr(boe.expr2)),
-      _ => throw new ArgumentOutOfRangeException(nameof(e)),
+      _ => throw new ArgumentOutOfRangeException(nameof(e), $"{e} is not an expr I know how to handle!"),
     };
   }
 
@@ -55,7 +59,7 @@ public class AstEnvironment
   {
     return s switch
     {
-      Assign a => Update(a.Name, EvaluateExpr(a.Expr)),
+      Assign a => Update(a.Var, EvaluateExpr(a.Expr)),
       IfThenElse ite => EvaluateStatements(ite.ThenCase)
         .Join(EvaluateStatements(ite.ElseCase), EvaluateExpr(ite.Guard)),
       Return rt => Update(ReturnValue, EvaluateExpr(rt.Expr)),

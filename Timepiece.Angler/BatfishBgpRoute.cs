@@ -10,7 +10,7 @@ public class BatfishBgpRoute
 {
   public BatfishBgpRoute()
   {
-    DestinationPrefix = new Ipv4Prefix();
+    Prefix = new Ipv4Prefix();
     AdminDist = 0;
     Lp = 0;
     AsPathLength = 0;
@@ -20,10 +20,10 @@ public class BatfishBgpRoute
   }
 
   [JsonConstructor]
-  public BatfishBgpRoute(Ipv4Prefix destinationPrefix, uint adminDist, uint lp, BigInteger asPathLength, uint med,
+  public BatfishBgpRoute(Ipv4Prefix prefix, uint adminDist, uint lp, BigInteger asPathLength, uint med,
     Int<_2> originType, Set<string> communities)
   {
-    DestinationPrefix = destinationPrefix;
+    Prefix = prefix;
     AdminDist = adminDist;
     Lp = lp;
     AsPathLength = asPathLength;
@@ -35,7 +35,7 @@ public class BatfishBgpRoute
   /// <summary>
   /// IP prefix representing the routing destination.
   /// </summary>
-  public Ipv4Prefix DestinationPrefix { get; set; }
+  public Ipv4Prefix Prefix { get; set; }
 
   /// <summary>
   /// 32-bit integer representation of administrative distance.

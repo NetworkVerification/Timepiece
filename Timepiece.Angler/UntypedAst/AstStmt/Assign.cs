@@ -4,21 +4,21 @@ namespace Timepiece.Angler.UntypedAst.AstStmt;
 
 public class Assign : Statement
 {
-  public Assign(string name, Expr expr)
+  public Assign(string var, Expr expr)
   {
-    Name = name;
+    Var = var;
     Expr = expr;
   }
 
-  public string Name { get; set; }
+  public string Var { get; set; }
   public Expr Expr { get; set; }
 
   public override void Rename(string oldVar, string newVar)
   {
     Expr.Rename(oldVar, newVar);
-    if (Name == oldVar)
+    if (Var == oldVar)
     {
-      Name = newVar;
+      Var = newVar;
     }
   }
 }

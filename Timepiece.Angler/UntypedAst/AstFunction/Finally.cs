@@ -17,7 +17,7 @@ public class Finally<T> : AstTemporalOperator<T>
 
   public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter)
   {
-    var f = getter(Then).Evaluate();
+    var f = getter(Then).Evaluate(new AstEnvironment());
     return Lang.Finally(Time, f);
   }
 

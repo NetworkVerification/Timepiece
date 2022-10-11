@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Numerics;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
@@ -27,7 +28,7 @@ public static class AstFunctionTests
     {
       new IfThenElse(new Havoc(), new[] {new Return(increment)}, new[] {new Return(rVar)})
     });
-    var zenF = f.Evaluate();
+    var zenF = f.Evaluate(new AstEnvironment());
     // since the if is a havoc, we have that zenF(r) is either incremented or the same:
     var model = Zen.Not(Zen.And(Zen.Eq(zenF(r), r), Zen.Eq(zenF(r), rIncremented))).Solve();
     Assert.True(model.IsSatisfiable());
@@ -51,13 +52,28 @@ public static class AstFunctionTests
       new Return(new Plus(new Var(oldArg), new ConstantExpr(3)))
     });
     f1.Rename(oldArg, "y");
-    var f = new Func<Zen<int>, Zen<int>>(t => f2.Evaluate()(f1.Evaluate()(t)));
+    var f = new Func<Zen<int>, Zen<int>>(t => f2.Evaluate(new AstEnvironment())(f1.Evaluate(new AstEnvironment())(t)));
     var x = Zen.Symbolic<int>();
     var y = Zen.Symbolic<int>();
     // check that there does not exist a model where f(x) == y and y != x + 4 and y != 3
     // note that we need to store the result of f(x) in y as separate calls to f(x) can choose
     // to branch differently, meaning f(x) == 3 and f(x) != 3 is satisfiable (pick the else branch, pick the then branch)
     var model = Zen.Not(Zen.Implies(Zen.Eq(f(x), y), Zen.Or(Zen.Eq(y, x + 4), Zen.Eq(y, 3)))).Solve();
+    Assert.False(model.IsSatisfiable());
+  }
+
+  [Fact]
+  public static void TestAccessAstEnvironment()
+  {
+    const string envVar = "x";
+    const string arg = "y";
+    var env = new AstEnvironment(ImmutableDictionary<string, dynamic>.Empty.Add(envVar, 3));
+    var f1 = new AstFunction<int>(arg, new Statement[]
+    {
+      new Return(new Plus(new Var(envVar), new Var(arg)))
+    }).Evaluate(env);
+    var y = Zen.Symbolic<int>();
+    var model = Zen.Not(Zen.Eq(y + 3, f1(y))).Solve();
     Assert.False(model.IsSatisfiable());
   }
 }

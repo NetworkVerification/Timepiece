@@ -12,7 +12,7 @@ public class SetUnion : AssociativeBinaryOpExpr
   }
 
   [JsonConstructor]
-  public SetUnion(IEnumerable<Expr> operands) : base(operands, new EmptySet(), Op)
+  public SetUnion(IEnumerable<Expr> exprs) : base(exprs, LiteralSet.Empty(), Op)
   {
   }
 }

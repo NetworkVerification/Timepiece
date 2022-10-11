@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstExpr;
@@ -11,4 +12,9 @@ public class WithField : BinaryOpExpr
     fieldValue, (r, v) => GetMethod(recordTy, fieldTy).Call(r, fieldName, v))
   {
   }
+
+  [JsonConstructor]
+  public WithField(string recordType, string fieldType, Expr record, string fieldName, Expr fieldValue) : this(
+    TypeParsing.ParseType(recordType).MakeType(),
+    TypeParsing.ParseType(fieldType).MakeType(), record, fieldName, fieldValue) {}
 }

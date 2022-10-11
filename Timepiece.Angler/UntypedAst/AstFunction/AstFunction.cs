@@ -41,11 +41,11 @@ public class AstFunction<T>
     return new AstFunction<T>("x", new List<Statement> {new Return(new Var("x"))});
   }
 
-  public Func<Zen<T>, Zen<T>> Evaluate()
+  public Func<Zen<T>, Zen<T>> Evaluate(AstEnvironment environment)
   {
     return t =>
     {
-      var env = new AstEnvironment(ImmutableDictionary<string, dynamic>.Empty.Add(Arg, t));
+      var env = environment.Update(Arg, t);
       return (Zen<T>) (env.EvaluateStatements(Body).Return() ??
                        throw new InvalidOperationException("No value returned by function."));
     };

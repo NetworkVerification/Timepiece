@@ -1,5 +1,5 @@
 using Newtonsoft.Json.Serialization;
-using Timepiece.Angler.TypedAst.AstFunction;
+using Timepiece.Angler.UntypedAst.AstFunction;
 
 namespace Timepiece.Angler.UntypedAst;
 
