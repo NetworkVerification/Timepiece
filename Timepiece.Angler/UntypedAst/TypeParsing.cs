@@ -86,6 +86,8 @@ public static class TypeParsing
       "SetRemove" => new TypeAlias(typeof(SetRemove)),
       // prefix expressions
       "PrefixContains" => typeof(PrefixContains),
+      "PrefixMatches" => typeof(PrefixMatches),
+      "MatchSet" => typeof(PrefixMatchSet),
       // types
       "TRoute" => typeof(BatfishBgpRoute),
       "TIpAddress" => typeof(uint),

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using NetTools;
+using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstFunction;
 using ZenLib;
 
@@ -12,35 +13,45 @@ namespace Timepiece.Angler.UntypedAst;
 /// <typeparam name="T">The type of routes for the node.</typeparam>
 public class NodeProperties<T>
 {
-  public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
-    string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
-    Constants constants)
+  public NodeProperties(Dictionary<string, AstFunction<T>> declarations, Dictionary<string, RoutingPolicies> policies,
+    string? stable, AstTemporalOperator<T>? temporal, List<IPAddressRange> prefixes)
   {
+    // Console.WriteLine(constants is null && prefixes is null && policies is null);
     Prefixes = prefixes;
-    Policies = policies;
+    Policies = policies; // ?? throw new ArgumentNullException(nameof(policies));
     Stable = stable;
     Temporal = temporal;
-    Declarations = declarations;
-    Constants = constants;
+    Declarations = declarations; // ?? throw new ArgumentNullException(nameof(declarations));
+    //Constants = constants; // ?? throw new ArgumentNullException(nameof(constants));
     DisambiguateVariableNames();
   }
 
   /// <summary>
   ///   Additional function declarations.
   /// </summary>
+  //[JsonProperty(Required = Required.Always)]
+  [JsonProperty("Declarations")]
   public Dictionary<string, AstFunction<T>> Declarations { get; set; }
 
   /// <summary>
   ///   Additional constant declarations.
   /// </summary>
-  public Constants Constants { get; set; }
+  // [JsonProperty(Required = Required.Always)]
+  //[JsonProperty("Constants")]
+  //public Dictionary<string, bool> Constants { get; set; }
 
+  //[JsonProperty(Required = Required.DisallowNull)]
   public AstTemporalOperator<T>? Temporal { get; set; }
 
+  //[JsonProperty(Required = Required.Always)]
+  [JsonProperty("Prefixes")]
   public List<IPAddressRange> Prefixes { get; }
 
+  //[JsonProperty(Required = Required.Always)]
+  [JsonProperty("Policies")]
   public Dictionary<string, RoutingPolicies> Policies { get; }
 
+  //[JsonProperty(Required = Required.DisallowNull)]
   public string? Stable { get; }
 
   /// <summary>
@@ -67,16 +78,17 @@ public class NodeProperties<T>
     Func<string, AstPredicate<T>> predicateLookupFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
   {
     var env = new AstEnvironment();
-    foreach (var (key, val) in Constants.stringConstants)
-    {
-      env = env.Update(key, val);
-    }
-
-    foreach (var (key, val) in Constants.prefixConstants)
-    {
-      Console.WriteLine($"Adding prefix constant key {key} to the environment...");
-      env = env.Update(key, val);
-    }
+    // foreach (var (key, val) in Constants)
+    // {
+    //   Console.WriteLine($"Adding string constant key {key} to the environment...");
+    //   env = env.Update(key, val);
+    // }
+    //
+    // foreach (var (key, val) in Constants)
+    // {
+    //   Console.WriteLine($"Adding prefix constant key {key} to the environment...");
+    //   env = env.Update(key, val);
+    // }
 
     var init = initFunction(Prefixes);
 

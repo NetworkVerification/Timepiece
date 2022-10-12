@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Timepiece;
 using Timepiece.Angler;
+
+ITraceWriter traceWriter = new MemoryTraceWriter();
 
 JsonSerializer Serializer()
 {
@@ -10,6 +13,7 @@ JsonSerializer Serializer()
     TypeNameHandling = TypeNameHandling.All,
     SerializationBinder = PairRouteAst.Binder(),
     ContractResolver = PairRouteAst.Resolver(),
+    TraceWriter = traceWriter,
     // throw an error when members are missing from the object instead of ignoring them
     // MissingMemberHandling = MissingMemberHandling.Error
   };

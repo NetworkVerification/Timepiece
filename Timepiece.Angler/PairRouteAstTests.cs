@@ -28,11 +28,10 @@ public static class AstTests
   {
     var policies = new Dictionary<string, RoutingPolicies>(neighbors.Select(nbr =>
       new KeyValuePair<string, RoutingPolicies>(nbr, new RoutingPolicies())));
-    return new NodeProperties<Route>(new List<IPAddressRange>
+    return new NodeProperties<Route>(new Dictionary<string, AstFunction<Route>>(), policies, IsValid, new Finally<Route>(time, IsValid), new List<IPAddressRange>
       {
         GetAddressRange(node)
-      }, policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
-      new Constants());
+      });
   }
 
   private static IPAddressRange GetAddressRange(string node)
