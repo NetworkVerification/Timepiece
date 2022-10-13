@@ -16,8 +16,7 @@ public static class AstFunctionTests
     const string route = "route";
     var rVar = new Var(route);
     // AST representation of incrementing AsPathLength by 1
-    var increment = new WithField(typeof(BatfishBgpRoute), typeof(BigInteger),
-      rVar, pathLen,
+    var increment = new WithField(rVar, pathLen,
       new Plus(
         new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), rVar, pathLen),
         new ConstantExpr(BigInteger.One))

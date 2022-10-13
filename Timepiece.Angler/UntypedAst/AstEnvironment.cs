@@ -41,11 +41,14 @@ public class AstEnvironment
     {
       throw new ArgumentNullException(nameof(e), "Given a null expression.");
     }
+
     return e switch
     {
       Call => throw new NotImplementedException(),
       ConstantExpr constant => Zen.Constant(constant.value),
       LiteralSet s => s.exprs.Aggregate(CSet.Empty<string>(), (set, element) => CSet.Add(set, EvaluateExpr(element))),
+      CreateRecord r => typeof(Zen).GetMethod("Create")!.MakeGenericMethod(r.RecordType)
+        .Invoke(null, new object?[] {r.GetFields(EvaluateExpr)})!,
       Var v => this[v.Name],
       Havoc => Zen.Symbolic<bool>(),
       None n => typeof(Option).GetMethod("Null")!.MakeGenericMethod(n.innerType).Invoke(null, null)!,

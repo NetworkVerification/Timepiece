@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
@@ -19,7 +18,8 @@ public static class TypeParsing
 
   private static TypeAlias ParseTypeAlias(string alias, IEnumerator<string> typeArgs)
   {
-    if (!TryParse(alias, out var t) || !t.HasValue) throw new ArgumentException($"{alias} not a valid type alias.", nameof(alias));
+    if (!TryParse(alias, out var t) || !t.HasValue)
+      throw new ArgumentException($"{alias} not a valid type alias.", nameof(alias));
     if (!t.Value.Type.IsGenericTypeDefinition) return t.Value;
     // recursively search for each argument
     t.Value.UpdateArgs(typeArgs, args => ParseTypeAlias(args.Current, args).MakeType());
@@ -58,6 +58,7 @@ public static class TypeParsing
       "Not" => typeof(Not),
       "Havoc" => typeof(Havoc),
       // numeric expressions
+      "Int2" => new TypeAlias(typeof(ConstantExpr)),
       "Int32" => new TypeAlias(typeof(ConstantExpr)),
       "BigInt" => new TypeAlias(typeof(ConstantExpr)),
       "Uint32" => new TypeAlias(typeof(ConstantExpr)),
@@ -74,11 +75,11 @@ public static class TypeParsing
       "Some" => new TypeAlias(typeof(Some), (TypeAlias?) null),
       "None" => new TypeAlias(typeof(None), (TypeAlias?) null),
       // record expressions
-      "GetField" => new TypeAlias(typeof(GetField), null, null),
-      "WithField" => new TypeAlias(typeof(WithField), null, null),
+      "GetField" => typeof(GetField),
+      "WithField" => typeof(WithField),
       // set expressions
-      "String" => new TypeAlias(typeof(ConstantExpr)),
-      "SetContains" => new TypeAlias(typeof(SetContains)),
+      "String" => typeof(ConstantExpr),
+      "SetContains" => typeof(SetContains),
       "Subset" => typeof(Subset),
       "SetAdd" => new TypeAlias(typeof(SetAdd)),
       "LiteralSet" => new TypeAlias(typeof(LiteralSet)),
@@ -86,7 +87,9 @@ public static class TypeParsing
       "SetRemove" => new TypeAlias(typeof(SetRemove)),
       // prefix expressions
       "PrefixContains" => typeof(PrefixContains),
+      "PrefixSet" => typeof(LiteralSet),
       // types
+      "TEnvironment" => typeof(RouteEnvironment),
       "TRoute" => typeof(BatfishBgpRoute),
       "TIpAddress" => typeof(uint),
       "TIpPrefix" => typeof(Ipv4Prefix),
@@ -99,7 +102,6 @@ public static class TypeParsing
       "TTime" or "TBigInt" => typeof(BigInteger),
       "TString" => typeof(string),
       "TSet" => typeof(CSet<string>),
-      "TUnit" => typeof(Unit),
       _ => (TypeAlias?) null, // we need to cast so that null doesn't get converted to a TypeAlias
     };
     return alias.HasValue;

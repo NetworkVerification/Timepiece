@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using NetTools;
+using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstFunction;
 using ZenLib;
 
@@ -12,18 +12,20 @@ namespace Timepiece.Angler.UntypedAst;
 /// <typeparam name="T">The type of routes for the node.</typeparam>
 public class NodeProperties<T>
 {
-  public NodeProperties(List<IPAddressRange> prefixes, Dictionary<string, RoutingPolicies> policies,
+  public NodeProperties(Dictionary<string, RoutingPolicies> policies,
     string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
-    Constants constants)
+    Constants constants, Expr initial)
   {
-    Prefixes = prefixes;
     Policies = policies;
     Stable = stable;
     Temporal = temporal;
+    Initial = initial;
     Declarations = declarations;
     Constants = constants;
     DisambiguateVariableNames();
   }
+
+  public Expr Initial { get; set; }
 
   /// <summary>
   ///   Additional function declarations.
@@ -36,8 +38,6 @@ public class NodeProperties<T>
   public Constants Constants { get; set; }
 
   public AstTemporalOperator<T>? Temporal { get; set; }
-
-  public List<IPAddressRange> Prefixes { get; }
 
   public Dictionary<string, RoutingPolicies> Policies { get; }
 
@@ -58,12 +58,11 @@ public class NodeProperties<T>
   /// <summary>
   ///   Construct a node storing all the relevant information for creating a network.
   /// </summary>
-  /// <param name="initFunction"></param>
   /// <param name="predicateLookupFunction"></param>
   /// <param name="defaultExport"></param>
   /// <param name="defaultImport"></param>
   /// <returns></returns>
-  public NetworkNode<T> CreateNode(Func<List<IPAddressRange>, Zen<T>> initFunction,
+  public NetworkNode<T> CreateNode(
     Func<string, AstPredicate<T>> predicateLookupFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
   {
     var env = new AstEnvironment();
@@ -78,7 +77,7 @@ public class NodeProperties<T>
       env = env.Update(key, val);
     }
 
-    var init = initFunction(Prefixes);
+    var init = env.EvaluateExpr(Initial);
 
     var safetyProperty = Stable is null
       ? _ => true

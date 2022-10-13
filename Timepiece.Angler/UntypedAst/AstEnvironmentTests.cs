@@ -110,7 +110,7 @@ public static class AstEnvironmentTests
       new Assign("len",
         new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var("route"), pathLen)),
       new Return(
-        new WithField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var("route"), pathLen,
+        new WithField(new Var("route"), pathLen,
           new Plus(new Var("len"), new ConstantExpr(BigInteger.One))))
     };
     var env1 = _env.EvaluateStatements(statements);
@@ -133,7 +133,7 @@ public static class AstEnvironmentTests
       new Assign(lenVar,
         new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var(rVar), pathLen)),
       new Return(
-        new WithField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var(rVar), pathLen,
+        new WithField(new Var(rVar), pathLen,
           new Plus(new Var(lenVar), new ConstantExpr(BigInteger.One))))
     };
     var env2 = env1.EvaluateStatements(statements);

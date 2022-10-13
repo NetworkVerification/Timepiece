@@ -102,7 +102,7 @@ public class Ast<T, TS>
     Console.ResetColor();
   }
 
-  public Network<T, TS> ToNetwork(Func<bool, Zen<T>> initGenerator,
+  public Network<T, TS> ToNetwork(
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
   {
     // construct all the mappings we'll need
@@ -122,7 +122,7 @@ public class Ast<T, TS>
     // this also means inlining constants and evaluating and inlining predicates where possible
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(p => initGenerator(isDestination(p)),
+      var details = props.CreateNode(
         s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException("Predicate {s} not found!"),
         defaultExport, defaultImport);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();

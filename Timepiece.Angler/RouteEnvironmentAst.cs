@@ -10,25 +10,23 @@ using ZenLib;
 
 namespace Timepiece.Angler;
 
-using Route = Pair<bool, BatfishBgpRoute>;
-
-public class PairRouteAst : UntypedAst.Ast<Route, Unit>
+public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
 {
   /// <summary>
   /// Default predicates to test for this AST.
   /// </summary>
-  public static readonly AstPredicate<Route> IsValid = new("route",
+  public static readonly AstPredicate<RouteEnvironment> IsValid = new("route",
     new First(new Var("route")));
 
   /// <summary>
   /// Default import behavior for a route.
   /// </summary>
-  private static readonly AstFunction<Route> DefaultImport = AstFunction<Route>.Identity();
+  private static readonly AstFunction<RouteEnvironment> DefaultImport = AstFunction<RouteEnvironment>.Identity();
 
   /// <summary>
   /// Default export behavior for a route.
   /// </summary>
-  private static readonly AstFunction<Route> DefaultExport = new("arg", new[]
+  private static readonly AstFunction<RouteEnvironment> DefaultExport = new("arg", new[]
   {
     new Return(
       new PairExpr(
@@ -41,21 +39,22 @@ public class PairRouteAst : UntypedAst.Ast<Route, Unit>
               "AsPathLength"), new ConstantExpr(BigInteger.One)))))
   });
 
-  public PairRouteAst(Dictionary<string, UntypedAst.NodeProperties<Route>> nodes, Ipv4Prefix? destination,
-    Dictionary<string, AstPredicate<Route>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
+  public RouteEnvironmentAst(Dictionary<string, UntypedAst.NodeProperties<RouteEnvironment>> nodes,
+    Ipv4Prefix? destination,
+    Dictionary<string, AstPredicate<RouteEnvironment>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
     BigInteger? convergeTime) : base(nodes,
     symbolics, predicates, destination, convergeTime)
   {
   }
 
-  public Network<Route, Unit> ToNetwork()
+  public Network<RouteEnvironment, Unit> ToNetwork()
   {
-    return ToNetwork(BatfishBgpRouteExtensions.MinPair, DefaultExport, DefaultImport);
+    return ToNetwork(RouteEnvironmentExtensions.MinOptional, DefaultExport, DefaultImport);
   }
 
   public static ISerializationBinder Binder()
   {
-    return new AstSerializationBinder<Route>();
+    return new AstSerializationBinder<RouteEnvironment>();
   }
 
   public static IContractResolver Resolver()

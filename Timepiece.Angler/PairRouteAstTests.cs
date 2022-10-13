@@ -28,11 +28,30 @@ public static class AstTests
   {
     var policies = new Dictionary<string, RoutingPolicies>(neighbors.Select(nbr =>
       new KeyValuePair<string, RoutingPolicies>(nbr, new RoutingPolicies())));
-    return new NodeProperties<Route>(new List<IPAddressRange>
-      {
-        GetAddressRange(node)
-      }, policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
-      new Constants());
+    return new NodeProperties<Route>(
+      policies, IsValid, new Finally<Route>(time, IsValid), new Dictionary<string, AstFunction<Route>>(),
+      new Constants(), GetAddressRange(node).Contains(D)
+        ? new PairExpr(new ConstantExpr(true), new CreateRecord(typeof(BatfishBgpRoute), new Dictionary<string, Expr>
+        {
+          {"Prefix", new ConstantExpr(D)},
+          {"AdminDist", new ConstantExpr(0U)},
+          {"Lp", new ConstantExpr(0U)},
+          {"AsPathLength", new ConstantExpr(BigInteger.Zero)},
+          {"Med", new ConstantExpr(0U)},
+          {"OriginType", new ConstantExpr(new Int<_2>(0))},
+          {"Communities", new LiteralSet(new dynamic[] { })},
+        }))
+        : new PairExpr(new ConstantExpr(false), new CreateRecord(typeof(BatfishBgpRoute),
+          new Dictionary<string, Expr>
+          {
+            {"Prefix", new ConstantExpr(new Ipv4Prefix())},
+            {"AdminDist", new ConstantExpr(0U)},
+            {"Lp", new ConstantExpr(0U)},
+            {"AsPathLength", new ConstantExpr(BigInteger.Zero)},
+            {"Med", new ConstantExpr(0U)},
+            {"OriginType", new ConstantExpr(new Int<_2>(0))},
+            {"Communities", new LiteralSet(new dynamic[] { })},
+          })));
   }
 
   private static IPAddressRange GetAddressRange(string node)
