@@ -1,5 +1,4 @@
-using System.Collections.Immutable;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using ZenLib;
@@ -12,14 +11,17 @@ namespace Timepiece.Angler.UntypedAst.AstFunction;
 /// <typeparam name="T">The type of the function's input and output.</typeparam>
 public class AstFunction<T>
 {
-  [JsonConstructor]
+  [System.Text.Json.Serialization.JsonConstructor]
   public AstFunction(string arg, IEnumerable<Statement> body)
   {
     Arg = arg;
     Body = body;
   }
 
+  [JsonProperty(Required = Required.Always)]
   public string Arg { get; set; }
+
+  [JsonProperty(Required = Required.Always)]
   public IEnumerable<Statement> Body { get; set; }
 
   public void Rename(string oldArg, string newArg)

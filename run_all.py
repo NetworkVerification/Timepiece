@@ -83,6 +83,6 @@ if __name__ == "__main__":
         print("Could not find DLL {}, exiting...".format(DLL))
         sys.exit(1)
 
-    SIZES = range(int(sys.argv[1]), int(sys.argv[2]), 4)
+    SIZES = range(int(sys.argv[1]), int(sys.argv[2]) + 1, 4)
     OPTIONS = sys.argv[3:]
     run_all(SIZES, NTRIALS, sys.argv[3:], OUTPUT_FILE)

@@ -25,6 +25,7 @@ public class Constants
     var prefixes = new Dictionary<string, Expr<Ipv4Prefix>>();
     foreach (var (name, value) in constants)
     {
+      Console.WriteLine($"key: {name}, value: {value}");
       switch (value)
       {
         case Expr<string> expr:

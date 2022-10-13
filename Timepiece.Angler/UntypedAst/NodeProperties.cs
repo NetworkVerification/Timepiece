@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstFunction;
 using ZenLib;
@@ -14,14 +15,13 @@ public class NodeProperties<T>
 {
   public NodeProperties(Dictionary<string, RoutingPolicies> policies,
     string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
-    Constants constants, Expr initial)
+    Expr initial)
   {
     Policies = policies;
     Stable = stable;
     Temporal = temporal;
     Initial = initial;
     Declarations = declarations;
-    Constants = constants;
     DisambiguateVariableNames();
   }
 
@@ -30,17 +30,14 @@ public class NodeProperties<T>
   /// <summary>
   ///   Additional function declarations.
   /// </summary>
+  [JsonProperty("Declarations")]
   public Dictionary<string, AstFunction<T>> Declarations { get; set; }
-
-  /// <summary>
-  ///   Additional constant declarations.
-  /// </summary>
-  public Constants Constants { get; set; }
 
   public AstTemporalOperator<T>? Temporal { get; set; }
 
-  public Dictionary<string, RoutingPolicies> Policies { get; }
+  [JsonProperty("Policies")] public Dictionary<string, RoutingPolicies> Policies { get; }
 
+  //[JsonProperty(Required = Required.DisallowNull)]
   public string? Stable { get; }
 
   /// <summary>
@@ -66,16 +63,6 @@ public class NodeProperties<T>
     Func<string, AstPredicate<T>> predicateLookupFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
   {
     var env = new AstEnvironment();
-    foreach (var (key, val) in Constants.stringConstants)
-    {
-      env = env.Update(key, val);
-    }
-
-    foreach (var (key, val) in Constants.prefixConstants)
-    {
-      Console.WriteLine($"Adding prefix constant key {key} to the environment...");
-      env = env.Update(key, val);
-    }
 
     var init = env.EvaluateExpr(Initial);
 

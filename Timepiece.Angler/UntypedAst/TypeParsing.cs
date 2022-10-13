@@ -88,6 +88,8 @@ public static class TypeParsing
       // prefix expressions
       "PrefixContains" => typeof(PrefixContains),
       "PrefixSet" => typeof(LiteralSet),
+      "PrefixMatches" => typeof(PrefixMatches),
+      "MatchSet" => typeof(PrefixMatchSet),
       // types
       "TEnvironment" => typeof(RouteEnvironment),
       "TRoute" => typeof(BatfishBgpRoute),

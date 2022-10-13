@@ -53,6 +53,7 @@ public class AstEnvironment
       Havoc => Zen.Symbolic<bool>(),
       None n => typeof(Option).GetMethod("Null")!.MakeGenericMethod(n.innerType).Invoke(null, null)!,
       UnaryOpExpr uoe => uoe.unaryOp(EvaluateExpr(uoe.expr)),
+      PrefixContains => Zen.Symbolic<bool>(), // TODO: for now, we skip trying to handle prefixes
       BinaryOpExpr boe => boe.binaryOp(EvaluateExpr(boe.expr1), EvaluateExpr(boe.expr2)),
       _ => throw new ArgumentOutOfRangeException(nameof(e), $"{e} is not an expr I know how to handle!"),
     };
@@ -75,16 +76,26 @@ public class AstEnvironment
 
   private AstEnvironment Join(AstEnvironment other, Zen<bool> guard)
   {
+    // FIXME: we need a way to deal with the case that one environment returns and the other does not;
+    // when this happens, ReturnValue will be bound in one environment but not the other, making it unclear
+    // what its value should be
     var e = new AstEnvironment();
     foreach (var (variable, value) in _env)
     {
-      e = e.Update(variable, Zen.If(guard, value, other._env.ContainsKey(variable) ? other[variable] : null));
+      if (!other._env.ContainsKey(variable))
+      {
+        throw new ArgumentException($"{variable} not bound in both environments", nameof(other));
+      }
+
+      var updatedValue = Zen.If(guard, value, other[variable]);
+      e = e.Update(variable, updatedValue);
     }
 
     // add any variables that were not present in this but are in other
-    foreach (var (variable, value) in other._env.Where(p => !_env.ContainsKey(p.Key)))
+    if (other._env.Any(p => !_env.ContainsKey(p.Key)))
     {
-      e = e.Update(variable, Zen.If(guard, null, value));
+      // e = e.Update(variable, Zen.If(guard, null, value));
+      throw new ArgumentException("Environments do not bind the same variables.");
     }
 
     return e;

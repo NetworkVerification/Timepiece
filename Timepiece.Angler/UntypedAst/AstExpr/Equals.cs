@@ -1,6 +1,4 @@
-using Timepiece.Angler.UntypedAst.AstExpr;
-
-namespace Timepiece.Angler.UntypedAst;
+namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 public class Equals : BinaryOpExpr
 {

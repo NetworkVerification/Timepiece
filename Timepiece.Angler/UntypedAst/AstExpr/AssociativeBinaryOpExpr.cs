@@ -20,10 +20,11 @@ public class AssociativeBinaryOpExpr : BinaryOpExpr
     {
       throw new ArgumentNullException(nameof(es), "No arguments given to binary expression");
     }
+
     var operands = es.ToArray();
     return operands.Length switch
     {
-      0 => throw new ArgumentException("Invalid number of arguments to binary expression"),
+      0 => throw new ArgumentException("Binary expression received zero arguments"),
       1 => new AssociativeBinaryOpExpr(operands[0], identity, binaryOp),
       _ => new AssociativeBinaryOpExpr(operands[0], FromEnumerable(operands[1..], identity, binaryOp),
         binaryOp)
