@@ -45,7 +45,7 @@ public static class TypeParsing
     alias = s switch
     {
       // statements
-      "Return" => typeof(Return),
+      // "Return" => typeof(Return),
       "Assign" => typeof(Assign),
       "If" => typeof(IfThenElse),
       // expressions

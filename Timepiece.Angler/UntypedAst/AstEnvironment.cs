@@ -17,7 +17,7 @@ public class AstEnvironment
     _env = env;
   }
 
-  private dynamic this[string var] => _env[var];
+  public dynamic this[string var] => _env[var];
 
   public AstEnvironment() : this(ImmutableDictionary<string, dynamic>.Empty)
   {
@@ -53,9 +53,10 @@ public class AstEnvironment
       UIntExpr u => Zen.Constant<uint>(u.value),
       BigIntExpr b => Zen.Constant<BigInteger>(b.value),
       PrefixExpr p => Zen.Constant<Ipv4Prefix>(p.value),
-      StringExpr s => Zen.Constant<string>(s.value),
+      // strings used with CSets should be literal C# values, not Zen<string>
+      StringExpr s => s.value,
       LiteralSet s => s.elements.Aggregate(CSet.Empty<string>(),
-        (set, element) => CSet.Add(set, EvaluateExpr(element))),
+        (set, element) => CSet.Add<string>(set, EvaluateExpr(element))),
       CreateRecord r => typeof(Zen).GetMethod("Create")!.MakeGenericMethod(r.RecordType)
         .Invoke(null, new object?[] {r.GetFields(EvaluateExpr)})!,
       Var v => this[v.Name],
@@ -75,7 +76,7 @@ public class AstEnvironment
       Assign a => Update(a.Var, EvaluateExpr(a.Expr)),
       IfThenElse ite => EvaluateStatements(ite.ThenCase)
         .Join(EvaluateStatements(ite.ElseCase), EvaluateExpr(ite.Guard)),
-      Return rt => Update(ReturnValue, EvaluateExpr(rt.Expr)),
+      // Return rt => Update(ReturnValue, EvaluateExpr(rt.Expr)),
       _ => throw new ArgumentOutOfRangeException(nameof(s))
     };
   }

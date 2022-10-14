@@ -25,7 +25,7 @@ public static class AstFunctionTests
     var rIncremented = r.IncrementAsPathLength(BigInteger.One);
     var f = new AstFunction<BatfishBgpRoute>(route, new Statement[]
     {
-      new IfThenElse(new Havoc(), new[] {new Return(increment)}, new[] {new Return(rVar)})
+      new IfThenElse(new Havoc(), new[] {new Assign(route, increment)}, new[] {new Assign(route, rVar)})
     });
     var zenF = f.Evaluate(new AstEnvironment());
     // since the if is a havoc, we have that zenF(r) is either incremented or the same:
@@ -43,12 +43,12 @@ public static class AstFunctionTests
       new IfThenElse(new Havoc(),
         new[] {new Assign(oldArg, new Plus(new Var(oldArg), new IntExpr(1)))},
         new[] {new Assign(oldArg, new IntExpr(0))}),
-      new Return(new Var(oldArg))
+      new Assign(oldArg, new Var(oldArg))
     });
     // return the argument with 3 added to it
     var f2 = new AstFunction<int>(oldArg, new[]
     {
-      new Return(new Plus(new Var(oldArg), new IntExpr(3)))
+      new Assign(oldArg, new Plus(new Var(oldArg), new IntExpr(3)))
     });
     f1.Rename(oldArg, "y");
     var f = new Func<Zen<int>, Zen<int>>(t => f2.Evaluate(new AstEnvironment())(f1.Evaluate(new AstEnvironment())(t)));
@@ -69,7 +69,7 @@ public static class AstFunctionTests
     var env = new AstEnvironment(ImmutableDictionary<string, dynamic>.Empty.Add(envVar, 3));
     var f1 = new AstFunction<int>(arg, new Statement[]
     {
-      new Return(new Plus(new Var(envVar), new Var(arg)))
+      new Assign(arg, new Plus(new Var(envVar), new Var(arg)))
     }).Evaluate(env);
     var y = Zen.Symbolic<int>();
     var model = Zen.Not(Zen.Eq(y + 3, f1(y))).Solve();

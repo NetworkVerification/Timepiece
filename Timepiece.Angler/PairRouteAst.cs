@@ -30,7 +30,7 @@ public class PairRouteAst : UntypedAst.Ast<Route, Unit>
   /// </summary>
   private static readonly AstFunction<Route> DefaultExport = new("arg", new[]
   {
-    new Return(
+    new Assign("arg",
       new PairExpr(
         new First(new Var("arg")),
         new WithField(new Second(new Var("arg")),

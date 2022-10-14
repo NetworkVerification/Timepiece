@@ -15,30 +15,37 @@ public class RouteEnvironment
     Exited = false;
     Value = false;
     Prefix = new Ipv4Prefix();
-    Weight = 0;
-    Lp = 0;
+    Weight = 32768;
+    Lp = 100;
     AsPathLength = 0;
-    Med = 0;
-    OriginType = new Int<_2>(0);
-    Communities = new Set<string>();
+    Metric = 0;
+    OriginType = new UInt<_2>(0);
+    Communities = new CSet<string>();
+    // DefaultPolicy = "";
   }
 
+
   [JsonConstructor]
-  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, BigInteger asPathLength, uint med,
-    Int<_2> originType, Set<string> communities, bool returned, bool fallThrough, bool exited, bool value)
+  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, BigInteger asPathLength, uint metric,
+    UInt<_2> originType, CSet<string> communities, bool returned, bool fallThrough, bool exited, bool value,
+    bool localDefaultAction)
   {
     Prefix = prefix;
     Weight = weight;
     Lp = lp;
     AsPathLength = asPathLength;
-    Med = med;
+    Metric = metric;
     OriginType = originType;
     Communities = communities;
     Returned = returned;
     FallThrough = fallThrough;
     Exited = exited;
     Value = value;
+    // DefaultPolicy = defaultPolicy;
+    LocalDefaultAction = localDefaultAction;
   }
+
+  // public string DefaultPolicy { get; set; }
 
   public bool Value { get; set; }
 
@@ -48,6 +55,8 @@ public class RouteEnvironment
 
   public bool Returned { get; set; }
 
+  public bool LocalDefaultAction { get; set; }
+
   /// <summary>
   /// IP prefix representing the routing destination.
   /// </summary>
@@ -55,11 +64,15 @@ public class RouteEnvironment
 
   /// <summary>
   /// 32-bit integer representation of administrative distance.
+  /// Used by Cisco.
+  /// https://www.networkers-online.com/blog/2012/05/bgp-weight/
+  /// Defaults to 32768 (2^15).
   /// </summary>
   public uint Weight { get; set; }
 
   /// <summary>
   /// 32-bit integer representation of local preference.
+  /// Defaults to 100.
   /// </summary>
   public uint Lp { get; set; }
 
@@ -71,7 +84,7 @@ public class RouteEnvironment
   /// <summary>
   /// 32-bit integer representation of the Multi-Exit Discriminator.
   /// </summary>
-  public uint Med { get; set; }
+  public uint Metric { get; set; }
 
   /// <summary>
   /// 2-bit integer representation of origin type.
@@ -79,22 +92,39 @@ public class RouteEnvironment
   /// 2 = external
   /// 3 = internal
   /// </summary>
-  public Int<_2> OriginType { get; set; }
+  public UInt<_2> OriginType { get; set; }
+
+  /// <summary>
+  /// https://packetlife.net/blog/2009/jan/19/bgp-route-auto-tagging/
+  /// </summary>
+  public uint Tag { get; set; }
 
   /// <summary>
   /// Representation of community tags as strings.
   /// </summary>
-  public Set<string> Communities { get; set; }
+  public CSet<string> Communities { get; set; }
 }
 
 public static class RouteEnvironmentExtensions
 {
+  /// <summary>
+  /// Compare two routes by their fields in the following order:
+  /// 1. Greatest weight (administrative distance).
+  /// 2. Greatest LP (local preference).
+  /// 3. Shortest AS path length.
+  /// 4. Greatest origin type.
+  /// 5. Lowest metric.
+  /// </summary>
+  /// <param name="b1"></param>
+  /// <param name="b2"></param>
+  /// <returns></returns>
   public static Zen<RouteEnvironment> Min(this Zen<RouteEnvironment> b1, Zen<RouteEnvironment> b2)
   {
-    return Lang.CompareBy(b => b.GetLp(), Zen.Gt,
-      Lang.CompareBy(b => b.GetAsPathLength(), Zen.Lt,
-        Lang.CompareBy(b => b.GetOriginType(), Zen.Gt,
-          Lang.CompareBy<RouteEnvironment, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
+    return Lang.CompareBy(b => b.GetWeight(), Zen.Gt,
+      Lang.CompareBy(b => b.GetLp(), Zen.Gt,
+        Lang.CompareBy(b => b.GetAsPathLength(), Zen.Lt,
+          Lang.CompareBy(b => b.GetOriginType(), Zen.Gt,
+            Lang.CompareBy<RouteEnvironment, uint>(b => b.GetMetric(), Zen.Lt)))))(b1, b2);
   }
 
   public static Zen<RouteEnvironment> MinOptional(this Zen<RouteEnvironment> b1, Zen<RouteEnvironment> b2)

@@ -11,8 +11,8 @@ JsonSerializer Serializer()
   {
     // use $type for type names, and the given binder
     TypeNameHandling = TypeNameHandling.All,
-    SerializationBinder = PairRouteAst.Binder(),
-    ContractResolver = PairRouteAst.Resolver(),
+    SerializationBinder = RouteEnvironmentAst.Binder(),
+    ContractResolver = RouteEnvironmentAst.Resolver(),
     TraceWriter = traceWriter,
     // throw an error when members are missing from the object instead of ignoring them
     // MissingMemberHandling = MissingMemberHandling.Error
@@ -22,7 +22,7 @@ JsonSerializer Serializer()
 foreach (var file in args)
 {
   var json = new JsonTextReader(new StreamReader(file));
-  var ast = Serializer().Deserialize<PairRouteAst>(json);
+  var ast = Serializer().Deserialize<RouteEnvironmentAst>(json);
   Console.WriteLine($"Successfully deserialized JSON file {file}");
   json.Close();
   if (ast != null)

@@ -40,7 +40,7 @@ public class AstFunction<T>
   /// <returns>A function that returns an argument unchanged.</returns>
   public static AstFunction<T> Identity()
   {
-    return new AstFunction<T>("x", new List<Statement> {new Return(new Var("x"))});
+    return new AstFunction<T>("x", new List<Statement>());
   }
 
   public Func<Zen<T>, Zen<T>> Evaluate(AstEnvironment environment)
@@ -48,7 +48,7 @@ public class AstFunction<T>
     return t =>
     {
       var env = environment.Update(Arg, t);
-      return (Zen<T>) (env.EvaluateStatements(Body).Return() ??
+      return (Zen<T>) (env.EvaluateStatements(Body)[Arg] ??
                        throw new InvalidOperationException("No value returned by function."));
     };
   }

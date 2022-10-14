@@ -89,17 +89,18 @@ public static class AstEnvironmentTests
   [Fact]
   public static void EvaluateIfStatementHavoc()
   {
+    const string resultVar = "result";
     const int trueResult = 0;
     const int falseResult = 1;
     var statement = new IfThenElse(new Havoc(), new List<Statement>
     {
-      new Return(new IntExpr(trueResult))
+      new Assign(resultVar, new IntExpr(trueResult))
     }, new List<Statement>
     {
-      new Return(new IntExpr(falseResult))
+      new Assign(resultVar, new IntExpr(falseResult))
     });
     var env1 = _env.EvaluateStatement(statement);
-    var result = (Zen<int>) env1.Return();
+    var result = (Zen<int>) env1[resultVar];
     var b = Zen.Not(Zen.Or(Zen.Eq(result, Zen.Constant(trueResult)), Zen.Eq(result, Zen.Constant(falseResult))))
       .Solve();
     Assert.False(b.IsSatisfiable());
@@ -107,15 +108,19 @@ public static class AstEnvironmentTests
 
   private static CreateRecord DefaultRoute()
   {
-    return new CreateRecord("TRoute", new Dictionary<string, Expr>
+    return new CreateRecord("TEnvironment", new Dictionary<string, Expr>
     {
       {"Prefix", new PrefixExpr(new Ipv4Prefix())},
-      {"AdminDist", new UIntExpr(0U)},
+      {"Weight", new UIntExpr(0U)},
       {"Lp", new UIntExpr(0U)},
       {"AsPathLength", new BigIntExpr(0)},
-      {"Med", new UIntExpr(0U)},
+      {"Metric", new UIntExpr(0U)},
       {"OriginType", new UInt2Expr(new UInt<_2>(0))},
-      {"Communities", new LiteralSet(new dynamic[] { })}
+      {"Communities", new LiteralSet(new dynamic[] { })},
+      {"Value", new BoolExpr(false)},
+      {"Exited", new BoolExpr(false)},
+      {"FallThrough", new BoolExpr(false)},
+      {"Returned", new BoolExpr(false)},
     });
   }
 
@@ -127,11 +132,15 @@ public static class AstEnvironmentTests
     var statements = new Statement[]
     {
       new Assign("route", route),
-      new Return(new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var("route"), pathLen))
+      new Assign("route",
+        new WithField(new Var("route"), "Value",
+          new Equals(
+            new BigIntExpr(0),
+            new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var("route"), pathLen))))
     };
     var env1 = _env.EvaluateStatements(statements);
-    var result = (Zen<BigInteger>) env1.Return();
-    var b = Zen.Not(Zen.Eq(result, BigInteger.Zero)).Solve();
+    var result = (Zen<RouteEnvironment>) env1["route"];
+    var b = Zen.Not(result.GetValue()).Solve();
     Assert.False(b.IsSatisfiable());
   }
 
@@ -139,18 +148,19 @@ public static class AstEnvironmentTests
   public static void EvaluateIncrementFieldConstant()
   {
     const string pathLen = "AsPathLength";
+    const string route = "route";
     var statements = new Statement[]
     {
-      new Assign("route", DefaultRoute()),
+      new Assign(route, DefaultRoute()),
       new Assign("len",
-        new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var("route"), pathLen)),
-      new Return(
-        new WithField(new Var("route"), pathLen,
+        new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen)),
+      new Assign(route,
+        new WithField(new Var(route), pathLen,
           new Plus(new Var("len"), new BigIntExpr(BigInteger.One))))
     };
     var env1 = _env.EvaluateStatements(statements);
-    var result = (Zen<BatfishBgpRoute>) env1.Return();
-    var incrementedRoute = Zen.Constant(new BatfishBgpRoute()).IncrementAsPathLength(BigInteger.One);
+    var result = (Zen<RouteEnvironment>) env1[route];
+    var incrementedRoute = Zen.Constant(new RouteEnvironment()).IncrementAsPathLength(BigInteger.One);
     var b = Zen.Not(Zen.Eq(result, incrementedRoute)).Solve();
     Assert.False(b.IsSatisfiable());
   }
@@ -159,20 +169,20 @@ public static class AstEnvironmentTests
   public static void EvaluateIncrementFieldSymbolic()
   {
     const string pathLen = "AsPathLength";
-    var route = Zen.Symbolic<BatfishBgpRoute>();
+    var route = Zen.Symbolic<RouteEnvironment>();
     const string rVar = "route";
     var env1 = _env.Update(rVar, route);
     const string lenVar = "len";
     var statements = new Statement[]
     {
       new Assign(lenVar,
-        new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var(rVar), pathLen)),
-      new Return(
+        new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(rVar), pathLen)),
+      new Assign(rVar,
         new WithField(new Var(rVar), pathLen,
           new Plus(new Var(lenVar), new BigIntExpr(BigInteger.One))))
     };
     var env2 = env1.EvaluateStatements(statements);
-    var result = (Zen<BatfishBgpRoute>) env2.Return();
+    var result = (Zen<RouteEnvironment>) env2[rVar];
     var incrementedRoute = route.IncrementAsPathLength(BigInteger.One);
     var b = Zen.Not(Zen.Eq(result, incrementedRoute)).Solve();
     Assert.False(b.IsSatisfiable());

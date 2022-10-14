@@ -13,30 +13,25 @@ namespace Timepiece.Angler;
 public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
 {
   /// <summary>
-  /// Default predicates to test for this AST.
-  /// </summary>
-  public static readonly AstPredicate<RouteEnvironment> IsValid = new("route",
-    new First(new Var("route")));
-
-  /// <summary>
   /// Default import behavior for a route.
   /// </summary>
   private static readonly AstFunction<RouteEnvironment> DefaultImport = AstFunction<RouteEnvironment>.Identity();
 
   /// <summary>
   /// Default export behavior for a route.
+  /// Increment the path length and set it as returned.
   /// </summary>
   private static readonly AstFunction<RouteEnvironment> DefaultExport = new("arg", new[]
   {
-    new Return(
-      new PairExpr(
-        new First(new Var("arg")),
-        new WithField(new Second(new Var("arg")),
+    new Assign("arg",
+      new WithField(
+        new WithField(new Var("arg"),
           "AsPathLength",
           new Plus(
-            new GetField(typeof(BatfishBgpRoute), typeof(BigInteger),
-              new Second(new Var("arg")),
-              "AsPathLength"), new BigIntExpr(BigInteger.One)))))
+            new GetField(typeof(RouteEnvironment), typeof(BigInteger),
+              new Var("arg"),
+              "AsPathLength"), new BigIntExpr(BigInteger.One))),
+        "Returned", new BoolExpr(true)))
   });
 
   public RouteEnvironmentAst(Dictionary<string, UntypedAst.NodeProperties<RouteEnvironment>> nodes,
