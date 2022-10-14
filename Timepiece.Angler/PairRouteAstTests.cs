@@ -33,29 +33,29 @@ public static class AstTests
     Expr initial;
     if (GetAddressRange(node).Contains(D))
     {
-      initial = new PairExpr(new ConstantExpr(true), new CreateRecord(typeof(BatfishBgpRoute),
+      initial = new PairExpr(new BoolExpr(true), new CreateRecord(typeof(BatfishBgpRoute),
         new Dictionary<string, Expr>
         {
-          {"Prefix", new ConstantExpr(D)},
-          {"AdminDist", new ConstantExpr(0U)},
-          {"Lp", new ConstantExpr(0U)},
-          {"AsPathLength", new ConstantExpr(BigInteger.Zero)},
-          {"Med", new ConstantExpr(0U)},
-          {"OriginType", new ConstantExpr(new Int<_2>(0))},
+          {"Prefix", new PrefixExpr(D)},
+          {"AdminDist", new UIntExpr(0U)},
+          {"Lp", new UIntExpr(0U)},
+          {"AsPathLength", new BigIntExpr(BigInteger.Zero)},
+          {"Med", new UIntExpr(0U)},
+          {"OriginType", new UInt2Expr(new UInt<_2>(0))},
           {"Communities", new LiteralSet(new dynamic[] { })},
         }));
     }
     else
     {
-      initial = new PairExpr(new ConstantExpr(false), new CreateRecord(typeof(BatfishBgpRoute),
+      initial = new PairExpr(new BoolExpr(false), new CreateRecord(typeof(BatfishBgpRoute),
         new Dictionary<string, Expr>
         {
-          {"Prefix", new ConstantExpr(new Ipv4Prefix())},
-          {"AdminDist", new ConstantExpr(0U)},
-          {"Lp", new ConstantExpr(0U)},
-          {"AsPathLength", new ConstantExpr(BigInteger.Zero)},
-          {"Med", new ConstantExpr(0U)},
-          {"OriginType", new ConstantExpr(new Int<_2>(0))},
+          {"Prefix", new PrefixExpr(new Ipv4Prefix())},
+          {"AdminDist", new UIntExpr(0U)},
+          {"Lp", new UIntExpr(0U)},
+          {"AsPathLength", new BigIntExpr(BigInteger.Zero)},
+          {"Med", new UIntExpr(0U)},
+          {"OriginType", new UInt2Expr(new UInt<_2>(0))},
           {"Communities", new LiteralSet(new dynamic[] { })},
         }));
     }
@@ -104,7 +104,7 @@ public static class AstTests
   public static void TestSpAstBadMonolithic()
   {
     var badSp = SpAst;
-    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new ConstantExpr(false));
+    badSp.Predicates[IsValid] = new AstPredicate<Route>("route", new BoolExpr(false));
     Assert.True(badSp.ToNetwork().CheckMonolithic().HasValue);
   }
 }

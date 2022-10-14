@@ -36,7 +36,7 @@ public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
           new Plus(
             new GetField(typeof(BatfishBgpRoute), typeof(BigInteger),
               new Second(new Var("arg")),
-              "AsPathLength"), new ConstantExpr(BigInteger.One)))))
+              "AsPathLength"), new BigIntExpr(BigInteger.One)))))
   });
 
   public RouteEnvironmentAst(Dictionary<string, UntypedAst.NodeProperties<RouteEnvironment>> nodes,

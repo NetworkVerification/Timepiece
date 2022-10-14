@@ -38,7 +38,7 @@ public class PairRouteAst : UntypedAst.Ast<Route, Unit>
           new Plus(
             new GetField(typeof(BatfishBgpRoute), typeof(BigInteger),
               new Second(new Var("arg")),
-              "AsPathLength"), new ConstantExpr(BigInteger.One)))))
+              "AsPathLength"), new BigIntExpr(BigInteger.One)))))
   });
 
   public PairRouteAst(Dictionary<string, UntypedAst.NodeProperties<Route>> nodes, Ipv4Prefix? destination,

@@ -12,7 +12,7 @@ public class And : AssociativeBinaryOpExpr
   }
 
   [JsonConstructor]
-  public And(IEnumerable<Expr> exprs) : base(exprs,new ConstantExpr(false), Op)
+  public And(IEnumerable<Expr> exprs) : base(exprs, new BoolExpr(true), Op)
   {
   }
 }

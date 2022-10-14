@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
+using System.Numerics;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
+using Timepiece.Datatypes;
 using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst;
@@ -45,8 +47,15 @@ public class AstEnvironment
     return e switch
     {
       Call => throw new NotImplementedException(),
-      ConstantExpr constant => Zen.Constant(constant.value),
-      LiteralSet s => s.exprs.Aggregate(CSet.Empty<string>(), (set, element) => CSet.Add(set, EvaluateExpr(element))),
+      BoolExpr b => Zen.Constant<bool>(b.value),
+      IntExpr i => Zen.Constant<int>(i.value),
+      UInt2Expr i => Zen.Constant<UInt<_2>>(i.value),
+      UIntExpr u => Zen.Constant<uint>(u.value),
+      BigIntExpr b => Zen.Constant<BigInteger>(b.value),
+      PrefixExpr p => Zen.Constant<Ipv4Prefix>(p.value),
+      StringExpr s => Zen.Constant<string>(s.value),
+      LiteralSet s => s.elements.Aggregate(CSet.Empty<string>(),
+        (set, element) => CSet.Add(set, EvaluateExpr(element))),
       CreateRecord r => typeof(Zen).GetMethod("Create")!.MakeGenericMethod(r.RecordType)
         .Invoke(null, new object?[] {r.GetFields(EvaluateExpr)})!,
       Var v => this[v.Name],

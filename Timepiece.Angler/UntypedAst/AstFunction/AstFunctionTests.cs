@@ -19,7 +19,7 @@ public static class AstFunctionTests
     var increment = new WithField(rVar, pathLen,
       new Plus(
         new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), rVar, pathLen),
-        new ConstantExpr(BigInteger.One))
+        new BigIntExpr(BigInteger.One))
     );
     var r = Zen.Symbolic<BatfishBgpRoute>();
     var rIncremented = r.IncrementAsPathLength(BigInteger.One);
@@ -41,14 +41,14 @@ public static class AstFunctionTests
     var f1 = new AstFunction<int>(oldArg, new Statement[]
     {
       new IfThenElse(new Havoc(),
-        new[] {new Assign(oldArg, new Plus(new Var(oldArg), new ConstantExpr(1)))},
-        new[] {new Assign(oldArg, new ConstantExpr(0))}),
+        new[] {new Assign(oldArg, new Plus(new Var(oldArg), new IntExpr(1)))},
+        new[] {new Assign(oldArg, new IntExpr(0))}),
       new Return(new Var(oldArg))
     });
     // return the argument with 3 added to it
     var f2 = new AstFunction<int>(oldArg, new[]
     {
-      new Return(new Plus(new Var(oldArg), new ConstantExpr(3)))
+      new Return(new Plus(new Var(oldArg), new IntExpr(3)))
     });
     f1.Rename(oldArg, "y");
     var f = new Func<Zen<int>, Zen<int>>(t => f2.Evaluate(new AstEnvironment())(f1.Evaluate(new AstEnvironment())(t)));

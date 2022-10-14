@@ -1,6 +1,7 @@
 using System.Numerics;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
+using Timepiece.Datatypes;
 using Xunit;
 using ZenLib;
 
@@ -19,11 +20,30 @@ public static class AstEnvironmentTests
   [Theory]
   [InlineData(true)]
   [InlineData(false)]
-  [InlineData(0)]
-  [InlineData("foo")]
-  public static void EvaluateConstantExprs<T>(T e)
+  public static void EvaluateBoolExprs(bool e)
   {
-    var evaluated = (Zen<T>) _env.EvaluateExpr(new ConstantExpr(e ?? throw new ArgumentNullException(nameof(e))));
+    var evaluated = (Zen<bool>) _env.EvaluateExpr(new BoolExpr(e));
+    var zen = Zen.Constant(e);
+    AssertEqValid(evaluated, zen);
+  }
+
+  [Theory]
+  [InlineData(0)]
+  [InlineData(1)]
+  [InlineData(1000000)]
+  public static void EvaluateIntExprs(int e)
+  {
+    var evaluated = (Zen<int>) _env.EvaluateExpr(new IntExpr(e));
+    var zen = Zen.Constant(e);
+    AssertEqValid(evaluated, zen);
+  }
+
+  [Theory]
+  [InlineData("foo")]
+  [InlineData("bar")]
+  public static void EvaluateStringExprs(string e)
+  {
+    var evaluated = (Zen<string>) _env.EvaluateExpr(new StringExpr(e));
     var zen = Zen.Constant(e);
     AssertEqValid(evaluated, zen);
   }
@@ -40,7 +60,7 @@ public static class AstEnvironmentTests
   public static void EvaluateAssignStmt()
   {
     const string name = "x";
-    var env1 = _env.EvaluateStatement(new Assign(name, new ConstantExpr(0)));
+    var env1 = _env.EvaluateStatement(new Assign(name, new IntExpr(0)));
     var evaluated = (Zen<int>) env1.EvaluateExpr(new Var(name));
     AssertEqValid(evaluated, Zen.Constant(0));
   }
@@ -53,8 +73,8 @@ public static class AstEnvironmentTests
     const string tempVar = "z";
     var statements = new List<Statement>
     {
-      new Assign(var1, new ConstantExpr(0)),
-      new Assign(var2, new ConstantExpr(1)),
+      new Assign(var1, new IntExpr(0)),
+      new Assign(var2, new IntExpr(1)),
       new Assign(tempVar, new Var(var1)),
       new Assign(var1, new Var(var2)),
       new Assign(var2, new Var(tempVar))
@@ -73,10 +93,10 @@ public static class AstEnvironmentTests
     const int falseResult = 1;
     var statement = new IfThenElse(new Havoc(), new List<Statement>
     {
-      new Return(new ConstantExpr(trueResult))
+      new Return(new IntExpr(trueResult))
     }, new List<Statement>
     {
-      new Return(new ConstantExpr(falseResult))
+      new Return(new IntExpr(falseResult))
     });
     var env1 = _env.EvaluateStatement(statement);
     var result = (Zen<int>) env1.Return();
@@ -85,13 +105,28 @@ public static class AstEnvironmentTests
     Assert.False(b.IsSatisfiable());
   }
 
+  private static CreateRecord DefaultRoute()
+  {
+    return new CreateRecord("TRoute", new Dictionary<string, Expr>
+    {
+      {"Prefix", new PrefixExpr(new Ipv4Prefix())},
+      {"AdminDist", new UIntExpr(0U)},
+      {"Lp", new UIntExpr(0U)},
+      {"AsPathLength", new BigIntExpr(0)},
+      {"Med", new UIntExpr(0U)},
+      {"OriginType", new UInt2Expr(new UInt<_2>(0))},
+      {"Communities", new LiteralSet(new dynamic[] { })}
+    });
+  }
+
   [Fact]
   public static void EvaluateGetField()
   {
     const string pathLen = "AsPathLength";
+    var route = DefaultRoute();
     var statements = new Statement[]
     {
-      new Assign("route", new ConstantExpr(new BatfishBgpRoute())),
+      new Assign("route", route),
       new Return(new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var("route"), pathLen))
     };
     var env1 = _env.EvaluateStatements(statements);
@@ -106,12 +141,12 @@ public static class AstEnvironmentTests
     const string pathLen = "AsPathLength";
     var statements = new Statement[]
     {
-      new Assign("route", new ConstantExpr(new BatfishBgpRoute())),
+      new Assign("route", DefaultRoute()),
       new Assign("len",
         new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var("route"), pathLen)),
       new Return(
         new WithField(new Var("route"), pathLen,
-          new Plus(new Var("len"), new ConstantExpr(BigInteger.One))))
+          new Plus(new Var("len"), new BigIntExpr(BigInteger.One))))
     };
     var env1 = _env.EvaluateStatements(statements);
     var result = (Zen<BatfishBgpRoute>) env1.Return();
@@ -134,7 +169,7 @@ public static class AstEnvironmentTests
         new GetField(typeof(BatfishBgpRoute), typeof(BigInteger), new Var(rVar), pathLen)),
       new Return(
         new WithField(new Var(rVar), pathLen,
-          new Plus(new Var(lenVar), new ConstantExpr(BigInteger.One))))
+          new Plus(new Var(lenVar), new BigIntExpr(BigInteger.One))))
     };
     var env2 = env1.EvaluateStatements(statements);
     var result = (Zen<BatfishBgpRoute>) env2.Return();

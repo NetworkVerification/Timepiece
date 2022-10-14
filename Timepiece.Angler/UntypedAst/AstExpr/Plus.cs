@@ -11,7 +11,7 @@ public class Plus : AssociativeBinaryOpExpr
   {
   }
 
-  public Plus(IEnumerable<Expr> exprs) : base(exprs, new ConstantExpr(0), Op)
+  public Plus(IEnumerable<Expr> exprs) : base(exprs, new IntExpr(0), Op)
   {
   }
 }
