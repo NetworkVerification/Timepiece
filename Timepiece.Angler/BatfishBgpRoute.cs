@@ -15,13 +15,13 @@ public class BatfishBgpRoute
     Lp = 0;
     AsPathLength = 0;
     Med = 0;
-    OriginType = new Int<_2>(0);
+    OriginType = new UInt<_2>(0);
     Communities = new CSet<string>();
   }
 
   [JsonConstructor]
   public BatfishBgpRoute(Ipv4Prefix prefix, uint adminDist, uint lp, BigInteger asPathLength, uint med,
-    Int<_2> originType, CSet<string> communities)
+    UInt<_2> originType, CSet<string> communities)
   {
     Prefix = prefix;
     AdminDist = adminDist;
@@ -63,7 +63,7 @@ public class BatfishBgpRoute
   /// 2 = external
   /// 3 = internal
   /// </summary>
-  public Int<_2> OriginType { get; set; }
+  public UInt<_2> OriginType { get; set; }
 
   /// <summary>
   /// Representation of community tags as strings.

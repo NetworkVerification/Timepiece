@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using System.Text.Json.Serialization;
 using Timepiece.Datatypes;
 using ZenLib;
@@ -19,6 +20,7 @@ public class RouteEnvironment
     Lp = 100;
     AsPathLength = 0;
     Metric = 0;
+    Tag = 0;
     OriginType = new UInt<_2>(0);
     Communities = new CSet<string>();
     // DefaultPolicy = "";
@@ -26,7 +28,7 @@ public class RouteEnvironment
 
 
   [JsonConstructor]
-  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, BigInteger asPathLength, uint metric,
+  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, BigInteger asPathLength, uint metric, uint tag,
     UInt<_2> originType, CSet<string> communities, bool returned, bool fallThrough, bool exited, bool value,
     bool localDefaultAction)
   {
@@ -35,6 +37,7 @@ public class RouteEnvironment
     Lp = lp;
     AsPathLength = asPathLength;
     Metric = metric;
+    Tag = tag;
     OriginType = originType;
     Communities = communities;
     Returned = returned;
@@ -103,6 +106,41 @@ public class RouteEnvironment
   /// Representation of community tags as strings.
   /// </summary>
   public CSet<string> Communities { get; set; }
+
+  public override string ToString()
+  {
+    var properties = typeof(RouteEnvironment).GetProperties();
+    var propertiesBuilder = new StringBuilder();
+    // add each property to the builder
+    foreach (var property in properties)
+    {
+      if (propertiesBuilder.Length > 0)
+      {
+        propertiesBuilder.Append(", ");
+      }
+
+      switch (property.PropertyType.Name)
+      {
+        case "CSet":
+          var setString = string.Empty;
+          foreach (var s in Communities.Map.Values.Keys)
+          {
+            if (string.IsNullOrEmpty(setString))
+              setString += $"{s}";
+            else
+              setString += $", {s}";
+          }
+
+          propertiesBuilder.Append(setString);
+          break;
+        default:
+          propertiesBuilder.Append($"{property.Name}={property.GetValue(this)}");
+          break;
+      }
+    }
+
+    return $"RouteEnvironment({propertiesBuilder})";
+  }
 }
 
 public static class RouteEnvironmentExtensions

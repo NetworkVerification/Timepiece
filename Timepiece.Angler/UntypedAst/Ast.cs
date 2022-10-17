@@ -1,5 +1,4 @@
 using System.Numerics;
-using NetTools;
 using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstFunction;
 using Timepiece.Datatypes;
@@ -113,10 +112,6 @@ public class Ast<T, TS>
     var exportFunctions = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
     var importFunctions = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
 
-    var isDestination = new Func<List<IPAddressRange>, bool>(prefixes =>
-    {
-      return Destination.HasValue && prefixes.Any(p => p.Contains(Destination.Value));
-    });
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
     // this also means inlining constants and evaluating and inlining predicates where possible
@@ -156,6 +151,6 @@ public class Ast<T, TS>
       modularProperties,
       monolithicProperties,
       Symbolics.Select(nameConstraint =>
-        new SymbolicValue<TS>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment()))).ToArray());
+        new SymbolicValue<TS>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment<TS>()))).ToArray());
   }
 }

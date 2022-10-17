@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using ZenLib;
 
@@ -34,6 +33,20 @@ public class AstFunction<T>
   }
 
   /// <summary>
+  /// Compose another AstFunction f onto this one: add f's body after this function's body,
+  /// and replace all references to f's argument with references to this function's argument.
+  /// </summary>
+  /// <param name="f">The function to compose with this AstFunction.</param>
+  /// <returns>void</returns>
+  public void Compose(AstFunction<T> f)
+  {
+    Body = Body.Concat(f.Body);
+    // replace all references to f's argument in f2 with this function's argument.
+    // TODO: condition the subsequent function on the result of the first body
+    Rename(f.Arg, Arg);
+  }
+
+  /// <summary>
   ///   Generate an AstFunc that returns its argument unchanged.
   /// </summary>
   /// <typeparam name="T">The type of the argument.</typeparam>
@@ -43,7 +56,7 @@ public class AstFunction<T>
     return new AstFunction<T>("x", new List<Statement>());
   }
 
-  public Func<Zen<T>, Zen<T>> Evaluate(AstEnvironment environment)
+  public Func<Zen<T>, Zen<T>> Evaluate(AstEnvironment<T> environment)
   {
     return t =>
     {

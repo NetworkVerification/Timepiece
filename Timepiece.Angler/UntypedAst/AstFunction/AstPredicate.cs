@@ -18,7 +18,7 @@ public class AstPredicate<T>
   public string Arg { get; set; }
   public Expr Body { get; set; }
 
-  public Func<Zen<T>, Zen<bool>> Evaluate(AstEnvironment env)
+  public Func<Zen<T>, Zen<bool>> Evaluate(AstEnvironment<T> env)
   {
     return t =>
     {

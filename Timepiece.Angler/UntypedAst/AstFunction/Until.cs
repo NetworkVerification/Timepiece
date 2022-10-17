@@ -18,10 +18,11 @@ public class Until<T> : AstTemporalOperator<T>
   public string Before { get; set; }
   public string After { get; set; }
 
-  public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter)
+  public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter,
+    Dictionary<string, AstFunction<T>> declarations)
   {
-    var beforeF = getter(Before).Evaluate(new AstEnvironment());
-    var afterF = getter(After).Evaluate(new AstEnvironment());
+    var beforeF = getter(Before).Evaluate(new AstEnvironment<T>(declarations));
+    var afterF = getter(After).Evaluate(new AstEnvironment<T>(declarations));
     return Lang.Until(Time, beforeF, afterF);
   }
 

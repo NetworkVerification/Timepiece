@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Timepiece;
 using Timepiece.Angler;
 
-ITraceWriter traceWriter = new MemoryTraceWriter();
+ZenLib.ZenSettings.UseLargeStack = true;
+ZenLib.ZenSettings.LargeStackSize = 30_000_000;
 
 JsonSerializer Serializer()
 {
@@ -13,7 +13,6 @@ JsonSerializer Serializer()
     TypeNameHandling = TypeNameHandling.All,
     SerializationBinder = RouteEnvironmentAst.Binder(),
     ContractResolver = RouteEnvironmentAst.Resolver(),
-    TraceWriter = traceWriter,
     // throw an error when members are missing from the object instead of ignoring them
     // MissingMemberHandling = MissingMemberHandling.Error
   };

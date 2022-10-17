@@ -12,9 +12,10 @@ public class Globally<T> : AstTemporalOperator<T>
 
   public string Predicate { get; }
 
-  public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter)
+  public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter,
+    Dictionary<string, AstFunction<T>> declarations)
   {
-    var f = getter(Predicate).Evaluate(new AstEnvironment());
+    var f = getter(Predicate).Evaluate(new AstEnvironment<T>(declarations));
     return Lang.Globally(f);
   }
 

@@ -25,13 +25,15 @@ public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
   {
     new Assign("arg",
       new WithField(
-        new WithField(new Var("arg"),
-          "AsPathLength",
-          new Plus(
-            new GetField(typeof(RouteEnvironment), typeof(BigInteger),
-              new Var("arg"),
-              "AsPathLength"), new BigIntExpr(BigInteger.One))),
-        "Returned", new BoolExpr(true)))
+        new WithField(
+          new WithField(new Var("arg"),
+            "AsPathLength",
+            new Plus(
+              new GetField(typeof(RouteEnvironment), typeof(BigInteger),
+                new Var("arg"),
+                "AsPathLength"), new BigIntExpr(BigInteger.One))),
+          "Returned", new BoolExpr(true)),
+        "Value", new BoolExpr(true)))
   });
 
   public RouteEnvironmentAst(Dictionary<string, UntypedAst.NodeProperties<RouteEnvironment>> nodes,

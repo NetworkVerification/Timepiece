@@ -3,6 +3,7 @@
 # Usage: run_all.py [lower size bound] [upper size bound] [options passed to DLL...]
 
 import datetime
+from enum import Enum
 import subprocess
 import sys
 import os.path
@@ -17,12 +18,19 @@ NTRIALS = 3
 TIMEOUT = 14400
 
 
-def run_dotnet(size, options, output_file):
+class Response(Enum):
+    SUCCESS = 0
+    USER_INTERRUPT = 1
+    TIMEOUT = 2
+
+
+def run_dotnet(size, options, output_file) -> Response:
     """
     Run dotnet for the given benchmark size with the given options.
     size is an int
     options is a list of str
     output_file is None or a file name
+    Return the return code of running the process.
     """
     args = ["dotnet", DLL, "-k", str(size)] + options
     # run the process, redirecting stderr to stdout,
@@ -36,19 +44,22 @@ def run_dotnet(size, options, output_file):
             # 'ab': append bytes to the end of the file
             with open(output_file, "ab") as f:
                 f.write(output)
+        return Response.SUCCESS
     except KeyboardInterrupt:
         print("Killing process...")
         proc.kill()
         output, _ = proc.communicate()
         print(output.decode("utf-8"))
+        return Response.USER_INTERRUPT
     except subprocess.TimeoutExpired:
         print("Timed out after {time} seconds".format(time=TIMEOUT))
         proc.kill()
         output, _ = proc.communicate()
         print(output.decode("utf-8"))
+        return Response.TIMEOUT
 
 
-def run_all(sizes, trials, options, output_file):
+def run_all(sizes, trials, options, output_file, short_circuit=True):
     """
     Run the given benchmark for the sequence of sizes and trials.
     Pass the given options into dotnet and optionally save the results to
@@ -68,7 +79,11 @@ def run_all(sizes, trials, options, output_file):
                 )
             )
             # run the benchmark
-            run_dotnet(size, options, output_file)
+            returncode = run_dotnet(size, options, output_file)
+            # if the benchmark timed out and short_circuit is set,
+            # end immediately
+            if returncode == Response.TIMEOUT and short_circuit:
+                return
 
 
 if __name__ == "__main__":

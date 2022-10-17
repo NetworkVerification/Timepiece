@@ -25,7 +25,7 @@ public class NodeProperties<T>
     DisambiguateVariableNames();
   }
 
-  public Expr Initial { get; set; }
+  private Expr Initial { get; set; }
 
   /// <summary>
   ///   Additional function declarations.
@@ -62,7 +62,7 @@ public class NodeProperties<T>
   public NetworkNode<T> CreateNode(
     Func<string, AstPredicate<T>> predicateLookupFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
   {
-    var env = new AstEnvironment();
+    var env = new AstEnvironment<T>(Declarations);
 
     var init = env.EvaluateExpr(Initial);
 
@@ -72,7 +72,7 @@ public class NodeProperties<T>
 
     var invariant = Temporal is null
       ? (_, _) => true
-      : Temporal.Evaluate(predicateLookupFunction);
+      : Temporal.Evaluate(predicateLookupFunction, Declarations);
 
     var imports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
     var exports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
@@ -80,17 +80,19 @@ public class NodeProperties<T>
     {
       var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
       var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      exports[neighbor] = defaultExport.Evaluate(env);
       foreach (var function in exportAstFunctions)
       {
-        exports[neighbor] = t => exports[neighbor](function.Evaluate(env)(t));
+        defaultExport.Compose(function);
       }
 
-      imports[neighbor] = defaultImport.Evaluate(new AstEnvironment());
+      exports[neighbor] = defaultExport.Evaluate(env);
+
       foreach (var function in importAstFunctions)
       {
-        imports[neighbor] = t => imports[neighbor](function.Evaluate(env)(t));
+        defaultImport.Compose(function);
       }
+
+      imports[neighbor] = defaultImport.Evaluate(env);
     }
 
     return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),

@@ -1,7 +1,6 @@
 using System.Numerics;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
-using Timepiece.Datatypes;
 using Xunit;
 using ZenLib;
 
@@ -9,8 +8,14 @@ namespace Timepiece.Angler.UntypedAst;
 
 public static class AstEnvironmentTests
 {
-  private static AstEnvironment _env = new();
+  private static AstEnvironment<RouteEnvironment> _env = new();
 
+  /// <summary>
+  /// Helper method for checking that two values are always equal.
+  /// </summary>
+  /// <param name="expr1"></param>
+  /// <param name="expr2"></param>
+  /// <typeparam name="T"></typeparam>
   private static void AssertEqValid<T>(Zen<T> expr1, Zen<T> expr2)
   {
     var b = Zen.Not(Zen.Eq(expr1, expr2)).Solve();
@@ -53,6 +58,14 @@ public static class AstEnvironmentTests
   {
     var zen = Option.Null<int>();
     var evaluated = (Zen<Option<int>>) _env.EvaluateExpr(new None(typeof(int)));
+    AssertEqValid(evaluated, zen);
+  }
+
+  [Fact]
+  public static void EvaluateDefaultRoute()
+  {
+    var zen = new RouteEnvironment();
+    var evaluated = (Zen<RouteEnvironment>) _env.EvaluateExpr(AstEnvironment<RouteEnvironment>.DefaultRoute());
     AssertEqValid(evaluated, zen);
   }
 
@@ -106,29 +119,11 @@ public static class AstEnvironmentTests
     Assert.False(b.IsSatisfiable());
   }
 
-  private static CreateRecord DefaultRoute()
-  {
-    return new CreateRecord("TEnvironment", new Dictionary<string, Expr>
-    {
-      {"Prefix", new PrefixExpr(new Ipv4Prefix())},
-      {"Weight", new UIntExpr(0U)},
-      {"Lp", new UIntExpr(0U)},
-      {"AsPathLength", new BigIntExpr(0)},
-      {"Metric", new UIntExpr(0U)},
-      {"OriginType", new UInt2Expr(new UInt<_2>(0))},
-      {"Communities", new LiteralSet(new dynamic[] { })},
-      {"Value", new BoolExpr(false)},
-      {"Exited", new BoolExpr(false)},
-      {"FallThrough", new BoolExpr(false)},
-      {"Returned", new BoolExpr(false)},
-    });
-  }
-
   [Fact]
   public static void EvaluateGetField()
   {
     const string pathLen = "AsPathLength";
-    var route = DefaultRoute();
+    var route = AstEnvironment<RouteEnvironment>.DefaultRoute();
     var statements = new Statement[]
     {
       new Assign("route", route),
@@ -151,7 +146,7 @@ public static class AstEnvironmentTests
     const string route = "route";
     var statements = new Statement[]
     {
-      new Assign(route, DefaultRoute()),
+      new Assign(route, AstEnvironment<RouteEnvironment>.DefaultRoute()),
       new Assign("len",
         new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen)),
       new Assign(route,
@@ -161,8 +156,7 @@ public static class AstEnvironmentTests
     var env1 = _env.EvaluateStatements(statements);
     var result = (Zen<RouteEnvironment>) env1[route];
     var incrementedRoute = Zen.Constant(new RouteEnvironment()).IncrementAsPathLength(BigInteger.One);
-    var b = Zen.Not(Zen.Eq(result, incrementedRoute)).Solve();
-    Assert.False(b.IsSatisfiable());
+    AssertEqValid(result, incrementedRoute);
   }
 
   [Fact]
@@ -184,7 +178,6 @@ public static class AstEnvironmentTests
     var env2 = env1.EvaluateStatements(statements);
     var result = (Zen<RouteEnvironment>) env2[rVar];
     var incrementedRoute = route.IncrementAsPathLength(BigInteger.One);
-    var b = Zen.Not(Zen.Eq(result, incrementedRoute)).Solve();
-    Assert.False(b.IsSatisfiable());
+    AssertEqValid(result, incrementedRoute);
   }
 }
