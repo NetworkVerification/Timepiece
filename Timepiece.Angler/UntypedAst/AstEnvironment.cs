@@ -29,7 +29,8 @@ public class AstEnvironment<T>
   private static readonly MethodInfo GetFieldMethod =
     typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
 
-  public AstEnvironment(ImmutableDictionary<string, dynamic> env, Dictionary<string, AstFunction<T>> declarations)
+  public AstEnvironment(ImmutableDictionary<string, dynamic> env,
+    Dictionary<string, AstFunction<T>> declarations)
   {
     _env = env;
     _declarations = declarations;
@@ -58,6 +59,8 @@ public class AstEnvironment<T>
     return new AstEnvironment<T>(_env.SetItem(var, val), _declarations);
   }
 
+  // FIXME: should this take an additional argument representing the current state of the input variable?
+  // could we then modify this state when returning from a Call?
   public dynamic EvaluateExpr(Expr e)
   {
     if (e is null)
@@ -65,33 +68,53 @@ public class AstEnvironment<T>
       throw new ArgumentNullException(nameof(e), "Given a null expression.");
     }
 
-    return e switch
+    switch (e)
     {
-      Call c => EvaluateStatements(_declarations[c.Name].Body),
-      BoolExpr b => Zen.Constant<bool>(b.value),
-      IntExpr i => Zen.Constant<int>(i.value),
-      UInt2Expr i => Zen.Constant<UInt<_2>>(i.value),
-      UIntExpr u => Zen.Constant<uint>(u.value),
-      BigIntExpr b => Zen.Constant<BigInteger>(b.value),
-      PrefixExpr p => Zen.Constant<Ipv4Prefix>(p.value),
+      case Call c:
+        // FIXME: Call has side effects: the evaluated function updates the variable in the calling context when it returns
+        var result = EvaluateFunction(_declarations[c.Name]);
+        return Update(c.Arg, result(this[c.Arg]))[c.Arg];
+      case BoolExpr b:
+        return Zen.Constant<bool>(b.value);
+      case IntExpr i:
+        return Zen.Constant<int>(i.value);
+      case UInt2Expr i:
+        return Zen.Constant<UInt<_2>>(i.value);
+      case UIntExpr u:
+        return Zen.Constant<uint>(u.value);
+      case BigIntExpr b:
+        return Zen.Constant<BigInteger>(b.value);
+      case PrefixExpr p:
+        return Zen.Constant<Ipv4Prefix>(p.value);
       // strings used with CSets should be literal C# values, not Zen<string>
-      StringExpr s => s.value,
-      LiteralSet s => s.elements.Aggregate(CSet.Empty<string>(),
-        (set, element) => CSet.Add<string>(set, EvaluateExpr(element))),
-      CreateRecord r => CreateMethod.MakeGenericMethod(r.RecordType)
-        .Invoke(null, new object?[] {r.GetFields(EvaluateExpr)})!,
+      case StringExpr s:
+        return s.value;
+      case LiteralSet s:
+        return s.elements.Aggregate(CSet.Empty<string>(),
+          (set, element) => CSet.Add<string>(set, EvaluateExpr(element)));
+      case CreateRecord r:
+        return CreateMethod.MakeGenericMethod(r.RecordType).Invoke(null, new object?[] {r.GetFields(EvaluateExpr)})!;
       // GetField could be implemented using UnaryOpExpr, but we write it like this just so that
       // the expensive reflection code isn't called at every call to UnaryOpExpr.unaryOp.
-      GetField g => GetFieldMethod.MakeGenericMethod(g.RecordType, g.FieldType)
-        .Invoke(null, new object?[] {EvaluateExpr(g.Record), g.FieldName})!,
-      Var v => this[v.Name],
-      Havoc => Zen.Symbolic<bool>(),
-      None n => NullMethod.MakeGenericMethod(n.innerType).Invoke(null, null)!,
-      UnaryOpExpr uoe => uoe.unaryOp(EvaluateExpr(uoe.expr)),
-      PrefixContains => Zen.Symbolic<bool>(), // TODO: for now, we skip trying to handle prefixes
-      BinaryOpExpr boe => boe.binaryOp(EvaluateExpr(boe.expr1), EvaluateExpr(boe.expr2)),
-      _ => throw new ArgumentOutOfRangeException(nameof(e), $"{e} is not an expr I know how to handle!"),
-    };
+      case GetField g:
+        return GetFieldMethod.MakeGenericMethod(g.RecordType, g.FieldType)
+          .Invoke(null, new object?[] {EvaluateExpr(g.Record), g.FieldName})!;
+      // TODO: Var simply accesses the transfer environment variable
+      case Var v:
+        return this[v.Name];
+      case Havoc:
+        return Zen.Symbolic<bool>();
+      case None n:
+        return NullMethod.MakeGenericMethod(n.innerType).Invoke(null, null)!;
+      case UnaryOpExpr uoe:
+        return uoe.unaryOp(EvaluateExpr(uoe.expr));
+      case PrefixContains:
+        return Zen.Symbolic<bool>(); // TODO: for now, we skip trying to handle prefixes
+      case BinaryOpExpr boe:
+        return boe.binaryOp(EvaluateExpr(boe.expr1), EvaluateExpr(boe.expr2));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(e), $"{e} is not an expr I know how to handle!");
+    }
   }
 
   public AstEnvironment<T> EvaluateStatement(Statement s)
@@ -108,11 +131,18 @@ public class AstEnvironment<T>
   public AstEnvironment<T> EvaluateStatements(IEnumerable<Statement> statements) =>
     statements.Aggregate(this, (env, s) => env.EvaluateStatement(s));
 
+  public Func<Zen<T>, Zen<T>> EvaluateFunction(AstFunction<T> function)
+  {
+    return t => Update(function.Arg, t).EvaluateStatements(function.Body)[function.Arg];
+  }
+
   private AstEnvironment<T> Join(AstEnvironment<T> other, Zen<bool> guard)
   {
-    // FIXME: we need a way to deal with the case that one environment returns and the other does not;
-    // when this happens, ReturnValue will be bound in one environment but not the other, making it unclear
-    // what its value should be
+    if (other._env.Any(p => !_env.ContainsKey(p.Key)))
+    {
+      throw new ArgumentException("Environments do not bind the same variables.");
+    }
+
     var e = new AstEnvironment<T>(_declarations);
     foreach (var (variable, value) in _env)
     {
@@ -123,13 +153,6 @@ public class AstEnvironment<T>
 
       var updatedValue = Zen.If(guard, value, other[variable]);
       e = e.Update(variable, updatedValue);
-    }
-
-    // add any variables that were not present in this but are in other
-    if (other._env.Any(p => !_env.ContainsKey(p.Key)))
-    {
-      // e = e.Update(variable, Zen.If(guard, null, value));
-      throw new ArgumentException("Environments do not bind the same variables.");
     }
 
     return e;

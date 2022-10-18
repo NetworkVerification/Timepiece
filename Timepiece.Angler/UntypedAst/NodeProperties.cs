@@ -78,21 +78,23 @@ public class NodeProperties<T>
     var exports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
     foreach (var (neighbor, policies) in Policies)
     {
-      var exportAstFunctions = policies.Export.Select(policyName => Declarations[policyName]);
-      var importAstFunctions = policies.Import.Select(policyName => Declarations[policyName]);
-      foreach (var function in exportAstFunctions)
+      if (policies.Export is null)
       {
-        defaultExport.Compose(function);
+        exports[neighbor] = env.EvaluateFunction(defaultExport);
+      }
+      else
+      {
+        exports[neighbor] = env.EvaluateFunction(Declarations[policies.Export]);
       }
 
-      exports[neighbor] = defaultExport.Evaluate(env);
-
-      foreach (var function in importAstFunctions)
+      if (policies.Import is null)
       {
-        defaultImport.Compose(function);
+        imports[neighbor] = env.EvaluateFunction(defaultImport);
       }
-
-      imports[neighbor] = defaultImport.Evaluate(env);
+      else
+      {
+        imports[neighbor] = env.EvaluateFunction(Declarations[policies.Import]);
+      }
     }
 
     return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),

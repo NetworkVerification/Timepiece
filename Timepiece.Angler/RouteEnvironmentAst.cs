@@ -36,7 +36,7 @@ public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
         "Value", new BoolExpr(true)))
   });
 
-  public RouteEnvironmentAst(Dictionary<string, UntypedAst.NodeProperties<RouteEnvironment>> nodes,
+  public RouteEnvironmentAst(Dictionary<string, NodeProperties<RouteEnvironment>> nodes,
     Ipv4Prefix? destination,
     Dictionary<string, AstPredicate<RouteEnvironment>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
     BigInteger? convergeTime) : base(nodes,

@@ -27,7 +27,7 @@ public static class AstFunctionTests
     {
       new IfThenElse(new Havoc(), new[] {new Assign(route, increment)}, new[] {new Assign(route, rVar)})
     });
-    var zenF = f.Evaluate(new AstEnvironment<BatfishBgpRoute>());
+    var zenF = new AstEnvironment<BatfishBgpRoute>().EvaluateFunction(f);
     // since the if is a havoc, we have that zenF(r) is either incremented or the same:
     var model = Zen.Not(Zen.And(Zen.Eq(zenF(r), r), Zen.Eq(zenF(r), rIncremented))).Solve();
     Assert.True(model.IsSatisfiable());
@@ -52,7 +52,7 @@ public static class AstFunctionTests
     });
     f1.Rename(oldArg, "y");
     var f = new Func<Zen<int>, Zen<int>>(t =>
-      f2.Evaluate(new AstEnvironment<int>())(f1.Evaluate(new AstEnvironment<int>())(t)));
+      new AstEnvironment<int>().EvaluateFunction(f2)(new AstEnvironment<int>().EvaluateFunction(f1)(t)));
     var x = Zen.Symbolic<int>();
     var y = Zen.Symbolic<int>();
     // check that there does not exist a model where f(x) == y and y != x + 4 and y != 3
@@ -69,10 +69,10 @@ public static class AstFunctionTests
     const string arg = "y";
     var env = new AstEnvironment<int>(ImmutableDictionary<string, dynamic>.Empty.Add(envVar, 3),
       new Dictionary<string, AstFunction<int>>());
-    var f1 = new AstFunction<int>(arg, new Statement[]
+    var f1 = env.EvaluateFunction(new AstFunction<int>(arg, new Statement[]
     {
       new Assign(arg, new Plus(new Var(envVar), new Var(arg)))
-    }).Evaluate(env);
+    }));
     var y = Zen.Symbolic<int>();
     var model = Zen.Not(Zen.Eq(y + 3, f1(y))).Solve();
     Assert.False(model.IsSatisfiable());

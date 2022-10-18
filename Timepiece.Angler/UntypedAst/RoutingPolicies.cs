@@ -8,7 +8,7 @@ namespace Timepiece.Angler.UntypedAst;
 public readonly struct RoutingPolicies
 {
   [JsonConstructor]
-  public RoutingPolicies(List<string> import, List<string> export)
+  public RoutingPolicies(string import, string export)
   {
     Import = import;
     Export = export;
@@ -16,11 +16,11 @@ public readonly struct RoutingPolicies
 
   public RoutingPolicies()
   {
-    Import = new List<string>();
-    Export = new List<string>();
+    Import = null;
+    Export = null;
   }
 
-  public List<string> Import { get; }
+  public string? Import { get; }
 
-  public List<string> Export { get; }
+  public string? Export { get; }
 }

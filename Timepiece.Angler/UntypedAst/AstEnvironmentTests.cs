@@ -1,5 +1,6 @@
 using System.Numerics;
 using Timepiece.Angler.UntypedAst.AstExpr;
+using Timepiece.Angler.UntypedAst.AstFunction;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using Xunit;
 using ZenLib;
@@ -147,11 +148,9 @@ public static class AstEnvironmentTests
     var statements = new Statement[]
     {
       new Assign(route, AstEnvironment<RouteEnvironment>.DefaultRoute()),
-      new Assign("len",
-        new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen)),
-      new Assign(route,
-        new WithField(new Var(route), pathLen,
-          new Plus(new Var("len"), new BigIntExpr(BigInteger.One))))
+      new Assign(route, new WithField(new Var(route), pathLen,
+        new Plus(new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen),
+          new BigIntExpr(BigInteger.One)))),
     };
     var env1 = _env.EvaluateStatements(statements);
     var result = (Zen<RouteEnvironment>) env1[route];
@@ -179,5 +178,34 @@ public static class AstEnvironmentTests
     var result = (Zen<RouteEnvironment>) env2[rVar];
     var incrementedRoute = route.IncrementAsPathLength(BigInteger.One);
     AssertEqValid(result, incrementedRoute);
+  }
+
+  [Fact]
+  public static void EvaluateReturnTrueFunction()
+  {
+    const string arg = "arg";
+    var function = new AstFunction<RouteEnvironment>(arg, new Statement[]
+    {
+      new Assign(arg,
+        new WithField(
+          new WithField(new Var(arg), "Value", new BoolExpr(true)),
+          "Returned", new BoolExpr(true))),
+      new IfThenElse(new Or(new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "Exited"),
+        new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "Returned")), new Statement[]
+      {
+        new Assign(arg, new WithField(new Var(arg), "Returned", new BoolExpr(false)))
+      }, new Statement[]
+      {
+        new Assign(arg,
+          new WithField(
+            new WithField(new Var(arg), "Value",
+              new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "LocalDefaultAction")),
+            "FallThrough", new BoolExpr(true)))
+      })
+    });
+    var evaluatedFunction = _env.EvaluateFunction(function);
+    Zen<RouteEnvironment> ReturnTrue(Zen<RouteEnvironment> t) => t.WithValue(true).WithReturned(false);
+    var inputRoute = Zen.Symbolic<RouteEnvironment>();
+    AssertEqValid(ReturnTrue(inputRoute), evaluatedFunction(inputRoute));
   }
 }

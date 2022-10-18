@@ -26,6 +26,7 @@ public static class AstTests
   private static NodeProperties<Route> GenerateProperties(string node,
     IEnumerable<string> neighbors, BigInteger time)
   {
+    // no policies defined for any edge
     var policies = new Dictionary<string, RoutingPolicies>(neighbors.Select(nbr =>
       new KeyValuePair<string, RoutingPolicies>(nbr, new RoutingPolicies())));
 
