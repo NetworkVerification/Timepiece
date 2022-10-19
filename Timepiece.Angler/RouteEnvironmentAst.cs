@@ -6,12 +6,17 @@ using Timepiece.Angler.UntypedAst.AstFunction;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using Timepiece.Datatypes;
 using Timepiece.Networks;
-using ZenLib;
 
 namespace Timepiece.Angler;
 
-public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
+public class RouteEnvironmentAst : Ast
 {
+  /// <summary>
+  /// Default predicates to test for this AST.
+  /// </summary>
+  public static readonly AstPredicate IsValid = new("route",
+    new GetField(typeof(RouteEnvironment), typeof(bool), new Var("route"), "Value"));
+
   /// <summary>
   /// Default import behavior for a route.
   /// </summary>
@@ -36,22 +41,22 @@ public class RouteEnvironmentAst : Ast<RouteEnvironment, Unit>
         "Value", new BoolExpr(true)))
   });
 
-  public RouteEnvironmentAst(Dictionary<string, NodeProperties<RouteEnvironment>> nodes,
+  public RouteEnvironmentAst(Dictionary<string, NodeProperties> nodes,
     Ipv4Prefix? destination,
-    Dictionary<string, AstPredicate<RouteEnvironment>> predicates, Dictionary<string, AstPredicate<Unit>> symbolics,
+    Dictionary<string, AstPredicate> predicates, Dictionary<string, AstPredicate> symbolics,
     BigInteger? convergeTime) : base(nodes,
     symbolics, predicates, destination, convergeTime)
   {
   }
 
-  public Network<RouteEnvironment, Unit> ToNetwork()
+  public Network<RouteEnvironment, RouteEnvironment> ToNetwork()
   {
     return ToNetwork(RouteEnvironmentExtensions.MinOptional, DefaultExport, DefaultImport);
   }
 
   public static ISerializationBinder Binder()
   {
-    return new AstSerializationBinder<RouteEnvironment>();
+    return new AstSerializationBinder();
   }
 
   public static IContractResolver Resolver()

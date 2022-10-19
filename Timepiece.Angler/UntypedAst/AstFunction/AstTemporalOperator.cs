@@ -3,8 +3,9 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstFunction;
 
-public abstract class AstTemporalOperator<T>
+public abstract class AstTemporalOperator
 {
-  public abstract Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter,
-    Dictionary<string, AstFunction<T>> declarations);
+  public abstract Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>> Evaluate(
+    Func<string, AstPredicate> getter,
+    Dictionary<string, AstFunction<RouteEnvironment>> declarations);
 }

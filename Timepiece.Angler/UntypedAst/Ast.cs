@@ -7,12 +7,12 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst;
 
-public class Ast<T, TS>
+public class Ast
 {
   [JsonConstructor]
-  public Ast(Dictionary<string, NodeProperties<T>> nodes,
-    Dictionary<string, AstPredicate<TS>> symbolics,
-    Dictionary<string, AstPredicate<T>> predicates, Ipv4Prefix? destination, BigInteger? convergeTime)
+  public Ast(Dictionary<string, NodeProperties> nodes,
+    Dictionary<string, AstPredicate> symbolics,
+    Dictionary<string, AstPredicate> predicates, Ipv4Prefix? destination, BigInteger? convergeTime)
   {
     Nodes = nodes;
     Symbolics = symbolics;
@@ -30,17 +30,17 @@ public class Ast<T, TS>
   ///   The nodes of the network with their associated policies.
   /// </summary>
   [JsonRequired]
-  public Dictionary<string, NodeProperties<T>> Nodes { get; }
+  public Dictionary<string, NodeProperties> Nodes { get; }
 
   /// <summary>
   ///   Symbolic expressions.
   /// </summary>
-  public Dictionary<string, AstPredicate<TS>> Symbolics { get; }
+  public Dictionary<string, AstPredicate> Symbolics { get; }
 
   /// <summary>
   ///   Predicates over routes, irrespective of time.
   /// </summary>
-  public Dictionary<string, AstPredicate<T>> Predicates { get; }
+  public Dictionary<string, AstPredicate> Predicates { get; }
 
   /// <summary>
   ///   An optional convergence time.
@@ -101,16 +101,17 @@ public class Ast<T, TS>
     Console.ResetColor();
   }
 
-  public Network<T, TS> ToNetwork(
-    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
+  public Network<RouteEnvironment, RouteEnvironment> ToNetwork(
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
+    AstFunction<RouteEnvironment> defaultExport, AstFunction<RouteEnvironment> defaultImport)
   {
     // construct all the mappings we'll need
     var edges = new Dictionary<string, List<string>>();
-    var initFunction = new Dictionary<string, Zen<T>>();
-    var monolithicProperties = new Dictionary<string, Func<Zen<T>, Zen<bool>>>();
-    var annotations = new Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>();
-    var exportFunctions = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
-    var importFunctions = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
+    var initFunction = new Dictionary<string, Zen<RouteEnvironment>>();
+    var monolithicProperties = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>>();
+    var annotations = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>();
+    var exportFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
+    var importFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
 
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
@@ -129,7 +130,7 @@ public class Ast<T, TS>
       foreach (var (nbr, fn) in details.imports) importFunctions[(nbr, node)] = fn;
     }
 
-    var transferFunction = new Dictionary<(string, string), Func<Zen<T>, Zen<T>>>();
+    var transferFunction = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     foreach (var (edge, export) in exportFunctions)
       // compose the export and import and evaluate on a fresh state
       // NOTE: assumes that every export edge has a corresponding import edge (i.e. the graph is undirected)
@@ -140,10 +141,10 @@ public class Ast<T, TS>
     // will eventually hold at a time equal to the number of nodes in the network (i.e. the longest path possible)
     var convergeTime = ConvergeTime ?? new BigInteger(topology.NEdges);
     var modularProperties =
-      topology.MapNodes<Func<Zen<T>, Zen<BigInteger>, Zen<bool>>>(n =>
+      topology.MapNodes<Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(n =>
         Lang.Finally(convergeTime, monolithicProperties[n]));
 
-    return new Network<T, TS>(topology,
+    return new Network<RouteEnvironment, RouteEnvironment>(topology,
       transferFunction,
       mergeFunction,
       initFunction,
@@ -151,6 +152,7 @@ public class Ast<T, TS>
       modularProperties,
       monolithicProperties,
       Symbolics.Select(nameConstraint =>
-        new SymbolicValue<TS>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment<TS>()))).ToArray());
+          new SymbolicValue<RouteEnvironment>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment())))
+        .ToArray());
   }
 }

@@ -3,7 +3,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstFunction;
 
-public class Finally<T> : AstTemporalOperator<T>
+public class Finally : AstTemporalOperator
 {
   public Finally(BigInteger time, string then)
   {
@@ -15,10 +15,11 @@ public class Finally<T> : AstTemporalOperator<T>
 
   public string Then { get; set; }
 
-  public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter,
-    Dictionary<string, AstFunction<T>> declarations)
+  public override Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>> Evaluate(
+    Func<string, AstPredicate> getter,
+    Dictionary<string, AstFunction<RouteEnvironment>> declarations)
   {
-    var f = getter(Then).Evaluate(new AstEnvironment<T>(declarations));
+    var f = getter(Then).Evaluate(new AstEnvironment(declarations));
     return Lang.Finally(Time, f);
   }
 

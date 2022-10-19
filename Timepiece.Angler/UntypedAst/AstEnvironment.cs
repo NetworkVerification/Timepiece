@@ -1,36 +1,21 @@
 using System.Collections.Immutable;
-using System.Numerics;
+using System.Diagnostics;
 using System.Reflection;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstFunction;
 using Timepiece.Angler.UntypedAst.AstStmt;
-using Timepiece.Datatypes;
 using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst;
 
-public class AstEnvironment<T>
+public partial class AstEnvironment
 {
   private readonly ImmutableDictionary<string, dynamic> _env;
-  private readonly Dictionary<string, AstFunction<T>> _declarations;
+  private readonly Dictionary<string, AstFunction<RouteEnvironment>> _declarations;
 
-  /// <summary>
-  /// The Zen null option creation method.
-  /// </summary>
-  private static readonly MethodInfo NullMethod =
-    typeof(Option).GetMethod("Null") ?? throw new Exception("Option.Null method not found");
-
-  /// <summary>
-  /// The Zen record creation method.
-  /// </summary>
-  private static readonly MethodInfo CreateMethod =
-    typeof(Zen).GetMethod("Create") ?? throw new Exception("Zen.Create method not found");
-
-  private static readonly MethodInfo GetFieldMethod =
-    typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
 
   public AstEnvironment(ImmutableDictionary<string, dynamic> env,
-    Dictionary<string, AstFunction<T>> declarations)
+    Dictionary<string, AstFunction<RouteEnvironment>> declarations)
   {
     _env = env;
     _declarations = declarations;
@@ -38,12 +23,12 @@ public class AstEnvironment<T>
 
   public dynamic this[string var] => _env[var];
 
-  public AstEnvironment(Dictionary<string, AstFunction<T>> declarations) : this(
+  public AstEnvironment(Dictionary<string, AstFunction<RouteEnvironment>> declarations) : this(
     ImmutableDictionary<string, dynamic>.Empty, declarations)
   {
   }
 
-  public AstEnvironment() : this(new Dictionary<string, AstFunction<T>>())
+  public AstEnvironment() : this(new Dictionary<string, AstFunction<RouteEnvironment>>())
   {
   }
 
@@ -54,96 +39,117 @@ public class AstEnvironment<T>
   /// <param name="var"></param>
   /// <param name="val"></param>
   /// <returns></returns>
-  public AstEnvironment<T> Update(string var, dynamic val)
+  public AstEnvironment Update(string var, dynamic val)
   {
-    return new AstEnvironment<T>(_env.SetItem(var, val), _declarations);
+    return new AstEnvironment(_env.SetItem(var, val), _declarations);
   }
 
   // FIXME: should this take an additional argument representing the current state of the input variable?
   // could we then modify this state when returning from a Call?
-  public dynamic EvaluateExpr(Expr e)
+  public (Zen<RouteEnvironment>, dynamic) EvaluateExpr(Zen<RouteEnvironment> route, Expr e)
   {
     if (e is null)
     {
       throw new ArgumentNullException(nameof(e), "Given a null expression.");
     }
 
+    // We assume that only certain expressions consider possible modifications to the route
+    // after being called: these are Call expressions and the boolean operations And, Or and Not.
+    // For all other expressions, we ignore the possibility that an inner EvaluateExpr call might
+    // modify the route when it returns and use ignoreRoute.
+    var ignoreRoute = new Func<Expr, dynamic>(e1 =>
+    {
+      var (updatedRoute, result) = EvaluateExpr(route, e1);
+      // the updated route must be the same as the one passed in
+      Debug.Assert(!Zen.Not(Zen.Eq(route, updatedRoute)).Solve().IsSatisfiable());
+      return result;
+    });
+
     switch (e)
     {
       case Call c:
         // FIXME: Call has side effects: the evaluated function updates the variable in the calling context when it returns
-        var result = EvaluateFunction(_declarations[c.Name]);
-        return Update(c.Arg, result(this[c.Arg]))[c.Arg];
-      case BoolExpr b:
-        return Zen.Constant<bool>(b.value);
-      case IntExpr i:
-        return Zen.Constant<int>(i.value);
-      case UInt2Expr i:
-        return Zen.Constant<UInt<_2>>(i.value);
-      case UIntExpr u:
-        return Zen.Constant<uint>(u.value);
-      case BigIntExpr b:
-        return Zen.Constant<BigInteger>(b.value);
-      case PrefixExpr p:
-        return Zen.Constant<Ipv4Prefix>(p.value);
-      // strings used with CSets should be literal C# values, not Zen<string>
-      case StringExpr s:
-        return s.value;
+        var result = EvaluateFunction(_declarations[c.Name])(route);
+        // return the updated result and its associated value
+        return (result, result.GetValue());
+      case ConstantExpr c:
+        return (route, c.constructor(c.value));
       case LiteralSet s:
-        return s.elements.Aggregate(CSet.Empty<string>(),
-          (set, element) => CSet.Add<string>(set, EvaluateExpr(element)));
+        return (route, s.elements.Aggregate(CSet.Empty<string>(),
+          (set, element) => CSet.Add<string>(set, ignoreRoute(element))));
       case CreateRecord r:
-        return CreateMethod.MakeGenericMethod(r.RecordType).Invoke(null, new object?[] {r.GetFields(EvaluateExpr)})!;
+        return (route,
+          AstEnvironment.Create.MakeGenericMethod(r.RecordType)
+            .Invoke(null, new object?[] {r.GetFields(ignoreRoute)})!);
       // GetField could be implemented using UnaryOpExpr, but we write it like this just so that
       // the expensive reflection code isn't called at every call to UnaryOpExpr.unaryOp.
       case GetField g:
-        return GetFieldMethod.MakeGenericMethod(g.RecordType, g.FieldType)
-          .Invoke(null, new object?[] {EvaluateExpr(g.Record), g.FieldName})!;
-      // TODO: Var simply accesses the transfer environment variable
+        return (route, AstEnvironment.GetField.MakeGenericMethod(g.RecordType, g.FieldType)
+          .Invoke(null, new object?[] {ignoreRoute(g.Record), g.FieldName})!);
       case Var v:
-        return this[v.Name];
+        return (route, this[v.Name]);
       case Havoc:
-        return Zen.Symbolic<bool>();
+        return (route, Zen.Symbolic<bool>());
       case None n:
-        return NullMethod.MakeGenericMethod(n.innerType).Invoke(null, null)!;
+        return (route, AstEnvironment.Null.MakeGenericMethod(n.innerType).Invoke(null, null)!);
+      case Not ne:
+        var (routeResult, innerResult) = EvaluateExpr(route, ne);
+        return (routeResult, ne.unaryOp(innerResult));
       case UnaryOpExpr uoe:
-        return uoe.unaryOp(EvaluateExpr(uoe.expr));
+        return (route, uoe.unaryOp(ignoreRoute(uoe.expr)));
       case PrefixContains:
-        return Zen.Symbolic<bool>(); // TODO: for now, we skip trying to handle prefixes
+        return (route, Zen.Symbolic<bool>()); // TODO: for now, we skip trying to handle prefixes
+      case And ae:
+        var (firstConjunctRoute, firstConjunctResult) = EvaluateExpr(route, ae.expr1);
+        var (secondConjunctRoute, secondConjunctResult) = EvaluateExpr(
+          Zen.If(firstConjunctRoute.GetValue(), firstConjunctRoute, route), ae.expr2);
+        return (secondConjunctRoute, ae.binaryOp(firstConjunctResult, secondConjunctResult));
+      case Or oe:
+        var (firstDisjunctRoute, firstDisjunctResult) = EvaluateExpr(route, oe.expr1);
+        var (secondDisjunctRoute, secondDisjunctResult) = EvaluateExpr(
+          Zen.If(firstDisjunctRoute.GetValue(), route, firstDisjunctRoute), oe.expr2);
+        return (secondDisjunctRoute, oe.binaryOp(firstDisjunctResult, secondDisjunctResult));
       case BinaryOpExpr boe:
-        return boe.binaryOp(EvaluateExpr(boe.expr1), EvaluateExpr(boe.expr2));
+        return (route, boe.binaryOp(ignoreRoute(boe.expr1), ignoreRoute(boe.expr2)));
       default:
         throw new ArgumentOutOfRangeException(nameof(e), $"{e} is not an expr I know how to handle!");
     }
   }
 
-  public AstEnvironment<T> EvaluateStatement(Statement s)
+  public AstEnvironment EvaluateStatement(Zen<RouteEnvironment> route, Statement s)
   {
-    return s switch
+    switch (s)
     {
-      Assign a => Update(a.Var, EvaluateExpr(a.Expr)),
-      IfThenElse ite => EvaluateStatements(ite.ThenCase)
-        .Join(EvaluateStatements(ite.ElseCase), EvaluateExpr(ite.Guard)),
-      _ => throw new ArgumentOutOfRangeException(nameof(s))
-    };
+      case Assign a:
+        var (_, result) = EvaluateExpr(route, a.Expr);
+        // TODO: should we do something with the route result?
+        // we assume that we never update the result in an assignment
+        return Update(a.Var, result);
+      case IfThenElse ite:
+        var (routeResult, guard) = EvaluateExpr(route, ite.Guard);
+        return EvaluateStatements(routeResult, ite.ThenCase)
+          .Join(EvaluateStatements(routeResult, ite.ElseCase), guard);
+      default:
+        throw new ArgumentOutOfRangeException(nameof(s));
+    }
   }
 
-  public AstEnvironment<T> EvaluateStatements(IEnumerable<Statement> statements) =>
-    statements.Aggregate(this, (env, s) => env.EvaluateStatement(s));
+  public AstEnvironment EvaluateStatements(Zen<RouteEnvironment> route, IEnumerable<Statement> statements) =>
+    statements.Aggregate(this, (env, s) => env.EvaluateStatement(route, s));
 
-  public Func<Zen<T>, Zen<T>> EvaluateFunction(AstFunction<T> function)
+  public Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> EvaluateFunction(AstFunction<RouteEnvironment> function)
   {
-    return t => Update(function.Arg, t).EvaluateStatements(function.Body)[function.Arg];
+    return t => Update(function.Arg, t).EvaluateStatements(t, function.Body)[function.Arg];
   }
 
-  private AstEnvironment<T> Join(AstEnvironment<T> other, Zen<bool> guard)
+  private AstEnvironment Join(AstEnvironment other, Zen<bool> guard)
   {
     if (other._env.Any(p => !_env.ContainsKey(p.Key)))
     {
       throw new ArgumentException("Environments do not bind the same variables.");
     }
 
-    var e = new AstEnvironment<T>(_declarations);
+    var e = new AstEnvironment(_declarations);
     foreach (var (variable, value) in _env)
     {
       if (!other._env.ContainsKey(variable))
@@ -182,4 +188,22 @@ public class AstEnvironment<T>
       {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)},
     });
   }
+}
+
+public partial class AstEnvironment
+{
+  /// <summary>
+  /// The Zen null option creation method.
+  /// </summary>
+  internal static readonly MethodInfo Null =
+    typeof(Option).GetMethod("Null") ?? throw new Exception("Option.Null method not found");
+
+  /// <summary>
+  /// The Zen record creation method.
+  /// </summary>
+  internal static readonly MethodInfo Create =
+    typeof(Zen).GetMethod("Create") ?? throw new Exception("Zen.Create method not found");
+
+  internal static readonly MethodInfo GetField =
+    typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
 }

@@ -6,8 +6,7 @@ namespace Timepiece.Angler.UntypedAst.AstFunction;
 /// <summary>
 ///   A unary function from type T to bool, aka a predicate over type T.
 /// </summary>
-/// <typeparam name="T">The predicate's argument type.</typeparam>
-public class AstPredicate<T>
+public class AstPredicate
 {
   public AstPredicate(string arg, Expr body)
   {
@@ -18,12 +17,12 @@ public class AstPredicate<T>
   public string Arg { get; set; }
   public Expr Body { get; set; }
 
-  public Func<Zen<T>, Zen<bool>> Evaluate(AstEnvironment<T> env)
+  public Func<Zen<RouteEnvironment>, Zen<bool>> Evaluate(AstEnvironment env)
   {
     return t =>
     {
       var astState = env.Update(Arg, t);
-      return astState.EvaluateExpr(Body);
+      return astState.EvaluateExpr(t, Body).Item2;
     };
   }
 }

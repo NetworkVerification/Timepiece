@@ -2,6 +2,9 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
+/// <summary>
+/// Addition of two unsigned integers.
+/// </summary>
 public class Plus : AssociativeBinaryOpExpr
 {
   private static readonly Func<dynamic, dynamic, dynamic> Op = (e1, e2) => Zen.Plus(e1, e2);
@@ -11,7 +14,7 @@ public class Plus : AssociativeBinaryOpExpr
   {
   }
 
-  public Plus(IEnumerable<Expr> exprs) : base(exprs, new IntExpr(0), Op)
+  public Plus(IEnumerable<Expr> exprs) : base(exprs, new UIntExpr(0), Op)
   {
   }
 }

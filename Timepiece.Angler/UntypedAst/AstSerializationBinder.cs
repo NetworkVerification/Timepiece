@@ -3,17 +3,15 @@ using Timepiece.Angler.UntypedAst.AstFunction;
 
 namespace Timepiece.Angler.UntypedAst;
 
-public class AstSerializationBinder<TState> : ISerializationBinder
+public class AstSerializationBinder : ISerializationBinder
 {
-  private static readonly Type State = typeof(TState);
-
   public Type BindToType(string? assemblyName, string typeName)
   {
     return typeName switch
     {
-      "Finally" => typeof(Finally<>).MakeGenericType(State),
-      "Globally" => typeof(Globally<>).MakeGenericType(State),
-      "Until" => typeof(Until<>).MakeGenericType(State),
+      "Finally" => typeof(Finally),
+      "Globally" => typeof(Globally),
+      "Until" => typeof(Until),
       _ => TypeParsing.ParseType(typeName).MakeType()
     };
   }

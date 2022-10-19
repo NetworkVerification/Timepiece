@@ -4,7 +4,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst.AstFunction;
 
-public class Until<T> : AstTemporalOperator<T>
+public class Until : AstTemporalOperator
 {
   [JsonConstructor]
   public Until(BigInteger time, string before, string after)
@@ -18,11 +18,11 @@ public class Until<T> : AstTemporalOperator<T>
   public string Before { get; set; }
   public string After { get; set; }
 
-  public override Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate<T>> getter,
-    Dictionary<string, AstFunction<T>> declarations)
+  public override Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>> Evaluate(Func<string, AstPredicate> getter,
+    Dictionary<string, AstFunction<RouteEnvironment>> declarations)
   {
-    var beforeF = getter(Before).Evaluate(new AstEnvironment<T>(declarations));
-    var afterF = getter(After).Evaluate(new AstEnvironment<T>(declarations));
+    var beforeF = getter(Before).Evaluate(new AstEnvironment(declarations));
+    var afterF = getter(After).Evaluate(new AstEnvironment(declarations));
     return Lang.Until(Time, beforeF, afterF);
   }
 

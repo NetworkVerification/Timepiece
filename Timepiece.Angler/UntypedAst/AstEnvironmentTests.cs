@@ -9,7 +9,13 @@ namespace Timepiece.Angler.UntypedAst;
 
 public static class AstEnvironmentTests
 {
-  private static AstEnvironment<RouteEnvironment> _env = new();
+  private static readonly AstEnvironment Env = new();
+  private static readonly Zen<RouteEnvironment> R = Zen.Symbolic<RouteEnvironment>();
+
+  private static dynamic EvaluateExprIgnoreRoute(Expr e)
+  {
+    return Env.EvaluateExpr(R, e).Item2;
+  }
 
   /// <summary>
   /// Helper method for checking that two values are always equal.
@@ -28,7 +34,7 @@ public static class AstEnvironmentTests
   [InlineData(false)]
   public static void EvaluateBoolExprs(bool e)
   {
-    var evaluated = (Zen<bool>) _env.EvaluateExpr(new BoolExpr(e));
+    var evaluated = (Zen<bool>) EvaluateExprIgnoreRoute(new BoolExpr(e));
     var zen = Zen.Constant(e);
     AssertEqValid(evaluated, zen);
   }
@@ -39,7 +45,7 @@ public static class AstEnvironmentTests
   [InlineData(1000000)]
   public static void EvaluateIntExprs(int e)
   {
-    var evaluated = (Zen<int>) _env.EvaluateExpr(new IntExpr(e));
+    var evaluated = (Zen<int>) EvaluateExprIgnoreRoute(new IntExpr(e));
     var zen = Zen.Constant(e);
     AssertEqValid(evaluated, zen);
   }
@@ -49,7 +55,7 @@ public static class AstEnvironmentTests
   [InlineData("bar")]
   public static void EvaluateStringExprs(string e)
   {
-    var evaluated = (Zen<string>) _env.EvaluateExpr(new StringExpr(e));
+    var evaluated = (Zen<string>) EvaluateExprIgnoreRoute(new StringExpr(e));
     var zen = Zen.Constant(e);
     AssertEqValid(evaluated, zen);
   }
@@ -58,7 +64,7 @@ public static class AstEnvironmentTests
   public static void EvaluateNoneExpr()
   {
     var zen = Option.Null<int>();
-    var evaluated = (Zen<Option<int>>) _env.EvaluateExpr(new None(typeof(int)));
+    var evaluated = (Zen<Option<int>>) EvaluateExprIgnoreRoute(new None(typeof(int)));
     AssertEqValid(evaluated, zen);
   }
 
@@ -66,7 +72,7 @@ public static class AstEnvironmentTests
   public static void EvaluateDefaultRoute()
   {
     var zen = new RouteEnvironment();
-    var evaluated = (Zen<RouteEnvironment>) _env.EvaluateExpr(AstEnvironment<RouteEnvironment>.DefaultRoute());
+    var evaluated = (Zen<RouteEnvironment>) EvaluateExprIgnoreRoute(AstEnvironment.DefaultRoute());
     AssertEqValid(evaluated, zen);
   }
 
@@ -74,8 +80,8 @@ public static class AstEnvironmentTests
   public static void EvaluateAssignStmt()
   {
     const string name = "x";
-    var env1 = _env.EvaluateStatement(new Assign(name, new IntExpr(0)));
-    var evaluated = (Zen<int>) env1.EvaluateExpr(new Var(name));
+    var env1 = Env.EvaluateStatement(R, new Assign(name, new IntExpr(0)));
+    var evaluated = (Zen<int>) env1.EvaluateExpr(R, new Var(name)).Item2;
     AssertEqValid(evaluated, Zen.Constant(0));
   }
 
@@ -93,9 +99,9 @@ public static class AstEnvironmentTests
       new Assign(var1, new Var(var2)),
       new Assign(var2, new Var(tempVar))
     };
-    var env1 = _env.EvaluateStatements(statements);
-    var getVar1 = (Zen<int>) env1.EvaluateExpr(new Var(var1));
-    var getVar2 = (Zen<int>) env1.EvaluateExpr(new Var(var2));
+    var env1 = Env.EvaluateStatements(R, statements);
+    var getVar1 = (Zen<int>) env1.EvaluateExpr(R, new Var(var1)).Item2;
+    var getVar2 = (Zen<int>) env1.EvaluateExpr(R, new Var(var2)).Item2;
     AssertEqValid(getVar1, Zen.Constant(1));
     AssertEqValid(getVar2, Zen.Constant(0));
   }
@@ -113,7 +119,7 @@ public static class AstEnvironmentTests
     {
       new Assign(resultVar, new IntExpr(falseResult))
     });
-    var env1 = _env.EvaluateStatement(statement);
+    var env1 = Env.EvaluateStatement(R, statement);
     var result = (Zen<int>) env1[resultVar];
     var b = Zen.Not(Zen.Or(Zen.Eq(result, Zen.Constant(trueResult)), Zen.Eq(result, Zen.Constant(falseResult))))
       .Solve();
@@ -124,7 +130,7 @@ public static class AstEnvironmentTests
   public static void EvaluateGetField()
   {
     const string pathLen = "AsPathLength";
-    var route = AstEnvironment<RouteEnvironment>.DefaultRoute();
+    var route = AstEnvironment.DefaultRoute();
     var statements = new Statement[]
     {
       new Assign("route", route),
@@ -134,7 +140,7 @@ public static class AstEnvironmentTests
             new BigIntExpr(0),
             new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var("route"), pathLen))))
     };
-    var env1 = _env.EvaluateStatements(statements);
+    var env1 = Env.EvaluateStatements(R, statements);
     var result = (Zen<RouteEnvironment>) env1["route"];
     var b = Zen.Not(result.GetValue()).Solve();
     Assert.False(b.IsSatisfiable());
@@ -147,12 +153,12 @@ public static class AstEnvironmentTests
     const string route = "route";
     var statements = new Statement[]
     {
-      new Assign(route, AstEnvironment<RouteEnvironment>.DefaultRoute()),
+      new Assign(route, AstEnvironment.DefaultRoute()),
       new Assign(route, new WithField(new Var(route), pathLen,
         new Plus(new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen),
           new BigIntExpr(BigInteger.One)))),
     };
-    var env1 = _env.EvaluateStatements(statements);
+    var env1 = Env.EvaluateStatements(R, statements);
     var result = (Zen<RouteEnvironment>) env1[route];
     var incrementedRoute = Zen.Constant(new RouteEnvironment()).IncrementAsPathLength(BigInteger.One);
     AssertEqValid(result, incrementedRoute);
@@ -164,7 +170,7 @@ public static class AstEnvironmentTests
     const string pathLen = "AsPathLength";
     var route = Zen.Symbolic<RouteEnvironment>();
     const string rVar = "route";
-    var env1 = _env.Update(rVar, route);
+    var env1 = Env.Update(rVar, route);
     const string lenVar = "len";
     var statements = new Statement[]
     {
@@ -174,7 +180,7 @@ public static class AstEnvironmentTests
         new WithField(new Var(rVar), pathLen,
           new Plus(new Var(lenVar), new BigIntExpr(BigInteger.One))))
     };
-    var env2 = env1.EvaluateStatements(statements);
+    var env2 = env1.EvaluateStatements(R, statements);
     var result = (Zen<RouteEnvironment>) env2[rVar];
     var incrementedRoute = route.IncrementAsPathLength(BigInteger.One);
     AssertEqValid(result, incrementedRoute);
@@ -203,7 +209,7 @@ public static class AstEnvironmentTests
             "FallThrough", new BoolExpr(true)))
       })
     });
-    var evaluatedFunction = _env.EvaluateFunction(function);
+    var evaluatedFunction = Env.EvaluateFunction(function);
     Zen<RouteEnvironment> ReturnTrue(Zen<RouteEnvironment> t) => t.WithValue(true).WithReturned(false);
     var inputRoute = Zen.Symbolic<RouteEnvironment>();
     AssertEqValid(ReturnTrue(inputRoute), evaluatedFunction(inputRoute));

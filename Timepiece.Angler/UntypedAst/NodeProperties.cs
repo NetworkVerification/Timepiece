@@ -10,11 +10,10 @@ namespace Timepiece.Angler.UntypedAst;
 ///   Representation of the properties of a node as parsed from JSON.
 ///   Tracks the node's prefixes and its routing policies.
 /// </summary>
-/// <typeparam name="T">The type of routes for the node.</typeparam>
-public class NodeProperties<T>
+public class NodeProperties
 {
   public NodeProperties(Dictionary<string, RoutingPolicies> policies,
-    string? stable, AstTemporalOperator<T>? temporal, Dictionary<string, AstFunction<T>> declarations,
+    string? stable, AstTemporalOperator? temporal, Dictionary<string, AstFunction<RouteEnvironment>> declarations,
     Expr initial)
   {
     Policies = policies;
@@ -31,9 +30,9 @@ public class NodeProperties<T>
   ///   Additional function declarations.
   /// </summary>
   [JsonProperty("Declarations")]
-  public Dictionary<string, AstFunction<T>> Declarations { get; set; }
+  public Dictionary<string, AstFunction<RouteEnvironment>> Declarations { get; set; }
 
-  public AstTemporalOperator<T>? Temporal { get; set; }
+  public AstTemporalOperator? Temporal { get; set; }
 
   [JsonProperty("Policies")] public Dictionary<string, RoutingPolicies> Policies { get; }
 
@@ -59,12 +58,13 @@ public class NodeProperties<T>
   /// <param name="defaultExport"></param>
   /// <param name="defaultImport"></param>
   /// <returns></returns>
-  public NetworkNode<T> CreateNode(
-    Func<string, AstPredicate<T>> predicateLookupFunction, AstFunction<T> defaultExport, AstFunction<T> defaultImport)
+  public NetworkNode<RouteEnvironment> CreateNode(
+    Func<string, AstPredicate> predicateLookupFunction, AstFunction<RouteEnvironment> defaultExport,
+    AstFunction<RouteEnvironment> defaultImport)
   {
-    var env = new AstEnvironment<T>(Declarations);
+    var env = new AstEnvironment(Declarations);
 
-    var init = env.EvaluateExpr(Initial);
+    var init = env.EvaluateExpr(Zen.Symbolic<RouteEnvironment>(), Initial).Item2;
 
     var safetyProperty = Stable is null
       ? _ => true
@@ -74,8 +74,8 @@ public class NodeProperties<T>
       ? (_, _) => true
       : Temporal.Evaluate(predicateLookupFunction, Declarations);
 
-    var imports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
-    var exports = new Dictionary<string, Func<Zen<T>, Zen<T>>>();
+    var imports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
+    var exports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     foreach (var (neighbor, policies) in Policies)
     {
       if (policies.Export is null)
@@ -97,7 +97,7 @@ public class NodeProperties<T>
       }
     }
 
-    return new NetworkNode<T>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
+    return new NetworkNode<RouteEnvironment>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
       exports.ToImmutableDictionary());
   }
 }
