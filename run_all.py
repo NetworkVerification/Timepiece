@@ -17,9 +17,9 @@ OUTPUT_FILE = "{:%Y-%m-%dT%H%M%S}.txt".format(
 # OUTPUT_FILE = None
 
 DLL = "Timepiece.Benchmarks/bin/Release/net6.0/Timepiece.Benchmarks.dll"
-NTRIALS = 3
+NTRIALS = 1
 # 14400 seconds == 4 hours
-TIMEOUT = 14400
+TIMEOUT = 3600
 
 
 class Response(Enum):
@@ -75,18 +75,23 @@ def run_all(sizes, trials, options, output_file, short_circuit=True):
     the given output file.
     """
     for size in sizes:
-        print(
-            "Running benchmark k={size} with options: {options}".format(
-                size=size, options=" ".join(options)
-            )
+        bench_output = "Running benchmark k={size} with options: {options}".format(
+            size=size, options=" ".join(options)
         )
+        print(bench_output)
+        if output_file is not None:
+            with open(output_file, "a") as f:
+                f.write(bench_output + "\n")
         for trial in range(trials):
             date = datetime.datetime.now(datetime.timezone.utc)
-            print(
-                "Trial {t} of {total} started {date}".format(
-                    t=trial, total=trials, date=date
-                )
+            trial_output = "Trial {t} of {total} started {date}".format(
+                t=trial, total=trials, date=date
             )
+            print(trial_output)
+
+            if output_file is not None:
+                with open(output_file, "a") as f:
+                    f.write(trial_output + "\n")
             # run the benchmark
             returncode = run_dotnet(size, options, output_file)
             # if the benchmark timed out or was interrupted and short_circuit is set,
