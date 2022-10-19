@@ -9,7 +9,11 @@ import sys
 import os.path
 
 # name the output file after the current time
-OUTPUT_FILE = "{}.txt".format(datetime.datetime.now(datetime.timezone.utc).isoformat())
+# as Windows filenames cannot contain ':' characters, we deviate slightly from the ISO representation
+# to YYYY-MM-DD{T}HHMMSS, where {T} is the literal 'T' character
+OUTPUT_FILE = "{:%Y-%m-%dT%H%M%S}.txt".format(
+    datetime.datetime.now(datetime.timezone.utc)
+)
 # OUTPUT_FILE = None
 
 DLL = "Timepiece.Benchmarks/bin/Release/net6.0/Timepiece.Benchmarks.dll"
@@ -32,6 +36,15 @@ def run_dotnet(size, options, output_file) -> Response:
     output_file is None or a file name
     Return the return code of running the process.
     """
+
+    def tee_output(output, output_file):
+        """Print output and write to file if given."""
+        print(output.decode("utf-8"))
+        if output_file is not None:
+            # 'ab': append bytes to the end of the file
+            with open(output_file, "ab") as f:
+                f.write(output)
+
     args = ["dotnet", DLL, "-k", str(size)] + options
     # run the process, redirecting stderr to stdout,
     # timing out after TIMEOUT,
@@ -39,23 +52,19 @@ def run_dotnet(size, options, output_file) -> Response:
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     try:
         output, _ = proc.communicate(timeout=TIMEOUT)
-        print(output.decode("utf-8"))
-        if output_file is not None:
-            # 'ab': append bytes to the end of the file
-            with open(output_file, "ab") as f:
-                f.write(output)
+        tee_output(output, output_file)
         return Response.SUCCESS
     except KeyboardInterrupt:
         print("Killing process...")
         proc.kill()
         output, _ = proc.communicate()
-        print(output.decode("utf-8"))
+        tee_output(output, output_file)
         return Response.USER_INTERRUPT
     except subprocess.TimeoutExpired:
         print("Timed out after {time} seconds".format(time=TIMEOUT))
         proc.kill()
         output, _ = proc.communicate()
-        print(output.decode("utf-8"))
+        tee_output(output, output_file)
         return Response.TIMEOUT
 
 
@@ -80,9 +89,9 @@ def run_all(sizes, trials, options, output_file, short_circuit=True):
             )
             # run the benchmark
             returncode = run_dotnet(size, options, output_file)
-            # if the benchmark timed out and short_circuit is set,
+            # if the benchmark timed out or was interrupted and short_circuit is set,
             # end immediately
-            if returncode == Response.TIMEOUT and short_circuit:
+            if returncode != Response.SUCCESS and short_circuit:
                 return
 
 
