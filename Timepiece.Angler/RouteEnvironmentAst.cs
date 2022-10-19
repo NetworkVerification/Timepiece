@@ -58,9 +58,4 @@ public class RouteEnvironmentAst : Ast
   {
     return new AstSerializationBinder();
   }
-
-  public static IContractResolver Resolver()
-  {
-    return new AstContractResolver();
-  }
 }
