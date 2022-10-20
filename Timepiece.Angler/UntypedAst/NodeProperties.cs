@@ -12,10 +12,11 @@ namespace Timepiece.Angler.UntypedAst;
 /// </summary>
 public class NodeProperties
 {
-  public NodeProperties(Dictionary<string, RoutingPolicies> policies,
+  public NodeProperties(int? asn, Dictionary<string, RoutingPolicies> policies,
     string? stable, AstTemporalOperator? temporal, Dictionary<string, AstFunction<RouteEnvironment>> declarations,
     Expr initial)
   {
+    Asn = asn;
     Policies = policies;
     Stable = stable;
     Temporal = temporal;
@@ -23,6 +24,11 @@ public class NodeProperties
     Declarations = declarations;
     DisambiguateVariableNames();
   }
+
+  /// <summary>
+  /// AS number for the given node.
+  /// </summary>
+  public int? Asn { get; set; }
 
   private Expr Initial { get; set; }
 
@@ -59,12 +65,15 @@ public class NodeProperties
   /// <param name="defaultImport"></param>
   /// <returns></returns>
   public NetworkNode<RouteEnvironment> CreateNode(
-    Func<string, AstPredicate> predicateLookupFunction, AstFunction<RouteEnvironment> defaultExport,
+    Func<string, AstPredicate> predicateLookupFunction, Func<bool, AstFunction<RouteEnvironment>> defaultExport,
     AstFunction<RouteEnvironment> defaultImport)
   {
     var env = new AstEnvironment(Declarations);
 
-    var init = env.EvaluateExpr(Zen.Symbolic<RouteEnvironment>(), Initial).Item2;
+    var init = env
+      .EvaluateExpr(
+        new Environment<RouteEnvironment>(Zen.Symbolic<RouteEnvironment>()),
+        Initial).returnValue;
 
     var safetyProperty = Stable is null
       ? _ => true
@@ -80,7 +89,7 @@ public class NodeProperties
     {
       if (policies.Export is null)
       {
-        exports[neighbor] = env.EvaluateFunction(defaultExport);
+        exports[neighbor] = env.EvaluateFunction(defaultExport(Asn is null || Asn != policies.Asn));
       }
       else
       {

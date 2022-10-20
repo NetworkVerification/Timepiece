@@ -22,7 +22,7 @@ public class AstPredicate
     return t =>
     {
       var astState = env.Update(Arg, t);
-      return astState.EvaluateExpr(t, Body).Item2;
+      return astState.EvaluateExpr(new Environment<RouteEnvironment>(t), Body).returnValue;
     };
   }
 }

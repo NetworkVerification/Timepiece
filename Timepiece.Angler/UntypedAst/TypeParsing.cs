@@ -57,6 +57,7 @@ public static class TypeParsing
       "Or" => typeof(Or),
       "Not" => typeof(Not),
       "Havoc" => typeof(Havoc),
+      "FirstMatchChain" => typeof(FirstMatchChain),
       // numeric expressions
       "Int32" => typeof(IntExpr),
       "BigInt" => typeof(BigIntExpr),

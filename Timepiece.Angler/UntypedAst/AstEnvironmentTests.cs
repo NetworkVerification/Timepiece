@@ -10,11 +10,12 @@ namespace Timepiece.Angler.UntypedAst;
 public static class AstEnvironmentTests
 {
   private static readonly AstEnvironment Env = new();
-  private static readonly Zen<RouteEnvironment> R = Zen.Symbolic<RouteEnvironment>();
+
+  private static readonly Environment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
   private static dynamic EvaluateExprIgnoreRoute(Expr e)
   {
-    return Env.EvaluateExpr(R, e).Item2;
+    return Env.EvaluateExpr(R, e).returnValue;
   }
 
   /// <summary>
@@ -81,7 +82,7 @@ public static class AstEnvironmentTests
   {
     const string name = "x";
     var env1 = Env.EvaluateStatement(R, new Assign(name, new IntExpr(0)));
-    var evaluated = (Zen<int>) env1.EvaluateExpr(R, new Var(name)).Item2;
+    var evaluated = (Zen<int>) env1.EvaluateExpr(R, new Var(name)).returnValue;
     AssertEqValid(evaluated, Zen.Constant(0));
   }
 
@@ -100,8 +101,8 @@ public static class AstEnvironmentTests
       new Assign(var2, new Var(tempVar))
     };
     var env1 = Env.EvaluateStatements(R, statements);
-    var getVar1 = (Zen<int>) env1.EvaluateExpr(R, new Var(var1)).Item2;
-    var getVar2 = (Zen<int>) env1.EvaluateExpr(R, new Var(var2)).Item2;
+    var getVar1 = (Zen<int>) env1.EvaluateExpr(R, new Var(var1)).returnValue;
+    var getVar2 = (Zen<int>) env1.EvaluateExpr(R, new Var(var2)).returnValue;
     AssertEqValid(getVar1, Zen.Constant(1));
     AssertEqValid(getVar2, Zen.Constant(0));
   }

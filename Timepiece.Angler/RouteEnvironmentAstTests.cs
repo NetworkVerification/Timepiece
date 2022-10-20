@@ -40,7 +40,7 @@ public static class AstTests
       initial = AstEnvironment.DefaultRoute();
     }
 
-    return new NodeProperties(
+    return new NodeProperties(null,
       policies, IsValid, new Finally(time, IsValid),
       new Dictionary<string, AstFunction<RouteEnvironment>>(),
       initial);

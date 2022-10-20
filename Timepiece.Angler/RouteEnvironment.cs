@@ -23,7 +23,6 @@ public class RouteEnvironment
     Tag = 0;
     OriginType = new UInt<_2>(0);
     Communities = new CSet<string>();
-    // DefaultPolicy = "";
   }
 
 
@@ -44,11 +43,9 @@ public class RouteEnvironment
     FallThrough = fallThrough;
     Exited = exited;
     Value = value;
-    // DefaultPolicy = defaultPolicy;
     LocalDefaultAction = localDefaultAction;
   }
 
-  // public string DefaultPolicy { get; set; }
 
   public bool Value { get; set; }
 

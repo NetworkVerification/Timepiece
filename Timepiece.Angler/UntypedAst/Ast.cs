@@ -103,7 +103,7 @@ public class Ast
 
   public Network<RouteEnvironment, RouteEnvironment> ToNetwork(
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
-    AstFunction<RouteEnvironment> defaultExport, AstFunction<RouteEnvironment> defaultImport)
+    Func<bool, AstFunction<RouteEnvironment>> defaultExport, AstFunction<RouteEnvironment> defaultImport)
   {
     // construct all the mappings we'll need
     var edges = new Dictionary<string, List<string>>();
@@ -119,7 +119,7 @@ public class Ast
     foreach (var (node, props) in Nodes)
     {
       var details = props.CreateNode(
-        s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException("Predicate {s} not found!"),
+        s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException($"Predicate {s} not found!"),
         defaultExport, defaultImport);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
       monolithicProperties[node] = details.safetyProperty;

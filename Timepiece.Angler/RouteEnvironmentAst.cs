@@ -19,27 +19,40 @@ public class RouteEnvironmentAst : Ast
 
   /// <summary>
   /// Default import behavior for a route.
+  /// Set the route as accepted and returned.
   /// </summary>
-  private static readonly AstFunction<RouteEnvironment> DefaultImport = AstFunction<RouteEnvironment>.Identity();
+  private static readonly AstFunction<RouteEnvironment> DefaultImport = new("env", new[]
+  {
+    new Assign("env", new WithField(new WithField(new Var("env"), "Value", new BoolExpr(true)),
+      "Returned", new BoolExpr(true)))
+  });
 
   /// <summary>
   /// Default export behavior for a route.
-  /// Increment the path length and set it as returned.
+  /// If external is true, increment the path length.
+  /// In either case, set the route as accepted and returned.
   /// </summary>
-  private static readonly AstFunction<RouteEnvironment> DefaultExport = new("arg", new[]
+  private static AstFunction<RouteEnvironment> DefaultExport(bool external)
   {
-    new Assign("arg",
-      new WithField(
+    const string arg = "env";
+    return new AstFunction<RouteEnvironment>(arg, new[]
+    {
+      new Assign(arg,
         new WithField(
-          new WithField(new Var("arg"),
-            "AsPathLength",
-            new Plus(
-              new GetField(typeof(RouteEnvironment), typeof(BigInteger),
-                new Var("arg"),
-                "AsPathLength"), new BigIntExpr(BigInteger.One))),
-          "Returned", new BoolExpr(true)),
-        "Value", new BoolExpr(true)))
-  });
+          new WithField(
+            // if we are exporting to an external peer, increment the path length here
+            external
+              ? new WithField(new Var(arg),
+                "AsPathLength",
+                new Plus(
+                  new GetField(typeof(RouteEnvironment), typeof(BigInteger),
+                    new Var(arg),
+                    "AsPathLength"), new BigIntExpr(BigInteger.One)))
+              : new Var(arg),
+            "Returned", new BoolExpr(true)),
+          "Value", new BoolExpr(true)))
+    });
+  }
 
   public RouteEnvironmentAst(Dictionary<string, NodeProperties> nodes,
     Ipv4Prefix? destination,
