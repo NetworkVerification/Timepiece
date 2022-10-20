@@ -46,6 +46,9 @@ public class Benchmark
       case BenchmarkType.ApPathLength:
         RunProfiler(Sp.AllPairsPathLength(N), RunMonolithic);
         break;
+      case BenchmarkType.ApPathLengthWeak:
+        RunProfiler(Sp.AllPairsPathLengthNoSafety(N), RunMonolithic);
+        break;
       case BenchmarkType.ValleyFree:
         RunProfiler(Vf.ValleyFreeReachable(N, Destination), RunMonolithic);
         break;
@@ -94,6 +97,7 @@ public enum BenchmarkType
   SpPathLengthWeak,
   ApReachable,
   ApPathLength,
+  ApPathLengthWeak,
   ValleyFree,
   ValleyFreeLength,
   ApValleyFree,
@@ -112,6 +116,7 @@ public static class BenchmarkTypeExtensions
       "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
       "ar" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
       "al" or "allLength" or "ApPathLength" => BenchmarkType.ApPathLength,
+      "alw" or "AllLengthWeak" or "ApPathLengthWeak" => BenchmarkType.ApPathLengthWeak,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
       "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
       "av" or "allValley" or "ApValleyFree" => BenchmarkType.ApValleyFree,
@@ -123,6 +128,7 @@ public static class BenchmarkTypeExtensions
                                        "- 'lw'/'lengthWeak'/'SpPathLengthWeak' for SpPathLengthWeak\n" +
                                        "- 'ar'/'allReach'/'ApReachable' for ApReachable\n" +
                                        "- 'al'/'allLength'/'ApPathLength' for ApPathLength\n" +
+                                       "- 'alw'/'allLengthWeak'/'ApPathLengthWeak' for ApPathLengthWeak\n" +
                                        "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
                                        "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
                                        "- 'av'/'allValley'/'ApValleyFree' for ApValleyFree\n" +
@@ -138,12 +144,13 @@ public static class BenchmarkTypeExtensions
       BenchmarkType.SpReachable => false,
       BenchmarkType.SpPathLength => false,
       BenchmarkType.SpPathLengthWeak => false,
-      BenchmarkType.ApReachable => true,
-      BenchmarkType.ApPathLength => true,
       BenchmarkType.ValleyFree => false,
       BenchmarkType.ValleyFreeLength => false,
-      BenchmarkType.ApValleyFree => true,
       BenchmarkType.FatTreeHijack => false,
+      BenchmarkType.ApReachable => true,
+      BenchmarkType.ApPathLength => true,
+      BenchmarkType.ApPathLengthWeak => true,
+      BenchmarkType.ApValleyFree => true,
       BenchmarkType.ApFatTreeHijack => true,
       _ => throw new ArgumentOutOfRangeException(nameof(t), t, null)
     };

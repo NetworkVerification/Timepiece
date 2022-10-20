@@ -166,4 +166,28 @@ public static class Sp
       new BigInteger(20),
       new SymbolicValue<Pair<string, int>>[] {dest});
   }
+
+  public static Sp<Pair<string, int>> AllPairsPathLengthNoSafety(uint numPods)
+  {
+    var topology = Topologies.LabelledFatTree(numPods);
+    var stableProperties = topology.MapNodes(_ =>
+      Lang.IfSome<BatfishBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    var dest = new SymbolicDestination(topology);
+    var annotations =
+      topology.MapNodes(n =>
+      {
+        var distance = dest.SymbolicDistance(n, topology.L(n));
+        return Lang.Until(distance,
+          Lang.OrSome<BatfishBgpRoute>(b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= BigInteger.Zero)),
+          Lang.IfSome(BatfishBgpRouteExtensions.MaxLengthDefaultLp(distance)));
+      });
+    // set a node to be the destination if it matches the symbolic
+    var initialValues =
+      topology.MapNodes(n =>
+        Option.Create<BatfishBgpRoute>(new BatfishBgpRoute()).Where(_ => dest.Equals(topology, n)));
+    return new Sp<Pair<string, int>>(topology, initialValues, annotations, stableProperties, safetyProperties,
+      new BigInteger(20),
+      new SymbolicValue<Pair<string, int>>[] {dest});
+  }
 }
