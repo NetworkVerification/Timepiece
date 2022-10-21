@@ -8,7 +8,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst;
 
-public partial class AstEnvironment
+public class AstEnvironment
 {
   private readonly ImmutableDictionary<string, dynamic> _env;
   private readonly IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> _declarations;
@@ -73,23 +73,38 @@ public partial class AstEnvironment
     {
       var updatedEnv = EvaluateExpr(env, e1);
       // the updated environment must be the same as the one passed in
-      Debug.Assert(updatedEnv.EqualRoutes(env));
+      Debug.Assert(updatedEnv.EqualRoutes(env),
+        (string?) $"Unexpected route modification during evaluation of expr {e1}!");
       return updatedEnv.returnValue;
     });
 
     switch (e)
     {
       case Call c:
-        // FIXME: Call has side effects: the evaluated function updates the variable in the calling context when it returns
-        var result = EvaluateFunction(_declarations[c.Name])(env.route);
+        var oldReturn = env.route.GetReturned();
+        // call the function with the current route as its argument
+        var result = EvaluateFunction(_declarations[c.Name])(env.route.WithReturned(false));
         // return the updated result and its associated value
-        return env.WithRoute(result).WithValue(result.GetValue());
+        return env.WithRoute(result.WithReturned(oldReturn)).WithValue(result.GetValue());
       case FirstMatchChain fmc:
         if (_defaultPolicy is null)
           throw new Exception("Default policy not set!");
+        // add the default policy at the end of the chain
         var policies = fmc.Subroutines.Append(new Call(_defaultPolicy));
-        // TODO: allow early exit once a policy matches
-        return policies.Aggregate(env, EvaluateExpr);
+        // TODO(tim): should the route be set to FallThrough = true?
+        return policies.Aggregate(env.WithValue(Zen.False()).WithRoute(env.route.WithFallThrough(true)),
+          (currentEnv, expr) =>
+          {
+            // obtain the possible next environment from this next subroutine
+            var nextEnv = EvaluateExpr(currentEnv, expr);
+            // (1) if the last evaluation produced an environment in which the route has exited,
+            // then we ignore the next policy's environment and stick with the current environment's route and value
+            // (2) if the last evaluation fell through, then we proceed to the new environment with the updated route
+            return env.WithRoute(Zen.If(currentEnv.route.GetExited(), currentEnv.route,
+                Zen.If(currentEnv.route.GetFallThrough(), nextEnv.route, currentEnv.route)))
+              .WithValue(Zen.If<bool>(currentEnv.route.GetExited(), currentEnv.returnValue,
+                Zen.If<bool>(currentEnv.route.GetFallThrough(), nextEnv.returnValue, currentEnv.returnValue)));
+          });
       case ConstantExpr c:
         return env.WithValue(c.constructor(c.value));
       case LiteralSet s:
@@ -97,41 +112,42 @@ public partial class AstEnvironment
           (set, element) => CSet.Add<string>(set, ignoreRoute(element))));
       case CreateRecord r:
         return env.WithValue(
-          AstEnvironment.Create.MakeGenericMethod(r.RecordType)
+          Create.MakeGenericMethod(r.RecordType)
             .Invoke(null, new object?[] {r.GetFields(ignoreRoute)})!);
       // GetField could be implemented using UnaryOpExpr, but we write it like this just so that
       // the expensive reflection code isn't called at every call to UnaryOpExpr.unaryOp.
       case GetField g:
-        return env.WithValue(AstEnvironment.GetField.MakeGenericMethod(g.RecordType, g.FieldType)
+        return env.WithValue(GetField.MakeGenericMethod(g.RecordType, g.FieldType)
           .Invoke(null, new object?[] {ignoreRoute(g.Record), g.FieldName})!);
       case Var v:
         return env.WithValue(this[v.Name]);
       case Havoc:
         return env.WithValue(Zen.Symbolic<bool>());
       case None n:
-        return env.WithValue(AstEnvironment.Null.MakeGenericMethod(n.innerType).Invoke(null, null)!);
+        return env.WithValue(Null.MakeGenericMethod(n.innerType).Invoke(null, null)!);
       case Not ne:
-        var notEnv = EvaluateExpr(env, ne);
+        var notEnv = EvaluateExpr(env, ne.expr);
         return notEnv.WithValue(ne.unaryOp(notEnv.returnValue));
       case UnaryOpExpr uoe:
         return env.WithValue(uoe.unaryOp(ignoreRoute(uoe.expr)));
       case PrefixContains:
         return env.WithValue(Zen.Symbolic<bool>()); // TODO: for now, we skip trying to handle prefixes
       case And ae:
-        // TODO: fix this logic
+        // evaluate the first conjunct
+        // if its return value is false, the final env will be the first conjunct's
         var firstConjunctEnv = EvaluateExpr(env, ae.expr1);
-        var secondConjunctEnv =
-          EvaluateExpr(
-            firstConjunctEnv.WithRoute(Zen.If(firstConjunctEnv.route.GetValue(), firstConjunctEnv.route, env.route)),
-            ae.expr2);
-        return secondConjunctEnv.WithValue(ae.binaryOp(firstConjunctEnv.returnValue, secondConjunctEnv.returnValue));
+        // otherwise, the final env will be the second conjunct's
+        var secondConjunctEnv = EvaluateExpr(firstConjunctEnv, ae.expr2);
+        return firstConjunctEnv.WithValue(ae.binaryOp(firstConjunctEnv.returnValue, secondConjunctEnv.returnValue))
+          .WithRoute(Zen.If(firstConjunctEnv.returnValue, secondConjunctEnv.route, firstConjunctEnv.route));
       case Or oe:
-        // TODO: fix this logic
+        // evaluate the first disjunct
+        // if its return value is true, the final env will be the first disjunct's
         var firstDisjunctEnv = EvaluateExpr(env, oe.expr1);
-        var secondDisjunctEnv = EvaluateExpr(
-          firstDisjunctEnv.WithRoute(Zen.If(firstDisjunctEnv.route.GetValue(), env.route, firstDisjunctEnv.route)),
-          oe.expr2);
-        return secondDisjunctEnv.WithValue(oe.binaryOp(firstDisjunctEnv.returnValue, secondDisjunctEnv.returnValue));
+        // otherwise, the final env will be the second disjunct's
+        var secondDisjunctEnv = EvaluateExpr(firstDisjunctEnv, oe.expr2);
+        return firstDisjunctEnv.WithValue(oe.binaryOp(firstDisjunctEnv.returnValue, secondDisjunctEnv.returnValue))
+          .WithRoute(Zen.If(firstDisjunctEnv.returnValue, firstDisjunctEnv.route, secondDisjunctEnv.route));
       case BinaryOpExpr boe:
         return env.WithValue(boe.binaryOp(ignoreRoute(boe.expr1), ignoreRoute(boe.expr2)));
       default:
@@ -215,10 +231,7 @@ public partial class AstEnvironment
       {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)},
     });
   }
-}
 
-public partial class AstEnvironment
-{
   /// <summary>
   /// The Zen null option creation method.
   /// </summary>

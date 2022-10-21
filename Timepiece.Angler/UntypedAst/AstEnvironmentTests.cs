@@ -9,7 +9,40 @@ namespace Timepiece.Angler.UntypedAst;
 
 public static class AstEnvironmentTests
 {
-  private static readonly AstEnvironment Env = new();
+  private const string DefaultPolicy = "defaultPolicy";
+  private const string WillFallThrough = "willFallThrough";
+  private const string ExitReject = "exitReject";
+
+  // AstFunction that exits and rejects the route.
+  private static readonly AstFunction<RouteEnvironment> ExitRejectFunction = new("env", new Statement[]
+  {
+    new Assign("env",
+      new WithField(new WithField(new Var("env"), "Exited", new BoolExpr(true)),
+        "Value", new BoolExpr(false)))
+  });
+
+  // AstFunction that falls through
+  private static readonly AstFunction<RouteEnvironment> FallThroughFunction = new("env", new Statement[]
+  {
+    new Assign("env",
+      new WithField(new Var("env"), "FallThrough", new BoolExpr(true)))
+  });
+
+  // AstFunction that sets returned and value to true.
+  private static readonly AstFunction<RouteEnvironment> ReturnTrueFunction = new("env", new Statement[]
+  {
+    new Assign("env",
+      new WithField(new WithField(new Var("env"), "Returned", new BoolExpr(true)),
+        "Value", new BoolExpr(true)))
+  });
+
+  // DefaultPolicy is a policy that just accepts a route.
+  private static readonly AstEnvironment Env = new(new Dictionary<string, AstFunction<RouteEnvironment>>
+  {
+    {DefaultPolicy, ReturnTrueFunction},
+    {WillFallThrough, FallThroughFunction},
+    {ExitReject, ExitRejectFunction}
+  });
 
   private static readonly Environment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
@@ -214,5 +247,118 @@ public static class AstEnvironmentTests
     Zen<RouteEnvironment> ReturnTrue(Zen<RouteEnvironment> t) => t.WithValue(true).WithReturned(false);
     var inputRoute = Zen.Symbolic<RouteEnvironment>();
     AssertEqValid(ReturnTrue(inputRoute), evaluatedFunction(inputRoute));
+  }
+
+  [Theory]
+  [InlineData(true, true, true)]
+  [InlineData(true, false, false)]
+  [InlineData(false, true, false)]
+  [InlineData(false, false, false)]
+  public static void EvaluateAndExprTruthTable(bool arg1, bool arg2, bool result)
+  {
+    var e = new And(new BoolExpr(arg1), new BoolExpr(arg2));
+    var evaluated = EvaluateExprIgnoreRoute(e);
+    AssertEqValid(evaluated, Zen.Constant(result));
+  }
+
+  [Theory]
+  [InlineData(true, true, true)]
+  [InlineData(true, false, true)]
+  [InlineData(false, true, true)]
+  [InlineData(false, false, false)]
+  public static void EvaluateOrExprTruthTable(bool arg1, bool arg2, bool result)
+  {
+    var e = new Or(new BoolExpr(arg1), new BoolExpr(arg2));
+    var evaluated = EvaluateExprIgnoreRoute(e);
+    AssertEqValid(evaluated, Zen.Constant(result));
+  }
+
+  [Theory]
+  [InlineData(true, false)]
+  [InlineData(false, true)]
+  public static void EvaluateNotExprTruthTable(bool arg, bool result)
+  {
+    var e = new Not(new BoolExpr(arg));
+    var evaluated = EvaluateExprIgnoreRoute(e);
+    AssertEqValid(evaluated, Zen.Constant(result));
+  }
+
+  [Fact]
+  public static void EvaluateCallExpr()
+  {
+    var r = Zen.Symbolic<RouteEnvironment>();
+    var e = new Call(DefaultPolicy);
+    // evaluate the call on an AstEnvironment where DefaultPolicy is defined to just return true.
+    var evaluated = Env.EvaluateExpr(new Environment<RouteEnvironment>(r), e);
+    AssertEqValid(evaluated.returnValue, Zen.True());
+    // returned will be reset to whatever it had been before the call
+    AssertEqValid(evaluated.route, r.WithValue(true));
+  }
+
+  [Fact]
+  public static void EvaluateFirstMatchChainDefaultPolicySet()
+  {
+    var r = Zen.Symbolic<RouteEnvironment>().WithExited(false);
+    const string arg = "env";
+    var statements = new Statement[]
+    {
+      new SetDefaultPolicy(DefaultPolicy),
+      // set the value according to the result of FirstMatchChain
+      new IfThenElse(new FirstMatchChain(), new Statement[]
+        {
+          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(true)))
+        },
+        new Statement[]
+        {
+          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(false)))
+        }
+      )
+    };
+    var evaluated = Env.Update(arg, r).EvaluateStatements(new Environment<RouteEnvironment>(r), statements);
+    AssertEqValid(evaluated[arg], r.WithValue(true));
+  }
+
+  [Fact]
+  public static void EvaluateFirstMatchChainFallThrough()
+  {
+    var r = Zen.Symbolic<RouteEnvironment>().WithExited(false);
+    const string arg = "env";
+    var statements = new Statement[]
+    {
+      new SetDefaultPolicy(DefaultPolicy),
+      // set the value according to the result of FirstMatchChain
+      new IfThenElse(new FirstMatchChain(new Call(WillFallThrough)), new Statement[]
+        {
+          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(true)))
+        },
+        new Statement[]
+        {
+          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(false)))
+        }
+      )
+    };
+    var evaluated = Env.Update(arg, r).EvaluateStatements(new Environment<RouteEnvironment>(r), statements);
+    AssertEqValid(evaluated[arg], r.WithValue(true));
+  }
+
+  [Fact]
+  public static void EvaluateFirstMatchChainNoDefaultPolicy()
+  {
+    var r = Zen.Symbolic<RouteEnvironment>().WithExited(false);
+    const string arg = "env";
+    var statements = new Statement[]
+    {
+      new IfThenElse(new FirstMatchChain(), new Statement[]
+        {
+          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(true)))
+        },
+        new Statement[]
+        {
+          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(false)))
+        }
+      )
+    };
+    Assert.Throws<Exception>(() =>
+      Env.Update(arg, r).EvaluateStatements(new Environment<RouteEnvironment>(r), statements));
   }
 }

@@ -2,9 +2,9 @@ namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 public class FirstMatchChain : Expr
 {
-  public List<Expr> Subroutines { get; set; }
+  public Expr[] Subroutines { get; set; }
 
-  public FirstMatchChain(List<Expr> subroutines)
+  public FirstMatchChain(params Expr[] subroutines)
   {
     Subroutines = subroutines;
   }
