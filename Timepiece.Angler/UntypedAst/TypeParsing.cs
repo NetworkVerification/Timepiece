@@ -48,6 +48,7 @@ public static class TypeParsing
       // "Return" => typeof(Return),
       "Assign" => typeof(Assign),
       "If" => typeof(IfThenElse),
+      "SetDefaultPolicy" => typeof(SetDefaultPolicy),
       // expressions
       "Var" => new TypeAlias(typeof(Var), (TypeAlias?) null),
       "Call" => typeof(Call),
@@ -58,6 +59,7 @@ public static class TypeParsing
       "Not" => typeof(Not),
       "Havoc" => typeof(Havoc),
       "FirstMatchChain" => typeof(FirstMatchChain),
+      "ConjunctionChain" => typeof(ConjunctionChain),
       // numeric expressions
       "Int32" => typeof(IntExpr),
       "BigInt" => typeof(BigIntExpr),
@@ -103,9 +105,9 @@ public static class TypeParsing
       "TOption" => new TypeAlias(typeof(Option<>), (TypeAlias?) null),
       "TBool" => typeof(bool),
       "TInt2" => typeof(Int<_2>),
-      "TUint2" => typeof(UInt<_2>),
+      "TUInt2" => typeof(UInt<_2>),
       "TInt32" => typeof(int),
-      "TUint32" => typeof(uint),
+      "TUInt32" => typeof(uint),
       "TTime" or "TBigInt" => typeof(BigInteger),
       "TString" => typeof(string),
       "TSet" => typeof(CSet<string>),

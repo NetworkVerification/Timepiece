@@ -60,15 +60,20 @@ public class NodeProperties
   /// <summary>
   ///   Construct a node storing all the relevant information for creating a network.
   /// </summary>
-  /// <param name="predicateLookupFunction"></param>
-  /// <param name="defaultExport"></param>
-  /// <param name="defaultImport"></param>
+  /// <param name="predicateLookupFunction">A function that returns a predicate given its string name.</param>
+  /// <param name="defaultExport">A function that returns a default export function given a boolean distinguishing external export (true)
+  /// and internal export (false).</param>
+  /// <param name="defaultImport">A default import function.</param>
+  /// <param name="symbolicValues">A sequence of symbolic values.</param>
   /// <returns></returns>
   public NetworkNode<RouteEnvironment> CreateNode(
     Func<string, AstPredicate> predicateLookupFunction, Func<bool, AstFunction<RouteEnvironment>> defaultExport,
-    AstFunction<RouteEnvironment> defaultImport)
+    AstFunction<RouteEnvironment> defaultImport, IEnumerable<SymbolicValue<RouteEnvironment>> symbolicValues)
   {
     var env = new AstEnvironment(Declarations);
+    // add the symbolic values to the environment
+    env = symbolicValues.Aggregate(env,
+      (current, symbolicValue) => current.Update(symbolicValue.Name, symbolicValue.Value));
 
     var init = env
       .EvaluateExpr(

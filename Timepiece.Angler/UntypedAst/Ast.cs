@@ -112,6 +112,9 @@ public class Ast
     var annotations = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>();
     var exportFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var importFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
+    var symbolicValues = Symbolics.Select(nameConstraint =>
+        new SymbolicValue<RouteEnvironment>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment())))
+      .ToArray();
 
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
@@ -120,7 +123,7 @@ public class Ast
     {
       var details = props.CreateNode(
         s => Predicates.ContainsKey(s) ? Predicates[s] : throw new ArgumentException($"Predicate {s} not found!"),
-        defaultExport, defaultImport);
+        defaultExport, defaultImport, symbolicValues);
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
       monolithicProperties[node] = details.safetyProperty;
       initFunction[node] = details.initialValue;
@@ -151,8 +154,6 @@ public class Ast
       annotations,
       modularProperties,
       monolithicProperties,
-      Symbolics.Select(nameConstraint =>
-          new SymbolicValue<RouteEnvironment>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment())))
-        .ToArray());
+      symbolicValues);
   }
 }
