@@ -12,7 +12,7 @@ public class AstEnvironment
 {
   private readonly ImmutableDictionary<string, dynamic> _env;
   private readonly IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> _declarations;
-  private readonly string? _defaultPolicy;
+  public readonly string? defaultPolicy;
 
   public AstEnvironment(ImmutableDictionary<string, dynamic> env,
     IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
@@ -20,7 +20,7 @@ public class AstEnvironment
   {
     _env = env;
     _declarations = declarations;
-    _defaultPolicy = defaultPolicy;
+    this.defaultPolicy = defaultPolicy;
   }
 
   public AstEnvironment(ImmutableDictionary<string, dynamic> env,
@@ -48,7 +48,7 @@ public class AstEnvironment
   /// <returns></returns>
   public AstEnvironment Update(string var, dynamic val)
   {
-    return new AstEnvironment(_env.SetItem(var, val), _declarations, _defaultPolicy);
+    return new AstEnvironment(_env.SetItem(var, val), _declarations, defaultPolicy);
   }
 
   public AstEnvironment WithDefaultPolicy(string policy)
@@ -87,37 +87,9 @@ public class AstEnvironment
         // return the updated result and its associated value
         return env.WithRoute(result.WithReturned(oldReturn)).WithValue(result.GetValue());
       case ConjunctionChain cc:
-        var conjunctionPolicies = _defaultPolicy is not null ? cc.Exprs.Append(new Call(_defaultPolicy)) : cc.Exprs;
-        return conjunctionPolicies.Aggregate(env.WithValue(Zen.True()), (currEnv, expr) =>
-        {
-          var nextEnv = EvaluateExpr(currEnv, expr);
-          // (1) if the current environment's route already exited,
-          // then we ignore the next policy's environment and stick with the current environment's route and value
-          // (2) if the current evaluation had fallen through, then we proceed to the next environment with the updated route
-          return currEnv.WithRoute(Zen.If(currEnv.route.GetExited(), currEnv.route,
-              Zen.If(Zen.Or(currEnv.route.GetFallThrough(), currEnv.route.GetValue()), nextEnv.route, currEnv.route)))
-            .WithValue(Zen.If<bool>(currEnv.route.GetExited(), currEnv.returnValue,
-              Zen.And(currEnv.returnValue, nextEnv.returnValue)));
-        });
+        return cc.Evaluate(this, env);
       case FirstMatchChain fmc:
-        if (_defaultPolicy is null)
-          throw new Exception("Default policy not set!");
-        // add the default policy at the end of the chain
-        var policies = fmc.Exprs.Append(new Call(_defaultPolicy));
-        // TODO(tim): should the route be set to FallThrough = true?
-        return policies.Aggregate(env.WithValue(Zen.False()).WithRoute(env.route.WithFallThrough(true)),
-          (currentEnv, expr) =>
-          {
-            // obtain the possible next environment from this next subroutine
-            var nextEnv = EvaluateExpr(currentEnv, expr);
-            // (1) if the current environment's route already exited,
-            // then we ignore the next policy's environment and stick with the current environment's route and value
-            // (2) if the current evaluation had fallen through, then we proceed to the next environment with the updated route
-            return currentEnv.WithRoute(Zen.If(currentEnv.route.GetExited(), currentEnv.route,
-                Zen.If(currentEnv.route.GetFallThrough(), nextEnv.route, currentEnv.route)))
-              .WithValue(Zen.If<bool>(currentEnv.route.GetExited(), currentEnv.returnValue,
-                Zen.If<bool>(currentEnv.route.GetFallThrough(), nextEnv.returnValue, currentEnv.returnValue)));
-          });
+        return fmc.Evaluate(this, env);
       case ConstantExpr c:
         return env.WithValue(c.constructor(c.value));
       case LiteralSet s:
