@@ -10,10 +10,14 @@ namespace Timepiece.Angler.UntypedAst;
 
 public static class TypeParsing
 {
+  /// <summary>
+  /// Regex used to identify terms that may refer to types.
+  /// </summary>
+  private static readonly Regex TypeTerm = new(@"(?<term>\w+)");
+
   private static IEnumerable<string> ParseTypeArgs(string typeName)
   {
-    var regex = new Regex(@"(?<term>\w+)");
-    return regex.Matches(typeName).Select(match => match.Groups["term"].Value);
+    return TypeTerm.Matches(typeName).Select(match => match.Groups["term"].Value);
   }
 
   private static TypeAlias ParseTypeAlias(string alias, IEnumerator<string> typeArgs)
