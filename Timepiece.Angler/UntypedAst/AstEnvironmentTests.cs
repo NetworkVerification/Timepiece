@@ -51,6 +51,24 @@ public static class AstEnvironmentTests
     {ExitReject, ExitRejectFunction}
   });
 
+  /// <summary>
+  /// An expression that evaluates to true if the given argument is unreachable (has exited or returned).
+  /// </summary>
+  /// <param name="routeArg"></param>
+  /// <returns></returns>
+  private static Expr Unreachable(string routeArg) => new Or(
+    new GetField("TResult", "TBool",
+      new GetField("TEnvironment", "TResult", new Var(routeArg), "Result"),
+      "Returned"),
+    new GetField("TResult", "TBool",
+      new GetField("TEnvironment", "TResult", new Var(routeArg), "Result"),
+      "Exit"));
+
+  private static Statement UpdateResult(string arg, string resultField, Expr resultFieldValue) => new Assign(arg,
+    new WithField(new Var(arg), "Result", new WithField(
+      new GetField(typeof(RouteEnvironment), typeof(RouteResult), new Var(arg), "Result"),
+      resultField, resultFieldValue)));
+
   private static readonly Environment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
   private static dynamic EvaluateExprIgnoreRoute(Expr e)
@@ -179,6 +197,7 @@ public static class AstEnvironmentTests
         new WithField(new Var("route"), "Result",
           new CreateRecord("TResult", new Dictionary<string, Expr>
           {
+            // set the value by asking if the field we got is equal to 0
             {
               "Value",
               new Equals(
@@ -243,26 +262,37 @@ public static class AstEnvironmentTests
     var function = new AstFunction<RouteEnvironment>(arg, new Statement[]
     {
       new Assign(arg,
-        new WithField(
-          new WithField(new Var(arg), "Value", new BoolExpr(true)),
-          "Returned", new BoolExpr(true))),
-      new IfThenElse(new Or(new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "Exited"),
-        new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "Returned")), new Statement[]
+        new WithField(new Var(arg), "Result",
+          AstEnvironment.ResultToRecord(new RouteResult
+          {
+            Value = true,
+            Returned = true
+          }))),
+      new IfThenElse(Unreachable(arg), new[]
       {
-        new Assign(arg, new WithField(new Var(arg), "Returned", new BoolExpr(false)))
+        // update returned to false
+        UpdateResult(arg, "Returned", new BoolExpr(false))
       }, new Statement[]
       {
-        new Assign(arg,
-          new WithField(
-            new WithField(new Var(arg), "Value",
-              new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "LocalDefaultAction")),
-            "FallThrough", new BoolExpr(true)))
+        // update value to the default and fallthrough to true
+        new Assign(arg, new WithField(new Var(arg), "Result",
+            new WithField(
+              new WithField(
+                new GetField(typeof(RouteEnvironment), typeof(RouteResult), new Var(arg), "Result"),
+                "Value",
+                new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "LocalDefaultAction")),
+              "Fallthrough",
+              new BoolExpr(true))))
       })
     });
     var evaluatedFunction = Env.EvaluateFunction(function);
 
+    // the function above resets the result fields after returning true, so Returned should also be false
     Zen<RouteEnvironment> ReturnTrue(Zen<RouteEnvironment> t) =>
-      t.WithResult(t.GetResult().WithValue(true).WithReturned(true));
+      t.WithResult(new RouteResult
+      {
+        Value = true
+      });
 
     var inputRoute = Zen.Symbolic<RouteEnvironment>();
     AssertEqValid(ReturnTrue(inputRoute), evaluatedFunction(inputRoute));
@@ -311,7 +341,7 @@ public static class AstEnvironmentTests
     var evaluated = Env.EvaluateExpr(new Environment<RouteEnvironment>(r), e);
     AssertEqValid(evaluated.returnValue, Zen.True());
     // returned will be reset to whatever it had been before the call
-    AssertEqValid(evaluated.route, r.WithResult(r.GetResult().WithValue(true)));
+    AssertEqValid(evaluated.route, r.WithResult(r.GetResult().WithValue(true).WithExit(false).WithFallthrough(false)));
   }
 
   [Fact]
@@ -322,19 +352,19 @@ public static class AstEnvironmentTests
     {
       new SetDefaultPolicy(DefaultPolicy),
       // set the value according to the result of FirstMatchChain
-      new IfThenElse(new FirstMatchChain(), new Statement[]
+      new IfThenElse(new FirstMatchChain(), new[]
         {
-          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(true)))
+          UpdateResult(arg, "Value", new BoolExpr(true))
         },
-        new Statement[]
+        new[]
         {
-          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(false)))
+          UpdateResult(arg, "Value", new BoolExpr(false))
         }
       )
     };
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
     var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(R.WithRoute(inputRoute), statements);
-    AssertEqValid(evaluated[arg], inputRoute.WithResult(inputRoute.GetResult().WithValue(true)));
+    AssertEqValid(evaluated[arg], inputRoute.WithResultValue(true));
   }
 
   [Fact]
@@ -345,19 +375,19 @@ public static class AstEnvironmentTests
     {
       new SetDefaultPolicy(DefaultPolicy),
       // set the value according to the result of FirstMatchChain
-      new IfThenElse(new FirstMatchChain(new Call(WillFallThrough)), new Statement[]
+      new IfThenElse(new FirstMatchChain(new Call(WillFallThrough)), new[]
         {
-          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(true)))
+          UpdateResult(arg, "Value", new BoolExpr(true))
         },
-        new Statement[]
+        new[]
         {
-          new Assign(arg, new WithField(new Var(arg), "Value", new BoolExpr(false)))
+          UpdateResult(arg, "Value", new BoolExpr(false))
         }
       )
     };
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
     var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(R.WithRoute(inputRoute), statements);
-    AssertEqValid(evaluated[arg], inputRoute.WithResult(inputRoute.GetResult().WithValue(true)));
+    AssertEqValid(evaluated[arg], inputRoute.WithResultValue(true));
   }
 
   [Fact]

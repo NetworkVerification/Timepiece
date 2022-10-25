@@ -159,4 +159,10 @@ public static class RouteEnvironmentExtensions
 
   public static Zen<RouteEnvironment> IncrementAsPathLength(this Zen<RouteEnvironment> b, Zen<BigInteger> x) =>
     b.WithAsPathLength(b.GetAsPathLength() + x);
+
+  public static Zen<RouteEnvironment> WithResultValue(this Zen<RouteEnvironment> b, Zen<bool> value) =>
+    b.WithResult(b.GetResult().WithValue(value));
+
+  public static Zen<RouteEnvironment> WithResultReturned(this Zen<RouteEnvironment> b, Zen<bool> returned) =>
+    b.WithResult(b.GetResult().WithReturned(returned));
 }
