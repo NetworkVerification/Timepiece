@@ -11,10 +11,6 @@ public class RouteEnvironment
 {
   public RouteEnvironment()
   {
-    Returned = false;
-    FallThrough = false;
-    Exited = false;
-    Value = false;
     Prefix = new Ipv4Prefix();
     Weight = 32768;
     Lp = 100;
@@ -23,12 +19,14 @@ public class RouteEnvironment
     Tag = 0;
     OriginType = new UInt<_2>(0);
     Communities = new CSet<string>();
+    Result = new RouteResult();
+    LocalDefaultAction = false;
   }
 
 
   [JsonConstructor]
   public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, BigInteger asPathLength, uint metric, uint tag,
-    UInt<_2> originType, CSet<string> communities, bool returned, bool fallThrough, bool exited, bool value,
+    UInt<_2> originType, CSet<string> communities, RouteResult result,
     bool localDefaultAction)
   {
     Prefix = prefix;
@@ -39,21 +37,12 @@ public class RouteEnvironment
     Tag = tag;
     OriginType = originType;
     Communities = communities;
-    Returned = returned;
-    FallThrough = fallThrough;
-    Exited = exited;
-    Value = value;
+    Result = result;
     LocalDefaultAction = localDefaultAction;
   }
 
 
-  public bool Value { get; set; }
-
-  public bool Exited { get; set; }
-
-  public bool FallThrough { get; set; }
-
-  public bool Returned { get; set; }
+  public RouteResult Result { get; set; }
 
   public bool LocalDefaultAction { get; set; }
 
@@ -164,8 +153,8 @@ public static class RouteEnvironmentExtensions
 
   public static Zen<RouteEnvironment> MinOptional(this Zen<RouteEnvironment> b1, Zen<RouteEnvironment> b2)
   {
-    return Zen.If(Zen.Not(b1.GetValue()), b2,
-      Zen.If(Zen.Not(b2.GetValue()), b1, Min(b1, b2)));
+    return Zen.If(Zen.Not(b1.GetResult().GetValue()), b2,
+      Zen.If(Zen.Not(b2.GetResult().GetValue()), b1, Min(b1, b2)));
   }
 
   public static Zen<RouteEnvironment> IncrementAsPathLength(this Zen<RouteEnvironment> b, Zen<BigInteger> x) =>

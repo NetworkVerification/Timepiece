@@ -81,11 +81,13 @@ public class AstEnvironment
     switch (e)
     {
       case Call c:
-        var oldReturn = env.route.GetReturned();
+        var oldReturn = env.route.GetResult().GetReturned();
         // call the function with the current route as its argument
-        var result = EvaluateFunction(_declarations[c.Name])(env.route.WithReturned(false));
+        var callEnv =
+          EvaluateFunction(_declarations[c.Name])(env.route.WithResult(env.route.GetResult().WithReturned(false)));
         // return the updated result and its associated value
-        return env.WithRoute(result.WithReturned(oldReturn)).WithValue(result.GetValue());
+        return new Environment<RouteEnvironment>(callEnv.WithResult(callEnv.GetResult().WithReturned(oldReturn)),
+          callEnv.GetResult().GetValue());
       case ConjunctionChain cc:
         return cc.Evaluate(this, env);
       case FirstMatchChain fmc:
@@ -209,11 +211,19 @@ public class AstEnvironment
       {"Tag", new UIntExpr(env.Tag)},
       {"OriginType", new UInt2Expr(env.OriginType)},
       {"Communities", LiteralSet.Empty()},
-      {"Value", new BoolExpr(env.Value)},
-      {"Exited", new BoolExpr(env.Exited)},
-      {"FallThrough", new BoolExpr(env.FallThrough)},
-      {"Returned", new BoolExpr(env.Returned)},
+      {"Result", ResultToRecord(new RouteResult())},
       {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)},
+    });
+  }
+
+  public static CreateRecord ResultToRecord(RouteResult result)
+  {
+    return new CreateRecord("TResult", new Dictionary<string, Expr>
+    {
+      {"Value", new BoolExpr(result.Value)},
+      {"Exit", new BoolExpr(result.Exit)},
+      {"Fallthrough", new BoolExpr(result.Fallthrough)},
+      {"Returned", new BoolExpr(result.Returned)},
     });
   }
 

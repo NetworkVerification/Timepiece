@@ -27,17 +27,18 @@ public class FirstMatchChain : VariadicExpr
       lastEnv = subroutineResult;
     }
 
-    for (var i = policyResults.Count - 1; i > 0; i--)
+    for (var i = policyResults.Count - 1; i >= 0; i--)
     {
       // Logic of subroutines:
       // (1) if the subroutine exits, the result will be that subroutine
       // (2) if the subroutine falls through, the result will be the following route
-      var guardExpr = policyResults[i].route.GetFallThrough();
-      var accRoute = Zen.If(policyResults[i].route.GetExited(), policyResults[i].route,
-        Zen.If(guardExpr, acc.route, policyResults[i].route));
-      var accResult = Zen.If(policyResults[i].route.GetExited(), policyResults[i].returnValue,
-        Zen.If(guardExpr, acc.returnValue, policyResults[i].returnValue));
-      acc = policyResults[i].WithRoute(accRoute).WithValue(accResult);
+      var fallthroughGuard = policyResults[i].route.GetResult().GetFallthrough();
+      var exitGuard = policyResults[i].route.GetResult().GetExit();
+      var accRoute = Zen.If(exitGuard, policyResults[i].route,
+        Zen.If(fallthroughGuard, acc.route, policyResults[i].route));
+      var accResult = Zen.If(exitGuard, policyResults[i].returnValue,
+        Zen.If(fallthroughGuard, acc.returnValue, policyResults[i].returnValue));
+      acc = new Environment<RouteEnvironment>(accRoute, accResult);
     }
 
     return acc;

@@ -14,10 +14,11 @@ public class ConjunctionChain : VariadicExpr
     var policies = astEnv.defaultPolicy is not null ? Exprs.Append(new Call(astEnv.defaultPolicy)) : Exprs;
     // go through the policies in reverse order to produce the final environment
     // we start with false as the return value as a default, but the default policy should never fall through
-    var acc = env.WithValue(Zen.False()).WithRoute(env.route.WithFallThrough(true));
+    var acc = new Environment<RouteEnvironment>(env.route.WithResult(env.route.GetResult().WithFallthrough(true)),
+      Zen.False());
     // each policy may update the route, so the policy routes need to be computed in sequential order
-    var policyResults = new List<Environment<RouteEnvironment>> { };
-    var lastEnv = env.WithRoute(env.route.WithFallThrough(true));
+    var policyResults = new List<Environment<RouteEnvironment>>();
+    var lastEnv = env.WithRoute(env.route.WithResult(env.route.GetResult().WithFallthrough(true)));
     foreach (var policy in policies)
     {
       var subroutineResult = astEnv.EvaluateExpr(lastEnv, policy);
@@ -30,11 +31,13 @@ public class ConjunctionChain : VariadicExpr
       // Logic of subroutines:
       // (1) if the subroutine exits, the result will be that subroutine
       // (2) if the subroutine falls through OR returns true, the result will be the following route
-      var guardExpr = Zen.Or(policyResults[i].route.GetFallThrough(), policyResults[i].route.GetValue());
-      var accRoute = Zen.If(policyResults[i].route.GetExited(), policyResults[i].route,
-        Zen.If(guardExpr, acc.route, policyResults[i].route));
-      var accResult = Zen.If(policyResults[i].route.GetExited(), policyResults[i].returnValue,
-        (dynamic?) Zen.If(guardExpr, acc.returnValue, policyResults[i].returnValue));
+      var fallthroughGuard = Zen.Or(policyResults[i].route.GetResult().GetFallthrough(),
+        policyResults[i].route.GetResult().GetValue());
+      var exitGuard = policyResults[i].route.GetResult().GetExit();
+      var accRoute = Zen.If(exitGuard, policyResults[i].route,
+        Zen.If(fallthroughGuard, acc.route, policyResults[i].route));
+      var accResult = Zen.If(exitGuard, policyResults[i].returnValue,
+        (dynamic?) Zen.If(fallthroughGuard, acc.returnValue, policyResults[i].returnValue));
       acc = policyResults[i].WithRoute(accRoute).WithValue(accResult);
     }
 

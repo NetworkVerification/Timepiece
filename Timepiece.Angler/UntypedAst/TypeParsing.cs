@@ -102,6 +102,7 @@ public static class TypeParsing
       // types
       "TEnvironment" => typeof(RouteEnvironment),
       "TRoute" => typeof(BatfishBgpRoute),
+      "TResult" => typeof(RouteResult),
       "TIpAddress" => typeof(uint),
       "TIpPrefix" => typeof(Ipv4Prefix),
       "TPrefixSet" => typeof(CSet<Ipv4Prefix>),
