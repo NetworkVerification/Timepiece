@@ -15,7 +15,9 @@ public class RouteEnvironmentAst : Ast
   /// Default predicates to test for this AST.
   /// </summary>
   public static readonly AstPredicate IsValid = new("route",
-    new GetField(typeof(RouteEnvironment), typeof(bool), new Var("route"), "Value"));
+    new GetField(typeof(RouteResult), typeof(bool),
+      new GetField(typeof(RouteEnvironment), typeof(RouteResult), new Var("route"), "Result"),
+      "Value"));
 
   /// <summary>
   /// Default import behavior for a route.
@@ -23,8 +25,12 @@ public class RouteEnvironmentAst : Ast
   /// </summary>
   private static readonly AstFunction<RouteEnvironment> DefaultImport = new("env", new[]
   {
-    new Assign("env", new WithField(new WithField(new Var("env"), "Value", new BoolExpr(true)),
-      "Returned", new BoolExpr(true)))
+    new Assign("env", new WithField(
+      new Var("env"), "Result", AstEnvironment.ResultToRecord(new RouteResult
+      {
+        Returned = true,
+        Value = true,
+      })))
   });
 
   /// <summary>
@@ -39,24 +45,27 @@ public class RouteEnvironmentAst : Ast
     {
       new Assign(arg,
         new WithField(
-          new WithField(
-            // if we are exporting to an external peer, increment the path length here
-            external
-              ? new WithField(new Var(arg),
-                "AsPathLength",
-                new Plus(
-                  new GetField(typeof(RouteEnvironment), typeof(BigInteger),
-                    new Var(arg),
-                    "AsPathLength"), new BigIntExpr(BigInteger.One)))
-              : new Var(arg),
-            "Returned", new BoolExpr(true)),
-          "Value", new BoolExpr(true)))
+          // if we are exporting to an external peer, increment the path length here
+          external
+            ? new WithField(new Var(arg),
+              "AsPathLength",
+              new Plus(
+                new GetField(typeof(RouteEnvironment), typeof(BigInteger),
+                  new Var(arg),
+                  "AsPathLength"), new BigIntExpr(BigInteger.One)))
+            : new Var(arg),
+          // update the result to have returned true
+          "Result", AstEnvironment.ResultToRecord(new RouteResult
+          {
+            Returned = true,
+            Value = true
+          })))
     });
   }
 
   public RouteEnvironmentAst(Dictionary<string, NodeProperties> nodes,
     Ipv4Prefix? destination,
-    Dictionary<string, AstPredicate> predicates, Dictionary<string, AstPredicate> symbolics,
+    Dictionary<string, AstPredicate> predicates, Dictionary<string, string?> symbolics,
     BigInteger? convergeTime) : base(nodes,
     symbolics, predicates, destination, convergeTime)
   {

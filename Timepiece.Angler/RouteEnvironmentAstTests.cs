@@ -58,7 +58,7 @@ public static class AstTests
     var distances = topology.BreadthFirstSearch(destNode);
     var props = topology.MapNodes(n =>
       GenerateProperties(n, topology[n], distances[n]));
-    return new RouteEnvironmentAst(props, D, Predicates, new Dictionary<string, AstPredicate>(), 5);
+    return new RouteEnvironmentAst(props, D, Predicates, new Dictionary<string, string?>(), 5);
   }
 
   [Fact]

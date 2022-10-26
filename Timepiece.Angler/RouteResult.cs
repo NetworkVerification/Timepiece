@@ -5,24 +5,45 @@ namespace Timepiece.Angler;
 [ZenObject]
 public class RouteResult
 {
-  public bool Returned { get; set; }
+  /// <summary>
+  /// Whether the result has exited.
+  /// </summary>
   public bool Exit { get; set; }
-  public bool Value { get; set; }
+
+  /// <summary>
+  /// Whether the result has fallen through.
+  /// </summary>
   public bool Fallthrough { get; set; }
 
-  public RouteResult(bool returned, bool exit, bool value, bool fallthrough)
+  /// <summary>
+  /// Whether the result has returned.
+  /// </summary>
+  public bool Returned { get; set; }
+
+  /// <summary>
+  /// The value associated with the result.
+  /// True for accept, false for reject.
+  /// </summary>
+  public bool Value { get; set; }
+
+  public RouteResult(bool exit, bool fallthrough, bool returned, bool value)
   {
-    Returned = returned;
     Exit = exit;
-    Value = value;
     Fallthrough = fallthrough;
+    Returned = returned;
+    Value = value;
   }
 
   public RouteResult()
   {
-    Returned = false;
     Exit = false;
-    Value = false;
     Fallthrough = false;
+    Returned = false;
+    Value = false;
+  }
+
+  public override string ToString()
+  {
+    return $"RouteResult(Exit={Exit},Fallthrough={Fallthrough},Returned={Returned},Value={Value})";
   }
 }

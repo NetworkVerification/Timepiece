@@ -11,7 +11,7 @@ public class Ast
 {
   [JsonConstructor]
   public Ast(Dictionary<string, NodeProperties> nodes,
-    Dictionary<string, AstPredicate> symbolics,
+    Dictionary<string, string?> symbolics,
     Dictionary<string, AstPredicate> predicates, Ipv4Prefix? destination, BigInteger? convergeTime)
   {
     Nodes = nodes;
@@ -35,7 +35,7 @@ public class Ast
   /// <summary>
   ///   Symbolic expressions.
   /// </summary>
-  public Dictionary<string, AstPredicate> Symbolics { get; }
+  public Dictionary<string, string?> Symbolics { get; }
 
   /// <summary>
   ///   Predicates over routes, irrespective of time.
@@ -101,6 +101,19 @@ public class Ast
     Console.ResetColor();
   }
 
+  /// <summary>
+  /// Return the symbolic value corresponding to a given name and predicate string.
+  /// </summary>
+  /// <param name="name"></param>
+  /// <param name="predicate">A predicate string, or null (meaning an unconstrained symbolic).</param>
+  /// <returns></returns>
+  private SymbolicValue<RouteEnvironment> GetSymbolicValue(string name, string? predicate)
+  {
+    return predicate is null
+      ? new SymbolicValue<RouteEnvironment>(name)
+      : new SymbolicValue<RouteEnvironment>(name, Predicates[predicate].Evaluate(new AstEnvironment()));
+  }
+
   public Network<RouteEnvironment, RouteEnvironment> ToNetwork(
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
     Func<bool, AstFunction<RouteEnvironment>> defaultExport, AstFunction<RouteEnvironment> defaultImport)
@@ -113,7 +126,7 @@ public class Ast
     var exportFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var importFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var symbolicValues = Symbolics.Select(nameConstraint =>
-        new SymbolicValue<RouteEnvironment>(nameConstraint.Key, nameConstraint.Value.Evaluate(new AstEnvironment())))
+        GetSymbolicValue(nameConstraint.Key, nameConstraint.Value))
       .ToArray();
 
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow

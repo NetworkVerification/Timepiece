@@ -74,6 +74,7 @@ public static class TypeParsing
       "LessThan" => typeof(BinaryOpExpr),
       "LessThanEqual" => typeof(BinaryOpExpr),
       "Equals32" => typeof(Equals),
+      "NotEqual2" => typeof(NotEqual),
       // pair expressions
       "Pair" => new TypeAlias(typeof(PairExpr), null, null),
       "First" => new TypeAlias(typeof(First), null, null),
