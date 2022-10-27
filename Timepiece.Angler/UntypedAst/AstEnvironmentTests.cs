@@ -162,7 +162,7 @@ public static class AstEnvironmentTests
   public static void EvaluateAssignStmt()
   {
     const string name = "x";
-    var env1 = Env.EvaluateStatement(R, new Assign(name, new IntExpr(0)));
+    var env1 = Env.EvaluateStatement(name, R, new Assign(name, new IntExpr(0)));
     var evaluated = (Zen<int>) env1.EvaluateExpr(R, new Var(name)).returnValue;
     AssertEqValid(evaluated, Zen.Constant(0));
   }
@@ -170,6 +170,7 @@ public static class AstEnvironmentTests
   [Fact]
   public static void EvaluateVariableSwap()
   {
+    const string dummy = "r";
     const string var1 = "x";
     const string var2 = "y";
     const string tempVar = "z";
@@ -181,7 +182,7 @@ public static class AstEnvironmentTests
       new Assign(var1, new Var(var2)),
       new Assign(var2, new Var(tempVar))
     };
-    var env1 = Env.EvaluateStatements(R, statements);
+    var env1 = Env.Update(dummy, R.route).EvaluateStatements(dummy, R, statements);
     var getVar1 = (Zen<int>) env1.EvaluateExpr(R, new Var(var1)).returnValue;
     var getVar2 = (Zen<int>) env1.EvaluateExpr(R, new Var(var2)).returnValue;
     AssertEqValid(getVar1, Zen.Constant(1));
@@ -201,7 +202,7 @@ public static class AstEnvironmentTests
     {
       new Assign(resultVar, new IntExpr(falseResult))
     });
-    var env1 = Env.EvaluateStatement(R, statement);
+    var env1 = Env.EvaluateStatement(resultVar, R, statement);
     var result = (Zen<int>) env1[resultVar];
     var b = Zen.Not(Zen.Or(Zen.Eq(result, Zen.Constant(trueResult)), Zen.Eq(result, Zen.Constant(falseResult))))
       .Solve();
@@ -213,11 +214,12 @@ public static class AstEnvironmentTests
   {
     const string pathLen = "AsPathLength";
     var route = AstEnvironment.DefaultRoute();
+    const string arg = "route";
     var statements = new Statement[]
     {
-      new Assign("route", route),
-      new Assign("route",
-        new WithField(new Var("route"), "Result",
+      new Assign(arg, route),
+      new Assign(arg,
+        new WithField(new Var(arg), "Result",
           new CreateRecord("TResult", new Dictionary<string, Expr>
           {
             // set the value by asking if the field we got is equal to 0
@@ -225,15 +227,15 @@ public static class AstEnvironmentTests
               "Value",
               new Equals(
                 new BigIntExpr(0),
-                new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var("route"), pathLen))
+                new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(arg), pathLen))
             },
             {"Returned", new BoolExpr(false)},
             {"Exit", new BoolExpr(false)},
             {"Fallthrough", new BoolExpr(false)}
           })))
     };
-    var env1 = Env.EvaluateStatements(R, statements);
-    var result = (Zen<RouteEnvironment>) env1["route"];
+    var env1 = Env.Update(arg, R.route).EvaluateStatements(arg, R, statements);
+    var result = (Zen<RouteEnvironment>) env1[arg];
     var b = Zen.Not(result.GetResult().GetValue()).Solve();
     Assert.False(b.IsSatisfiable());
   }
@@ -250,7 +252,7 @@ public static class AstEnvironmentTests
         new Plus(new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen),
           new BigIntExpr(BigInteger.One)))),
     };
-    var env1 = Env.EvaluateStatements(R, statements);
+    var env1 = Env.Update(route, R.route).EvaluateStatements(route, R, statements);
     var result = (Zen<RouteEnvironment>) env1[route];
     var incrementedRoute = Zen.Constant(new RouteEnvironment()).IncrementAsPathLength(BigInteger.One);
     AssertEqValid(result, incrementedRoute);
@@ -272,7 +274,7 @@ public static class AstEnvironmentTests
         new WithField(new Var(rVar), pathLen,
           new Plus(new Var(lenVar), new BigIntExpr(BigInteger.One))))
     };
-    var env2 = env1.EvaluateStatements(R, statements);
+    var env2 = env1.EvaluateStatements(rVar, R, statements);
     var result = (Zen<RouteEnvironment>) env2[rVar];
     var incrementedRoute = route.IncrementAsPathLength(BigInteger.One);
     AssertEqValid(result, incrementedRoute);
@@ -388,7 +390,7 @@ public static class AstEnvironmentTests
       )
     };
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
-    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(R.WithRoute(inputRoute), statements);
+    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(arg, R.WithRoute(inputRoute), statements);
     AssertEqValid(evaluated[arg], inputRoute.WithResultValue(true));
   }
 
@@ -411,7 +413,7 @@ public static class AstEnvironmentTests
       )
     };
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
-    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(R.WithRoute(inputRoute), statements);
+    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(arg, R.WithRoute(inputRoute), statements);
     AssertEqValid(evaluated[arg], inputRoute.WithResultValue(true));
   }
 
@@ -432,7 +434,7 @@ public static class AstEnvironmentTests
       )
     };
     Assert.Throws<Exception>(() =>
-      Env.Update(arg, R.route).EvaluateStatements(R, statements));
+      Env.Update(arg, R.route).EvaluateStatements(arg, R, statements));
   }
 
   /// <summary>
@@ -442,10 +444,6 @@ public static class AstEnvironmentTests
   public static void EvaluateFirstMatchChainAddCommunity()
   {
     const string arg = "env";
-    // FIXME: we need to fix this code so that, once the FMC evaluates, the updated route is used when
-    // UpdateResult accesses the argument.
-    // Essentially, the route getting carried around is updated, but the env component it's supposed to be referencing
-    // is not.
     var fun = new AstFunction<RouteEnvironment>(arg,
       new Statement[]
       {

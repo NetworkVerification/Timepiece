@@ -142,7 +142,7 @@ public class AstEnvironment
     }
   }
 
-  public AstEnvironment EvaluateStatement(Environment<RouteEnvironment> route, Statement s)
+  public AstEnvironment EvaluateStatement(string arg, Environment<RouteEnvironment> route, Statement s)
   {
     switch (s)
     {
@@ -150,25 +150,39 @@ public class AstEnvironment
         return WithDefaultPolicy(setDefaultPolicy.Name);
       case Assign a:
         var env = EvaluateExpr(route, a.Expr);
-        // TODO: should we do something with the route result?
-        // we assume that we never update the result in an assignment
+        // we assume that we never separately update the result in an assignment
+        // (i.e. we never use Call within an Assign statement)
+        Debug.Assert(a.Expr.GetType() != typeof(Call));
         return Update(a.Var, env.returnValue);
       case IfThenElse ite:
         var guardEnv = EvaluateExpr(route, ite.Guard);
-        return EvaluateStatements(guardEnv, ite.ThenCase)
-          .Join(EvaluateStatements(guardEnv, ite.ElseCase), guardEnv.returnValue);
+        // if the guard updated the route (e.g. by evaluating a Call),
+        // we need to make sure those updates are observed in the branches // by using Update() here
+        var newEnv = Update(arg, guardEnv.route);
+        return newEnv.EvaluateStatements(arg, guardEnv, ite.ThenCase)
+          .Join(newEnv.EvaluateStatements(arg, guardEnv, ite.ElseCase), guardEnv.returnValue);
       default:
         throw new ArgumentOutOfRangeException(nameof(s));
     }
   }
 
-  public AstEnvironment EvaluateStatements(Environment<RouteEnvironment> route, IEnumerable<Statement> statements) =>
-    statements.Aggregate(this, (env, s) => env.EvaluateStatement(route, s));
+  /// <summary>
+  /// Evaluate the given sequence of statements.
+  /// After each statement executes, we run the new statement with the new route according to the value assigned to arg.
+  /// </summary>
+  /// <param name="arg"></param>
+  /// <param name="route"></param>
+  /// <param name="statements"></param>
+  /// <returns></returns>
+  public AstEnvironment EvaluateStatements(string arg, Environment<RouteEnvironment> route,
+    IEnumerable<Statement> statements) =>
+    statements.Aggregate(this,
+      (env, s) => env.EvaluateStatement(arg, route.WithRoute((Zen<RouteEnvironment>) env[arg]), s));
 
   public Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> EvaluateFunction(AstFunction<RouteEnvironment> function)
   {
     return t =>
-      Update(function.Arg, t).EvaluateStatements(new Environment<RouteEnvironment>(t), function.Body)[
+      Update(function.Arg, t).EvaluateStatements(function.Arg, new Environment<RouteEnvironment>(t), function.Body)[
         function.Arg];
   }
 
