@@ -8,6 +8,9 @@ using ZenLib;
 
 namespace Timepiece.Angler.UntypedAst;
 
+/// <summary>
+/// An immutable state of the AST environment.
+/// </summary>
 public class AstEnvironment
 {
   private readonly ImmutableDictionary<string, dynamic> _env;
@@ -23,15 +26,11 @@ public class AstEnvironment
     this.defaultPolicy = defaultPolicy;
   }
 
-  public AstEnvironment(ImmutableDictionary<string, dynamic> env,
-    Dictionary<string, AstFunction<RouteEnvironment>> declarations) : this(env, declarations, null)
-  {
-  }
-
   public dynamic this[string var] => _env[var];
 
-  public AstEnvironment(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations) : this(
-    ImmutableDictionary<string, dynamic>.Empty, declarations, null)
+  public AstEnvironment(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
+    string? defaultPolicy = null) : this(
+    ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy)
   {
   }
 
@@ -83,11 +82,12 @@ public class AstEnvironment
       case Call c:
         var oldReturn = env.route.GetResult().GetReturned();
         // call the function with the current route as its argument
-        var callEnv =
+        var outputRoute =
           EvaluateFunction(_declarations[c.Name])(env.route.WithResult(env.route.GetResult().WithReturned(false)));
         // return the updated result and its associated value
-        return new Environment<RouteEnvironment>(callEnv.WithResult(callEnv.GetResult().WithReturned(oldReturn)),
-          callEnv.GetResult().GetValue());
+        return new Environment<RouteEnvironment>(
+          outputRoute.WithResult(outputRoute.GetResult().WithReturned(oldReturn)),
+          outputRoute.GetResult().GetValue());
       case ConjunctionChain cc:
         return cc.Evaluate(this, env);
       case FirstMatchChain fmc:
@@ -179,7 +179,7 @@ public class AstEnvironment
       throw new ArgumentException("Environments do not bind the same variables.");
     }
 
-    var e = new AstEnvironment(_declarations);
+    var e = new AstEnvironment(_declarations, defaultPolicy);
     foreach (var (variable, value) in _env)
     {
       if (!other._env.ContainsKey(variable))

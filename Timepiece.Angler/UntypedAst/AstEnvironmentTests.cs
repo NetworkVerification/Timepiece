@@ -12,6 +12,8 @@ public static class AstEnvironmentTests
   private const string DefaultPolicy = "defaultPolicy";
   private const string WillFallThrough = "willFallThrough";
   private const string ExitReject = "exitReject";
+  private const string AddCommunity = "addCommunity";
+  private const string CommunityTag = "10000:99999";
 
   private static AstFunction<RouteEnvironment> UpdateResultFunction(RouteResult result)
   {
@@ -23,6 +25,18 @@ public static class AstEnvironmentTests
     });
   }
 
+  /// <summary>
+  /// AstFunction to add a community to the route.
+  /// </summary>
+  private static readonly AstFunction<RouteEnvironment> AddCommunityFunction = new("env", new[]
+  {
+    new Assign("env",
+      new WithField(new Var("env"), "Communities",
+        new SetAdd(new StringExpr(CommunityTag),
+          new GetField(typeof(RouteEnvironment), typeof(CSet<string>), new Var("env"), "Communities")))),
+    UpdateResult("env", "Fallthrough", new BoolExpr(true)),
+  });
+
   // AstFunction that exits and rejects the route.
   private static readonly AstFunction<RouteEnvironment> ExitRejectFunction = UpdateResultFunction(new RouteResult
   {
@@ -33,6 +47,7 @@ public static class AstEnvironmentTests
   // AstFunction that falls through
   private static readonly AstFunction<RouteEnvironment> FallThroughFunction = UpdateResultFunction(new RouteResult
   {
+    Returned = false,
     Fallthrough = true
   });
 
@@ -48,7 +63,8 @@ public static class AstEnvironmentTests
   {
     {DefaultPolicy, ReturnTrueFunction},
     {WillFallThrough, FallThroughFunction},
-    {ExitReject, ExitRejectFunction}
+    {ExitReject, ExitRejectFunction},
+    {AddCommunity, AddCommunityFunction}
   });
 
   /// <summary>
@@ -64,6 +80,13 @@ public static class AstEnvironmentTests
       new GetField("TEnvironment", "TResult", new Var(routeArg), "Result"),
       "Exit"));
 
+  /// <summary>
+  /// Return a statement to assign a new value to the given field of the result to the given argument.
+  /// </summary>
+  /// <param name="arg">The route environment.</param>
+  /// <param name="resultField">The name of the field of the result type.</param>
+  /// <param name="resultFieldValue">The updated value of the result's field.</param>
+  /// <returns></returns>
   private static Statement UpdateResult(string arg, string resultField, Expr resultFieldValue) => new Assign(arg,
     new WithField(new Var(arg), "Result", new WithField(
       new GetField(typeof(RouteEnvironment), typeof(RouteResult), new Var(arg), "Result"),
@@ -276,16 +299,15 @@ public static class AstEnvironmentTests
       {
         // update value to the default and fallthrough to true
         new Assign(arg, new WithField(new Var(arg), "Result",
+          new WithField(
             new WithField(
-              new WithField(
-                new GetField(typeof(RouteEnvironment), typeof(RouteResult), new Var(arg), "Result"),
-                "Value",
-                new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "LocalDefaultAction")),
-              "Fallthrough",
-              new BoolExpr(true))))
+              new GetField(typeof(RouteEnvironment), typeof(RouteResult), new Var(arg), "Result"),
+              "Value",
+              new GetField(typeof(RouteEnvironment), typeof(bool), new Var(arg), "LocalDefaultAction")),
+            "Fallthrough",
+            new BoolExpr(true))))
       })
     });
-    var evaluatedFunction = Env.EvaluateFunction(function);
 
     // the function above resets the result fields after returning true, so Returned should also be false
     Zen<RouteEnvironment> ReturnTrue(Zen<RouteEnvironment> t) =>
@@ -295,6 +317,7 @@ public static class AstEnvironmentTests
       });
 
     var inputRoute = Zen.Symbolic<RouteEnvironment>();
+    var evaluatedFunction = Env.EvaluateFunction(function);
     AssertEqValid(ReturnTrue(inputRoute), evaluatedFunction(inputRoute));
   }
 
@@ -332,16 +355,18 @@ public static class AstEnvironmentTests
     AssertEqValid(evaluated, Zen.Constant(result));
   }
 
-  [Fact]
-  public static void EvaluateCallExpr()
+  [Theory]
+  [InlineData(DefaultPolicy, true, false, false)]
+  [InlineData(ExitReject, false, true, false)]
+  [InlineData(WillFallThrough, false, false, true)]
+  public static void EvaluateCallExpr(string functionName, bool value, bool exit, bool fallthrough)
   {
-    var r = Zen.Symbolic<RouteEnvironment>();
-    var e = new Call(DefaultPolicy);
-    // evaluate the call on an AstEnvironment where DefaultPolicy is defined to just return true.
-    var evaluated = Env.EvaluateExpr(new Environment<RouteEnvironment>(r), e);
-    AssertEqValid(evaluated.returnValue, Zen.True());
-    // returned will be reset to whatever it had been before the call
-    AssertEqValid(evaluated.route, r.WithResult(r.GetResult().WithValue(true).WithExit(false).WithFallthrough(false)));
+    var e = new Call(functionName);
+    var evaluated = Env.EvaluateExpr(R, e);
+    AssertEqValid(evaluated.returnValue, value);
+    // returned will be reset to whatever it had been before the call, so we just check the value, exit and fallthrough
+    AssertEqValid(evaluated.route,
+      R.route.WithResult(R.route.GetResult().WithValue(value).WithExit(exit).WithFallthrough(fallthrough)));
   }
 
   [Fact]
@@ -393,7 +418,6 @@ public static class AstEnvironmentTests
   [Fact]
   public static void EvaluateFirstMatchChainNoDefaultPolicy()
   {
-    var r = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
     const string arg = "env";
     var statements = new Statement[]
     {
@@ -408,6 +432,35 @@ public static class AstEnvironmentTests
       )
     };
     Assert.Throws<Exception>(() =>
-      Env.Update(arg, r).EvaluateStatements(new Environment<RouteEnvironment>(r), statements));
+      Env.Update(arg, R.route).EvaluateStatements(R, statements));
+  }
+
+  /// <summary>
+  /// Test that a function that falls through modifies the resulting route when the FMC returns.
+  /// </summary>
+  [Fact]
+  public static void EvaluateFirstMatchChainAddCommunity()
+  {
+    const string arg = "env";
+    // FIXME: we need to fix this code so that, once the FMC evaluates, the updated route is used when
+    // UpdateResult accesses the argument.
+    // Essentially, the route getting carried around is updated, but the env component it's supposed to be referencing
+    // is not.
+    var fun = new AstFunction<RouteEnvironment>(arg,
+      new Statement[]
+      {
+        new SetDefaultPolicy(DefaultPolicy),
+        new IfThenElse(new FirstMatchChain(new Call(AddCommunity)), new[]
+        {
+          UpdateResult(arg, "Value", new BoolExpr(true))
+        }, new[]
+        {
+          UpdateResult(arg, "Value", new BoolExpr(false))
+        }),
+      });
+    var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
+    var evaluated = Env.EvaluateFunction(fun)(inputRoute);
+    AssertEqValid(evaluated,
+      inputRoute.WithResultValue(true).WithCommunities(inputRoute.GetCommunities().Add(CommunityTag)));
   }
 }
