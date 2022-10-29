@@ -50,18 +50,6 @@ public readonly struct TypeAlias
   public TypeAlias?[] Args { get; }
 
   /// <summary>
-  ///   Consume aliases from the given enumerator to fill in null arguments.
-  /// </summary>
-  /// <param name="typeAliases">An enumerator of string type aliases.</param>
-  /// <param name="aliasLookup">A function to look up an alias string and potentially return a Type.</param>
-  public void UpdateArgs(IEnumerator<string> typeAliases, Func<IEnumerator<string>, TypeAlias?> aliasLookup)
-  {
-    for (var i = 0; i < Args.Length; i++)
-      if (Args[i] is null && typeAliases.MoveNext())
-        Args[i] = aliasLookup(typeAliases);
-  }
-
-  /// <summary>
   /// Create a fully-instantiated type from the TypeAlias.
   /// </summary>
   /// <returns>A Type.</returns>

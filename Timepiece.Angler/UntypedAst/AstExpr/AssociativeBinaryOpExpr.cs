@@ -9,18 +9,23 @@ public class AssociativeBinaryOpExpr : BinaryOpExpr
   }
 
   public AssociativeBinaryOpExpr(IEnumerable<Expr> exprs, Expr identity, Func<dynamic, dynamic, dynamic> binaryOp) :
-    this(identity, FromEnumerable(exprs, identity, binaryOp), binaryOp)
+    this(FromEnumerator(exprs.GetEnumerator(), identity, binaryOp), identity, binaryOp)
   {
   }
 
-  private static AssociativeBinaryOpExpr FromEnumerable(IEnumerable<Expr> es,
-    Expr identity, Func<dynamic, dynamic, dynamic> binaryOp)
+  private static Expr FromEnumerator(IEnumerator<Expr> es, Expr acc, Func<dynamic, dynamic, dynamic> binaryOp)
   {
-    if (es is null)
+    while (true)
     {
-      throw new ArgumentNullException(nameof(es), "No arguments given to binary expression");
-    }
+      if (es is null)
+      {
+        throw new ArgumentNullException(nameof(es), "No arguments given to binary expression");
+      }
 
+      if (!es.MoveNext()) return acc;
+      acc = new AssociativeBinaryOpExpr(acc, es.Current, binaryOp);
+
+      /*
     var operands = es.ToArray();
     return operands.Length switch
     {
@@ -29,5 +34,7 @@ public class AssociativeBinaryOpExpr : BinaryOpExpr
       _ => new AssociativeBinaryOpExpr(operands[0], FromEnumerable(operands[1..], identity, binaryOp),
         binaryOp)
     };
+*/
+    }
   }
 }

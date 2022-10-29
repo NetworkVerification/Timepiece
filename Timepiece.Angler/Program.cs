@@ -21,7 +21,7 @@ JsonSerializer Serializer()
 foreach (var file in args)
 {
   var json = new JsonTextReader(new StreamReader(file));
-  var ast = Serializer().Deserialize<RouteEnvironmentAst>(json);
+  var ast = Serializer().Deserialize<BlockToExternal>(json);
   Console.WriteLine($"Successfully deserialized JSON file {file}");
   Debug.WriteLine("Running in debug mode...");
   Debug.WriteLine("Warning: additional assertions in debug mode may substantially slow running time!");

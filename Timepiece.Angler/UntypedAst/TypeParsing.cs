@@ -1,40 +1,47 @@
 using System.Numerics;
-using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 using Timepiece.Angler.UntypedAst.AstStmt;
 using Timepiece.Datatypes;
 using ZenLib;
-using Regex = System.Text.RegularExpressions.Regex;
 
 namespace Timepiece.Angler.UntypedAst;
 
 public static class TypeParsing
 {
   /// <summary>
-  /// Regex used to identify terms that may refer to types.
+  /// Delimiters between type names.
   /// </summary>
-  private static readonly Regex TypeTerm = new(@"(?<term>\w+)");
+  private static readonly char[] Delimiters = {'(', ')', ',', ';'};
 
-  private static IEnumerable<string> ParseTypeArgs(string typeName)
-  {
-    return TypeTerm.Matches(typeName).Select(match => match.Groups["term"].Value);
-  }
-
-  private static TypeAlias ParseTypeAlias(string alias, IEnumerator<string> typeArgs)
-  {
-    if (!TryParse(alias, out var t) || !t.HasValue)
-      throw new ArgumentException($"{alias} not a valid type alias.", nameof(alias));
-    if (!t.Value.Type.IsGenericTypeDefinition) return t.Value;
-    // recursively search for each argument
-    t.Value.UpdateArgs(typeArgs, args => ParseTypeAlias(args.Current, args).MakeType());
-    return t.Value;
-  }
-
+  /// <summary>
+  /// Convert a type string to a TypeAlias.
+  /// </summary>
+  /// <param name="typeName"></param>
+  /// <returns></returns>
   public static TypeAlias ParseType(string typeName)
   {
-    var types = ParseTypeArgs(typeName).GetEnumerator();
-    types.MoveNext();
-    return ParseTypeAlias(types.Current, types);
+    var types = typeName.Split(Delimiters, StringSplitOptions.RemoveEmptyEntries);
+    return ParseTypeAlias(types, 0).Item1;
+  }
+
+  private static (TypeAlias, int) ParseTypeAlias(string[] alias, int index)
+  {
+    if (!TryParse(alias[index], out var t) || !t.HasValue)
+      throw new ArgumentException($"{alias} not a valid type alias.", nameof(alias));
+    var step = 1;
+    if (!t.Value.Type.IsGenericTypeDefinition) return (t.Value, step);
+    // recursively search for each argument
+    var args = t.Value.Args;
+    var argsUsed = 0;
+    while (argsUsed < args.Length)
+    {
+      if (args[argsUsed] is not null || argsUsed + 1 >= alias.Length) continue;
+      (args[argsUsed], step) = ParseTypeAlias(alias[(index + step)..], argsUsed);
+      index += step;
+      argsUsed++;
+    }
+
+    return (t.Value, argsUsed);
   }
 
   /// <summary>
@@ -49,7 +56,6 @@ public static class TypeParsing
     alias = s switch
     {
       // statements
-      // "Return" => typeof(Return),
       "Assign" => typeof(Assign),
       "If" => typeof(IfThenElse),
       "SetDefaultPolicy" => typeof(SetDefaultPolicy),
@@ -58,6 +64,7 @@ public static class TypeParsing
       "Call" => typeof(Call),
       // boolean expressions
       "Bool" => typeof(BoolExpr),
+      "CallExprContext" => typeof(CallExprContext),
       "And" => typeof(And),
       "Or" => typeof(Or),
       "Not" => typeof(Not),
@@ -88,12 +95,14 @@ public static class TypeParsing
       "WithField" => typeof(WithField),
       // set expressions
       "String" => typeof(StringExpr),
+      "Regex" => typeof(RegexExpr),
       "SetContains" => typeof(SetContains),
       "Subset" => typeof(Subset),
       "SetAdd" => typeof(SetAdd),
       "LiteralSet" => typeof(LiteralSet),
       "SetUnion" => typeof(SetUnion),
       "SetRemove" => typeof(SetRemove),
+      "SetDifference" => typeof(SetDifference),
       // prefix expressions
       "IpPrefix" => typeof(PrefixExpr),
       "PrefixContains" => typeof(PrefixContains),
@@ -120,24 +129,5 @@ public static class TypeParsing
       _ => (TypeAlias?) null, // we need to cast so that null doesn't get converted to a TypeAlias
     };
     return alias.HasValue;
-  }
-}
-
-public class TypeConverter : JsonConverter<TypeAlias>
-{
-  public override void WriteJson(JsonWriter writer, TypeAlias value, JsonSerializer serializer)
-  {
-    serializer.Serialize(writer, value.ToString());
-  }
-
-  public override TypeAlias ReadJson(JsonReader reader, Type objectType, TypeAlias existingValue, bool hasExistingValue,
-    JsonSerializer serializer)
-  {
-    if (objectType != typeof(string)) throw new JsonSerializationException("Cannot read non-string as type");
-    var s = (string?) reader.Value;
-    if (s is null) throw new JsonException();
-    if (TypeParsing.TryParse(s, out var alias) && alias.HasValue)
-      return alias.Value;
-    throw new JsonException($"Unable to deserialize TypeAlias from {s}");
   }
 }

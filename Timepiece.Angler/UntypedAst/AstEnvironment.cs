@@ -16,21 +16,23 @@ public class AstEnvironment
   private readonly ImmutableDictionary<string, dynamic> _env;
   private readonly IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> _declarations;
   public readonly string? defaultPolicy;
+  public readonly bool callExprContext;
 
   public AstEnvironment(ImmutableDictionary<string, dynamic> env,
     IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
-    string? defaultPolicy)
+    string? defaultPolicy, bool callExprContext)
   {
     _env = env;
     _declarations = declarations;
     this.defaultPolicy = defaultPolicy;
+    this.callExprContext = callExprContext;
   }
 
   public dynamic this[string var] => _env[var];
 
   public AstEnvironment(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
-    string? defaultPolicy = null) : this(
-    ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy)
+    string? defaultPolicy = null, bool callExprContext = false) : this(
+    ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy, callExprContext)
   {
   }
 
@@ -47,12 +49,17 @@ public class AstEnvironment
   /// <returns></returns>
   public AstEnvironment Update(string var, dynamic val)
   {
-    return new AstEnvironment(_env.SetItem(var, val), _declarations, defaultPolicy);
+    return new AstEnvironment(_env.SetItem(var, val), _declarations, defaultPolicy, callExprContext);
   }
 
   public AstEnvironment WithDefaultPolicy(string policy)
   {
-    return new AstEnvironment(_env, _declarations, policy);
+    return new AstEnvironment(_env, _declarations, policy, callExprContext);
+  }
+
+  public AstEnvironment WithCallExprContext(bool context)
+  {
+    return new AstEnvironment(_env, _declarations, defaultPolicy, context);
   }
 
   // FIXME: should this take an additional argument representing the current state of the input variable?
@@ -83,11 +90,14 @@ public class AstEnvironment
         var oldReturn = env.route.GetResult().GetReturned();
         // call the function with the current route as its argument
         var outputRoute =
-          EvaluateFunction(_declarations[c.Name])(env.route.WithResult(env.route.GetResult().WithReturned(false)));
+          WithCallExprContext(true).EvaluateFunction(_declarations[c.Name])(
+            env.route.WithResult(env.route.GetResult().WithReturned(false)));
         // return the updated result and its associated value
         return new Environment<RouteEnvironment>(
           outputRoute.WithResult(outputRoute.GetResult().WithReturned(oldReturn)),
           outputRoute.GetResult().GetValue());
+      case CallExprContext:
+        return env.WithValue(Zen.Constant(callExprContext));
       case ConjunctionChain cc:
         return cc.Evaluate(this, env);
       case FirstMatchChain fmc:
@@ -118,7 +128,12 @@ public class AstEnvironment
       case UnaryOpExpr uoe:
         return env.WithValue(uoe.unaryOp(ignoreRoute(uoe.expr)));
       case PrefixContains:
-        return env.WithValue(Zen.Symbolic<bool>()); // TODO: for now, we skip trying to handle prefixes
+        // TODO: we need to add support for this at some point
+        // right now we match it here to prevent the inner expressions from being evaluated in the BinaryOpExpr branch
+        return env.WithValue(Zen.Symbolic<bool>());
+      case BinaryOpExpr sc when sc.expr1.GetType() == typeof(RegexExpr):
+        // TODO: add support for regex
+        return env.WithValue(Zen.Symbolic<bool>());
       case And ae:
         // evaluate the first conjunct
         // if its return value is false, the final env will be the first conjunct's
@@ -147,7 +162,7 @@ public class AstEnvironment
     switch (s)
     {
       case SetDefaultPolicy setDefaultPolicy:
-        return WithDefaultPolicy(setDefaultPolicy.Name);
+        return WithDefaultPolicy(setDefaultPolicy.PolicyName);
       case Assign a:
         var env = EvaluateExpr(route, a.Expr);
         // we assume that we never separately update the result in an assignment
@@ -193,7 +208,7 @@ public class AstEnvironment
       throw new ArgumentException("Environments do not bind the same variables.");
     }
 
-    var e = new AstEnvironment(_declarations, defaultPolicy);
+    var e = new AstEnvironment(_declarations, defaultPolicy, callExprContext);
     foreach (var (variable, value) in _env)
     {
       if (!other._env.ContainsKey(variable))

@@ -9,6 +9,7 @@ namespace Timepiece.Datatypes;
 /// <summary>
 /// A Zen-friendly representation of an IPv4 prefix.
 /// </summary>
+[ZenObject]
 public struct Ipv4Prefix
 {
   public uint Prefix { get; set; }
@@ -61,7 +62,7 @@ public struct Ipv4Prefix
   }
 }
 
-public static class DestinationExt
+public static class Ipv4PrefixExtensions
 {
   public static bool Contains(this IPAddressRange range, Ipv4Prefix d)
   {

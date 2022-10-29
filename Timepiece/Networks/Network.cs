@@ -53,7 +53,7 @@ public class Network<T, TS>
   /// <summary>
   /// The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
   /// </summary>
-  protected Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; init; }
+  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; set; }
 
   /// <summary>
   /// Construct a new Network.
@@ -127,7 +127,7 @@ public class Network<T, TS>
   /// <param name="collector"></param>
   /// <param name="f"></param>
   /// <returns></returns>
-  public Option<State<T, TS>> CheckAnnotationsWith<TAcc>(TAcc collector,
+  public Dictionary<string, Option<State<T, TS>>> CheckAnnotationsWith<TAcc>(TAcc collector,
     Func<string, TAcc, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
   {
     var routes = Topology.MapNodes(_ => Symbolic<T>());
@@ -135,8 +135,9 @@ public class Network<T, TS>
     var s = Topology.Nodes
       // call f for each node
       .AsParallel()
-      .Select(node => f(node, collector, () => CheckAnnotations(node, routes, time)))
-      .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
+      .Select(node => (node, f(node, collector, () => CheckAnnotations(node, routes, time))))
+      // .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
+      .ToDictionary(x => x.Item1, x => x.Item2);
     return s;
   }
 

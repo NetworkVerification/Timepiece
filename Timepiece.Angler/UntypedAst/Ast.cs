@@ -150,7 +150,15 @@ public class Ast
     foreach (var (edge, export) in exportFunctions)
       // compose the export and import and evaluate on a fresh state
       // NOTE: assumes that every export edge has a corresponding import edge (i.e. the graph is undirected)
-      transferFunction.Add(edge, r => importFunctions[edge](export(r)));
+      transferFunction.Add(edge, r =>
+      {
+        // always reset the result when first calling the export
+        var exported = export(r.WithResult(new RouteResult()));
+        // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)
+        // and again reset the result
+        return Zen.If(exported.GetResult().GetValue(),
+          importFunctions[edge](exported.WithResult(new RouteResult())), exported);
+      });
 
     var topology = new Topology(edges);
     // construct a reasonable estimate of the modular properties by checking that the monolithic properties

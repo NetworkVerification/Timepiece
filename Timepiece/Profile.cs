@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Timepiece.Networks;
 using ZenLib;
 
@@ -62,14 +63,28 @@ public static class Profile
       var t = Time(net =>
       {
         var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
-        if (!s.HasValue)
+        var passed = true;
+        var failedNodes = new List<string>();
+        foreach (var (node, counterexample) in s)
+        {
+          if (!counterexample.HasValue) continue;
+          passed = false;
+          failedNodes.Add(node);
+          Console.WriteLine($"    Counterexample for node {node}:");
+          counterexample.Value.ReportCheckFailure();
+          Console.WriteLine();
+        }
+
+        if (passed)
         {
           Console.WriteLine("    All the modular checks passed!");
           return;
         }
 
-        s.Value.ReportCheckFailure();
         Console.WriteLine("Error, unsound annotations provided or assertions failed!");
+        var allFailed = failedNodes.Aggregate(new StringBuilder(), (builder, n) => builder.Append($" {n}"));
+        Console.WriteLine(
+          $"Counterexamples occurred at nodes:{allFailed}");
       }, network);
       Console.WriteLine($"Modular verification took {t}ms");
     }

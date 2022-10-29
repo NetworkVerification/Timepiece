@@ -18,7 +18,7 @@ public class FirstMatchChain : VariadicExpr
     // we start with false as the return value as a default, but the default policy should never fall through
     var acc = env.WithValue(Zen.False());
     // each policy may update the route, so the policy routes need to be computed in sequential order
-    var policyResults = new List<Environment<RouteEnvironment>> { };
+    var policyResults = new List<Environment<RouteEnvironment>>();
     var lastEnv = env;
     foreach (var policy in policies)
     {

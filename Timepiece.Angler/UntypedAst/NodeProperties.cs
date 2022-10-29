@@ -22,7 +22,7 @@ public class NodeProperties
     Temporal = temporal;
     Initial = initial;
     Declarations = declarations;
-    DisambiguateVariableNames();
+    // DisambiguateVariableNames();
   }
 
   /// <summary>

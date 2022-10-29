@@ -22,9 +22,9 @@ public readonly struct RoutingPolicies
     Export = null;
   }
 
-  public int? Asn { get; }
+  public int? Asn { get; init; }
 
-  public string? Import { get; }
+  public string? Import { get; init; }
 
-  public string? Export { get; }
+  public string? Export { get; init; }
 }

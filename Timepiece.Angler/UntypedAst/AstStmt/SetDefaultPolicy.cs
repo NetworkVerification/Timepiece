@@ -2,18 +2,18 @@ namespace Timepiece.Angler.UntypedAst.AstStmt;
 
 public class SetDefaultPolicy : Statement
 {
-  public string Name { get; set; }
+  public string PolicyName { get; set; }
 
-  public SetDefaultPolicy(string name)
+  public SetDefaultPolicy(string policyName)
   {
-    Name = name;
+    PolicyName = policyName;
   }
 
   public override void Rename(string oldVar, string newVar)
   {
-    if (Name == oldVar)
+    if (PolicyName == oldVar)
     {
-      Name = newVar;
+      PolicyName = newVar;
     }
   }
 }
