@@ -29,7 +29,8 @@ foreach (var file in args)
   if (ast != null)
   {
     // ast.Validate();
-    Profile.RunCmpPerNode(ast.ToNetwork());
+    Profile.RunCmpPerNode(ast.ToNetwork(BlockToExternal.WeakerInitialConstraints));
+    // Profile.RunAnnotatedWithStats(ast.ToNetwork());
   }
   else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
 }
