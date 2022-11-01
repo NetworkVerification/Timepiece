@@ -40,6 +40,7 @@ public class State<T, TS>
   /// </summary>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="node">The node this solution pertains to.</param>
+  /// <param name="nodeRoute">The Zen variable referring to this node's route.</param>
   /// <param name="neighborStates">The Zen variables referring to this node's neighbors' routes.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>

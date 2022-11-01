@@ -18,7 +18,7 @@ public class Network<T, TS>
   /// <summary>
   /// The initial values for each node.
   /// </summary>
-  protected Dictionary<string, Zen<T>> InitialValues { get; init; }
+  public Dictionary<string, Zen<T>> InitialValues { get; init; }
 
   /// <summary>
   /// The merge function for routes.
@@ -136,7 +136,6 @@ public class Network<T, TS>
       // call f for each node
       .AsParallel()
       .Select(node => (node, f(node, collector, () => CheckAnnotations(node, routes, time))))
-      // .FirstOrDefault(s => s.HasValue, Option.None<State<T, TS>>());
       .ToDictionary(x => x.Item1, x => x.Item2);
     return s;
   }
