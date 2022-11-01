@@ -9,6 +9,10 @@ namespace Timepiece.Angler;
 [ZenObject]
 public class RouteEnvironment
 {
+  public static readonly UInt<_2> IncompleteOrigin = new(0);
+  public static readonly UInt<_2> ExternalOrigin = new(2);
+  public static readonly UInt<_2> InternalOrigin = new(3);
+
   public RouteEnvironment()
   {
     Prefix = new Ipv4Prefix();

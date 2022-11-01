@@ -58,16 +58,22 @@ public class NodeProperties
   }
 
   /// <summary>
+  /// Return true if the given neighbor is considered to not be in the same AS as this node.
+  /// </summary>
+  /// <param name="neighbor"></param>
+  /// <returns></returns>
+  public bool IsExternalNeighbor(string neighbor) => Asn is null || Asn != Policies[neighbor].Asn;
+
+  /// <summary>
   ///   Construct a node storing all the relevant information for creating a network.
   /// </summary>
   /// <param name="predicateLookupFunction">A function that returns a predicate given its string name.</param>
-  /// <param name="defaultExport">A function that returns a default export function given a boolean distinguishing external export (true)
-  /// and internal export (false).</param>
+  /// <param name="defaultExport">A default export function.</param>
   /// <param name="defaultImport">A default import function.</param>
   /// <param name="symbolicValues">A sequence of symbolic values.</param>
   /// <returns></returns>
   public NetworkNode<RouteEnvironment> CreateNode(
-    Func<string, AstPredicate> predicateLookupFunction, Func<bool, AstFunction<RouteEnvironment>> defaultExport,
+    Func<string, AstPredicate> predicateLookupFunction, AstFunction<RouteEnvironment> defaultExport,
     AstFunction<RouteEnvironment> defaultImport, IEnumerable<SymbolicValue<RouteEnvironment>> symbolicValues)
   {
     var env = new AstEnvironment(Declarations);
@@ -94,7 +100,7 @@ public class NodeProperties
     {
       if (policies.Export is null)
       {
-        exports[neighbor] = env.EvaluateFunction(defaultExport(Asn is null || Asn != policies.Asn));
+        exports[neighbor] = env.EvaluateFunction(defaultExport);
       }
       else
       {

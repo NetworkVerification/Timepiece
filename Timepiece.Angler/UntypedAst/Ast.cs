@@ -116,7 +116,7 @@ public class Ast
 
   public Network<RouteEnvironment, RouteEnvironment> ToNetwork(
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
-    Func<bool, AstFunction<RouteEnvironment>> defaultExport, AstFunction<RouteEnvironment> defaultImport)
+    AstFunction<RouteEnvironment> defaultExport, AstFunction<RouteEnvironment> defaultImport)
   {
     // construct all the mappings we'll need
     var edges = new Dictionary<string, List<string>>();
@@ -154,10 +154,14 @@ public class Ast
       {
         // always reset the result when first calling the export
         var exported = export(r.WithResult(new RouteResult()));
+        var importedRoute = exported.WithResult(new RouteResult());
+        // if the edge is external, increment the AS path length
+        if (Nodes[edge.Item1].IsExternalNeighbor(edge.Item2))
+          importedRoute = importedRoute.IncrementAsPathLength(BigInteger.One);
         // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)
         // and again reset the result
         return Zen.If(exported.GetResult().GetValue(),
-          importFunctions[edge](exported.WithResult(new RouteResult())), exported);
+          importFunctions[edge](importedRoute), exported);
       });
 
     var topology = new Topology(edges);

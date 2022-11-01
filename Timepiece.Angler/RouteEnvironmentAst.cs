@@ -38,30 +38,18 @@ public class RouteEnvironmentAst : Ast
   /// If external is true, increment the path length.
   /// In either case, set the route as accepted and returned.
   /// </summary>
-  private static AstFunction<RouteEnvironment> DefaultExport(bool external)
+  private static AstFunction<RouteEnvironment> DefaultExport = new("env", new Statement[]
   {
-    const string arg = "env";
-    return new AstFunction<RouteEnvironment>(arg, new[]
-    {
-      new Assign(arg,
-        new WithField(
-          // if we are exporting to an external peer, increment the path length here
-          external
-            ? new WithField(new Var(arg),
-              "AsPathLength",
-              new Plus(
-                new GetField(typeof(RouteEnvironment), typeof(BigInteger),
-                  new Var(arg),
-                  "AsPathLength"), new BigIntExpr(BigInteger.One)))
-            : new Var(arg),
-          // update the result to have returned true
-          "Result", AstEnvironment.ResultToRecord(new RouteResult
-          {
-            Returned = true,
-            Value = true
-          })))
-    });
-  }
+    new Assign("env",
+      new WithField(new Var("env"),
+        // update the result to have returned true
+        "Result", AstEnvironment.ResultToRecord(new RouteResult
+        {
+          Returned = true,
+          Value = true
+        })))
+  });
+
 
   public RouteEnvironmentAst(Dictionary<string, NodeProperties> nodes,
     Ipv4Prefix? destination,
