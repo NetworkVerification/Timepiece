@@ -21,7 +21,16 @@ JsonSerializer Serializer()
 foreach (var file in args)
 {
   var json = new JsonTextReader(new StreamReader(file));
-  var ast = Serializer().Deserialize<BlockToExternal>(json);
+  RouteEnvironmentAst? ast;
+  var isInternet2 = false;
+  if (file.StartsWith("INTERNET2") || file.StartsWith("internet2"))
+  {
+    ast = Serializer().Deserialize<Internet2>(json);
+    isInternet2 = true;
+  }
+  else
+    ast = Serializer().Deserialize<RouteEnvironmentAst>(json);
+
   Console.WriteLine($"Successfully deserialized JSON file {file}");
   Debug.WriteLine("Running in debug mode...");
   Debug.WriteLine("Warning: additional assertions in debug mode may substantially slow running time!");
@@ -29,7 +38,9 @@ foreach (var file in args)
   if (ast != null)
   {
     // ast.Validate();
-    Profile.RunCmpPerNode(ast.ToNetwork(BlockToExternal.WeakerInitialConstraints));
+    Profile.RunCmpPerNode(isInternet2
+      ? ((Internet2) ast).ToNetwork(BlockToExternal.WeakerInitialConstraints)
+      : ast.ToNetwork());
     // Profile.RunAnnotatedWithStats(ast.ToNetwork());
   }
   else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
