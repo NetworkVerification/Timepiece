@@ -20,11 +20,14 @@ public static class Reachability
             // (1) internal, (2) not have the BTE tag set, and (3) be for a valid internal prefix
             Zen.Implies(r.GetResultValue(),
               Zen.And(r.GetOriginType() == RouteEnvironment.InternalOrigin,
-                Internet2.BteTagAbsent(r),
-                r.GetPrefix() == Internet2.InternalPrefix)),
+                Internet2.BteTagAbsent(r)))
+                // TODO: prefix checking isn't implemented so this does nothing
+                //r.GetPrefix() == Internet2.InternalPrefix))
+            // TODO: is this needed?
             // and it must be that either this node or one of the preceding internal nodes has a route
-            newSymbolics.Aggregate(r.GetResultValue(),
-              (acc, otherInternalRoute) => Zen.Or(acc, otherInternalRoute.Value.GetResultValue()))));
+            // newSymbolics.Aggregate(r.GetResultValue(),
+            // (acc, otherInternalRoute) => Zen.Or(acc, otherInternalRoute.Value.GetResultValue()))));
+          ));
       newSymbolics.Add(internalRoute);
       // update the initial route of the node
       net.InitialValues[node] = internalRoute.Value;
@@ -33,6 +36,7 @@ public static class Reachability
     // extend the list of symbolics
     net.Symbolics = net.Symbolics.Concat(newSymbolics).ToArray();
 
+    // internal nodes get routes at time 1, external nodes get routes at time 2
     var modularProperties = net.ModularProperties.Select(p =>
         Internet2.InternalNodes.Contains(p.Key)
           ? (p.Key, Lang.Finally<RouteEnvironment>(BigInteger.One, Internet2.HasInternalRoute))

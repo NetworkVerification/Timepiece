@@ -39,7 +39,7 @@ foreach (var file in args)
   {
     // ast.Validate();
     Profile.RunCmpPerNode(isInternet2
-      ? ((Internet2) ast).ToNetwork(BlockToExternal.WeakerInitialConstraints)
+      ? ((Internet2) ast).ToNetwork(Reachability.AddReachConstraints)
       : ast.ToNetwork());
     // Profile.RunAnnotatedWithStats(ast.ToNetwork());
   }
