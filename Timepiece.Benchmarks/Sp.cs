@@ -68,11 +68,10 @@ public static class Sp
   {
     var topology = Topologies.FatTree(numPods);
     var distances = topology.BreadthFirstSearch(destination);
-    var reachable = Lang.IsSome<BatfishBgpRoute>();
     var annotations =
       distances.Select(p => (p.Key, Lang.Finally<Option<BatfishBgpRoute>>(p.Value, Option.IsSome)))
         .ToDictionary(p => p.Item1, p => p.Item2);
-    var stableProperties = topology.MapNodes(_ => reachable);
+    var stableProperties = topology.MapNodes(_ => Lang.IsSome<BatfishBgpRoute>());
     // no safety property
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,

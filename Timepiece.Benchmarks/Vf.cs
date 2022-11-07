@@ -19,16 +19,16 @@ public class Vf<TS> : Network<Option<BatfishBgpRoute>, TS>
   }
 
   public Vf(Topology topology, Dictionary<string, Zen<Option<BatfishBgpRoute>>> initialValues, string tag,
-       Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-       IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> stableProperties,
-       IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
-       SymbolicValue<TS>[] symbolics) :
-       base(topology, Transfer(topology, tag),
-         Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
-         initialValues,
-         annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
-     {
-     }
+    Dictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<string, Func<Zen<Option<BatfishBgpRoute>>, Zen<bool>>> safetyProperties,
+    SymbolicValue<TS>[] symbolics) :
+    base(topology, Transfer(topology, tag),
+      Lang.Omap2<BatfishBgpRoute>(BatfishBgpRouteExtensions.Min),
+      initialValues,
+      annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
+  {
+  }
 
 
   private static Dictionary<(string, string), Func<Zen<Option<BatfishBgpRoute>>, Zen<Option<BatfishBgpRoute>>>>
@@ -100,7 +100,7 @@ public static class Vf
   }
 
 
-  public static Vf<Pair<string,int>> AllPairsValleyFreeReachable(uint numPods)
+  public static Vf<Pair<string, int>> AllPairsValleyFreeReachable(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(topology);
@@ -111,21 +111,18 @@ public static class Vf
         return Lang.Until(distance, Lang.IsNone<BatfishBgpRoute>(),
           Lang.IfSome<BatfishBgpRoute>(b =>
             Zen.If(distance < new BigInteger(2),
-            // require that the safety property holds at time t,
-            // and that the LP equals the default, and the path length equals t
-            Zen.And(Zen.Not(b.HasCommunity(DownTag)),
-              BatfishBgpRouteExtensions.EqLengthDefaultLp(distance)(b)),
-            BatfishBgpRouteExtensions.EqLengthDefaultLp(distance)(b))));
+              // require that the safety property holds at time t,
+              // and that the LP equals the default, and the path length equals t
+              Zen.And(Zen.Not(b.HasCommunity(DownTag)),
+                BatfishBgpRouteExtensions.EqLengthDefaultLp(distance)(b)),
+              BatfishBgpRouteExtensions.EqLengthDefaultLp(distance)(b))));
       });
-    var safetyProperties =
-      topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
-    var stableProperties =
-      topology.MapNodes(_ => Lang.IsSome<BatfishBgpRoute>());
-    Dictionary<string,Zen<Option<BatfishBgpRoute>>> initialValues =
-        topology.MapNodes(n => Option.Create<BatfishBgpRoute>(new BatfishBgpRoute())
-          .Where(_ => dest.Equals(topology, n)));
+    var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BatfishBgpRoute>>());
+    var stableProperties = topology.MapNodes(_ => Lang.IsSome<BatfishBgpRoute>());
+    Dictionary<string, Zen<Option<BatfishBgpRoute>>> initialValues =
+      topology.MapNodes(n => Option.Create<BatfishBgpRoute>(new BatfishBgpRoute())
+        .Where(_ => dest.Equals(topology, n)));
     return new Vf<Pair<string, int>>(topology, initialValues, DownTag, annotations, stableProperties, safetyProperties,
       new SymbolicValue<Pair<string, int>>[] {dest});
   }
-
 }
