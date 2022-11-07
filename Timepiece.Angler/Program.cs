@@ -23,8 +23,9 @@ foreach (var file in args)
   var json = new JsonTextReader(new StreamReader(file));
   RouteEnvironmentAst? ast;
   var isInternet2 = false;
-  if (file.StartsWith("INTERNET2") || file.StartsWith("internet2"))
+  if (file.Contains("INTERNET2") || file.Contains("internet2"))
   {
+    Console.WriteLine("Internet2 benchmark identified...");
     ast = Serializer().Deserialize<Internet2>(json);
     isInternet2 = true;
   }
@@ -39,7 +40,7 @@ foreach (var file in args)
   {
     // ast.Validate();
     Profile.RunCmpPerNode(isInternet2
-      ? ((Internet2) ast).ToNetwork(Reachability.AddReachConstraints)
+      ? ((Internet2) ast).ToNetwork(BlockToExternal.WeakerInitialConstraints)
       : ast.ToNetwork());
     // Profile.RunAnnotatedWithStats(ast.ToNetwork());
   }
