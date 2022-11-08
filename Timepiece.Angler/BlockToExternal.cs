@@ -1,5 +1,4 @@
 using Timepiece.Networks;
-using ZenLib;
 
 namespace Timepiece.Angler;
 
@@ -43,17 +42,18 @@ public static class BlockToExternal
     foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external")))
     {
       s.Constraint =
-        Lang.Intersect<RouteEnvironment>(Internet2.BteTagAbsent,
-          r => r.GetOriginType() != RouteEnvironment.InternalOrigin);
+        Internet2.BteTagAbsent;
+      // Lang.Intersect<RouteEnvironment>(Internet2.BteTagAbsent,
+      // r => r.GetOriginType() != RouteEnvironment.InternalOrigin);
     }
 
     // change initial values such that internal nodes may have a route
     var newSymbolics = new List<SymbolicValue<RouteEnvironment>>();
     foreach (var node in Internet2.InternalNodes)
     {
-      var internalRoute = new SymbolicValue<RouteEnvironment>($"internal-route-{node}",
-        r =>
-          Zen.Implies(r.GetResultValue(), r.GetOriginType() == RouteEnvironment.InternalOrigin));
+      var internalRoute = new SymbolicValue<RouteEnvironment>($"internal-route-{node}");
+      // r =>
+      // Zen.Implies(r.GetResultValue(), r.GetOriginType() == RouteEnvironment.InternalOrigin));
       newSymbolics.Add(internalRoute);
       // update the initial route of the node
       net.InitialValues[node] = internalRoute.Value;
