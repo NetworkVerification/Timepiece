@@ -35,6 +35,10 @@ def tee_output(output, output_file):
         # 'ab': append bytes to the end of the file
         mode = "ab" if isinstance(output, bytes) else "a"
         with open(output_file, mode) as f:
+            if isinstance(output, bytes):
+                output += b"\n"
+            else:
+                output += "\n"
             f.write(output)
 
 
@@ -89,9 +93,6 @@ def run_all(sizes, trials, timeout, options, output_file, short_circuit=True):
             )
             tee_output(trial_output, output_file)
 
-            if output_file is not None:
-                with open(output_file, "a") as f:
-                    f.write(trial_output + "\n")
             # run the benchmark
             returncode = run_dotnet(size, options, timeout, output_file)
             # if the benchmark timed out or was interrupted and short_circuit is set,
