@@ -9,21 +9,20 @@
 #      "--" is required to ensure that the "-m" isn't parsed by python
 
 # single destination versions
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- r
-python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- lw
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- v
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- h
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- r -m
-python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- lw -m
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- v -m
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- h -m
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- r
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- lw
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- v
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- h
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- r -m
+python3 ./run_all.py -n 1 -t 7200 -k 8 40 -- lw -m
+python3 ./run_all.py -n 1 -t 7200 -k 8 40 -- v -m
+python3 ./run_all.py -n 1 -t 7200 -k 8 40 -- h -m
 # all pairs versions
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- ar
-python3 ./run_all.py -n 1 -t 3600 -k 4 36 -- alw
-python3 ./run_all.py -n 1 -t 7200 -k 40 40 -- alw
-python3 ./run_all.py -n 1 -t 7200 -k 36 40 -- av
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- ah
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- ar
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- alw
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- av
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- ah
 python3 ./run_all.py -n 1 -t 7200 -k 8 8 -- ar -m
-python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- alw -m
-# python3 ./run_all.py -n 1 -t 3600 -k 4 40 -- av -m
-python3 ./run_all.py -n 1 -t 7200 -k 4 4 -- ah -m
+python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- alw -m
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- av -m
+# python3 ./run_all.py -n 1 -t 7200 -k 4 40 -- ah -m
