@@ -23,7 +23,7 @@ foreach (var file in args)
   var json = new JsonTextReader(new StreamReader(file));
   RouteEnvironmentAst? ast;
   var isInternet2 = false;
-  if (file.Contains("INTERNET2") || file.Contains("internet2"))
+  if (file.Contains("INTERNET2") || file.Contains("internet2") || file.Contains("BAGPIPE") || file.Contains("bagpipe"))
   {
     Console.WriteLine("Internet2 benchmark identified...");
     ast = Serializer().Deserialize<Internet2>(json);

@@ -11,8 +11,20 @@ using EnvNet = Network<RouteEnvironment, RouteEnvironment>;
 
 public class Internet2 : RouteEnvironmentAst
 {
-  public static readonly string[] InternalNodes =
+  public static readonly string[] Internet2Nodes =
     {"atla-re1", "chic", "clev-re1", "hous", "kans-re1", "losa", "newy-re1", "salt-re1", "seat-re1", "wash"};
+
+  /// <summary>
+  /// Addresses for neighbors in the OTHER-INTERNAL peer group of the internal nodes.
+  /// These connections should also be considered internal.
+  /// </summary>
+  public static readonly string[] OtherInternalNodes =
+  {
+    "64.57.16.133", "64.57.16.196", "64.57.16.4", "64.57.16.68", "64.57.17.133", "64.57.17.194",
+    "64.57.17.7", "64.57.17.71", "64.57.19.2",
+  };
+
+  public static readonly IEnumerable<string> InternalNodes = Internet2Nodes.Concat(OtherInternalNodes);
 
   /// <summary>
   /// A prefix corresponding to the internal nodes of Internet2.

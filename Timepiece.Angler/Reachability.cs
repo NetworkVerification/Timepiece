@@ -11,7 +11,7 @@ public static class Reachability
   {
     // change initial values such that internal nodes may have a route
     var newSymbolics = new List<SymbolicValue<RouteEnvironment>>();
-    foreach (var node in Internet2.InternalNodes)
+    foreach (var node in Internet2.Internet2Nodes)
     {
       var internalRoute = new SymbolicValue<RouteEnvironment>($"internal-route-{node}",
         r =>
@@ -21,8 +21,8 @@ public static class Reachability
             Zen.Implies(r.GetResultValue(),
               Zen.And(r.GetOriginType() == RouteEnvironment.InternalOrigin,
                 Internet2.BteTagAbsent(r)))
-                // TODO: prefix checking isn't implemented so this does nothing
-                //r.GetPrefix() == Internet2.InternalPrefix))
+            // TODO: prefix checking isn't implemented so this does nothing
+            //r.GetPrefix() == Internet2.InternalPrefix))
             // TODO: is this needed?
             // and it must be that either this node or one of the preceding internal nodes has a route
             // newSymbolics.Aggregate(r.GetResultValue(),
@@ -38,7 +38,7 @@ public static class Reachability
 
     // internal nodes get routes at time 1, external nodes get routes at time 2
     var modularProperties = net.ModularProperties.Select(p =>
-        Internet2.InternalNodes.Contains(p.Key)
+        Internet2.Internet2Nodes.Contains(p.Key)
           ? (p.Key, Lang.Finally<RouteEnvironment>(BigInteger.One, Internet2.HasInternalRoute))
           : (p.Key, Lang.Finally<RouteEnvironment>(new BigInteger(2), Internet2.HasInternalRoute)))
       .ToDictionary(p => p.Item1, p => p.Item2);
