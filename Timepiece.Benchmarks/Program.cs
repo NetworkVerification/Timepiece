@@ -26,6 +26,9 @@ var destOption = new Option<string>(
 {
   IsRequired = false
 };
+var verboseOption = new Option<bool>(
+  new[] {"--verbose", "-v"},
+  "If given, print Zen formulas to stdout");
 var monoOption = new Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically simulating Minesweeper");
@@ -36,13 +39,14 @@ var benchArgument = new Argument<BenchmarkType>(
 rootCommand.Add(sizeOption);
 rootCommand.Add(destOption);
 rootCommand.Add(benchArgument);
+rootCommand.Add(verboseOption);
 rootCommand.Add(monoOption);
 
 rootCommand.SetHandler(
-  (uint size, string dest, BenchmarkType bench, bool mono) =>
+  (uint size, string dest, BenchmarkType bench, bool verbose, bool mono) =>
   {
     Console.WriteLine($"k={size}");
-    new Benchmark(size, dest, bench, mono).Run();
-  }, sizeOption, destOption, benchArgument, monoOption);
+    new Benchmark(size, dest, bench, verbose, mono).Run();
+  }, sizeOption, destOption, benchArgument, verboseOption, monoOption);
 
 await rootCommand.InvokeAsync(args);

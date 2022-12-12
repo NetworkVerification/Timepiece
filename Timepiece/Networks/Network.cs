@@ -56,6 +56,11 @@ public class Network<T, TS>
   public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; set; }
 
   /// <summary>
+  /// Setting to control whether or not to print the constructed formulae to the user.
+  /// </summary>
+  public bool PrintFormulas { get; set; }
+
+  /// <summary>
   /// Construct a new Network.
   /// </summary>
   /// <param name="topology"></param>
@@ -164,7 +169,14 @@ public class Network<T, TS>
       Annotations[node](route, new BigInteger(0)));
 
     // negate and try to prove unsatisfiable.
-    var model = And(GetAssumptions(), Not(check)).Solve();
+    var query = And(GetAssumptions(), Not(check));
+    if (PrintFormulas)
+    {
+      Console.Write($"Initial check at {node}: ");
+      Console.WriteLine(query);
+    }
+
+    var model = query.Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
     var state = new State<T, TS>(model, node, route, Option.None<Zen<BigInteger>>(), Symbolics, SmtCheck.Base);
@@ -200,7 +212,14 @@ public class Network<T, TS>
     var check = Implies(Annotations[node](route, time), ModularProperties[node](route, time));
 
     // negate and try to prove unsatisfiable.
-    var model = And(GetAssumptions(), Not(check)).Solve();
+    var query = And(GetAssumptions(), Not(check));
+    if (PrintFormulas)
+    {
+      Console.Write($"Safety check at {node}: ");
+      Console.WriteLine(query);
+    }
+
+    var model = query.Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
     var state = new State<T, TS>(model, node, route, Option.Some(time), Symbolics, SmtCheck.Safety);
@@ -249,7 +268,14 @@ public class Network<T, TS>
     var check = Implies(And(assume.ToArray()), Annotations[node](newNodeRoute, time));
 
     // negate and try to prove unsatisfiable.
-    var model = And(GetAssumptions(), Not(check)).Solve();
+    var query = And(GetAssumptions(), Not(check));
+    if (PrintFormulas)
+    {
+      Console.Write($"Inductive check at {node}: ");
+      Console.WriteLine(query);
+    }
+
+    var model = query.Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TS>>();
     var neighborRoutes = routes.Where(pair => Topology[node].Contains(pair.Key));

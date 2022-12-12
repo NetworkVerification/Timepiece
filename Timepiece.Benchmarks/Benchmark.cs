@@ -4,7 +4,7 @@ namespace Timepiece.Benchmarks;
 
 public class Benchmark
 {
-  public Benchmark(uint n, string? destination, BenchmarkType type, bool runMonolithic)
+  public Benchmark(uint n, string? destination, BenchmarkType type, bool verbose, bool runMonolithic)
   {
     N = n;
     if (type.HasSymbolicDestination())
@@ -24,6 +24,7 @@ public class Benchmark
     }
 
     Bench = type;
+    Verbose = verbose;
     RunMonolithic = runMonolithic;
   }
 
@@ -32,46 +33,47 @@ public class Benchmark
     switch (Bench)
     {
       case BenchmarkType.SpReachable:
-        RunProfiler(Sp.Reachability(N, Destination), RunMonolithic);
+        RunProfiler(Sp.Reachability(N, Destination));
         break;
       case BenchmarkType.SpPathLength:
-        RunProfiler(Sp.PathLength(N, Destination), RunMonolithic);
+        RunProfiler(Sp.PathLength(N, Destination));
         break;
       case BenchmarkType.SpPathLengthWeak:
-        RunProfiler(Sp.PathLengthNoSafety(N, Destination), RunMonolithic);
+        RunProfiler(Sp.PathLengthNoSafety(N, Destination));
         break;
       case BenchmarkType.ApReachable:
-        RunProfiler(Sp.AllPairsReachability(N), RunMonolithic);
+        RunProfiler(Sp.AllPairsReachability(N));
         break;
       case BenchmarkType.ApPathLength:
-        RunProfiler(Sp.AllPairsPathLength(N), RunMonolithic);
+        RunProfiler(Sp.AllPairsPathLength(N));
         break;
       case BenchmarkType.ApPathLengthWeak:
-        RunProfiler(Sp.AllPairsPathLengthNoSafety(N), RunMonolithic);
+        RunProfiler(Sp.AllPairsPathLengthNoSafety(N));
         break;
       case BenchmarkType.ValleyFree:
-        RunProfiler(Vf.ValleyFreeReachable(N, Destination), RunMonolithic);
+        RunProfiler(Vf.ValleyFreeReachable(N, Destination));
         break;
       case BenchmarkType.ValleyFreeLength:
-        RunProfiler(Vf.ValleyFreePathLength(N, Destination), RunMonolithic);
+        RunProfiler(Vf.ValleyFreePathLength(N, Destination));
         break;
       case BenchmarkType.ApValleyFree:
-        RunProfiler(Vf.AllPairsValleyFreeReachable(N), RunMonolithic);
+        RunProfiler(Vf.AllPairsValleyFreeReachable(N));
         break;
       case BenchmarkType.FatTreeHijack:
-        RunProfiler(Hijack.HijackFiltered(N, Destination), RunMonolithic);
+        RunProfiler(Hijack.HijackFiltered(N, Destination));
         break;
       case BenchmarkType.ApFatTreeHijack:
-        RunProfiler(Hijack.AllPairsHijackFiltered(N), RunMonolithic);
+        RunProfiler(Hijack.AllPairsHijackFiltered(N));
         break;
       default:
         throw new ArgumentOutOfRangeException(null, Bench, "Invalid argument is not a benchmark type");
     }
   }
 
-  private static void RunProfiler<T, TS>(Network<T, TS> net, bool asMonolithic)
+  private void RunProfiler<T, TS>(Network<T, TS> net)
   {
-    if (asMonolithic)
+    net.PrintFormulas = Verbose;
+    if (RunMonolithic)
     {
       Profile.RunMonoWithStats(net);
     }
@@ -88,6 +90,8 @@ public class Benchmark
   public uint N { get; set; }
 
   public bool RunMonolithic { get; set; }
+
+  public bool Verbose { get; set; }
 }
 
 public enum BenchmarkType
