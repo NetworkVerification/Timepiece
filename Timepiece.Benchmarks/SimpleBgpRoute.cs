@@ -4,7 +4,12 @@ using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
-public record struct SimpleBgpRoute
+/// <summary>
+/// A simpler model of a BGP route.
+/// Excludes prefixes and community tags.
+/// </summary>
+[ZenObject]
+public class SimpleBgpRoute
 {
   public SimpleBgpRoute()
   {
@@ -36,46 +41,6 @@ public record struct SimpleBgpRoute
 
 public static class SimpleBgpRouteExtensions
 {
-  public static Zen<uint> GetLp(this Zen<SimpleBgpRoute> b)
-  {
-    return b.GetField<SimpleBgpRoute, uint>("Lp");
-  }
-
-  public static Zen<SimpleBgpRoute> WithLp(this Zen<SimpleBgpRoute> b, Zen<uint> lp)
-  {
-    return b.WithField("Lp", lp);
-  }
-
-  public static Zen<BigInteger> GetAsPathLength(this Zen<SimpleBgpRoute> b)
-  {
-    return b.GetField<SimpleBgpRoute, BigInteger>("AsPathLength");
-  }
-
-  public static Zen<SimpleBgpRoute> WithAsPathLength(this Zen<SimpleBgpRoute> b, Zen<BigInteger> asPathLength)
-  {
-    return b.WithField("AsPathLength", asPathLength);
-  }
-
-  public static Zen<uint> GetMed(this Zen<SimpleBgpRoute> b)
-  {
-    return b.GetField<SimpleBgpRoute, uint>("Med");
-  }
-
-  public static Zen<SimpleBgpRoute> WithMed(this Zen<SimpleBgpRoute> b, Zen<uint> med)
-  {
-    return b.WithField("Med", med);
-  }
-
-  public static Zen<UInt<_2>> GetOriginType(this Zen<SimpleBgpRoute> b)
-  {
-    return b.GetField<SimpleBgpRoute, UInt<_2>>("OriginType");
-  }
-
-  public static Zen<SimpleBgpRoute> WithOriginType(this Zen<SimpleBgpRoute> b, Zen<UInt<_2>> originType)
-  {
-    return b.WithField("OriginType", originType);
-  }
-
   /// <summary>
   /// Compare two SimpleBgpRoutes and return the minimum.
   /// Ranking is done in the following order:
@@ -89,10 +54,10 @@ public static class SimpleBgpRouteExtensions
   /// <returns>The minimum route by the ranking.</returns>
   public static Zen<SimpleBgpRoute> Min(this Zen<SimpleBgpRoute> b1, Zen<SimpleBgpRoute> b2)
   {
-    return Lang.CompareBy(GetLp, Zen.Gt,
-      Lang.CompareBy(GetAsPathLength, Zen.Lt,
-        Lang.CompareBy(GetOriginType, Zen.Gt,
-          Lang.CompareBy<SimpleBgpRoute, uint>(GetMed, Zen.Lt))))(b1, b2);
+    return Lang.CompareBy(b => b.GetLp(), Zen.Gt,
+      Lang.CompareBy(b => b.GetAsPathLength(), Zen.Lt,
+        Lang.CompareBy(b => b.GetOriginType(), Zen.Gt,
+          Lang.CompareBy<SimpleBgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
   }
 
   public static Zen<SimpleBgpRoute> IncrementAsPath(this Zen<SimpleBgpRoute> b)

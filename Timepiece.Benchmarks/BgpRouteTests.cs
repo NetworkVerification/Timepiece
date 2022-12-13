@@ -3,7 +3,7 @@ using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
-public static class BatfishBgpRouteTests
+public static class BgpRouteTests
 {
   [Fact]
   public static void MinPicksLargerLp()

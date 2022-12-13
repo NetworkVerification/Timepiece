@@ -135,8 +135,8 @@ public class Network<T, TS>
   public Dictionary<string, Option<State<T, TS>>> CheckAnnotationsWith<TAcc>(TAcc collector,
     Func<string, TAcc, Func<Option<State<T, TS>>>, Option<State<T, TS>>> f)
   {
-    var routes = Topology.MapNodes(_ => Symbolic<T>());
-    var time = Symbolic<BigInteger>();
+    var routes = Topology.MapNodes(node => Symbolic<T>($"{node}-route"));
+    var time = Symbolic<BigInteger>("time");
     var s = Topology.Nodes
       // call f for each node
       .AsParallel()
@@ -162,14 +162,14 @@ public class Network<T, TS>
 
   public Option<State<T, TS>> CheckBaseCase(string node)
   {
-    var route = Symbolic<T>();
+    var route = Symbolic<T>($"{node}-route");
 
     // if the route is the initial value, then the annotation holds (i.e., the annotation contains the route at time 0).
     var check = Implies(route == InitialValues[node],
       Annotations[node](route, new BigInteger(0)));
 
     // negate and try to prove unsatisfiable.
-    var query = And(GetAssumptions(), Not(check));
+    var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
       Console.Write($"Initial check at {node}: ");
@@ -205,14 +205,14 @@ public class Network<T, TS>
 
   public Option<State<T, TS>> CheckAssertions(string node)
   {
-    var route = Symbolic<T>();
-    var time = Symbolic<BigInteger>();
+    var route = Symbolic<T>($"{node}-route");
+    var time = Symbolic<BigInteger>("time");
 
     // ensure the inductive invariant implies the assertions we want to prove.
     var check = Implies(Annotations[node](route, time), ModularProperties[node](route, time));
 
     // negate and try to prove unsatisfiable.
-    var query = And(GetAssumptions(), Not(check));
+    var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
       Console.Write($"Safety check at {node}: ");
@@ -233,10 +233,10 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckInductive()
   {
     // create symbolic values for each node.
-    var routes = Topology.MapNodes(_ => Symbolic<T>());
+    var routes = Topology.MapNodes(node => Symbolic<T>($"{node}-route"));
 
     // create a symbolic time variable.
-    var time = Symbolic<BigInteger>();
+    var time = Symbolic<BigInteger>("time");
 
     // check the inductive invariant for each node.
     // Parallel.ForEach(Topology.Nodes, node => CheckInductive(node, routes, time))
@@ -268,7 +268,7 @@ public class Network<T, TS>
     var check = Implies(And(assume.ToArray()), Annotations[node](newNodeRoute, time));
 
     // negate and try to prove unsatisfiable.
-    var query = And(GetAssumptions(), Not(check));
+    var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
       Console.Write($"Inductive check at {node}: ");
@@ -290,7 +290,7 @@ public class Network<T, TS>
   public Option<State<T, TS>> CheckMonolithic()
   {
     // create symbolic values for each node.
-    var routes = Topology.MapNodes(_ => Symbolic<T>());
+    var routes = Topology.MapNodes(node => Symbolic<T>($"{node}-route"));
 
     // add the assertions
     var assertions = Topology.Nodes.Select(node => MonolithicProperties[node](routes[node]));
@@ -299,7 +299,7 @@ public class Network<T, TS>
     var constraints = Topology.Nodes.Select(node =>
       routes[node] == UpdateNodeRoute(node, routes));
 
-    var check = And(GetAssumptions(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
+    var check = And(GetSymbolicConstraints(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
 
     // negate and try to prove unsatisfiable.
     var model = check.Solve();
@@ -313,6 +313,13 @@ public class Network<T, TS>
     return Option.None<State<T, TS>>();
   }
 
+  /// <summary>
+  /// Return a route corresponding to the application of one step of the network semantics:
+  /// starting from the initial route at a node, merge in each transferred route from the node's neighbor.
+  /// </summary>
+  /// <param name="node">The focal node.</param>
+  /// <param name="routes">The routes of all nodes in the network.</param>
+  /// <returns>A route.</returns>
   private Zen<T> UpdateNodeRoute(string node, IReadOnlyDictionary<string, Zen<T>> routes)
   {
     return Topology[node].Aggregate(InitialValues[node],
@@ -320,7 +327,11 @@ public class Network<T, TS>
         MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
 
-  private Zen<bool> GetAssumptions()
+  /// <summary>
+  /// Return the conjunction of all constraints over symbolic values given to the network.
+  /// </summary>
+  /// <returns>A Zen boolean.</returns>
+  private Zen<bool> GetSymbolicConstraints()
   {
     var assumptions = Symbolics.Where(p => p.HasConstraint()).Select(p => p.Encode()).ToArray();
     // And() with an empty array throws an error, so we check the length first

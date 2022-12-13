@@ -13,13 +13,13 @@ public class SymbolicValue<T>
   public SymbolicValue(string name)
   {
     Name = name;
-    Value = Symbolic<T>();
+    Value = Symbolic<T>($"{name}");
   }
 
   public SymbolicValue(string name, Func<Zen<T>, Zen<bool>> constraint)
   {
     Name = name;
-    Value = Symbolic<T>();
+    Value = Symbolic<T>($"{name}");
     Constraint = constraint;
   }
 
