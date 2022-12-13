@@ -5,9 +5,9 @@ using ZenLib;
 namespace Timepiece.Benchmarks;
 
 [ZenObject]
-public struct BatfishBgpRoute
+public struct BgpRoute
 {
-  public BatfishBgpRoute()
+  public BgpRoute()
   {
     Destination = 0;
     AdminDist = 0;
@@ -18,7 +18,7 @@ public struct BatfishBgpRoute
     Communities = new CSet<string>();
   }
 
-  public BatfishBgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, UInt<_2> originType,
+  public BgpRoute(uint adminDist, uint lp, uint asPathLength, uint med, UInt<_2> originType,
     CSet<string> communities, uint destination)
   {
     AdminDist = adminDist;
@@ -72,16 +72,16 @@ public struct BatfishBgpRoute
   {
     var sb = new StringBuilder();
     sb.Append(
-      $"BatfishBgpRoute {{ Destination = {Destination}, AdminDist = {AdminDist}, Lp = {Lp}, AsPathLength = {AsPathLength}, Med = {Med}, OriginType = {OriginType.ToLong()}, Communities = {Communities} }}");
+      $"BgpRoute {{ Destination = {Destination}, AdminDist = {AdminDist}, Lp = {Lp}, AsPathLength = {AsPathLength}, Med = {Med}, OriginType = {OriginType.ToLong()}, Communities = {Communities} }}");
     return sb.ToString();
   }
 }
 
-public static class BatfishBgpRouteExtensions
+public static class BgpRouteExtensions
 {
-  public static Zen<BatfishBgpRoute> ToDestination(Zen<uint> destination)
+  public static Zen<BgpRoute> ToDestination(Zen<uint> destination)
   {
-    Zen<BatfishBgpRoute> b = new BatfishBgpRoute();
+    Zen<BgpRoute> b = new BgpRoute();
     return b.WithDestination(destination);
   }
 
@@ -97,12 +97,12 @@ public static class BatfishBgpRouteExtensions
   /// <param name="b1">The first route.</param>
   /// <param name="b2">The second route.</param>
   /// <returns>The minimum route by the ranking.</returns>
-  public static Zen<BatfishBgpRoute> Min(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2)
+  public static Zen<BgpRoute> Min(this Zen<BgpRoute> b1, Zen<BgpRoute> b2)
   {
     return Lang.CompareBy(b => b.GetLp(), Zen.Gt,
       Lang.CompareBy(b => b.GetAsPathLength(), Zen.Lt,
         Lang.CompareBy(b => b.GetOriginType(), Zen.Gt,
-          Lang.CompareBy<BatfishBgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
+          Lang.CompareBy<BgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
   }
 
   /// <summary>
@@ -113,7 +113,7 @@ public static class BatfishBgpRouteExtensions
   /// <param name="b2"></param>
   /// <param name="destination">The destination both routes should be routing towards.</param>
   /// <returns></returns>
-  public static Zen<BatfishBgpRoute> MinPrefix(this Zen<BatfishBgpRoute> b1, Zen<BatfishBgpRoute> b2,
+  public static Zen<BgpRoute> MinPrefix(this Zen<BgpRoute> b1, Zen<BgpRoute> b2,
     Zen<uint> destination)
   {
     var d1 = b1.GetDestination();
@@ -122,24 +122,24 @@ public static class BatfishBgpRouteExtensions
       Zen.If(d1 == destination, b1, b2));
   }
 
-  public static Zen<BatfishBgpRoute> IncrementAsPath(this Zen<BatfishBgpRoute> b)
+  public static Zen<BgpRoute> IncrementAsPath(this Zen<BgpRoute> b)
   {
     return b.WithAsPathLength(b.GetAsPathLength() + BigInteger.One);
   }
 
-  public static Zen<bool> HasCommunity(this Zen<BatfishBgpRoute> b, string comm)
+  public static Zen<bool> HasCommunity(this Zen<BgpRoute> b, string comm)
   {
     return b.GetCommunities().Contains(comm);
   }
 
-  public static Zen<BatfishBgpRoute> AddCommunity(this Zen<BatfishBgpRoute> b, string comm)
+  public static Zen<BgpRoute> AddCommunity(this Zen<BgpRoute> b, string comm)
   {
     return b.WithCommunities(b.GetCommunities().Add(comm));
   }
 
-  public static Zen<Option<BatfishBgpRoute>> FilterCommunity(this Zen<BatfishBgpRoute> b, string comm)
+  public static Zen<Option<BgpRoute>> FilterCommunity(this Zen<BgpRoute> b, string comm)
   {
-    return Zen.If(b.HasCommunity(comm), Option.None<BatfishBgpRoute>(), Option.Create(b));
+    return Zen.If(b.HasCommunity(comm), Option.None<BgpRoute>(), Option.Create(b));
   }
 
   /// <summary>
@@ -148,7 +148,7 @@ public static class BatfishBgpRouteExtensions
   /// <param name="b">The route.</param>
   /// <param name="x">The maximum length.</param>
   /// <returns>True if the AS path length of b is at most x, false otherwise.</returns>
-  public static Zen<bool> LengthAtMost(this Zen<BatfishBgpRoute> b, Zen<BigInteger> x) =>
+  public static Zen<bool> LengthAtMost(this Zen<BgpRoute> b, Zen<BigInteger> x) =>
     Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= BigInteger.Zero);
 
   /// <summary>
@@ -157,7 +157,7 @@ public static class BatfishBgpRouteExtensions
   /// <param name="b"></param>
   /// <param name="lp"></param>
   /// <returns></returns>
-  public static Zen<bool> LpEquals(this Zen<BatfishBgpRoute> b, Zen<uint> lp) => b.GetLp() == lp;
+  public static Zen<bool> LpEquals(this Zen<BgpRoute> b, Zen<uint> lp) => b.GetLp() == lp;
 
   /// <summary>
   /// Return true if the destination is as given.
@@ -165,12 +165,12 @@ public static class BatfishBgpRouteExtensions
   /// <param name="b"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  public static Zen<bool> DestinationIs(this Zen<BatfishBgpRoute> b, Zen<uint> destination) =>
+  public static Zen<bool> DestinationIs(this Zen<BgpRoute> b, Zen<uint> destination) =>
     b.GetDestination() == destination;
 
-  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> MaxLengthDefaultLp(Zen<BigInteger> x) =>
+  public static Func<Zen<BgpRoute>, Zen<bool>> MaxLengthDefaultLp(Zen<BigInteger> x) =>
     b => Zen.And(b.LengthAtMost(x), b.LpEquals(100));
 
-  public static Func<Zen<BatfishBgpRoute>, Zen<bool>> EqLengthDefaultLp(Zen<BigInteger> x) =>
+  public static Func<Zen<BgpRoute>, Zen<bool>> EqLengthDefaultLp(Zen<BigInteger> x) =>
     b => Zen.And(b.GetAsPathLength() == x, b.LpEquals(100));
 }

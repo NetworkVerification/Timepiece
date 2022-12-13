@@ -81,13 +81,6 @@ public static class BatfishBgpRouteExtensions
           Lang.CompareBy<BatfishBgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
   }
 
-  public static Zen<Pair<bool, BatfishBgpRoute>> MinPair(this Zen<Pair<bool, BatfishBgpRoute>> b1,
-    Zen<Pair<bool, BatfishBgpRoute>> b2)
-  {
-    return Zen.If(Zen.Not(b1.Item1()), b2,
-      Zen.If(Zen.Not(b2.Item1()), b1, Pair.Create(Zen.True(), Min(b1.Item2(), b2.Item2()))));
-  }
-
   public static Zen<BatfishBgpRoute> IncrementAsPathLength(this Zen<BatfishBgpRoute> b, Zen<BigInteger> x) =>
     b.WithAsPathLength(b.GetAsPathLength() + x);
 }

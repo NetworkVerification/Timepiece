@@ -3,6 +3,9 @@ using ZenLib;
 
 namespace Timepiece.Datatypes;
 
+/// <summary>
+/// Extensions to Zen's Option type.
+/// </summary>
 public static class OptionExtensions
 {
   public static void May<T>(this Option<T> o, Action<T> f)
