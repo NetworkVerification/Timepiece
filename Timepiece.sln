@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timepiece.Angler", "Timepie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timepiece.Benchmarks", "Timepiece.Benchmarks\Timepiece.Benchmarks.csproj", "{2C973160-FF14-45BB-8EBB-037A619DC6BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MisterWolf", "MisterWolf\MisterWolf.csproj", "{21156A15-0E2B-4E90-9DA4-1418082FA055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,14 @@ Global
 		{2C973160-FF14-45BB-8EBB-037A619DC6BA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2C973160-FF14-45BB-8EBB-037A619DC6BA}.Release|x64.ActiveCfg = Release|Any CPU
 		{2C973160-FF14-45BB-8EBB-037A619DC6BA}.Release|x64.Build.0 = Release|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Debug|x64.Build.0 = Debug|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Release|x64.ActiveCfg = Release|Any CPU
+		{21156A15-0E2B-4E90-9DA4-1418082FA055}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
