@@ -68,7 +68,7 @@ public class Infer<T>
       ancestorString.Append($", {ancestor}");
     }
 
-    Console.WriteLine($"Ancestors {ancestorString} do NOT imply node {node}'s invariant.");
+    Console.WriteLine($"Ancestors [{ancestorString}] do NOT imply node {node}'s invariant.");
     return false;
   }
 
@@ -180,8 +180,10 @@ public class Infer<T>
     return Zen.And(predecessors.Select(j => ancestors.Contains(j) ? time >= times[j] : time < times[j]));
   }
 
-  public Network<T, TS> ToNetwork<TS>()
+  public Network<T, TS> ToNetwork<TS>(Dictionary<string, BigInteger> times)
   {
-    throw new NotImplementedException();
+    var annotations = Topology.MapNodes(n => Lang.Until(times[n], BeforeInvariants[n], AfterInvariants[n]));
+    return new Network<T, TS>(Topology, TransferFunction, MergeFunction, InitialValues, annotations, annotations,
+      AfterInvariants, new SymbolicValue<TS>[] { });
   }
 }

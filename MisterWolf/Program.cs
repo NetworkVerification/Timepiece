@@ -29,3 +29,6 @@ else
 {
   Console.WriteLine("Failed, could not infer times.");
 }
+
+var net = infer.ToNetwork<Unit>(times);
+Profile.RunAnnotated(net);
