@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Numerics;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using Timepiece;
 using Timepiece.Networks;
@@ -132,9 +133,11 @@ public class Infer<T>
     //     or t_m + 1 >= t_n
     foreach (var (node, ancestors) in beforeChecks)
     {
+      bounds.Add(Zen.Or(BigInteger.One >= times[node],
+        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestors))));
       bounds.AddRange(from ancestor in ancestors
-        select Zen.And(times[ancestor] + new BigInteger(1) < times[node],
-          NextToConverge(Topology[node], times[ancestor], times, ancestors)));
+        select Zen.Or(times[ancestor] + BigInteger.One >= times[node],
+          Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestors))));
     }
 
     // (2) if the after check failed for node n and ancestors anc, add bounds for all predecessors m of n
@@ -143,16 +146,19 @@ public class Infer<T>
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
     foreach (var (node, ancestors) in afterChecks)
     {
+      bounds.Add(Zen.Or(BigInteger.One < times[node],
+        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestors))));
       bounds.AddRange(from ancestor in ancestors
-        select Zen.And(times[ancestor] + new BigInteger(1) >= times[node],
-          NextToConverge(Topology[node], times[ancestor], times, ancestors)));
+        select Zen.Or(times[ancestor] + BigInteger.One < times[node],
+          Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestors))));
       // TODO: are we going to need to move this subtraction inside? (to deal with the case where times[node] = 0)
-      bounds.Add(NextToConverge(Topology[node], times[node] - new BigInteger(1), times, ancestors));
+      bounds.Add(Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, ancestors)));
     }
 
-    // we now negate each element of the bounds and take their disjunction
-    var constraints = Zen.And(Zen.Or(bounds.Select(Zen.Not)),
-      Zen.And(times.Select(t => t.Value > BigInteger.Zero)));
+    // we now take the conjunction of all the bounds
+    // and additionally restrict the times to be non-negative
+    var constraints = Zen.And(Zen.And(bounds),
+      Zen.And(times.Select(t => t.Value >= BigInteger.Zero)));
 
     var model = constraints.Solve();
     if (model.IsSatisfiable())
