@@ -184,7 +184,7 @@ public class Infer<T>
         }
       });
     // construct a set of bounds to check
-    var times = Topology.MapNodes(_ => Zen.Symbolic<BigInteger>());
+    var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
     // add initial check bounds
     var bounds =
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)

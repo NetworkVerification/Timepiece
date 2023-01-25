@@ -37,7 +37,7 @@ Infer<Option<uint>> PathLength(Topology topology, Dictionary<string, Zen<Option<
     Lang.Omap2<uint>(Zen.Min), initialValues, beforeInvariants, afterInvariants);
 }
 
-var topology = Topologies.Path(3);
+var topology = Topologies.Path(6);
 var initialValues = topology.MapNodes(n => n == "A" ? Zen.True() : Zen.False());
 
 if (args.Length == 0)
