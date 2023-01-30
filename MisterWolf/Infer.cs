@@ -162,8 +162,8 @@ public class Infer<T>
     });
     // for each node, for each subset of its predecessors, run CheckAncestors in parallel
     // construct a dictionary of the results of which ancestors fail to imply the two invariants
-    var beforeInductiveChecks = new ConcurrentDictionary<string, string[]>();
-    var afterInductiveChecks = new ConcurrentDictionary<string, string[]>();
+    var beforeInductiveChecks = new ConcurrentDictionary<string, List<string[]>>();
+    var afterInductiveChecks = new ConcurrentDictionary<string, List<string[]>>();
     var nodeAndAncestors = Topology.Nodes
       .SelectMany(n => PowerSet(Topology[n]), (n, ancestors) => (n, ancestors));
     nodeAndAncestors.AsParallel()
@@ -174,13 +174,15 @@ public class Infer<T>
         if (!CheckAncestors(n, BeforeInvariants[n], anc))
         {
           Console.WriteLine(ReportFailure(n, "before", anc));
-          beforeInductiveChecks[n] = anc;
+          var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<string[]>());
+          ancestors.Add(anc);
         }
 
         if (!CheckAncestors(n, AfterInvariants[n], anc))
         {
           Console.WriteLine(ReportFailure(n, "after", anc));
-          afterInductiveChecks[n] = anc;
+          var ancestors = afterInductiveChecks.GetOrAdd(n, new List<string[]>());
+          ancestors.Add(anc);
         }
       });
     // construct a set of bounds to check
@@ -195,11 +197,16 @@ public class Infer<T>
     //     or t_m + 1 >= t_n
     foreach (var (node, ancestors) in beforeInductiveChecks)
     {
-      bounds.Add(Zen.Or(BigInteger.One >= times[node],
-        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestors))));
-      bounds.AddRange(from ancestor in ancestors
-        select Zen.Or(times[ancestor] + BigInteger.One >= times[node],
-          Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestors))));
+      foreach (var ancestorsGroup in ancestors)
+      {
+        var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
+          Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestorsGroup)));
+        bounds.Add(zeroBeforeBound);
+        var beforeBounds = from ancestor in ancestorsGroup
+          select Zen.Or(times[ancestor] + BigInteger.One >= times[node],
+            Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestorsGroup)));
+        bounds.AddRange(beforeBounds);
+      }
     }
 
     // (2) if the after check failed for node n and ancestors anc, add bounds for all predecessors m of n
@@ -208,12 +215,24 @@ public class Infer<T>
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
     foreach (var (node, ancestors) in afterInductiveChecks)
     {
-      bounds.Add(Zen.Or(BigInteger.One < times[node],
-        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestors))));
-      bounds.AddRange(from ancestor in ancestors
-        select Zen.Or(times[ancestor] + BigInteger.One < times[node],
-          Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestors))));
-      bounds.Add(Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, ancestors)));
+      foreach (var ancestorsGroup in ancestors)
+      {
+        var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
+          Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestorsGroup)));
+        bounds.Add(zeroAfterBound);
+        var afterBounds = from ancestor in ancestorsGroup
+          select Zen.Or(times[ancestor] + BigInteger.One < times[node],
+            Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestorsGroup)));
+        bounds.AddRange(afterBounds);
+        var nextBound = Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, ancestorsGroup));
+        bounds.Add(nextBound);
+      }
+    }
+
+    // list the computed bounds
+    foreach (var b in bounds)
+    {
+      Console.WriteLine(b);
     }
 
     // we now take the conjunction of all the bounds
