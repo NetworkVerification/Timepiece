@@ -62,7 +62,8 @@ public static class Profile
     {
       var t = Time(net =>
       {
-        var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
+        var s = net.CheckAnnotationsWith(nodeTimes,
+          (node, times, checkFunction) => LogCheckTime(node, times, checkFunction));
         var passed = true;
         var failedNodes = new List<string>();
         foreach (var (node, counterexample) in s)
@@ -112,16 +113,21 @@ public static class Profile
     Console.WriteLine("Error, unsound annotations provided or assertions failed!");
   }
 
-  private static long Time<T, TS>(Action<Network<T, TS>> f, Network<T, TS> network)
+  /// <summary>
+  /// Return the milliseconds taken by the given action on the given input.
+  /// </summary>
+  /// <param name="f"></param>
+  /// <param name="input"></param>
+  /// <typeparam name="T"></typeparam>
+  /// <returns></returns>
+  public static long Time<T>(Action<T> f, T input)
   {
     var timer = Stopwatch.StartNew();
-    f(network);
+    f(input);
     return timer.ElapsedMilliseconds;
   }
 
-  public static Option<State<T, TS>> LogCheckTime<T, TS>(string node,
-    IDictionary<string, long> times,
-    Func<Option<State<T, TS>>> checkFunction)
+  public static T LogCheckTime<T>(string node, IDictionary<string, long> times, Func<T> checkFunction)
   {
     var timer = Stopwatch.StartNew();
     var s = checkFunction();

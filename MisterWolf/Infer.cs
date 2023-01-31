@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 using Timepiece;
@@ -141,8 +142,9 @@ public class Infer<T>
   /// Infer times for each node, such that a network annotated with these times (of the form "before until^{t} after")
   /// should pass all the modular checks.
   /// </summary>
+  /// <param name="printBounds">If true, print the computed bounds.</param>
   /// <returns></returns>
-  private Dictionary<string, BigInteger> InferTimes()
+  private Dictionary<string, BigInteger> InferTimes(bool printBounds)
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -229,10 +231,13 @@ public class Infer<T>
       }
     }
 
-    // list the computed bounds
-    foreach (var b in bounds)
+    if (printBounds)
     {
-      Console.WriteLine(b);
+      // list the computed bounds
+      foreach (var b in bounds)
+      {
+        Console.WriteLine(b);
+      }
     }
 
     // we now take the conjunction of all the bounds
@@ -273,7 +278,11 @@ public class Infer<T>
   /// <returns></returns>
   public Network<T, TS> ToNetwork<TS>()
   {
-    var times = InferTimes();
+    var timer = Stopwatch.StartNew();
+    var times = InferTimes(false);
+    timer.Stop();
+    var timeTaken = timer.ElapsedMilliseconds;
+    Console.WriteLine($"Inference took {timeTaken}ms!");
 
     if (times.Count > 0)
     {
