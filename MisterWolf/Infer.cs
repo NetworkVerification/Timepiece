@@ -143,8 +143,9 @@ public class Infer<T>
   /// should pass all the modular checks.
   /// </summary>
   /// <param name="printBounds">If true, print the computed bounds.</param>
+  /// <param name="maxTime"></param>
   /// <returns></returns>
-  private Dictionary<string, BigInteger> InferTimes(bool printBounds)
+  private Dictionary<string, BigInteger> InferTimes(bool printBounds, BigInteger? maxTime)
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -168,6 +169,8 @@ public class Infer<T>
     var afterInductiveChecks = new ConcurrentDictionary<string, List<string[]>>();
     var nodeAndAncestors = Topology.Nodes
       .SelectMany(n => PowerSet(Topology[n]), (n, ancestors) => (n, ancestors));
+    // TODO: if we have check failures when predecessor u is both in ancestors and not in ancestors,
+    // TODO: then we should exclude it from the generated bounds (since its value won't matter)
     nodeAndAncestors.AsParallel()
       .ForAll(tuple =>
       {
@@ -193,6 +196,11 @@ public class Infer<T>
     var bounds =
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
         .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)).ToList();
+    // if a maximum time is given, also require that no witness time is greater than the maximum
+    if (maxTime is not null)
+    {
+      bounds.AddRange(times.Select(pair => pair.Value <= maxTime));
+    }
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and ancestors anc, add bounds for all ancestors m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
@@ -239,6 +247,7 @@ public class Infer<T>
         Console.WriteLine(b);
       }
     }
+    // Console.WriteLine(bounds.Count);
 
     // we now take the conjunction of all the bounds
     // and additionally restrict the times to be non-negative
@@ -276,10 +285,10 @@ public class Infer<T>
   /// </summary>
   /// <typeparam name="TS"></typeparam>
   /// <returns></returns>
-  public Network<T, TS> ToNetwork<TS>()
+  public Network<T, TS> ToNetwork<TS>(bool printBounds, BigInteger? maxTime)
   {
     var timer = Stopwatch.StartNew();
-    var times = InferTimes(false);
+    var times = InferTimes(printBounds, maxTime);
     timer.Stop();
     var timeTaken = timer.ElapsedMilliseconds;
     Console.WriteLine($"Inference took {timeTaken}ms!");
@@ -294,7 +303,7 @@ public class Infer<T>
     }
     else
     {
-      Console.WriteLine("Failed, could not infer times.");
+      throw new ArgumentException("Failed to infer times!");
     }
 
     var annotations = Topology.MapNodes(n => Lang.Until(times[n], BeforeInvariants[n], AfterInvariants[n]));

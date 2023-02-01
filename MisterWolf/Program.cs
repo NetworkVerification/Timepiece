@@ -4,6 +4,9 @@ using MisterWolf;
 using Timepiece;
 using ZenLib;
 
+ZenSettings.UseLargeStack = true;
+ZenSettings.LargeStackSize = 30_000_000;
+
 Infer<bool> Reachability(Topology topology, Dictionary<string, Zen<bool>> initialValues)
 {
   // initially, the route can be anything
@@ -37,14 +40,15 @@ Infer<Option<uint>> PathLength(Topology topology, Dictionary<string, Zen<Option<
     Lang.Omap2<uint>(Zen.Min), initialValues, beforeInvariants, afterInvariants);
 }
 
-var topology = new Topology(new Dictionary<string, List<string>>
-{
-  {"A", new List<string> {"B"}},
-  {"B", new List<string> {"A", "C", "D"}},
-  {"C", new List<string> {"B", "D"}},
-  {"D", new List<string> {"B", "C"}}
-});
-var initialValues = topology.MapNodes(n => n.Equals("A") ? Zen.True() : Zen.False());
+// var topology = new Topology(new Dictionary<string, List<string>>
+// {
+//   {"A", new List<string> {"B"}},
+//   {"B", new List<string> {"A", "C", "D"}},
+//   {"C", new List<string> {"B", "D"}},
+//   {"D", new List<string> {"B", "C"}}
+// });
+var topology = Topologies.FatTree(4);
+var initialValues = topology.MapNodes(n => n.Equals("edge-19") ? Zen.True() : Zen.False());
 
 if (args.Length == 0)
 {
@@ -72,6 +76,6 @@ foreach (var arg in args)
       throw new ArgumentOutOfRangeException(arg);
   }
 
-  var net = infer.ToNetwork<Unit>();
+  var net = infer.ToNetwork<Unit>(false, 4);
   Profile.RunAnnotated(net);
 }
