@@ -74,7 +74,7 @@ public static class SetReachabilityTests
   }
 
   [Fact]
-  public static void SquareSoundAnnotationsPassChecks()
+  public static void SquareUnsoundAnnotationsFailChecks()
   {
     var topology = new Topology(new Dictionary<string, List<string>>
     {
@@ -83,13 +83,34 @@ public static class SetReachabilityTests
       {"C", new List<string> {"A", "D"}},
       {"D", new List<string> {"B", "C"}}
     });
+    var allNodes = topology.FoldNodes(CSet.Empty<string>(), CSet.Add);
     var convergeTime = new BigInteger(3);
-    // doesn't work: ctex shows a case where nodes contain all neighbors
-    // could we weaken the before condition to include the case that all of the neighbors are there?
+    // won't work: can't prove after predicate using the before predicate
     var annotations = topology.MapNodes(n => Lang.Until(new BigInteger(2),
-      route => Zen.And(route.Contains(n),
-        route.IsSubsetOf(topology[n].Aggregate(CSet.Empty<string>().Add(n), (r, m) => r.Add(m)))),
+      route => Zen.And(route.Contains(n), route.IsSubsetOf(allNodes)),
+        // route.IsSubsetOf(topology[n].Aggregate(CSet.Empty<string>().Add(n), (r, m) => r.Add(m)))),
       ContainsAll(topology)));
+    var net = Net(topology, convergeTime, annotations);
+    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
+  }
+
+  [Fact]
+  public static void SquareSoundAnnotationsPassChecks() {
+    var topology = new Topology(new Dictionary<string, List<string>>
+    {
+      {"A", new List<string> {"B", "C"}},
+      {"B", new List<string> {"A", "D"}},
+      {"C", new List<string> {"A", "D"}},
+      {"D", new List<string> {"B", "C"}}
+    });
+    var convergeTime = new BigInteger(3);
+    // Observe that these annotations do not use Until, as they require two ifs.
+    var annotations = topology.MapNodes<Func<Zen<CSet<string>>, Zen<BigInteger>, Zen<bool>>>(n =>
+      (route, time) => Zen.If(time < new BigInteger(1),
+        CSet.Empty<string>().Add(n).IsSubsetOf(route),
+        Zen.If(time < new BigInteger(2),
+          topology[n].Aggregate(CSet.Empty<string>().Add(n), CSet.Add).IsSubsetOf(route),
+          ContainsAll(topology)(route))));
     var net = Net(topology, convergeTime, annotations);
     NetworkAssert.CheckSound(net);
   }
