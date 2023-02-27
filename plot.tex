@@ -1,0 +1,51 @@
+\documentclass[tikz]{standalone}
+\usepackage{mathptmx}  % times roman, including math (where possible)
+\usepackage{siunitx} % SI units
+\usepackage{pgfplots} % plots
+\usepackage{pgfplotstable} % tables
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{units} % units
+% style for timeout lines
+\tikzstyle{timeout line} = [mark=none,black,dashed,samples=2,domain=20:4500]
+\tikzstyle{timeout node} = [pos=0.2,yshift=-5pt,font=\it]
+
+\pgfplotscreateplotcyclelist{cute}{
+    {blue,mark=pentagon},
+    {orange,mark=triangle},
+    {green,mark=square},
+    {red,mark=diamond},
+}
+\pgfplotstableread{mono.dat}\mtbl
+\pgfplotstableread{mod.dat}\tbl
+% don't forget to divide the results by 1000 to get them in seconds
+\begin{document}
+\begin{tikzpicture}
+    \begin{axis}[
+            thick,
+            grid=major,
+            xlabel=Nodes,
+            ylabel={Verification time},
+            ymin=0.5,
+            ymax=15000,
+            xmin=0,
+            xmax=4500,
+            ymode=log,
+            y unit=\si{\second},
+            cycle list name=cute,
+            legend style={
+                    at={(0.95,0.98)},
+                    anchor=north east,
+                }
+        ]
+			\addplot table[x=n, y expr=\thisrow{mod}/1000]{\tbl};
+			\addlegendentry{\sysshort}
+			\addplot table[x=n, y expr=\thisrow{med}/1000]{\tbl};
+			\addlegendentry{\sysshort median}
+			\addplot table[x=n, y expr=\thisrow{99}/1000]{\tbl};
+			\addlegendentry{\sysshort $99^{th}$ p.}
+			\addplot table[x=n, y expr=\thisrow{mono}/1000]{\mtbl};
+			\addlegendentry{\ms}
+        \addplot[timeout line] {7200.0} node [timeout node] {t/o};
+      \end{axis}
+    \end{tikzpicture}
+\end{document}
