@@ -16,7 +16,7 @@ OUTPUT_FILE = "{:%Y-%m-%dT%H%M%S}.txt".format(
     datetime.datetime.now(datetime.timezone.utc)
 )
 
-DLL = "Timepiece.Benchmarks/bin/Release/net6.0/Timepiece.Benchmarks.dll"
+DLL = "Timepiece.Benchmarks/bin/Release/net7.0/publish/Timepiece.Benchmarks.dll"
 
 
 class Response(Enum):

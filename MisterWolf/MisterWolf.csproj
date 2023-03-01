@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ZenLib" Version="3.1.1"/>
+    <PackageReference Include="ZenLib" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Timepiece\Timepiece.csproj"/>
+    <ProjectReference Include="..\Timepiece\Timepiece.csproj" />
   </ItemGroup>
 
 </Project>
