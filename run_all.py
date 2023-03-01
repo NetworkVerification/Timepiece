@@ -5,6 +5,7 @@
 import argparse
 import datetime
 from enum import Enum
+from os import PathLike, getcwd
 import subprocess
 import sys
 import os.path
@@ -16,7 +17,9 @@ OUTPUT_FILE = "{:%Y-%m-%dT%H%M%S}.txt".format(
     datetime.datetime.now(datetime.timezone.utc)
 )
 
-DLL = "Timepiece.Benchmarks/bin/Release/net7.0/publish/Timepiece.Benchmarks.dll"
+# DLL = "Timepiece.Benchmarks/bin/Release/net7.0/publish/Timepiece.Benchmarks.dll"
+# Name of the benchmark DLL
+DLL = "Timepiece.Benchmarks.dll"
 
 
 class Response(Enum):
@@ -104,6 +107,13 @@ def run_all(sizes, trials, timeout, options, output_file, short_circuit=True):
 def parser():
     parser = argparse.ArgumentParser(description="Run Timepiece benchmarks")
     parser.add_argument(
+        "--dll-path",
+        "-d",
+        type=PathLike,
+        default=getcwd(),
+        help=f"Path to the directory containing the {DLL} file",
+    )
+    parser.add_argument(
         "--trials",
         "-n",
         type=int,
@@ -122,6 +132,7 @@ def parser():
         "-k",
         nargs=2,
         type=int,
+        required=True,
         help="Lower and upper bound on size of benchmark",
     )
     parser.add_argument(
@@ -130,22 +141,28 @@ def parser():
         action="store_false",
         help="Run the remaining trials even if a previous trial times out or is interrupted by the user",
     )
+    parser.add_argument(
+        "--no-log",
+        "-L",
+        action="store_false",
+        help="Do not log the result of running the benchmarks to a file",
+    )
     parser.add_argument("options", nargs="+", help="Options passed to DLL")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    if not os.path.exists(DLL):
+    args = parser()
+    if not os.path.exists(os.path.join(args.dll_path, DLL)):
         print("Could not find DLL {}, exiting...".format(DLL))
         sys.exit(1)
 
-    args = parser()
     SIZES = range(args.size[0], args.size[1] + 1, 4)
     run_all(
         SIZES,
         args.trials,
         args.timeout,
         args.options,
-        OUTPUT_FILE,
+        OUTPUT_FILE if args.no_log else None,
         short_circuit=args.no_short_circuit,
     )
