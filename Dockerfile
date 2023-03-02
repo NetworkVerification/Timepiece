@@ -14,12 +14,24 @@ RUN dotnet publish Timepiece.Benchmarks -c Release -o /timepiece/publish
 FROM mcr.microsoft.com/dotnet/aspnet:latest as run
 # install python
 RUN apt-get update -y && apt-get install python3.9 -y
-# set up an alias for python to python3.9
-# RUN alias python=python3.9
 WORKDIR /timepiece
 COPY --from=publish /timepiece/publish publish
 COPY run_all.py .
-# COPY RunEverything.ps1 .
 # Default command: run everything
-# TODO: extract results!!
-CMD python3.9 ./run_all.py -n 1 -t 7200 -k 4 40 -- r
+CMD python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- r; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- lw; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- v; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- h; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- ar; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- alw; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- av; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- ah; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- r -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- lw -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- v -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- h -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- ar -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- alw -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- av -m; \
+    # python3.9 ./run_all.py -d /timepiece/publish -n 1 -t 30 -k 4 40 -- ah -m; \
+    echo 'done'

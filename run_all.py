@@ -5,21 +5,9 @@
 import argparse
 import datetime
 from enum import Enum
-from os import PathLike, getcwd
+import pathlib
 import subprocess
 import sys
-import os.path
-
-# name the output file after the current time
-# as Windows filenames cannot contain ':' characters, we deviate slightly from the ISO representation
-# to YYYY-MM-DD{T}HHMMSS, where {T} is the literal 'T' character
-OUTPUT_FILE = "{:%Y-%m-%dT%H%M%S}.txt".format(
-    datetime.datetime.now(datetime.timezone.utc)
-)
-
-# DLL = "Timepiece.Benchmarks/bin/Release/net7.0/publish/Timepiece.Benchmarks.dll"
-# Name of the benchmark DLL
-DLL = "Timepiece.Benchmarks.dll"
 
 
 class Response(Enum):
@@ -45,7 +33,7 @@ def tee_output(output, output_file):
             f.write(output)
 
 
-def run_dotnet(size, options, timeout, output_file) -> Response:
+def run_dotnet(dll_file, size, options, timeout, output_file) -> Response:
     """
     Run dotnet for the given benchmark size with the given options.
     size is an int
@@ -53,7 +41,7 @@ def run_dotnet(size, options, timeout, output_file) -> Response:
     output_file is None or a file name
     Return the return code of running the process.
     """
-    args = ["dotnet", DLL, "-k", str(size)] + options
+    args = ["dotnet", dll_file, "-k", str(size)] + options
     # run the process, redirecting stderr to stdout,
     # timing out after TIMEOUT,
     # and raising an exception if the return code is non-zero
@@ -78,7 +66,7 @@ def run_dotnet(size, options, timeout, output_file) -> Response:
         return Response.TIMEOUT
 
 
-def run_all(sizes, trials, timeout, options, output_file, short_circuit=True):
+def run_all(dll_file, sizes, trials, timeout, options, output_file, short_circuit=True):
     """
     Run the given benchmark for the sequence of sizes and trials.
     Pass the given options into dotnet and optionally save the results to
@@ -97,7 +85,7 @@ def run_all(sizes, trials, timeout, options, output_file, short_circuit=True):
             tee_output(trial_output, output_file)
 
             # run the benchmark
-            returncode = run_dotnet(size, options, timeout, output_file)
+            returncode = run_dotnet(dll_file, size, options, timeout, output_file)
             # if the benchmark timed out or was interrupted and short_circuit is set,
             # end immediately
             if returncode != Response.SUCCESS and short_circuit:
@@ -109,8 +97,8 @@ def parser():
     parser.add_argument(
         "--dll-path",
         "-d",
-        type=PathLike,
-        default=getcwd(),
+        type=pathlib.Path,
+        default=pathlib.Path.cwd(),
         help=f"Path to the directory containing the {DLL} file",
     )
     parser.add_argument(
@@ -152,17 +140,34 @@ def parser():
 
 
 if __name__ == "__main__":
+    # create the log directory if necessary
+    log_dir = pathlib.Path("logs")
+    if not log_dir.exists():
+        log_dir.mkdir()
+    # name the output file after the current time
+    # as Windows filenames cannot contain ':' characters, we deviate slightly from the ISO representation
+    # to YYYY-MM-DD{T}HHMMSS, where {T} is the literal 'T' character
+    output_file = log_dir.joinpath(
+        "{:%Y-%m-%dT%H%M%S}.txt".format(datetime.datetime.now(datetime.timezone.utc))
+    )
+
+    # Name of the benchmark DLL
+    DLL = "Timepiece.Benchmarks.dll"
+
+    # parse arguments and begin
     args = parser()
-    if not os.path.exists(os.path.join(args.dll_path, DLL)):
+    dll_file = args.dll_path.joinpath(DLL)
+    if not dll_file.exists():
         print("Could not find DLL {}, exiting...".format(DLL))
         sys.exit(1)
 
     SIZES = range(args.size[0], args.size[1] + 1, 4)
     run_all(
+        dll_file,
         SIZES,
         args.trials,
         args.timeout,
         args.options,
-        OUTPUT_FILE if args.no_log else None,
+        output_file if args.no_log else None,
         short_circuit=args.no_short_circuit,
     )
