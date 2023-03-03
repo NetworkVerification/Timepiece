@@ -3,11 +3,15 @@
 \usepackage{siunitx} % SI units
 \usepackage{pgfplots} % plots
 \usepackage{pgfplotstable} % tables
+\usepackage{xspace}
 \pgfplotsset{compat=1.18}
 \usepgfplotslibrary{units} % units
 % style for timeout lines
-\tikzstyle{timeout line} = [mark=none,black,dashed,samples=2,domain=20:4500]
+\tikzstyle{timeout line} = [mark=none,black,dashed,samples=2,domain=20:2000]
 \tikzstyle{timeout node} = [pos=0.2,yshift=-5pt,font=\it]
+
+\newcommand{\ms}{\textsf{Ms}\xspace}
+\newcommand{\sysshort}{\textsf{Tp}\xspace}
 
 \pgfplotscreateplotcyclelist{cute}{
     {blue,mark=pentagon},
@@ -25,10 +29,9 @@
             grid=major,
             xlabel=Nodes,
             ylabel={Verification time},
-            ymin=0.5,
-            ymax=15000,
+            ymax=10000,
             xmin=0,
-            xmax=4500,
+            xmax=2000,
             ymode=log,
             y unit=\si{\second},
             cycle list name=cute,
@@ -37,13 +40,13 @@
                     anchor=north east,
                 }
         ]
-			\addplot table[x=n, y expr=\thisrow{mod}/1000]{\tbl};
+			\addplot table[x=n, y expr=\thisrow{total}/1000]{\tbl};
 			\addlegendentry{\sysshort}
 			\addplot table[x=n, y expr=\thisrow{med}/1000]{\tbl};
 			\addlegendentry{\sysshort median}
-			\addplot table[x=n, y expr=\thisrow{99}/1000]{\tbl};
+			\addplot table[x=n, y expr=\thisrow{99p}/1000]{\tbl};
 			\addlegendentry{\sysshort $99^{th}$ p.}
-			\addplot table[x=n, y expr=\thisrow{mono}/1000]{\mtbl};
+			\addplot table[x=n, y expr=\thisrow{total}/1000]{\mtbl};
 			\addlegendentry{\ms}
         \addplot[timeout line] {7200.0} node [timeout node] {t/o};
       \end{axis}

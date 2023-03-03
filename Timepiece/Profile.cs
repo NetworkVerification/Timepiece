@@ -33,7 +33,12 @@ public static class Profile
 
   public static void RunMonoWithStats<T, TS>(Network<T, TS> network)
   {
-    Console.WriteLine($"Monolithic verification took {Time(RunMono, network)}ms");
+    const string headers = "n\ttotal";
+    var monoTime = Time(RunMono, network);
+    var data = $"{network.Topology.Nodes.Length}\t{monoTime}";
+    Console.WriteLine($"Monolithic verification took {monoTime}ms");
+    Console.WriteLine(headers);
+    Console.WriteLine(data);
   }
 
   public static void RunMono<T, TS>(Network<T, TS> network)
@@ -62,8 +67,7 @@ public static class Profile
     {
       var t = Time(net =>
       {
-        var s = net.CheckAnnotationsWith(nodeTimes,
-          (node, times, checkFunction) => LogCheckTime(node, times, checkFunction));
+        var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
         var passed = true;
         var failedNodes = new List<string>();
         foreach (var (node, counterexample) in s)
@@ -96,7 +100,7 @@ public static class Profile
     }
     finally
     {
-      if (!nodeTimes.IsEmpty) ReportCheckTimes(nodeTimes, Statistics.Summary);
+      if (!nodeTimes.IsEmpty) ReportCheckTimes(nodeTimes, Statistics.Summary, true);
     }
   }
 
@@ -159,9 +163,12 @@ public static class Profile
   /// </summary>
   /// <param name="times"></param>
   /// <param name="stats"></param>
+  /// <param name="printTable"></param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
-  private static void ReportCheckTimes(IDictionary<string, long> times, Statistics stats)
+  private static void ReportCheckTimes(IDictionary<string, long> times, Statistics stats, bool printTable)
   {
+    var headers = new StringBuilder("n");
+    var data = new StringBuilder($"{times.Count}");
     Console.WriteLine("Check statistics:");
     foreach (Statistics stat in Enum.GetValues(typeof(Statistics)))
     {
@@ -170,30 +177,42 @@ public static class Profile
         switch (stat)
         {
           case Statistics.Maximum:
+            headers.Append("\tmax");
             var (maxNode, maxTime) = times.MaxBy(p => p.Value);
+            data.Append($"\t{maxTime}");
             Console.WriteLine($"Maximum check time: node {maxNode} in {maxTime}ms");
             break;
           case Statistics.Minimum:
+            headers.Append("\tmin");
             var (minNode, minTime) = times.MinBy(p => p.Value);
             Console.WriteLine($"Minimum check time: node {minNode} in {minTime}ms");
+            data.Append($"\t{minTime}");
             break;
           case Statistics.Average:
+            headers.Append("\tavg");
             var avg = times.Average(p => p.Value);
             Console.WriteLine($"Average check time: {avg}ms");
+            data.Append($"\t{avg}");
             break;
           case Statistics.Median:
+            headers.Append("\tmed");
             var midpoint = times.Count / 2;
             var (medianNode, medianTime) = times.OrderBy(p => p.Value).ElementAt(midpoint);
             Console.WriteLine($"Median check time: node {medianNode} in {medianTime}ms");
+            data.Append($"\t{medianTime}");
             break;
           case Statistics.NinetyNinthPercentile:
+            headers.Append("\t99p");
             var ninetyNinth = (int) (times.Count * 0.99);
             var (ninetyNinthNode, ninetyNinthTime) = times.OrderBy(p => p.Value).ElementAt(ninetyNinth);
             Console.WriteLine($"99th percentile check time: node {ninetyNinthNode} in {ninetyNinthTime}ms");
+            data.Append($"\t{ninetyNinthTime}");
             break;
           case Statistics.Total:
+            headers.Append("\ttotal");
             var total = times.Sum(p => p.Value);
             Console.WriteLine($"Total check time: {total}ms");
+            data.Append($"\t{total}");
             break;
           case Statistics.Individual:
             foreach (var (node, time) in times)
@@ -211,5 +230,9 @@ public static class Profile
         }
       }
     }
+
+    if (!printTable) return;
+    Console.WriteLine(headers);
+    Console.WriteLine(data);
   }
 }
