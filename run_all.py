@@ -147,9 +147,9 @@ if __name__ == "__main__":
     # name the output file after the current time
     # as Windows filenames cannot contain ':' characters, we deviate slightly from the ISO representation
     # to YYYY-MM-DD{T}HHMMSS, where {T} is the literal 'T' character
-    output_file = log_dir.joinpath(
-        "{:%Y-%m-%dT%H%M%S}.txt".format(datetime.datetime.now(datetime.timezone.utc))
-    )
+    # output_file = log_dir.joinpath(
+    #     "{:%Y-%m-%dT%H%M%S}.txt".format(datetime.datetime.now(datetime.timezone.utc))
+    # )
 
     # Name of the benchmark DLL
     DLL = "Timepiece.Benchmarks.dll"
@@ -161,6 +161,20 @@ if __name__ == "__main__":
         print("Could not find DLL {}, exiting...".format(DLL))
         sys.exit(1)
 
+    # name the output file after the runner arguments
+    output_file = log_dir.joinpath("{}.txt".format("".join(args.options)))
+    if output_file.exists():
+        # move the old output file
+        # add the {current time} in front of the original stem
+        output_file.rename(
+            output_file.with_stem(
+                "{:%Y-%m-%dT%H%M%S}.{}".format(
+                    datetime.datetime.now(datetime.timezone.utc), output_file.stem
+                )
+            )
+        )
+        # create a new file
+        output_file.touch()
     SIZES = range(args.size[0], args.size[1] + 1, 4)
     run_all(
         dll_file,

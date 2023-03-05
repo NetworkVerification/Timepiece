@@ -1,3 +1,7 @@
+# Logging and results files
+logs
+results
+
 # User-specific files
 *.rsuser
 *.suo

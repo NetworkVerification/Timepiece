@@ -1,0 +1,12 @@
+.git
+# ignore these directories which we don't benchmark
+MisterWolf/
+Timepiece.Tests/
+# ignore generated files
+*/obj/*
+*/bin/*
+logs
+results
+Makefile
+*.md
+*.txt

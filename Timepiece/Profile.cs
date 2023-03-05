@@ -63,9 +63,10 @@ public static class Profile
     Console.WriteLine($"Environment.ProcessorCount: {processes}");
     var numNodes = network.Topology.Nodes.Length;
     var nodeTimes = new ConcurrentDictionary<string, long>(processes * 2, numNodes);
+    long? t = null;
     try
     {
-      var t = Time(net =>
+      t = Time(net =>
       {
         var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
         var passed = true;
@@ -100,7 +101,7 @@ public static class Profile
     }
     finally
     {
-      if (!nodeTimes.IsEmpty) ReportCheckTimes(nodeTimes, Statistics.Summary, true);
+      if (!nodeTimes.IsEmpty) ReportCheckTimes(nodeTimes, Statistics.Summary, t, true);
     }
   }
 
@@ -159,13 +160,36 @@ public static class Profile
   }
 
   /// <summary>
+  /// Table field header for wall clock time.
+  /// </summary>
+  private const string WallTimeHeader = "wall";
+
+  private static string StatisticShortForm(Statistics stat)
+  {
+    return stat switch
+    {
+      Statistics.Maximum => "max",
+      Statistics.Minimum => "min",
+      Statistics.Average => "avg",
+      Statistics.Median => "med",
+      Statistics.NinetyNinthPercentile => "99p",
+      Statistics.Total => "total",
+      Statistics.None | Statistics.Individual | Statistics.Summary | Statistics.All => throw new ArgumentException(
+        $"{stat} has no shorthand."),
+      _ => throw new ArgumentOutOfRangeException(nameof(stat), stat, null)
+    };
+  }
+
+  /// <summary>
   /// Report the time taken by all the checks.
   /// </summary>
   /// <param name="times"></param>
   /// <param name="stats"></param>
+  /// <param name="wallTime"></param>
   /// <param name="printTable"></param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
-  private static void ReportCheckTimes(IDictionary<string, long> times, Statistics stats, bool printTable)
+  private static void ReportCheckTimes(IDictionary<string, long> times, Statistics stats, long? wallTime,
+    bool printTable)
   {
     var headers = new StringBuilder("n");
     var data = new StringBuilder($"{times.Count}");
@@ -177,39 +201,39 @@ public static class Profile
         switch (stat)
         {
           case Statistics.Maximum:
-            headers.Append("\tmax");
+            headers.Append($"\t{StatisticShortForm(stat)}");
             var (maxNode, maxTime) = times.MaxBy(p => p.Value);
             data.Append($"\t{maxTime}");
             Console.WriteLine($"Maximum check time: node {maxNode} in {maxTime}ms");
             break;
           case Statistics.Minimum:
-            headers.Append("\tmin");
+            headers.Append($"\t{StatisticShortForm(stat)}");
             var (minNode, minTime) = times.MinBy(p => p.Value);
             Console.WriteLine($"Minimum check time: node {minNode} in {minTime}ms");
             data.Append($"\t{minTime}");
             break;
           case Statistics.Average:
-            headers.Append("\tavg");
+            headers.Append($"\t{StatisticShortForm(stat)}");
             var avg = times.Average(p => p.Value);
             Console.WriteLine($"Average check time: {avg}ms");
             data.Append($"\t{avg}");
             break;
           case Statistics.Median:
-            headers.Append("\tmed");
+            headers.Append($"\t{StatisticShortForm(stat)}");
             var midpoint = times.Count / 2;
             var (medianNode, medianTime) = times.OrderBy(p => p.Value).ElementAt(midpoint);
             Console.WriteLine($"Median check time: node {medianNode} in {medianTime}ms");
             data.Append($"\t{medianTime}");
             break;
           case Statistics.NinetyNinthPercentile:
-            headers.Append("\t99p");
+            headers.Append($"\t{StatisticShortForm(stat)}");
             var ninetyNinth = (int) (times.Count * 0.99);
             var (ninetyNinthNode, ninetyNinthTime) = times.OrderBy(p => p.Value).ElementAt(ninetyNinth);
             Console.WriteLine($"99th percentile check time: node {ninetyNinthNode} in {ninetyNinthTime}ms");
             data.Append($"\t{ninetyNinthTime}");
             break;
           case Statistics.Total:
-            headers.Append("\ttotal");
+            headers.Append($"\t{StatisticShortForm(stat)}");
             var total = times.Sum(p => p.Value);
             Console.WriteLine($"Total check time: {total}ms");
             data.Append($"\t{total}");
@@ -229,6 +253,13 @@ public static class Profile
             throw new ArgumentOutOfRangeException(nameof(stats));
         }
       }
+    }
+
+    // add the wall clock time if it was obtained
+    if (wallTime is not null)
+    {
+      headers.Append($"\t{WallTimeHeader}");
+      data.Append($"\t{wallTime}");
     }
 
     if (!printTable) return;
