@@ -12,30 +12,37 @@ POLICIES := r lw v h ar alw av ah
 all: plots
 
 # build the docker image
+.PHONY: image
 image: Dockerfile
 	docker build --rm -t $(IMAGE) .
 
 # run the monolithic benchmark
-$(LOGDIR)/%-m.txt: image run_all.py
-	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k 4 $(MAXSIZE) -- $(patsubst $(LOGDIR)/%-m.txt,% -m,$@)
+$(RESULTDIR)/%-m.dat: image run_all.py
+	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k 4 $(MAXSIZE) --dat -- $(*F) -m
 	docker cp $(CONTAINER):/timepiece/logs .
+	docker cp $(CONTAINER):/timepiece/results .
 	docker rm $(CONTAINER)
 
 # run the modular benchmark
-$(LOGDIR)/%.txt: image run_all.py
-	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k 4 $(MAXSIZE) -- $(patsubst $(LOGDIR)/%.txt,%,$@)
+$(RESULTDIR)/%.dat: image run_all.py
+	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k 4 $(MAXSIZE) --dat -- $(*F)
 	docker cp $(CONTAINER):/timepiece/logs .
+	docker cp $(CONTAINER):/timepiece/results .
 	docker rm $(CONTAINER)
 
 # generate the plot from the benchmarks
-$(RESULTDIR)/%plot.pdf: $(LOGDIR)/%.txt $(LOGDIR)/%-m.txt make_plots.sh
-	bash make_plots.sh $(TIMEOUT) $(patsubst $(RESULTDIR)/%plot.pdf,%,$@)
+# use the first prereq as \benchmod and the second as \benchmono
+$(RESULTDIR)/%.pdf: $(RESULTDIR)/%.dat $(RESULTDIR)/%-m.dat
+	pdflatex -jobname $(*F) -halt-on-error -output-directory results "\newcommand\timeout{$(TIMEOUT)}\newcommand\benchmod{$(word 1,$(^F))}\newcommand\benchmono{$(word 2,$(^F))}\input{plot.tex}"
 
-bench:	$(addprefix $(LOGDIR)/, $(POLICIES:=.txt)) $(addprefix $(LOGDIR)/, $(POLICIES:=-m.txt))
+bench:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.dat)) $(addprefix $(RESULTDIR)/, $(POLICIES:=-m.dat))
 
-plots:	$(addprefix $(RESULTDIR)/, $(POLICIES:=plot.pdf))
+plots:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.pdf))
+
+internet2: internet2.angler.json image
+	docker run --name $(CONTAINER) $(IMAGE) dotnet /timepiece/publish/Timepiece.Angler
 
 .PHONY: clean
 clean:
-	rm -rf $(RESULTDIR)
-	rm -rf $(LOGDIR)
+	  rm -rf $(RESULTDIR)
+	  rm -rf $(LOGDIR)

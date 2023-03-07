@@ -2,22 +2,15 @@
 # Generate PDFs of the plots for each desired benchmark in the logs.
 TIMEOUT=$1
 mkdir -p results
-MODHEAD='n	max	min	avg	med	99p	total	wall'
-MONOHEAD='n	total'
 
-for benchmark in "${@:1}"; do
+for benchmark in "${@:2}"; do
     modlog="${benchmark}.txt"
     moddat="${benchmark}.dat"
     monolog="${benchmark}-m.txt"
     monodat="${benchmark}-m.dat"
     if [ -e "logs/${modlog}" ] && [ -e "logs/${monolog}" ]; then
-        # echo the header before the grep to ensure that the created file contains the header;
-        # if none of the logged benchmarks complete before the timeout,
-        # the result of grep on the log file will be empty
-        (echo "$MODHEAD" && \
-            grep -E -A1 --no-group-separator -e "$MODHEAD" "logs/${modlog}") | sort -n -u > "results/${moddat}"
-        (echo "$MONOHEAD" && \
-            grep -E -A1 --no-group-separator -e "$MONOHEAD" "logs/${monolog}") | sort -n -u > "results/${monodat}"
+        python3 make_dat.py "logs/${modlog}" > "results/${moddat}"
+        python3 make_dat.py "logs/${monolog}" > "results/${monodat}"
     else
         echo "Unable to find relevant log files for ${benchmark} benchmark."
         continue

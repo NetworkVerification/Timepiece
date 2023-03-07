@@ -3,11 +3,28 @@
 # Run with --help for usage.
 
 import argparse
+import csv
 import datetime
 from enum import Enum
+import itertools
 import pathlib
+import re
 import subprocess
 import sys
+
+# regex patterns for identifying table rows for modular and monolithic benchmarks
+MOD_PAT = re.compile(
+    r"^(n\tmax\tmin\tavg\tmed\t99p\ttotal\twall)\n((?:[\d\.]+\s)*)", re.M
+)
+MONO_PAT = re.compile(r"^(n\ttotal)\n((?:[\d\.]+\s)*)", re.M)
+
+
+def output_to_rows(s: str, is_mono: bool = False) -> list[dict[str, float]]:
+    """Convert the given text to dictionary rows."""
+    return [
+        dict(zip(match[1].split("\t"), map(float, match[2].split("\t"))))
+        for match in (MONO_PAT if is_mono else MOD_PAT).finditer(s)
+    ]
 
 
 class Response(Enum):
@@ -33,15 +50,14 @@ def tee_output(output, output_file):
             f.write(output)
 
 
-def run_dotnet(dll_file, size, options, timeout, output_file) -> Response:
+def run_dotnet(dll_file, options, timeout, output_file) -> tuple[Response, list[dict]]:
     """
-    Run dotnet for the given benchmark size with the given options.
-    size is an int
+    Run dotnet for the given dll file with the given options.
     options is a list of str
     output_file is None or a file name
-    Return the return code of running the process.
+    Return the return code of running the process and any collected table rows.
     """
-    args = ["dotnet", dll_file, "-k", str(size)] + options
+    args = ["dotnet", dll_file] + options
     # run the process, redirecting stderr to stdout,
     # timing out after TIMEOUT,
     # and raising an exception if the return code is non-zero
@@ -49,29 +65,41 @@ def run_dotnet(dll_file, size, options, timeout, output_file) -> Response:
     try:
         output, _ = proc.communicate(timeout=timeout)
         tee_output(output, output_file)
-        return Response.SUCCESS
+        rows = output_to_rows(output.decode("utf-8"), "-m" in options)
+        return (Response.SUCCESS, rows)
     except KeyboardInterrupt:
         kill_output = "Killing process..."
         tee_output(kill_output, output_file)
-        proc.kill()
+        proc.terminate()
         output, _ = proc.communicate()
         tee_output(output, output_file)
-        return Response.USER_INTERRUPT
+        rows = output_to_rows(output.decode("utf-8"), "-m" in options)
+        return (Response.USER_INTERRUPT, rows)
     except subprocess.TimeoutExpired:
         timeout_output = "Timed out after {time} seconds".format(time=timeout)
         tee_output(timeout_output, output_file)
         proc.kill()
         output, _ = proc.communicate()
         tee_output(output, output_file)
-        return Response.TIMEOUT
+        rows = output_to_rows(output.decode("utf-8"), "-m" in options)
+        return (Response.TIMEOUT, rows)
 
 
-def run_all(dll_file, sizes, trials, timeout, options, output_file, short_circuit=True):
+def run_all(
+    dll_file,
+    sizes,
+    trials,
+    timeout,
+    options,
+    output_file,
+    short_circuit=True,
+) -> list[dict]:
     """
     Run the given benchmark for the sequence of sizes and trials.
     Pass the given options into dotnet and optionally save the results to
     the given output file.
     """
+    rows = []
     for size in sizes:
         bench_output = "Running benchmark k={size} with options: {options}".format(
             size=size, options=" ".join(options)
@@ -85,11 +113,40 @@ def run_all(dll_file, sizes, trials, timeout, options, output_file, short_circui
             tee_output(trial_output, output_file)
 
             # run the benchmark
-            returncode = run_dotnet(dll_file, size, options, timeout, output_file)
+            # add [-k size] to the options to set the size
+            returncode, bench_rows = run_dotnet(
+                dll_file, ["-k", str(size)] + options, timeout, output_file
+            )
+            rows.extend(bench_rows)
             # if the benchmark timed out or was interrupted and short_circuit is set,
             # end immediately
             if returncode != Response.SUCCESS and short_circuit:
-                return
+                return rows
+    return rows
+
+
+def run_angler(
+    dll_file, angler_files, trials, timeout, output_file, short_circuit=True
+):
+    """Run the given angler dll for the given files for the specified number of trials."""
+    rows = []
+    for trial in range(trials):
+        date = datetime.datetime.now(datetime.timezone.utc)
+        trial_output = "Trial {t} of {total} started {date}".format(
+            t=trial, total=trials, date=date
+        )
+        tee_output(trial_output, output_file)
+
+        # run the benchmark
+        returncode, bench_rows = run_dotnet(
+            dll_file, angler_files, timeout, output_file
+        )
+        rows.extend(bench_rows)
+        # if the benchmark timed out or was interrupted and short_circuit is set,
+        # end immediately
+        if returncode != Response.SUCCESS and short_circuit:
+            return rows
+    return rows
 
 
 def parser():
@@ -99,7 +156,7 @@ def parser():
         "-d",
         type=pathlib.Path,
         default=pathlib.Path.cwd(),
-        help=f"Path to the directory containing the {DLL} file",
+        help=f"Path to the directory containing the DLL file",
     )
     parser.add_argument(
         "--trials",
@@ -115,13 +172,19 @@ def parser():
         default=3600,
         help="Number of seconds to wait before timing out benchmark (default: %(default)s)",
     )
-    parser.add_argument(
+    benchmark_arg = parser.add_mutually_exclusive_group(required=True)
+    benchmark_arg.add_argument(
         "--size",
         "-k",
         nargs=2,
         type=int,
-        required=True,
         help="Lower and upper bound on size of benchmark",
+    )
+    benchmark_arg.add_argument(
+        "--angler",
+        "-a",
+        action="store_true",
+        help="Interpret inputs as angler files rather than benchmarks",
     )
     parser.add_argument(
         "--no-short-circuit",
@@ -134,6 +197,12 @@ def parser():
         "-L",
         action="store_false",
         help="Do not log the result of running the benchmarks to a file",
+    )
+    parser.add_argument(
+        "--dat",
+        "-D",
+        action="store_true",
+        help="Output a .dat file summarizing the benchmark results in a table",
     )
     parser.add_argument("options", nargs="+", help="Options passed to DLL")
     return parser.parse_args()
@@ -151,18 +220,17 @@ if __name__ == "__main__":
     #     "{:%Y-%m-%dT%H%M%S}.txt".format(datetime.datetime.now(datetime.timezone.utc))
     # )
 
-    # Name of the benchmark DLL
-    DLL = "Timepiece.Benchmarks.dll"
-
     # parse arguments and begin
     args = parser()
-    dll_file = args.dll_path.joinpath(DLL)
-    if not dll_file.exists():
-        print("Could not find DLL {}, exiting...".format(DLL))
-        sys.exit(1)
 
     # name the output file after the runner arguments
-    output_file = log_dir.joinpath("{}.txt".format("".join(args.options)))
+    if args.angler:
+        # name it after the first angler file passed in
+        output_file = log_dir.joinpath(
+            pathlib.PurePath(args.options[0]).with_suffix(".txt").name
+        )
+    else:
+        output_file = log_dir.joinpath("{}.txt".format("".join(args.options)))
     if output_file.exists():
         # move the old output file
         # add the {current time} in front of the original stem
@@ -175,13 +243,63 @@ if __name__ == "__main__":
         )
         # create a new file
         output_file.touch()
-    SIZES = range(args.size[0], args.size[1] + 1, 4)
-    run_all(
-        dll_file,
-        SIZES,
-        args.trials,
-        args.timeout,
-        args.options,
-        output_file if args.no_log else None,
-        short_circuit=args.no_short_circuit,
-    )
+
+    # run the appropriate DLL
+    if args.angler:
+        dll = "Timepiece.Angler.dll"
+    else:
+        dll = "Timepiece.Benchmarks.dll"
+    dll_file = args.dll_path.joinpath(dll)
+    if not dll_file.exists():
+        print("Could not find DLL {}, exiting...".format(dll))
+        sys.exit(1)
+    if args.angler:
+        rows = run_angler(
+            dll_file,
+            args.options,
+            args.trials,
+            args.timeout,
+            output_file if args.no_log else None,
+            short_circuit=args.no_short_circuit,
+        )
+    else:
+        sizes = range(args.size[0], args.size[1] + 1, 4)
+        rows = run_all(
+            dll_file,
+            sizes,
+            args.trials,
+            args.timeout,
+            args.options,
+            output_file if args.no_log else None,
+            short_circuit=args.no_short_circuit,
+        )
+    if args.dat:
+        is_mono = "-m" in args.options
+        if is_mono:
+            headers = ["n", "total"]
+        else:
+            headers = [
+                "n",
+                "max",
+                "min",
+                "avg",
+                "med",
+                "99p",
+                "total",
+                "wall",
+            ]
+        averaged_rows = []
+        for _, g in itertools.groupby(rows, key=lambda r: r["n"]):
+            groups = list(g)
+            averaged_rows.append(
+                {h: sum(r[h] for r in groups) / len(groups) for h in headers}
+            )
+        # create a .dat file in the results directory adjacent to logs
+        results_path = pathlib.Path("results")
+        if not results_path.exists():
+            results_path.mkdir()
+        dat_file = results_path.joinpath(output_file.stem + ".dat")
+        with open(dat_file, "w") as dat:
+            writer = csv.DictWriter(dat, fieldnames=headers, delimiter="\t")
+            writer.writeheader()
+            writer.writerows(averaged_rows)

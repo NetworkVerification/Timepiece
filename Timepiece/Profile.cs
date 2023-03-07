@@ -11,24 +11,10 @@ namespace Timepiece;
 
 public static class Profile
 {
-  /// <summary>
-  /// Run verification for the given network and print the resulting times for comparison
-  /// of Minesweeper-style versus Timepiece-style.
-  /// </summary>
-  /// <param name="network"></param>
-  /// <typeparam name="T"></typeparam>
-  /// <typeparam name="TS"></typeparam>
-  public static void RunCmp<T, TS>(Network<T, TS> network)
-  {
-    RunMonoWithStats(network);
-
-    Console.WriteLine($"Modular verification took {Time(RunAnnotated, network)}ms");
-  }
-
   public static void RunCmpPerNode<T, TS>(Network<T, TS> network)
   {
-    RunMonoWithStats(network);
     RunAnnotatedWithStats(network);
+    RunMonoWithStats(network);
   }
 
   public static void RunMonoWithStats<T, TS>(Network<T, TS> network)
