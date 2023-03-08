@@ -7,13 +7,19 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Timepiece\Timepiece.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Timepiece\Timepiece.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3-beta1" />
-      <PackageReference Include="xunit" Version="2.4.2" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3-beta1"/>
+    <PackageReference Include="xunit" Version="2.4.2"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.CommandLine">
+      <HintPath>..\..\..\..\..\.nuget\packages\system.commandline\2.0.0-beta4.22272.1\lib\net6.0\System.CommandLine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>
