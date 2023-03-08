@@ -7,6 +7,8 @@ MAXSIZE := 40
 LOGDIR := logs
 RESULTDIR := results
 ANGLERDIR := angler
+# set to 0 if you want to force the repo to clone angler when INTERNET2.angler.json is present
+FORCE_CLONE := 1
 POLICIES := r lw v h ar alw av ah
 
 .PHONY: all
@@ -18,14 +20,14 @@ image: Dockerfile INTERNET2.angler.json run_all.py
 	docker build --rm -t $(IMAGE) .
 
 # run the monolithic benchmark
-$(RESULTDIR)/%-m.dat: run_all.py image
+$(RESULTDIR)/%-m.dat: | image
 	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat -- $(*F) -m
 	docker cp $(CONTAINER):/timepiece/logs .
 	docker cp $(CONTAINER):/timepiece/results .
 	docker rm $(CONTAINER)
 
 # run the modular benchmark
-$(RESULTDIR)/%.dat: run_all.py image
+$(RESULTDIR)/%.dat: | image
 	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat -- $(*F)
 	docker cp $(CONTAINER):/timepiece/logs .
 	docker cp $(CONTAINER):/timepiece/results .
@@ -36,12 +38,22 @@ $(RESULTDIR)/%.dat: run_all.py image
 $(RESULTDIR)/%.pdf: $(RESULTDIR)/%.dat $(RESULTDIR)/%-m.dat
 	pdflatex -jobname $(*F) -halt-on-error -output-directory results "\newcommand\timeout{$(TIMEOUT)}\newcommand\benchmod{$(word 1,$(^F))}\newcommand\benchmono{$(word 2,$(^F))}\input{plot.tex}"
 
+.PHONY: bench
 bench:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.dat)) $(addprefix $(RESULTDIR)/, $(POLICIES:=-m.dat))
 
+.PHONY: plots
 plots:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.pdf))
 
-internet2: INTERNET2.angler.json image
-	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< | tee internet2.txt
+.PHONY: wan
+wan: internet2 internet2-m
+
+.PHONY: internet2
+internet2: | INTERNET2.angler.json image
+	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< | tee $(LOGDIR)/$@.txt
+
+.PHONY: internet2-m
+internet2-m: INTERNET2.angler.json image
+	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< -m | tee $(LOGDIR)/$@.txt
 
 INTERNET2.angler.json: | $(ANGLERDIR)
 	cd $(ANGLERDIR); sh ./internet2.sh; cd -
@@ -50,7 +62,7 @@ INTERNET2.angler.json: | $(ANGLERDIR)
 # clone the angler directory if it is absent
 .PHONY: $(ANGLERDIR)
 $(ANGLERDIR):
-	(test -d "$(ANGLERDIR)") || (git clone -b timepiece --depth 1 https://github.com/NetworkVerification/angler.git $(ANGLERDIR))
+	test -f INTERNET2.angler.json || (test -z $(FORCE_CLONE) && test -d "$(ANGLERDIR)") || (git clone -b timepiece --depth 1 https://github.com/NetworkVerification/angler.git $(ANGLERDIR))
 
 .PHONY: clean
 clean:
