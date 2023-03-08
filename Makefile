@@ -2,6 +2,7 @@ IMAGE := timepiece
 CONTAINER := tptest
 NTRIALS := 1
 TIMEOUT := 60
+MINSIZE := 4
 MAXSIZE := 40
 LOGDIR := logs
 RESULTDIR := results
@@ -18,14 +19,14 @@ image: Dockerfile INTERNET2.angler.json run_all.py
 
 # run the monolithic benchmark
 $(RESULTDIR)/%-m.dat: run_all.py image
-	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k 4 $(MAXSIZE) --dat -- $(*F) -m
+	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat -- $(*F) -m
 	docker cp $(CONTAINER):/timepiece/logs .
 	docker cp $(CONTAINER):/timepiece/results .
 	docker rm $(CONTAINER)
 
 # run the modular benchmark
 $(RESULTDIR)/%.dat: run_all.py image
-	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k 4 $(MAXSIZE) --dat -- $(*F)
+	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat -- $(*F)
 	docker cp $(CONTAINER):/timepiece/logs .
 	docker cp $(CONTAINER):/timepiece/results .
 	docker rm $(CONTAINER)
