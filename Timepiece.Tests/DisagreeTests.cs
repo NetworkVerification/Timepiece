@@ -10,6 +10,8 @@ namespace Timepiece.Tests;
 
 public static class DisagreeTests
 {
+  private static Zen<BigInteger> _nullRoute = new BigInteger(20);
+
   private static Network<BigInteger, Unit> Net(
     Dictionary<string, Func<Zen<BigInteger>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
@@ -18,8 +20,8 @@ public static class DisagreeTests
     var initialValues = new Dictionary<string, Zen<BigInteger>>
     {
       {"A", new BigInteger(0)},
-      {"B", new BigInteger(20)},
-      {"C", new BigInteger(20)}
+      {"B", _nullRoute},
+      {"C", _nullRoute}
     };
 
 
@@ -52,11 +54,11 @@ public static class DisagreeTests
     {
       {"A", Lang.Equals<BigInteger>(BigInteger.Zero)},
       {
-        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == new BigInteger(20),
+        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
           r => And(r > BigInteger.Zero, r < new BigInteger(3)))
       },
       {
-        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == new BigInteger(20),
+        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
           r => And(r > BigInteger.Zero, r < new BigInteger(3)))
       }
     };
@@ -74,11 +76,11 @@ public static class DisagreeTests
     {
       {"A", Lang.Equals<BigInteger>(BigInteger.Zero)},
       {
-        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == new BigInteger(20),
+        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
           r => r == new BigInteger(1))
       },
       {
-        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == new BigInteger(20),
+        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
           r => r == new BigInteger(2))
       },
     };
