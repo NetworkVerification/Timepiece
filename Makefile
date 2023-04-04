@@ -7,7 +7,7 @@ MAXSIZE := 40
 LOGDIR := logs
 RESULTDIR := results
 ANGLERDIR := angler
-# set to 0 if you want to force the repo to clone angler when INTERNET2.angler.json is present
+# set to 1 if you want to force the repo to clone angler when INTERNET2.angler.json is present
 FORCE_CLONE := 1
 POLICIES := r lw v h ar alw av ah
 
@@ -38,31 +38,24 @@ $(RESULTDIR)/%.dat: | image
 $(RESULTDIR)/%.pdf: $(RESULTDIR)/%.dat $(RESULTDIR)/%-m.dat
 	pdflatex -jobname $(*F) -halt-on-error -output-directory results "\newcommand\timeout{$(TIMEOUT)}\newcommand\benchmod{$(word 1,$(^F))}\newcommand\benchmono{$(word 2,$(^F))}\input{plot.tex}"
 
-.PHONY: bench
 bench:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.dat)) $(addprefix $(RESULTDIR)/, $(POLICIES:=-m.dat))
 
-.PHONY: plots
 plots:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.pdf))
 
-.PHONY: wan
-wan: internet2 internet2-m
+wan: $(LOGDIR)/internet2.txt $(LOGDIR)/internet2-m.txt
 
-.PHONY: internet2
-internet2: | INTERNET2.angler.json image
-	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< | tee $(LOGDIR)/$@.txt
+$(LOGDIR)/internet2.txt: INTERNET2.angler.json | $(LOGDIR) image
+	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< | tee $@
 
-.PHONY: internet2-m
-internet2-m: INTERNET2.angler.json image
-	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< -m | tee $(LOGDIR)/$@.txt
+$(LOGDIR)/internet2-m.txt: INTERNET2.angler.json | $(LOGDIR) image
+	docker run --rm --name $(CONTAINER) $(IMAGE) timeout $(TIMEOUT) dotnet /timepiece/publish/Timepiece.Angler.dll $< -m | tee $@
 
-INTERNET2.angler.json: | $(ANGLERDIR)
+INTERNET2.angler.json:
 	cd $(ANGLERDIR); sh ./internet2.sh; cd -
 	cp $(ANGLERDIR)/INTERNET2.angler.json .
 
-# clone the angler directory if it is absent
-.PHONY: $(ANGLERDIR)
-$(ANGLERDIR):
-	test -f INTERNET2.angler.json || (test -z $(FORCE_CLONE) && test -d "$(ANGLERDIR)") || (git clone -b timepiece --depth 1 https://github.com/NetworkVerification/angler.git $(ANGLERDIR))
+$(LOGDIR):
+	mkdir -p $(LOGDIR)
 
 .PHONY: clean
 clean:

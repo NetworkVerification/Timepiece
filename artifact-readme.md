@@ -19,6 +19,34 @@ We use a couple of shell utilities that should be present on most Unix machines
 to extract and evaluate our benchmarks, namely `test`, `timeout` and `tee`.
 To generate plots, we require a **LaTeX distribution** with pgfplots.
 
+### Step 0. Set up
+
+Be sure you have space free to build the docker image.
+The image used for the benchmarks is around 1.35 GB, and may fail to
+build if your machine is out of space.
+Running `docker system prune` can help delete old containers and
+images you no longer use.
+
+Ensure that you have the following tools installed and
+available from the command line:
+
+- `make`
+- `test`
+- `timeout`
+- `tee`
+
+Ensure your system has `pdflatex` installed, along with the following packages
+(available in most standard LaTeX distributions like TeX Live and MikTeX):
+
+- [`tikz`](https://www.ctan.org/pkg/pgf)
+- [`etoolbox`](https://ctan.org/pkg/etoolbox)
+- [`mathptmx`](https://ctan.org/pkg/mathptmx)
+- [`siunitx`](https://ctan.org/pkg/siunitx)
+- [`pgfplots`](https://ctan.org/pkg/pgfplots) (version >=1.17)
+- [`pgfplotstable`](https://ctan.org/pkg/pgfplotstable)
+- [`xspace`](https://ctan.org/pkg/xspace)
+- [`standalone`](https://ctan.org/pkg/standalone)
+
 ### Step 1. Build the Docker image: `make image`
 
 To start the evaluation, build the Docker image for Timepiece using `make image`.
@@ -28,8 +56,10 @@ the stages of the build.
 
 We include the `INTERNET2.angler.json` file that we generated in the repository
 to save build time. This file is used to test Internet2.
-We also provide the infrastructure to generate this file from the Internet2
-network configurations if so desired.
+It is quite large (~1GB) and copied to the Docker image during the build,
+which will add a few seconds to the build time.
+We also provide the infrastructure to regenerate this file from the Internet2
+network configurations if so desired in the `angler` directory.
 
 ### Step 2. Run the benchmarks: `make bench`
 
@@ -146,19 +176,23 @@ n   total
 ```
 
 As mentioned above, you will need LaTeX and the `pdflatex` binary to be able to generate
-these plots.
+these plots, along with the packages mentioned above.
 We generate plots by using a template .tex file called [`plot.tex`](./plot.tex).
-This file uses the following packages:
 
-- `tikz`
-- `etoolbox`
-- `mathptmx`
-- `siunitx`
-- `pgfplots` (version >=1.17)
-- `pgfplotstable`
-- `xspace`
+The generated plots have slightly different names from the plots in the paper,
+as the policies are listed in shorthand rather than their full names.
+The mapping between them is:
 
-#### Step 4. Run the Internet2 benchmark: `make internet2`
+- `results/r.pdf`: the SpReach benchmark
+- `results/lw.pdf`: the SpLen benchmark
+- `results/v.pdf`: the SpVf benchmark
+- `results/h.pdf`: the SpHijack benchmark
+- `results/ar.pdf`: the ApReach benchmark
+- `results/alw.pdf`: the ApLen benchmark
+- `results/av.pdf`: the ApVf benchmark
+- `results/ah.pdf`: the ApHijack benchmark
+
+#### Step 4. Run the Internet2 benchmarks: `make logs/internet2.txt`
 
 For the Internet2 benchmark, we run the docker container again, asking it to use
 Timepiece.Angler to evaluate the Internet2 benchmark.
@@ -172,14 +206,33 @@ Successfully deserialized INTERNET2.angler.json
 ```
 
 This should then be followed by a series of counterexamples at particular
-nodes (you may need to rerun or increase the timeout if the counterexamples are not
-reported). As Internet2 has over 200 external peers, each counterexample will run
+nodes.
+_You may need to rerun or increase the timeout if the counterexamples are not reported_:
+setting `TIMEOUT=300` (5 minutes) should be more than enough for the modular benchmark.
+As Internet2 has over 200 external peers, each counterexample will run
 for close to 300 lines of output, describing which check fails and what the state
 of the counterexample is.
 This behavior is expected, as Internet2's BlockToExternal property may not be enforced
 for some of its connections (whether intentionally or not).
 
-We can also attempt to monolithically verify Internet2 by running `make internet2-m`.
+Example output may look something like:
+
+```
+Internet2 benchmark identified...
+Successfully deserialized JSON file INTERNET2.angler.json
+Environment.ProcessorCount: 4
+    Counterexample for node 10.11.1.17:
+Inductive check failed!
+symbolic external-route-10.11.1.17 := RouteEnvironment(Result=RouteResult(Exit=False,Fallthrough=False,Returned=False,Value=False), LocalDefaultAction=False, Prefix=0.0.0.0/0, Weight=0, Lp=0, AsPathLength=0, Metric=0, OriginType=0, Tag=0, Communities={})
+symbolic external-route-108.59.25.20 := RouteEnvironment(Result=RouteResult(Exit=False,Fallthrough=False,Returned=False,Value=False), LocalDefaultAction=False, Prefix=0.0.0.0/0, Weight=0, Lp=0, AsPathLength=0, Metric=0, OriginType=0, Tag=0, Communities={})
+symbolic external-route-108.59.26.20 := RouteEnvironment(Result=RouteResult(Exit=False,Fallthrough=False,Returned=False,Value=False), LocalDefaultAction=False, Prefix=0.0.0.0/0, Weight=0, Lp=0, AsPathLength=0, Metric=0, OriginType=0, Tag=0, Communities={})
+symbolic external-route-109.105.98.9 := RouteEnvironment(Result=RouteResult(Exit=False,Fallthrough=False,Returned=False,Value=False), LocalDefaultAction=False, Prefix=0.0.0.0/0, Weight=0, Lp=0, AsPathLength=0, Metric=0, OriginType=0, Tag=0, Communities={})
+symbolic external-route-117.103.111.154 := RouteEnvironment(Result=RouteResult(Exit=False,Fallthrough=False,Returned=False,Value=False), LocalDefaultAction=False, Prefix=0.0.0.0/0, Weight=0, Lp=0, AsPathLength=0, Metric=0, OriginType=0, Tag=0, Communities={})
+# and so on
+...
+```
+
+We can also attempt to monolithically verify Internet2 by running `make logs/internet2-m.txt`.
 In our experiments, we did not see monolithic verification complete after over
 two hours.
 As we do not use `run_all.py` to execute Timepiece.Angler, the benchmark must
@@ -207,9 +260,15 @@ the paper.
 (Note that Figure 1 on page 2 is a simplified depiction of Figure 6(d),
 without median or 99th percentile times reported.)
 
-As highlighted in the paper, results should show timeouts occur quickly for
+As we claim in the paper, results should show timeouts occur quickly for
 the monolithic benchmarks (around k=8 or k=12), with the exception of
 the SpReach (r) benchmark, which is sufficiently simple to run to completion.
+Times should be larger for Ap benchmarks over Sp benchmarks.
+
+We _cannot guarantee_ that the exact times reported in the paper will hold
+in the artifact environment (e.g. the 99th percentile ApReach time for k=40
+may be above 9 seconds). Nonetheless, the trends of our results should
+be supported by the artifact times.
 
 ### Wide-area networks
 
@@ -225,11 +284,13 @@ on page 18 of the paper (under Wide-area networks).
 
 ## Other Evaluation
 
-You can use the Makefile's `make angler` command to clone the `angler` repository
-and use it directly to build the Internet2 benchmark from its configuration files.
-Included in the repository is the `internet2.sh` shell script, which build a Docker
-image for running Angler on the Internet2 benchmark's configuration files
-and constructing an .angler.json file from the Batfish output.
+### Making INTERNET2.angler.json from scratch
+
+You can use the Makefile's `make INTERNET2.angler.json` command
+to build the Internet2 benchmark from its configuration files.
+Included in the `angler` repository is the `internet2.sh` shell script,
+which builds a Docker image for running Angler on the Internet2 benchmark's
+configuration files and constructing an .angler.json file from the Batfish output.
 Note that the `internet2.sh` script also requires that
 [**Docker Compose**](https://docs.docker.com/compose/install/) is installed.
 
@@ -242,3 +303,87 @@ The configuration files we used can be found in `angler/examples/INTERNET2`.
 The `INTERNET2.json` file is the intermediate output from querying batfish,
 while the `INTERNET2.angler.json` file is the one we generate ourselves.
 Note that `INTERNET2.angler.json` may be close to 1GB in size.
+
+### Modifying benchmarks
+
+You can explore different properties and benchmarks by modifying the C# files,
+or changing the fattree policies used by make (using the POLICIES variable).
+There are alternative policies ['l'](./Timepiece.Benchmarks/Sp.cs) (line 107)
+and ['vl'](./Timepiece.Benchmarks/Vf.cs) (line 82)
+that check slightly-different properties, as shown in the code.
+
+It is also straightforward to add a new policy to test:
+
+1. Define a [`Network.cs`](./Timepiece/Networks/Network.cs) instance
+   ([`Sp.cs`](./Timepiece.Benchmarks/Sp.cs) and [`Vf.cs`](./Timepiece.Benchmarks/Vf.cs)
+   illustrate this concept for specific subclasses of `Network`).
+   You can make the network parametric in terms of the fattree size
+   by following those examples.
+2. Add a case for this network instance to [`Benchmark.cs`] (see `Run()` and
+   `BenchmarkTypeExtensions.Parse()`).
+3. Run `Timepiece.Benchmarks` with your new policy.
+
+Modifications to the benchmarks' properties, annotations and other behavior
+is also possible.
+Properties and annotations are arbitrary C# functions which take [`Zen`](https://github.com/microsoft/Zen)
+objects as arguments.
+You may refer to the [Zen documentation](https://github.com/microsoft/Zen/wiki)
+for more information on what operations Zen supports.
+We defined temporal operators in our work as shorthands for common functions,
+which return a `Func<Zen<T>, Zen<BigInteger>, Zen<bool>>` as output.
+
+- `Zen<T>` is an input representing a route of type `T`, lifted to Zen
+- `Zen<BigInteger>` represents the time input
+- `Zen<bool>` is the output Zen-lifted boolean indicating if the function holds
+  on the inputs.
+
+The [`Timepiece.Lang`](./Timepiece/Lang.cs) file provides these operators
+along with other useful static functions.
+We use `Time` as a shorthand for `Zen<BigInteger>` in this file.
+These include:
+
+- `Globally`: the "script-G" operator from the paper.
+- `Until`: the "script-U" operator from the paper.
+- `Finally`: the "script-F" operator from the paper.
+- `Intersect`: lifted set intersection (the "square-cap" operator from the paper).
+- `Union`: lifted set union (the "square-cup" operator from the paper).
+
+For instance, if one wanted to add a new `Complement`
+operator to `Timepiece.Lang` to represent the lifted set complement
+operator specified in the paper, one could write:
+
+```c#
+public static Func<Zen<T>, Zen<BigInteger>, Zen<bool>> Complement<T>(Func<Zen<T>, Zen<BigInteger>, Zen<bool>> f)
+{
+    return (r, t) => Zen.Not(f(r, t));
+}
+```
+
+[`Timepiece.Networks.Network`](./Timepiece/Networks/Network.cs)
+contains the generic definition of a network instance.
+The `Network` constructor on line 110 is used in our benchmarks:
+note that it takes two types of properties as input, both expressed
+as `Func<Zen<T>, Zen<bool>>`: `stableProperties`, which represent `Finally` properties
+that hold at a certain _convergence time_ (4 in the case of our fattree benchmarks);
+and `safetyProperties`, which represent `Globally` properties that always holds.
+
+Users may add _symbolic variables_ to their network instances
+to represent nondeterministic behavior.
+The [`Timepiece.SymbolicValue`](./Timepiece/SymbolicValue.cs) module
+provides the API for defining these values.
+[`Timepiece.Benchmarks.SymbolicDestination`](./Timepiece.Benchmarks/SymbolicDestination.cs)
+provides a subclass to `SymbolicValue` for our `Ap` benchmarks.
+
+## Troubleshooting
+
+### Lingering `tptest` container
+
+You may need to run `docker rm tptest` if you receive an error
+that the benchmarking container cannot start,
+as the `tptest` container is already in use.
+
+### New logs not generated
+
+If you run a benchmark again after a log file has previously been generated,
+`make` may skip that benchmark.
+You must delete or rename the old log files before running make again.
