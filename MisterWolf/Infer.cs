@@ -189,7 +189,7 @@ public class Infer<T>
       var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
         Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
       bounds.Add(zeroBeforeBound);
-      var neighbors = Topology[node].Where((_, i) => arrangement[i]);
+      var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
       var beforeBounds = from neighbor in neighbors
         select Zen.Or(times[neighbor] + BigInteger.One >= times[node],
           Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
@@ -206,7 +206,7 @@ public class Infer<T>
       var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
         Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
       bounds.Add(zeroAfterBound);
-      var neighbors = Topology[node].Where((_, i) => arrangement[i]);
+      var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
       var afterBounds = from neighbor in neighbors
         select Zen.Or(times[neighbor] + BigInteger.One < times[node],
           Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
@@ -247,7 +247,7 @@ public class Infer<T>
   private static Zen<bool> NextToConverge(IEnumerable<string> predecessors, Zen<BigInteger> time,
     IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray b)
   {
-    return Zen.And(predecessors.Select((j, i) => b[i] ? time >= times[j] : time < times[j]));
+    return Zen.And(predecessors.Select((j, i) => !b[i] ? time >= times[j] : time < times[j]));
   }
 
   /// <summary>

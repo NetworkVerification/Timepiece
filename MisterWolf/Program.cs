@@ -43,9 +43,8 @@ Infer<Option<uint>> PathLength(Topology topology, Dictionary<string, Zen<Option<
 var topology = new Topology(new Dictionary<string, List<string>>
 {
   {"A", new List<string> {"B"}},
-  {"B", new List<string> {"A", "C", "D"}},
-  {"C", new List<string> {"B", "D"}},
-  {"D", new List<string> {"B", "C"}}
+  {"B", new List<string> {"A", "C"}},
+  {"C", new List<string> {"B"}},
 });
 var initialValues = topology.MapNodes(n => n.Equals("A") ? Zen.True() : Zen.False());
 // var topology = Topologies.FatTree(4);
