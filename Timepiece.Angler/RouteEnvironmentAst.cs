@@ -12,7 +12,7 @@ namespace Timepiece.Angler;
 public class RouteEnvironmentAst : Ast
 {
   /// <summary>
-  /// Default predicates to test for this AST.
+  ///   Default predicates to test for this AST.
   /// </summary>
   public static readonly AstPredicate IsValid = new("route",
     new GetField(typeof(RouteResult), typeof(bool),
@@ -20,8 +20,8 @@ public class RouteEnvironmentAst : Ast
       "Value"));
 
   /// <summary>
-  /// Default import behavior for a route.
-  /// Set the route as accepted and returned.
+  ///   Default import behavior for a route.
+  ///   Set the route as accepted and returned.
   /// </summary>
   private static readonly AstFunction<RouteEnvironment> DefaultImport = new("env", new[]
   {
@@ -29,16 +29,16 @@ public class RouteEnvironmentAst : Ast
       new Var("env"), "Result", AstEnvironment.ResultToRecord(new RouteResult
       {
         Returned = true,
-        Value = true,
+        Value = true
       })))
   });
 
   /// <summary>
-  /// Default export behavior for a route.
-  /// If external is true, increment the path length.
-  /// In either case, set the route as accepted and returned.
+  ///   Default export behavior for a route.
+  ///   If external is true, increment the path length.
+  ///   In either case, set the route as accepted and returned.
   /// </summary>
-  private static AstFunction<RouteEnvironment> DefaultExport = new("env", new Statement[]
+  private static readonly AstFunction<RouteEnvironment> DefaultExport = new("env", new Statement[]
   {
     new Assign("env",
       new WithField(new Var("env"),

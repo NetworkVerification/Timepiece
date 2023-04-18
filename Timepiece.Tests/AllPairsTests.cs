@@ -64,7 +64,7 @@ public static class AllPairsTests
         {
           {"A", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
           {"B", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
-          {"C", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
+          {"C", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)}
         });
     var net = Net(annotations);
 

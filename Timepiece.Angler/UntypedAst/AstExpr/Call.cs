@@ -11,9 +11,6 @@ public class Call : Expr
 
   public override void Rename(string oldVar, string newVar)
   {
-    if (Name == oldVar)
-    {
-      Name = newVar;
-    }
+    if (Name == oldVar) Name = newVar;
   }
 }

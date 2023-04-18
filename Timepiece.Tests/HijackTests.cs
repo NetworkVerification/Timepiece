@@ -34,7 +34,7 @@ public static class HijackTests
           {"A", Lang.Globally<Option<TaggedRoute>>(Hijack.HasInternalRoute)},
           {"B", Lang.Finally<Option<TaggedRoute>>(BigInteger.One, Hijack.HasInternalRoute)},
           {"C", Lang.Finally<Option<TaggedRoute>>(new BigInteger(2), Hijack.HasInternalRoute)},
-          {"D", Lang.Globally<Option<TaggedRoute>>(_ => true)},
+          {"D", Lang.Globally<Option<TaggedRoute>>(_ => true)}
         });
     var net = Net(annotations);
 

@@ -4,16 +4,13 @@ using ZenLib;
 namespace Timepiece.Datatypes;
 
 /// <summary>
-/// Extensions to Zen's Option type.
+///   Extensions to Zen's Option type.
 /// </summary>
 public static class OptionExtensions
 {
   public static void May<T>(this Option<T> o, Action<T> f)
   {
-    if (o.HasValue)
-    {
-      f(o.Value);
-    }
+    if (o.HasValue) f(o.Value);
   }
 
   public static Option<T2> Select<T1, T2>(this Option<T1> o, Func<T1, T2> f)

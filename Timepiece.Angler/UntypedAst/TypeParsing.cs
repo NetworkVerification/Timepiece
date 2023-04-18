@@ -9,12 +9,12 @@ namespace Timepiece.Angler.UntypedAst;
 public static class TypeParsing
 {
   /// <summary>
-  /// Delimiters between type names.
+  ///   Delimiters between type names.
   /// </summary>
   private static readonly char[] Delimiters = {'(', ')', ',', ';'};
 
   /// <summary>
-  /// Convert a type string to a TypeAlias.
+  ///   Convert a type string to a TypeAlias.
   /// </summary>
   /// <param name="typeName"></param>
   /// <returns></returns>
@@ -45,7 +45,7 @@ public static class TypeParsing
   }
 
   /// <summary>
-  /// Return a TypeAlias for the given string representing an AST expression, statement or type.
+  ///   Return a TypeAlias for the given string representing an AST expression, statement or type.
   /// </summary>
   /// <param name="s"></param>
   /// <param name="alias">The given type name string to bind.</param>
@@ -126,7 +126,7 @@ public static class TypeParsing
       "TTime" or "TBigInt" => typeof(BigInteger),
       "TString" => typeof(string),
       "TSet" => typeof(CSet<string>),
-      _ => (TypeAlias?) null, // we need to cast so that null doesn't get converted to a TypeAlias
+      _ => (TypeAlias?) null // we need to cast so that null doesn't get converted to a TypeAlias
     };
     return alias.HasValue;
   }

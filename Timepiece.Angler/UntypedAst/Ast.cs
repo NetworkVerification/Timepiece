@@ -102,7 +102,7 @@ public class Ast
   }
 
   /// <summary>
-  /// Return the symbolic value corresponding to a given name and predicate string.
+  ///   Return the symbolic value corresponding to a given name and predicate string.
   /// </summary>
   /// <param name="name"></param>
   /// <param name="predicate">A predicate string, or null (meaning an unconstrained symbolic).</param>

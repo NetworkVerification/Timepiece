@@ -8,15 +8,15 @@ using System.Text.Json.Serialization;
 namespace Timepiece;
 
 /// <summary>
-/// Represents the topology of an NV network as a directed graph.
-/// We represent nodes as strings, with an associated set of predecessors
-/// whose edges point to those nodes.
-/// Using predecessors makes it efficient to represent our network semantics.
+///   Represents the topology of an NV network as a directed graph.
+///   We represent nodes as strings, with an associated set of predecessors
+///   whose edges point to those nodes.
+///   Using predecessors makes it efficient to represent our network semantics.
 /// </summary>
 public class Topology
 {
   /// <summary>
-  /// Construct a Topology given a mapping from nodes to their predecessors.
+  ///   Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
   [JsonConstructor]
   public Topology(Dictionary<string, List<string>> neighbors)
@@ -27,19 +27,19 @@ public class Topology
   }
 
   /// <summary>
-  /// The number of edges in the network.
+  ///   The number of edges in the network.
   /// </summary>
   [JsonIgnore]
-  public int NEdges { get; private set; }
+  public int NEdges { get; }
 
   /// <summary>
-  /// The edges for each node in the network.
+  ///   The edges for each node in the network.
   /// </summary>
   [JsonPropertyName("edges")]
   public Dictionary<string, List<string>> Neighbors { get; set; }
 
   /// <summary>
-  /// The nodes in the network and their names.
+  ///   The nodes in the network and their names.
   /// </summary>
   [JsonIgnore]
   public string[] Nodes { get; set; }
@@ -47,12 +47,12 @@ public class Topology
   public string this[uint id] => Nodes[id];
 
   /// <summary>
-  /// Return the predecessors of a given node.
+  ///   Return the predecessors of a given node.
   /// </summary>
   public List<string> this[string node] => Neighbors[node];
 
   /// <summary>
-  /// Return true if the topology contains the given node.
+  ///   Return true if the topology contains the given node.
   /// </summary>
   /// <param name="node">A node.</param>
   /// <returns>True if the node is present, false otherwise.</returns>
@@ -62,7 +62,7 @@ public class Topology
   }
 
   /// <summary>
-  /// Return a dictionary mapping each node in the topology with a given function.
+  ///   Return a dictionary mapping each node in the topology with a given function.
   /// </summary>
   /// <param name="nodeFunc">The function over every node.</param>
   /// <typeparam name="T">The return type of the function.</typeparam>
@@ -79,7 +79,7 @@ public class Topology
   }
 
   /// <summary>
-  /// Return all the edges in the network.
+  ///   Return all the edges in the network.
   /// </summary>
   /// <returns></returns>
   private IEnumerable<(string, string)> AllEdges()
@@ -89,7 +89,7 @@ public class Topology
   }
 
   /// <summary>
-  /// Return a dictionary mapping each edge in the topology to a value according to the given function.
+  ///   Return a dictionary mapping each edge in the topology to a value according to the given function.
   /// </summary>
   /// <param name="edgeFunc"></param>
   /// <typeparam name="T"></typeparam>
@@ -113,10 +113,7 @@ public class Topology
     foreach (var (node, neighbors) in Neighbors)
     {
       builder.Append($"{node}: ");
-      foreach (var neighbor in neighbors)
-      {
-        builder.Append($"{neighbor}; ");
-      }
+      foreach (var neighbor in neighbors) builder.Append($"{neighbor}; ");
 
       builder.AppendLine();
     }
@@ -125,9 +122,9 @@ public class Topology
   }
 
   /// <summary>
-  /// Perform a backwards breadth-first search of the topology, starting from the goal node.
-  /// Return the distance from each node to the goal.
-  /// Note that nodes that cannot reach the goal will not appear in the returned dictionary.
+  ///   Perform a backwards breadth-first search of the topology, starting from the goal node.
+  ///   Return the distance from each node to the goal.
+  ///   Note that nodes that cannot reach the goal will not appear in the returned dictionary.
   /// </summary>
   /// <param name="goal">The goal node.</param>
   /// <returns>A dictionary from nodes to their distance (number of edges) to the goal node.</returns>
@@ -156,22 +153,22 @@ public class Topology
 }
 
 /// <summary>
-/// Represents the topology of an NV network with node labels.
+///   Represents the topology of an NV network with node labels.
 /// </summary>
 public class LabelledTopology<T> : Topology
 {
-  /// <summary>
-  /// Labels for the nodes of the topology.
-  /// </summary>
-  public Dictionary<string, T> Labels { get; }
-
   public LabelledTopology(Dictionary<string, List<string>> neighbors, Dictionary<string, T> labels) : base(neighbors)
   {
     Labels = labels;
   }
 
   /// <summary>
-  /// Return the given node's label.
+  ///   Labels for the nodes of the topology.
+  /// </summary>
+  public Dictionary<string, T> Labels { get; }
+
+  /// <summary>
+  ///   Return the given node's label.
   /// </summary>
   /// <param name="node">A node in the topology.</param>
   /// <returns>The label for that node.</returns>
@@ -181,7 +178,7 @@ public class LabelledTopology<T> : Topology
   }
 
   /// <summary>
-  /// Convert the LabelledTopology to an unlabelled one.
+  ///   Convert the LabelledTopology to an unlabelled one.
   /// </summary>
   /// <returns>An equivalent Topology.</returns>
   public Topology ToUnlabelled()
@@ -204,7 +201,7 @@ public static class Topologies
   }
 
   /// <summary>
-  ///     Create a path digraph topology.
+  ///   Create a path digraph topology.
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <returns></returns>
@@ -225,7 +222,7 @@ public static class Topologies
   }
 
   /// <summary>
-  /// Create a complete digraph topology.
+  ///   Create a complete digraph topology.
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <returns></returns>
@@ -243,7 +240,7 @@ public static class Topologies
   }
 
   /// <summary>
-  /// Create a fattree topology of numPods pods.
+  ///   Create a fattree topology of numPods pods.
   /// </summary>
   /// <param name="numPods">Number of pods in the fattree.</param>
   /// <returns></returns>
@@ -253,9 +250,9 @@ public static class Topologies
   }
 
   /// <summary>
-  /// Create a labelled fattree topology of numPods pods.
-  /// Nodes are named "core-i", "aggregation-i" and "edge-i", where i is a non-negative integer.
-  /// Stores the pod number associated with each node: core nodes are each in their own k+i pod.
+  ///   Create a labelled fattree topology of numPods pods.
+  ///   Nodes are named "core-i", "aggregation-i" and "edge-i", where i is a non-negative integer.
+  ///   Stores the pod number associated with each node: core nodes are each in their own k+i pod.
   /// </summary>
   /// <param name="numPods">Number of pods in the fattree.</param>
   /// <returns>A fattree topology with pod labels.</returns>
@@ -295,12 +292,10 @@ public static class Topologies
       }
 
       foreach (var aggregate in aggregates)
+      foreach (var edge in edges)
       {
-        foreach (var edge in edges)
-        {
-          neighbors[aggregate].Add(edge);
-          neighbors[edge].Add(aggregate);
-        }
+        neighbors[aggregate].Add(edge);
+        neighbors[edge].Add(aggregate);
       }
     }
 

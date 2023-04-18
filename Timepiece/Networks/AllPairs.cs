@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Networks;
 
 public class AllPairs : ShortestPath<string>
 {
-  /// <summary>
-  /// The symbolic value representing the destination.
-  /// </summary>
-  private SymbolicValue<string> D { get; } = new("dnode");
-
   public AllPairs(Topology topology,
     Func<SymbolicValue<string>, Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>>
       annotations,
@@ -20,7 +16,7 @@ public class AllPairs : ShortestPath<string>
     topology,
     new Dictionary<string, Zen<Option<BigInteger>>>(),
     new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>(),
-    System.Array.Empty<SymbolicValue<string>>(), convergeTime, safetyProperties)
+    Array.Empty<SymbolicValue<string>>(), convergeTime, safetyProperties)
   {
     InitialValues =
       topology.MapNodes(n =>
@@ -31,7 +27,12 @@ public class AllPairs : ShortestPath<string>
   }
 
   /// <summary>
-  /// Check that some node in the topology is the same as the given string.
+  ///   The symbolic value representing the destination.
+  /// </summary>
+  private SymbolicValue<string> D { get; } = new("dnode");
+
+  /// <summary>
+  ///   Check that some node in the topology is the same as the given string.
   /// </summary>
   /// <param name="topology">The given topology.</param>
   /// <returns>A constraint from string to bool.</returns>

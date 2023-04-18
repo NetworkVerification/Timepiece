@@ -1,6 +1,7 @@
 using System.Numerics;
 using Timepiece.Networks;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
@@ -27,7 +28,7 @@ public class SimpleSp<TS> : Network<Option<SimpleBgpRoute>, TS>
 }
 
 /// <summary>
-/// Static factory class for Sp networks.
+///   Static factory class for Sp networks.
 /// </summary>
 public static class SimpleSp
 {
@@ -43,7 +44,7 @@ public static class SimpleSp
     // no safety property
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   // slightly weaker path length property with simpler annotations
@@ -62,7 +63,7 @@ public static class SimpleSp
       topology.MapNodes(_ => Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<SimpleBgpRoute>>());
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static SimpleSp<Unit> PathLength(uint numPods, string destination)
@@ -81,6 +82,6 @@ public static class SimpleSp
     var safetyProperties = topology.MapNodes(_ =>
       Lang.Union(Lang.IsNone<SimpleBgpRoute>(), Lang.IfSome<SimpleBgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new SimpleSp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 }

@@ -5,8 +5,8 @@ namespace Timepiece.Angler;
 public static class BlockToExternal
 {
   /// <summary>
-  /// Add constraints that every external node symbolic does not have the BTE tag,
-  /// and check that all external nodes never have a BTE tag.
+  ///   Add constraints that every external node symbolic does not have the BTE tag,
+  ///   and check that all external nodes never have a BTE tag.
   /// </summary>
   /// <param name="net"></param>
   /// <returns></returns>
@@ -14,10 +14,7 @@ public static class BlockToExternal
     Network<RouteEnvironment, RouteEnvironment> net)
   {
     // modify the external route symbolics to not have the BTE tag
-    foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external")))
-    {
-      s.Constraint = Internet2.BteTagAbsent;
-    }
+    foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external"))) s.Constraint = Internet2.BteTagAbsent;
 
     var modularProperties = net.ModularProperties.Select(p =>
         Internet2.InternalNodes.Contains(p.Key)
@@ -40,13 +37,10 @@ public static class BlockToExternal
     Network<RouteEnvironment, RouteEnvironment> net)
   {
     foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external")))
-    {
       s.Constraint =
         Internet2.BteTagAbsent;
-      // Lang.Intersect<RouteEnvironment>(Internet2.BteTagAbsent,
-      // r => r.GetOriginType() != RouteEnvironment.InternalOrigin);
-    }
-
+    // Lang.Intersect<RouteEnvironment>(Internet2.BteTagAbsent,
+    // r => r.GetOriginType() != RouteEnvironment.InternalOrigin);
     // change initial values such that internal nodes may have a route
     var newSymbolics = new List<SymbolicValue<RouteEnvironment>>();
     foreach (var node in Internet2.InternalNodes)

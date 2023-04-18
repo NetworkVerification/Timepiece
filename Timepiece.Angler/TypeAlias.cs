@@ -14,7 +14,7 @@ public readonly struct TypeAlias
   ///   as the type's expected number of generic parameters.
   /// </param>
   /// <exception cref="ArgumentException">
-  /// If the number of arguments is not the same as the expected number of arguments.
+  ///   If the number of arguments is not the same as the expected number of arguments.
   /// </exception>
   public TypeAlias(Type type, params TypeAlias?[] args)
   {
@@ -26,7 +26,7 @@ public readonly struct TypeAlias
   }
 
   /// <summary>
-  /// A TypeAlias for a closed type.
+  ///   A TypeAlias for a closed type.
   /// </summary>
   /// <param name="type"></param>
   public TypeAlias(Type type)
@@ -50,7 +50,7 @@ public readonly struct TypeAlias
   public TypeAlias?[] Args { get; }
 
   /// <summary>
-  /// Create a fully-instantiated type from the TypeAlias.
+  ///   Create a fully-instantiated type from the TypeAlias.
   /// </summary>
   /// <returns>A Type.</returns>
   /// <exception cref="ArgumentException">If any of the type's generic arguments are unassigned.</exception>

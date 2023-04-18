@@ -9,14 +9,29 @@ using ZenLib;
 namespace Timepiece.Angler.UntypedAst;
 
 /// <summary>
-/// An immutable state of the AST environment.
+///   An immutable state of the AST environment.
 /// </summary>
 public class AstEnvironment
 {
-  private readonly ImmutableDictionary<string, dynamic> _env;
+  /// <summary>
+  ///   The Zen null option creation method.
+  /// </summary>
+  internal static readonly MethodInfo Null =
+    typeof(Option).GetMethod("Null") ?? throw new Exception("Option.Null method not found");
+
+  /// <summary>
+  ///   The Zen record creation method.
+  /// </summary>
+  internal static readonly MethodInfo Create =
+    typeof(Zen).GetMethod("Create") ?? throw new Exception("Zen.Create method not found");
+
+  internal static readonly MethodInfo GetField =
+    typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
+
   private readonly IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> _declarations;
-  public readonly string? defaultPolicy;
+  private readonly ImmutableDictionary<string, dynamic> _env;
   public readonly bool callExprContext;
+  public readonly string? defaultPolicy;
 
   public AstEnvironment(ImmutableDictionary<string, dynamic> env,
     IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
@@ -28,8 +43,6 @@ public class AstEnvironment
     this.callExprContext = callExprContext;
   }
 
-  public dynamic this[string var] => _env[var];
-
   public AstEnvironment(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
     string? defaultPolicy = null, bool callExprContext = false) : this(
     ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy, callExprContext)
@@ -40,9 +53,11 @@ public class AstEnvironment
   {
   }
 
+  public dynamic this[string var] => _env[var];
+
   /// <summary>
-  /// Update the environment with the given value at the given variable,
-  /// possibly overwriting a previous value.
+  ///   Update the environment with the given value at the given variable,
+  ///   possibly overwriting a previous value.
   /// </summary>
   /// <param name="var"></param>
   /// <param name="val"></param>
@@ -66,10 +81,7 @@ public class AstEnvironment
   // could we then modify this state when returning from a Call?
   public Environment<RouteEnvironment> EvaluateExpr(Environment<RouteEnvironment> env, Expr e)
   {
-    if (e is null)
-    {
-      throw new ArgumentNullException(nameof(e), "Given a null expression.");
-    }
+    if (e is null) throw new ArgumentNullException(nameof(e), "Given a null expression.");
 
     // We assume that only certain expressions consider possible modifications to the route
     // after being called: these are Call expressions and the boolean operations And, Or and Not.
@@ -182,17 +194,19 @@ public class AstEnvironment
   }
 
   /// <summary>
-  /// Evaluate the given sequence of statements.
-  /// After each statement executes, we run the new statement with the new route according to the value assigned to arg.
+  ///   Evaluate the given sequence of statements.
+  ///   After each statement executes, we run the new statement with the new route according to the value assigned to arg.
   /// </summary>
   /// <param name="arg"></param>
   /// <param name="route"></param>
   /// <param name="statements"></param>
   /// <returns></returns>
   public AstEnvironment EvaluateStatements(string arg, Environment<RouteEnvironment> route,
-    IEnumerable<Statement> statements) =>
-    statements.Aggregate(this,
+    IEnumerable<Statement> statements)
+  {
+    return statements.Aggregate(this,
       (env, s) => env.EvaluateStatement(arg, route.WithRoute((Zen<RouteEnvironment>) env[arg]), s));
+  }
 
   public Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> EvaluateFunction(AstFunction<RouteEnvironment> function)
   {
@@ -204,17 +218,13 @@ public class AstEnvironment
   private AstEnvironment Join(AstEnvironment other, Zen<bool> guard)
   {
     if (other._env.Any(p => !_env.ContainsKey(p.Key)))
-    {
       throw new ArgumentException("Environments do not bind the same variables.");
-    }
 
     var e = new AstEnvironment(_declarations, defaultPolicy, callExprContext);
     foreach (var (variable, value) in _env)
     {
       if (!other._env.ContainsKey(variable))
-      {
         throw new ArgumentException($"{variable} not bound in both environments", nameof(other));
-      }
 
       var updatedValue = Zen.If(guard, value, other[variable]);
       e = e.Update(variable, updatedValue);
@@ -224,7 +234,7 @@ public class AstEnvironment
   }
 
   /// <summary>
-  /// Return a CreateRecord expression that evaluates to the default RouteEnvironment.
+  ///   Return a CreateRecord expression that evaluates to the default RouteEnvironment.
   /// </summary>
   /// <returns>A CreateRecord AST expr.</returns>
   public static CreateRecord DefaultRoute()
@@ -241,7 +251,7 @@ public class AstEnvironment
       {"OriginType", new UInt2Expr(env.OriginType)},
       {"Communities", LiteralSet.Empty()},
       {"Result", ResultToRecord(new RouteResult())},
-      {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)},
+      {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)}
     });
   }
 
@@ -252,22 +262,7 @@ public class AstEnvironment
       {"Value", new BoolExpr(result.Value)},
       {"Exit", new BoolExpr(result.Exit)},
       {"Fallthrough", new BoolExpr(result.Fallthrough)},
-      {"Returned", new BoolExpr(result.Returned)},
+      {"Returned", new BoolExpr(result.Returned)}
     });
   }
-
-  /// <summary>
-  /// The Zen null option creation method.
-  /// </summary>
-  internal static readonly MethodInfo Null =
-    typeof(Option).GetMethod("Null") ?? throw new Exception("Option.Null method not found");
-
-  /// <summary>
-  /// The Zen record creation method.
-  /// </summary>
-  internal static readonly MethodInfo Create =
-    typeof(Zen).GetMethod("Create") ?? throw new Exception("Zen.Create method not found");
-
-  internal static readonly MethodInfo GetField =
-    typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
 }

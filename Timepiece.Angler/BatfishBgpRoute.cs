@@ -33,40 +33,40 @@ public class BatfishBgpRoute
   }
 
   /// <summary>
-  /// IP prefix representing the routing destination.
+  ///   IP prefix representing the routing destination.
   /// </summary>
   public Ipv4Prefix Prefix { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of administrative distance.
+  ///   32-bit integer representation of administrative distance.
   /// </summary>
   public uint AdminDist { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of local preference.
+  ///   32-bit integer representation of local preference.
   /// </summary>
   public uint Lp { get; set; }
 
   /// <summary>
-  /// Integer representation of AS path length.
+  ///   Integer representation of AS path length.
   /// </summary>
   public BigInteger AsPathLength { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of the Multi-Exit Discriminator.
+  ///   32-bit integer representation of the Multi-Exit Discriminator.
   /// </summary>
   public uint Med { get; set; }
 
   /// <summary>
-  /// 2-bit integer representation of origin type.
-  /// 0 or 1 = incomplete
-  /// 2 = external
-  /// 3 = internal
+  ///   2-bit integer representation of origin type.
+  ///   0 or 1 = incomplete
+  ///   2 = external
+  ///   3 = internal
   /// </summary>
   public UInt<_2> OriginType { get; set; }
 
   /// <summary>
-  /// Representation of community tags as strings.
+  ///   Representation of community tags as strings.
   /// </summary>
   public CSet<string> Communities { get; set; }
 }
@@ -81,6 +81,8 @@ public static class BatfishBgpRouteExtensions
           Lang.CompareBy<BatfishBgpRoute, uint>(b => b.GetMed(), Zen.Lt))))(b1, b2);
   }
 
-  public static Zen<BatfishBgpRoute> IncrementAsPathLength(this Zen<BatfishBgpRoute> b, Zen<BigInteger> x) =>
-    b.WithAsPathLength(b.GetAsPathLength() + x);
+  public static Zen<BatfishBgpRoute> IncrementAsPathLength(this Zen<BatfishBgpRoute> b, Zen<BigInteger> x)
+  {
+    return b.WithAsPathLength(b.GetAsPathLength() + x);
+  }
 }

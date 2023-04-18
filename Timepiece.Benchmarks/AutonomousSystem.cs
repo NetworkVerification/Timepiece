@@ -82,15 +82,9 @@ public class AutonomousSystem<TS> : Network<Option<BgpRoute>, TS>
     var convergeTime = new BigInteger(4);
     var annotations = topology.MapNodes(n =>
     {
-      if (n == externalSrc)
-      {
-        return Lang.Globally(Lang.True<Option<BgpRoute>>());
-      }
+      if (n == externalSrc) return Lang.Globally(Lang.True<Option<BgpRoute>>());
 
-      if (n == externalDest)
-      {
-        return Lang.Globally(NoTransitProperty(externalRelationships));
-      }
+      if (n == externalDest) return Lang.Globally(NoTransitProperty(externalRelationships));
 
       return Lang.Globally(Lang.True<Option<BgpRoute>>());
     });

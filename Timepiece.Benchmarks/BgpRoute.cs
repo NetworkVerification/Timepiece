@@ -31,40 +31,40 @@ public struct BgpRoute
   }
 
   /// <summary>
-  /// Integer representation of destination IPv4 address.
+  ///   Integer representation of destination IPv4 address.
   /// </summary>
   public uint Destination { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of administrative distance.
+  ///   32-bit integer representation of administrative distance.
   /// </summary>
   public uint AdminDist { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of local preference.
+  ///   32-bit integer representation of local preference.
   /// </summary>
   public uint Lp { get; set; }
 
   /// <summary>
-  /// Integer representation of AS path length.
+  ///   Integer representation of AS path length.
   /// </summary>
   public BigInteger AsPathLength { get; set; }
 
   /// <summary>
-  /// 32-bit integer representation of the Multi-Exit Discriminator.
+  ///   32-bit integer representation of the Multi-Exit Discriminator.
   /// </summary>
   public uint Med { get; set; }
 
   /// <summary>
-  /// 2-bit integer representation of origin type.
-  /// 0 or 1 = incomplete
-  /// 2 = external
-  /// 3 = internal
+  ///   2-bit integer representation of origin type.
+  ///   0 or 1 = incomplete
+  ///   2 = external
+  ///   3 = internal
   /// </summary>
   public UInt<_2> OriginType { get; set; }
 
   /// <summary>
-  /// Representation of community tags as strings.
+  ///   Representation of community tags as strings.
   /// </summary>
   public CSet<string> Communities { get; set; }
 
@@ -87,12 +87,12 @@ public static class BgpRouteExtensions
 
 
   /// <summary>
-  /// Compare two BatfishBgpRoutes and return the minimum.
-  /// Ranking is done in the following order:
-  /// 1. Greatest local preference.
-  /// 2. Smallest AS path length.
-  /// 3. Best (greatest) origin type.
-  /// 4. Smallest MED.
+  ///   Compare two BatfishBgpRoutes and return the minimum.
+  ///   Ranking is done in the following order:
+  ///   1. Greatest local preference.
+  ///   2. Smallest AS path length.
+  ///   3. Best (greatest) origin type.
+  ///   4. Smallest MED.
   /// </summary>
   /// <param name="b1">The first route.</param>
   /// <param name="b2">The second route.</param>
@@ -106,8 +106,8 @@ public static class BgpRouteExtensions
   }
 
   /// <summary>
-  /// Pick the minimum route, restricting to routes to a specific destination.
-  /// Routes to other destinations are ignored (choice is unspecified).
+  ///   Pick the minimum route, restricting to routes to a specific destination.
+  ///   Routes to other destinations are ignored (choice is unspecified).
   /// </summary>
   /// <param name="b1"></param>
   /// <param name="b2"></param>
@@ -143,34 +143,45 @@ public static class BgpRouteExtensions
   }
 
   /// <summary>
-  /// Return true if the AS path length is a non-negative number at most x, and false otherwise.
+  ///   Return true if the AS path length is a non-negative number at most x, and false otherwise.
   /// </summary>
   /// <param name="b">The route.</param>
   /// <param name="x">The maximum length.</param>
   /// <returns>True if the AS path length of b is at most x, false otherwise.</returns>
-  public static Zen<bool> LengthAtMost(this Zen<BgpRoute> b, Zen<BigInteger> x) =>
-    Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= BigInteger.Zero);
+  public static Zen<bool> LengthAtMost(this Zen<BgpRoute> b, Zen<BigInteger> x)
+  {
+    return Zen.And(b.GetAsPathLength() <= x, b.GetAsPathLength() >= BigInteger.Zero);
+  }
 
   /// <summary>
-  /// Return true if the LP equals lp, and false otherwise.
+  ///   Return true if the LP equals lp, and false otherwise.
   /// </summary>
   /// <param name="b"></param>
   /// <param name="lp"></param>
   /// <returns></returns>
-  public static Zen<bool> LpEquals(this Zen<BgpRoute> b, Zen<uint> lp) => b.GetLp() == lp;
+  public static Zen<bool> LpEquals(this Zen<BgpRoute> b, Zen<uint> lp)
+  {
+    return b.GetLp() == lp;
+  }
 
   /// <summary>
-  /// Return true if the destination is as given.
+  ///   Return true if the destination is as given.
   /// </summary>
   /// <param name="b"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  public static Zen<bool> DestinationIs(this Zen<BgpRoute> b, Zen<uint> destination) =>
-    b.GetDestination() == destination;
+  public static Zen<bool> DestinationIs(this Zen<BgpRoute> b, Zen<uint> destination)
+  {
+    return b.GetDestination() == destination;
+  }
 
-  public static Func<Zen<BgpRoute>, Zen<bool>> MaxLengthDefaultLp(Zen<BigInteger> x) =>
-    b => Zen.And(b.LengthAtMost(x), b.LpEquals(100));
+  public static Func<Zen<BgpRoute>, Zen<bool>> MaxLengthDefaultLp(Zen<BigInteger> x)
+  {
+    return b => Zen.And(b.LengthAtMost(x), b.LpEquals(100));
+  }
 
-  public static Func<Zen<BgpRoute>, Zen<bool>> EqLengthDefaultLp(Zen<BigInteger> x) =>
-    b => Zen.And(b.GetAsPathLength() == x, b.LpEquals(100));
+  public static Func<Zen<BgpRoute>, Zen<bool>> EqLengthDefaultLp(Zen<BigInteger> x)
+  {
+    return b => Zen.And(b.GetAsPathLength() == x, b.LpEquals(100));
+  }
 }

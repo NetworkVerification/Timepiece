@@ -8,6 +8,9 @@ public class Some : UnaryOpExpr
   {
   }
 
-  private static Func<dynamic, object> Op(Type innerTy) => v =>
-    typeof(Option).GetMethod("Create")!.MakeGenericMethod(innerTy).Invoke(null, new[] {v})!;
+  private static Func<dynamic, object> Op(Type innerTy)
+  {
+    return v =>
+      typeof(Option).GetMethod("Create")!.MakeGenericMethod(innerTy).Invoke(null, new[] {v})!;
+  }
 }

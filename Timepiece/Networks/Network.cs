@@ -9,59 +9,14 @@ using static ZenLib.Zen;
 namespace Timepiece.Networks;
 
 /// <summary>
-/// Represents an NV network.
+///   Represents an NV network.
 /// </summary>
 /// <typeparam name="T">The type of the routes.</typeparam>
 /// <typeparam name="TS">The type of symbolic values associated with the network.</typeparam>
 public class Network<T, TS>
 {
   /// <summary>
-  /// The initial values for each node.
-  /// </summary>
-  public Dictionary<string, Zen<T>> InitialValues { get; init; }
-
-  /// <summary>
-  /// The merge function for routes.
-  /// </summary>
-  public Func<Zen<T>, Zen<T>, Zen<T>> MergeFunction { get; }
-
-  /// <summary>
-  /// The modular safety properties that we want to check (includes time).
-  /// </summary>
-  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> ModularProperties { get; set; }
-
-  /// <summary>
-  /// The monolithic safety properties that we want to check (assumes stable states).
-  /// </summary>
-  public Dictionary<string, Func<Zen<T>, Zen<bool>>> MonolithicProperties { get; set; }
-
-  /// <summary>
-  /// Any additional symbolics on the network's components.
-  /// </summary>
-  public SymbolicValue<TS>[] Symbolics { get; set; }
-
-  /// <summary>
-  /// The topology of the network.
-  /// </summary>
-  public Topology Topology { get; }
-
-  /// <summary>
-  /// The transfer function for each edge.
-  /// </summary>
-  public Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
-
-  /// <summary>
-  /// The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
-  /// </summary>
-  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; set; }
-
-  /// <summary>
-  /// Setting to control whether or not to print the constructed formulae to the user.
-  /// </summary>
-  public bool PrintFormulas { get; set; }
-
-  /// <summary>
-  /// Construct a new Network.
+  ///   Construct a new Network.
   /// </summary>
   /// <param name="topology"></param>
   /// <param name="transferFunction"></param>
@@ -92,11 +47,11 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Construct a new Network using an alternate properties definition.
-  /// For modular checking, for each node we check a property
-  /// Globally(safetyProperties[n]) and Finally(convergeTime, stableProperties[n]).
-  /// For monolithic checking, for each node we check a property
-  /// safetyProperties[n] and stableProperties[n].
+  ///   Construct a new Network using an alternate properties definition.
+  ///   For modular checking, for each node we check a property
+  ///   Globally(safetyProperties[n]) and Finally(convergeTime, stableProperties[n]).
+  ///   For monolithic checking, for each node we check a property
+  ///   safetyProperties[n] and stableProperties[n].
   /// </summary>
   /// <param name="topology">The network topology.</param>
   /// <param name="transferFunction"></param>
@@ -127,7 +82,52 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Check that the annotations are sound, calling the given function f on each node's check.
+  ///   The initial values for each node.
+  /// </summary>
+  public Dictionary<string, Zen<T>> InitialValues { get; init; }
+
+  /// <summary>
+  ///   The merge function for routes.
+  /// </summary>
+  public Func<Zen<T>, Zen<T>, Zen<T>> MergeFunction { get; }
+
+  /// <summary>
+  ///   The modular safety properties that we want to check (includes time).
+  /// </summary>
+  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> ModularProperties { get; set; }
+
+  /// <summary>
+  ///   The monolithic safety properties that we want to check (assumes stable states).
+  /// </summary>
+  public Dictionary<string, Func<Zen<T>, Zen<bool>>> MonolithicProperties { get; set; }
+
+  /// <summary>
+  ///   Any additional symbolics on the network's components.
+  /// </summary>
+  public SymbolicValue<TS>[] Symbolics { get; set; }
+
+  /// <summary>
+  ///   The topology of the network.
+  /// </summary>
+  public Topology Topology { get; }
+
+  /// <summary>
+  ///   The transfer function for each edge.
+  /// </summary>
+  public Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
+
+  /// <summary>
+  ///   The invariant/annotation function for each node. Takes a route and a time and returns a boolean.
+  /// </summary>
+  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> Annotations { get; set; }
+
+  /// <summary>
+  ///   Setting to control whether or not to print the constructed formulae to the user.
+  /// </summary>
+  public bool PrintFormulas { get; set; }
+
+  /// <summary>
+  ///   Check that the annotations are sound, calling the given function f on each node's check.
   /// </summary>
   /// <param name="collector"></param>
   /// <param name="f"></param>
@@ -152,7 +152,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Check that the annotations are sound.
+  ///   Check that the annotations are sound.
   /// </summary>
   /// <returns>True if the annotations pass, false otherwise.</returns>
   public Option<State<T, TS>> CheckAnnotations()
@@ -184,7 +184,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Ensure that all the base check pass for all nodes.
+  ///   Ensure that all the base check pass for all nodes.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckBaseCase()
@@ -194,7 +194,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Ensure that the inductive invariants imply the assertions.
+  ///   Ensure that the inductive invariants imply the assertions.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckAssertions()
@@ -227,7 +227,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Ensure that the inductive checks all pass.
+  ///   Ensure that the inductive checks all pass.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TS>> CheckInductive()
@@ -246,13 +246,15 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Test the inductive check for the given node.
+  ///   Test the inductive check for the given node.
   /// </summary>
   /// <param name="node">The node to test.</param>
   /// <param name="routes">A dictionary mapping nodes to symbolic routes.</param>
   /// <param name="time">The symbolic time to test.</param>
-  /// <returns>Some State if a counterexample is returned where the inductive check does not hold,
-  /// and otherwise None.</returns>
+  /// <returns>
+  ///   Some State if a counterexample is returned where the inductive check does not hold,
+  ///   and otherwise None.
+  /// </returns>
   public Option<State<T, TS>> CheckInductive(string node, IReadOnlyDictionary<string, Zen<T>> routes,
     Zen<BigInteger> time)
   {
@@ -284,7 +286,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Check the network using a stable routes encoding.
+  ///   Check the network using a stable routes encoding.
   /// </summary>
   /// <returns>Some state if verification fails with a counterexample, and None otherwise.</returns>
   public Option<State<T, TS>> CheckMonolithic()
@@ -304,18 +306,15 @@ public class Network<T, TS>
     // negate and try to prove unsatisfiable.
     var model = check.Solve();
 
-    if (model.IsSatisfiable())
-    {
-      return Option.Some(new State<T, TS>(model, routes, Symbolics));
-    }
+    if (model.IsSatisfiable()) return Option.Some(new State<T, TS>(model, routes, Symbolics));
 
     Console.WriteLine("    The monolithic checks passed!");
     return Option.None<State<T, TS>>();
   }
 
   /// <summary>
-  /// Return a route corresponding to the application of one step of the network semantics:
-  /// starting from the initial route at a node, merge in each transferred route from the node's neighbor.
+  ///   Return a route corresponding to the application of one step of the network semantics:
+  ///   starting from the initial route at a node, merge in each transferred route from the node's neighbor.
   /// </summary>
   /// <param name="node">The focal node.</param>
   /// <param name="routes">The routes of all nodes in the network.</param>
@@ -328,7 +327,7 @@ public class Network<T, TS>
   }
 
   /// <summary>
-  /// Return the conjunction of all constraints over symbolic values given to the network.
+  ///   Return the conjunction of all constraints over symbolic values given to the network.
   /// </summary>
   /// <returns>A Zen boolean.</returns>
   private Zen<bool> GetSymbolicConstraints()

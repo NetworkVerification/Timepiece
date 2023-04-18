@@ -5,7 +5,7 @@ using static ZenLib.Zen;
 namespace Timepiece;
 
 /// <summary>
-/// A symbolic value with an associated name, for ease of reference.
+///   A symbolic value with an associated name, for ease of reference.
 /// </summary>
 /// <typeparam name="T">The symbolic type associated with the value.</typeparam>
 public class SymbolicValue<T>
@@ -26,17 +26,17 @@ public class SymbolicValue<T>
   public Func<Zen<T>, Zen<bool>> Constraint { get; set; }
 
   /// <summary>
-  /// The internal Zen symbolic.
+  ///   The internal Zen symbolic.
   /// </summary>
   public Zen<T> Value { get; }
 
   /// <summary>
-  /// The name used to refer to the symbolic.
+  ///   The name used to refer to the symbolic.
   /// </summary>
   public string Name { get; }
 
   /// <summary>
-  /// Return true if the symbolic value equals the given constant value.
+  ///   Return true if the symbolic value equals the given constant value.
   /// </summary>
   /// <param name="val">A constant value of the same type as the symbolic value.</param>
   /// <returns>True if the values are the same, and false otherwise.</returns>
@@ -46,7 +46,7 @@ public class SymbolicValue<T>
   }
 
   /// <summary>
-  /// Return true if the symbolic value does not equal the given constant value.
+  ///   Return true if the symbolic value does not equal the given constant value.
   /// </summary>
   /// <param name="val">A constant value of the same type.</param>
   /// <returns>True if the values are different, and false otherwise.</returns>

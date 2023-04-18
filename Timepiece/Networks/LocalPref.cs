@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Networks;
 
@@ -21,12 +22,12 @@ public class LocalPref : Network<LpRoute, UnitNetwork>
       annotations,
       topology.MapNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
       topology.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
-      System.Array.Empty<SymbolicValue<UnitNetwork>>())
+      Array.Empty<SymbolicValue<UnitNetwork>>())
   {
   }
 
   /// <summary>
-  ///     The merge function for the simple path length network.
+  ///   The merge function for the simple path length network.
   /// </summary>
   private static Zen<LpRoute> Merge(Zen<LpRoute> r1,
     Zen<LpRoute> r2)
@@ -38,7 +39,7 @@ public class LocalPref : Network<LpRoute, UnitNetwork>
   }
 
   /// <summary>
-  ///     Final assertion we want to check for the stable paths encoding that removes time.
+  ///   Final assertion we want to check for the stable paths encoding that removes time.
   /// </summary>
   private static Zen<bool> ReachabilityProperty(Zen<LpRoute> r)
   {

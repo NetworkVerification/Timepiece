@@ -3,9 +3,10 @@ using System.Diagnostics;
 using Newtonsoft.Json;
 using Timepiece;
 using Timepiece.Angler;
+using ZenLib;
 
-ZenLib.ZenSettings.UseLargeStack = true;
-ZenLib.ZenSettings.LargeStackSize = 30_000_000;
+ZenSettings.UseLargeStack = true;
+ZenSettings.LargeStackSize = 30_000_000;
 
 JsonSerializer Serializer()
 {
@@ -13,23 +14,23 @@ JsonSerializer Serializer()
   {
     // use $type for type names, and the given binder
     TypeNameHandling = TypeNameHandling.All,
-    SerializationBinder = RouteEnvironmentAst.Binder(),
+    SerializationBinder = RouteEnvironmentAst.Binder()
     // throw an error when members are missing from the object instead of ignoring them
     // MissingMemberHandling = MissingMemberHandling.Error
   };
 }
 
 var rootCommand = new RootCommand("Timepiece benchmark runner");
-var monoOption = new Option<bool>(
+var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically simulating Minesweeper");
-var validateOption = new Option<bool>(
+var validateOption = new System.CommandLine.Option<bool>(
   new[] {"--validate", "-V"},
   "If given, validate the benchmark before running."
 );
 var fileArgument = new Argument<string>(
-  name: "file",
-  description: "The .angler.json file to use");
+  "file",
+  "The .angler.json file to use");
 rootCommand.Add(fileArgument);
 rootCommand.Add(monoOption);
 rootCommand.Add(validateOption);
@@ -47,7 +48,9 @@ rootCommand.SetHandler(
       isInternet2 = true;
     }
     else
+    {
       ast = Serializer().Deserialize<RouteEnvironmentAst>(json);
+    }
 
     Console.WriteLine($"Successfully deserialized JSON file {file}");
     Debug.WriteLine("Running in debug mode...");
@@ -57,19 +60,18 @@ rootCommand.SetHandler(
     {
       if (validate) ast.Validate();
       if (mono)
-      {
         Profile.RunMonoWithStats(isInternet2
           ? ((Internet2) ast).ToNetwork(BlockToExternal.StrongInitialConstraints)
           : ast.ToNetwork());
-      }
       else
-      {
         Profile.RunAnnotatedWithStats(isInternet2
           ? ((Internet2) ast).ToNetwork(BlockToExternal.StrongInitialConstraints)
           : ast.ToNetwork());
-      }
     }
-    else Console.WriteLine("Failed to deserialize contents of {file} (received null).");
+    else
+    {
+      Console.WriteLine("Failed to deserialize contents of {file} (received null).");
+    }
   }, fileArgument, monoOption, validateOption);
 
 await rootCommand.InvokeAsync(args);

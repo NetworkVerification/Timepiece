@@ -43,28 +43,32 @@ public class Hijack<TS> : Network<TaggedRoute, TS>
   {
   }
 
-  private static Func<Zen<TaggedRoute>, Zen<TaggedRoute>, Zen<TaggedRoute>> Merge(Zen<uint> destinationPrefix) =>
-    Lang.MergeBy<TaggedRoute, Option<BgpRoute>>(
+  private static Func<Zen<TaggedRoute>, Zen<TaggedRoute>, Zen<TaggedRoute>> Merge(Zen<uint> destinationPrefix)
+  {
+    return Lang.MergeBy<TaggedRoute, Option<BgpRoute>>(
       Lang.Omap2<BgpRoute>((b1, b2) => b1.MinPrefix(b2, destinationPrefix)),
       t => t.Item1());
+  }
 
   /// <summary>
-  /// Define the transfer function to filter all routes claiming to be from the
-  /// destination prefix sent from the hijacker.
+  ///   Define the transfer function to filter all routes claiming to be from the
+  ///   destination prefix sent from the hijacker.
   /// </summary>
   /// <param name="topology"></param>
   /// <param name="hijacker"></param>
   /// <param name="destinationPrefix"></param>
   /// <returns></returns>
   private static Dictionary<(string, string), Func<Zen<TaggedRoute>, Zen<TaggedRoute>>> Transfer(Topology topology,
-    string hijacker, Zen<uint> destinationPrefix) =>
-    topology.MapEdges(e =>
+    string hijacker, Zen<uint> destinationPrefix)
+  {
+    return topology.MapEdges(e =>
       Lang.Product(
         Lang.Test(
           Lang.IfSome<BgpRoute>(b => Zen.And(b.GetDestination() == destinationPrefix, e.Item1 == hijacker)),
           Lang.Const(Option.None<BgpRoute>()),
           Lang.Omap<BgpRoute, BgpRoute>(BgpRouteExtensions.IncrementAsPath)),
         Lang.Identity<bool>()));
+  }
 }
 
 public static class Hijack
@@ -98,14 +102,20 @@ public static class Hijack
       annotations, stableProperties, safetyProperties, new[] {hijackAndPrefix});
   }
 
-  private static Func<Zen<TaggedRoute>, Zen<bool>> MapInternal(Func<Zen<Option<BgpRoute>>, Zen<bool>> f) =>
-    Lang.Both<Option<BgpRoute>, bool>(f, Zen.Not);
+  private static Func<Zen<TaggedRoute>, Zen<bool>> MapInternal(Func<Zen<Option<BgpRoute>>, Zen<bool>> f)
+  {
+    return Lang.Both<Option<BgpRoute>, bool>(f, Zen.Not);
+  }
 
-  private static Zen<bool> HasDestinationRoute(Zen<uint> prefix, Zen<Option<BgpRoute>> o) =>
-    o.Where(b => b.DestinationIs(prefix)).IsSome();
+  private static Zen<bool> HasDestinationRoute(Zen<uint> prefix, Zen<Option<BgpRoute>> o)
+  {
+    return o.Where(b => b.DestinationIs(prefix)).IsSome();
+  }
 
-  private static Zen<bool> DestinationRouteIsInternal(Zen<uint> prefix, Zen<TaggedRoute> r) =>
-    Zen.Implies(HasDestinationRoute(prefix, r.Item1()), Zen.Not(r.Item2()));
+  private static Zen<bool> DestinationRouteIsInternal(Zen<uint> prefix, Zen<TaggedRoute> r)
+  {
+    return Zen.Implies(HasDestinationRoute(prefix, r.Item1()), Zen.Not(r.Item2()));
+  }
 
   public static Hijack<Pair<Option<BgpRoute>, uint, string, int>> AllPairsHijackFiltered(uint numPods)
   {
@@ -179,11 +189,13 @@ public static class Hijack
       annotations, stableProperties, safetyProperties, new[] {hijackAndPrefix});
   }
 
-  public static SymbolicValue<Pair<Option<BgpRoute>, uint>> HijackRouteAndPrefix() =>
-    new("hijackAndPrefix");
+  public static SymbolicValue<Pair<Option<BgpRoute>, uint>> HijackRouteAndPrefix()
+  {
+    return new("hijackAndPrefix");
+  }
 
   /// <summary>
-  /// Add a hijacker node to the topology, connected to all of the core nodes.
+  ///   Add a hijacker node to the topology, connected to all of the core nodes.
   /// </summary>
   /// <param name="hijacker"></param>
   /// <param name="topology"></param>
@@ -208,10 +220,7 @@ public static class Hijack
   {
     var withHijacker = topology.Neighbors;
     withHijacker[hijacker] = topology.Nodes.Where(n => n.IsCore()).ToList();
-    foreach (var node in withHijacker[hijacker])
-    {
-      withHijacker[node].Add(hijacker);
-    }
+    foreach (var node in withHijacker[hijacker]) withHijacker[node].Add(hijacker);
 
     return withHijacker;
   }

@@ -8,15 +8,12 @@ public class VariadicExpr : Expr
   }
 
   /// <summary>
-  /// The sub-expressions of the expression.
+  ///   The sub-expressions of the expression.
   /// </summary>
   public Expr[] Exprs { get; set; }
 
   public override void Rename(string oldVar, string newVar)
   {
-    foreach (var expr in Exprs)
-    {
-      expr.Rename(oldVar, newVar);
-    }
+    foreach (var expr in Exprs) expr.Rename(oldVar, newVar);
   }
 }

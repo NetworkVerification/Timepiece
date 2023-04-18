@@ -1,13 +1,14 @@
 using System.Numerics;
 using Timepiece.Networks;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
 public class Sp<TS> : Network<Option<BgpRoute>, TS>
 {
   /// <summary>
-  /// Construct a verifiable network performing shortest-path routing to a single given destination.
+  ///   Construct a verifiable network performing shortest-path routing to a single given destination.
   /// </summary>
   /// <param name="topology"></param>
   /// <param name="destination"></param>
@@ -28,8 +29,8 @@ public class Sp<TS> : Network<Option<BgpRoute>, TS>
   }
 
   /// <summary>
-  /// Construct a verifiable network performing shortest-path routing; the initial values and convergence time
-  /// must be given.
+  ///   Construct a verifiable network performing shortest-path routing; the initial values and convergence time
+  ///   must be given.
   /// </summary>
   /// <param name="topology"></param>
   /// <param name="initialValues"></param>
@@ -54,12 +55,12 @@ public class Sp<TS> : Network<Option<BgpRoute>, TS>
 }
 
 /// <summary>
-/// Static factory class for Sp networks.
+///   Static factory class for Sp networks.
 /// </summary>
 public static class Sp
 {
   /// <summary>
-  /// Return an Sp k-fattree network to check reachability of a single destination node, where k is the given numPods.
+  ///   Return an Sp k-fattree network to check reachability of a single destination node, where k is the given numPods.
   /// </summary>
   /// <param name="numPods"></param>
   /// <param name="destination"></param>
@@ -75,7 +76,7 @@ public static class Sp
     // no safety property
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   // slightly weaker path length property with simpler annotations
@@ -94,12 +95,12 @@ public static class Sp
       topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   /// <summary>
-  /// Return an Sp k-fattree network to check path length of routes to a single destination node,
-  /// where k is the given numPods.
+  ///   Return an Sp k-fattree network to check path length of routes to a single destination node,
+  ///   where k is the given numPods.
   /// </summary>
   /// <param name="numPods"></param>
   /// <param name="destination"></param>
@@ -120,7 +121,7 @@ public static class Sp
     var safetyProperties = topology.MapNodes(_ =>
       Lang.Union(Lang.IsNone<BgpRoute>(), Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new Sp<Unit>(topology, destination, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static Sp<Pair<string, int>> AllPairsReachability(uint numPods)

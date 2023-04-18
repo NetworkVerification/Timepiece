@@ -10,7 +10,7 @@ using Array = System.Array;
 namespace Timepiece.Tests;
 
 /// <summary>
-/// Tests for networks where routes are CSets of node names.
+///   Tests for networks where routes are CSets of node names.
 /// </summary>
 public static class SetReachabilityTests
 {
@@ -27,8 +27,11 @@ public static class SetReachabilityTests
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Func<Zen<CSet<string>>, Zen<bool>> ContainsAll(Topology topology) => route =>
-    topology.FoldNodes(Zen.True(), (b, n) => Zen.And(b, route.Contains(n)));
+  private static Func<Zen<CSet<string>>, Zen<bool>> ContainsAll(Topology topology)
+  {
+    return route =>
+      topology.FoldNodes(Zen.True(), (b, n) => Zen.And(b, route.Contains(n)));
+  }
 
   [Fact]
   public static void SoundAnnotationsPassChecks()
@@ -49,9 +52,9 @@ public static class SetReachabilityTests
     var topology = new Topology(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
-      { "B", new List<string> {"A", "C", "D"} },
-      { "C", new List<string> {"A", "B", "D"}},
-      { "D", new List<string> {"B", "C"}}
+      {"B", new List<string> {"A", "C", "D"}},
+      {"C", new List<string> {"A", "B", "D"}},
+      {"D", new List<string> {"B", "C"}}
     });
     var convergeTime = new BigInteger(3);
     var annotations = new Dictionary<string, Func<Zen<CSet<string>>, Zen<BigInteger>, Zen<bool>>>
@@ -67,7 +70,7 @@ public static class SetReachabilityTests
         "D", Lang.Until(new BigInteger(2),
           route => Zen.And(route.Contains("D"), route.IsSubsetOf(CSet.Empty<string>().Add("D").Add("B").Add("C"))),
           ContainsAll(topology))
-      },
+      }
     };
     var net = Net(topology, convergeTime, annotations);
     NetworkAssert.CheckSound(net);
@@ -88,14 +91,15 @@ public static class SetReachabilityTests
     // won't work: can't prove after predicate using the before predicate
     var annotations = topology.MapNodes(n => Lang.Until(new BigInteger(2),
       route => Zen.And(route.Contains(n), route.IsSubsetOf(allNodes)),
-        // route.IsSubsetOf(topology[n].Aggregate(CSet.Empty<string>().Add(n), (r, m) => r.Add(m)))),
+      // route.IsSubsetOf(topology[n].Aggregate(CSet.Empty<string>().Add(n), (r, m) => r.Add(m)))),
       ContainsAll(topology)));
     var net = Net(topology, convergeTime, annotations);
     NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
   }
 
   [Fact]
-  public static void SquareSoundAnnotationsPassChecks() {
+  public static void SquareSoundAnnotationsPassChecks()
+  {
     var topology = new Topology(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},

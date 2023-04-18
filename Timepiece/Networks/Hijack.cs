@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Networks;
 
@@ -11,20 +12,15 @@ using TaggedRoute = Pair<BigInteger, bool>;
 
 public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
 {
-  /// <summary>
-  /// The symbolic route advertised by the hijacker.
-  /// </summary>
-  public SymbolicValue<Option<TaggedRoute>> HijackRoute { get; } = new("hijack");
-
   public static Zen<Option<TaggedRoute>> DestRoute =
     Option.Create(Pair.Create<BigInteger, bool>(BigInteger.Zero, false));
 
   /// <summary>
-  /// Construct a hijack network: a network containing a legitimate internal destination, and an external node
-  /// which can advertise a hijacking route to the network's members.
-  /// Routes have a length and an internal/external boolean flag: when the flag is true, the route is external.
-  /// All members of the network should prefer internal routes over external ones.
-  /// Raises an ArgumentOutOfRangeException if either the destination or hijacker is not present in the given topology.
+  ///   Construct a hijack network: a network containing a legitimate internal destination, and an external node
+  ///   which can advertise a hijacking route to the network's members.
+  ///   Routes have a length and an internal/external boolean flag: when the flag is true, the route is external.
+  ///   All members of the network should prefer internal routes over external ones.
+  ///   Raises an ArgumentOutOfRangeException if either the destination or hijacker is not present in the given topology.
   /// </summary>
   /// <param name="topology">The given network's topology.</param>
   /// <param name="hijacker">The hijacking external node.</param>
@@ -42,17 +38,13 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
       new Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>(),
       topology.MapNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
       topology.MapNodes(n => Property(hijacker, n)),
-      System.Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
+      Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
   {
     if (!topology.HasNode(hijacker))
-    {
       throw new ArgumentOutOfRangeException($"Hijack network does not contain the given hijacker node {hijacker}.");
-    }
 
     if (!topology.HasNode(dest))
-    {
       throw new ArgumentOutOfRangeException($"Hijack network does not contain the given destination node {dest}.");
-    }
 
     InitialValues = topology.MapNodes(n =>
       n == hijacker ? HijackRoute.Value :
@@ -62,13 +54,18 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
     HijackRoute.Constraint = DeriveHijackConstraint();
   }
 
+  /// <summary>
+  ///   The symbolic route advertised by the hijacker.
+  /// </summary>
+  public SymbolicValue<Option<TaggedRoute>> HijackRoute { get; } = new("hijack");
+
   private static Func<Zen<Option<TaggedRoute>>, Zen<bool>> DeriveHijackConstraint()
   {
     return maybeRoute => maybeRoute.Case(() => true, pair => pair.Item2());
   }
 
   /// <summary>
-  /// Prefer internal routes over external routes, then prefer shorter routes over longer routes.
+  ///   Prefer internal routes over external routes, then prefer shorter routes over longer routes.
   /// </summary>
   /// <param name="r1">The first route.</param>
   /// <param name="r2">The second route.</param>
@@ -80,7 +77,7 @@ public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
   }
 
   /// <summary>
-  /// Return True if the given route has some value, and that value is not external.
+  ///   Return True if the given route has some value, and that value is not external.
   /// </summary>
   /// <param name="r">A route of the network.</param>
   /// <returns>True if the route is not null and not external.</returns>

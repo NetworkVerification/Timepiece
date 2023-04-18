@@ -11,14 +11,14 @@ namespace Timepiece;
 
 public class State<T, TS>
 {
-  public readonly Dictionary<string, T> nodeStates;
   private readonly Option<(string, T)> _focusedNode = Option.None<(string, T)>();
-  public readonly Option<BigInteger> time;
-  public readonly Dictionary<string, TS> symbolicStates;
   public readonly SmtCheck check;
+  public readonly Dictionary<string, T> nodeStates;
+  public readonly Dictionary<string, TS> symbolicStates;
+  public readonly Option<BigInteger> time;
 
   /// <summary>
-  /// Reconstruct the network state from the given model, focused on the given node.
+  ///   Reconstruct the network state from the given model, focused on the given node.
   /// </summary>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="node">The node this solution pertains to.</param>
@@ -36,7 +36,7 @@ public class State<T, TS>
   }
 
   /// <summary>
-  /// Reconstruct the network state from the given inductive check model, focused on the given node and its neighbors.
+  ///   Reconstruct the network state from the given inductive check model, focused on the given node and its neighbors.
   /// </summary>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="node">The node this solution pertains to.</param>
@@ -56,7 +56,7 @@ public class State<T, TS>
   }
 
   /// <summary>
-  /// Reconstruct the network state from the given monolithic check model for all given nodes.
+  ///   Reconstruct the network state from the given monolithic check model for all given nodes.
   /// </summary>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="nodeStates">The Zen variables referring to each node and its route.</param>
@@ -72,10 +72,7 @@ public class State<T, TS>
   public override string ToString()
   {
     var sb = new StringBuilder();
-    foreach (var (name, value) in symbolicStates)
-    {
-      sb.AppendLine($"symbolic {name} := {value}");
-    }
+    foreach (var (name, value) in symbolicStates) sb.AppendLine($"symbolic {name} := {value}");
 
     time.May(t => sb.Append($"at time = {t}").AppendLine());
 
@@ -95,7 +92,7 @@ public class State<T, TS>
   }
 
   /// <summary>
-  /// Print the state to the console, identifying which check fails to hold for this state.
+  ///   Print the state to the console, identifying which check fails to hold for this state.
   /// </summary>
   public void ReportCheckFailure()
   {

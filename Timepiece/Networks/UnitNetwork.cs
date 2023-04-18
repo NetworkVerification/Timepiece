@@ -1,5 +1,6 @@
 using System;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Networks;
 
@@ -10,7 +11,7 @@ public class UnitNetwork : Network<Unit, object>
     topology.MapNodes<Zen<Unit>>(_ => new Unit()),
     topology.MapNodes(_ => Lang.Globally(UnitPredicate())),
     topology.MapNodes(_ => Lang.Globally(UnitPredicate())),
-    topology.MapNodes(_ => UnitPredicate()), System.Array.Empty<SymbolicValue<object>>())
+    topology.MapNodes(_ => UnitPredicate()), Array.Empty<SymbolicValue<object>>())
   {
   }
 

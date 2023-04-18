@@ -5,12 +5,13 @@ using Timepiece.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
 public static class DisagreeTests
 {
-  private static Zen<BigInteger> _nullRoute = new BigInteger(20);
+  private static readonly Zen<BigInteger> _nullRoute = new BigInteger(20);
 
   private static Network<BigInteger, Unit> Net(
     Dictionary<string, Func<Zen<BigInteger>, Zen<BigInteger>, Zen<bool>>> annotations)
@@ -28,7 +29,7 @@ public static class DisagreeTests
     return new Network<BigInteger, Unit>(topology, topology.MapEdges(_ => Lang.Incr(1)), Merge, initialValues,
       annotations, topology.MapNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
       topology.MapNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Zen<bool> ReachablePredicate(Zen<BigInteger> r)
@@ -82,7 +83,7 @@ public static class DisagreeTests
       {
         "C", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
           r => r == new BigInteger(2))
-      },
+      }
     };
 
     var net = Net(annotations);

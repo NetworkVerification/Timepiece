@@ -25,10 +25,7 @@ public class AstFunction<T>
   public void Rename(string oldArg, string newArg)
   {
     if (Arg.Equals(oldArg)) Arg = newArg;
-    foreach (var b in Body)
-    {
-      b.Rename(oldArg, newArg);
-    }
+    foreach (var b in Body) b.Rename(oldArg, newArg);
   }
 
   /// <summary>

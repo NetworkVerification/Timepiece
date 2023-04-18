@@ -4,11 +4,14 @@ using System.Numerics;
 using Timepiece.Networks;
 using Xunit;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
 public static class ShortestPathsTests
 {
+  private static readonly SymbolicValue<BigInteger> D = new("d", r => r >= BigInteger.Zero);
+
   private static ShortestPath<Unit> NonSymbolic(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
@@ -23,7 +26,7 @@ public static class ShortestPathsTests
 
     var safetyProperties = topology.MapNodes(_ => Lang.IsSome<BigInteger>());
     return new ShortestPath<Unit>(topology, initialValues, annotations,
-      System.Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
+      Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
   }
 
   private static ShortestPath<Unit> NonSymbolicPathLength(
@@ -42,13 +45,11 @@ public static class ShortestPathsTests
     {
       {"A", Lang.IfSome<BigInteger>(r => r == BigInteger.Zero)},
       {"B", Lang.IfSome<BigInteger>(r => r == BigInteger.One)},
-      {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))},
+      {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))}
     };
     return new ShortestPath<Unit>(topology, initialValues, annotations,
-      System.Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
+      Array.Empty<SymbolicValue<Unit>>(), 4, safetyProperties);
   }
-
-  private static readonly SymbolicValue<BigInteger> D = new("d", r => r >= BigInteger.Zero);
 
   private static ShortestPath<BigInteger> SymbolicDest(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations)

@@ -1,20 +1,21 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="allReach24" type="DotNetProject" factoryName=".NET Project" folderName="AllPairs">
-    <option name="EXE_PATH" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0/Karesansui.Benchmarks" />
-    <option name="PROGRAM_PARAMETERS" value="--size=24 --dest=edge-719 allReach" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0" />
-    <option name="PASS_PARENT_ENVS" value="1" />
-    <option name="USE_EXTERNAL_CONSOLE" value="0" />
-    <option name="USE_MONO" value="0" />
-    <option name="RUNTIME_ARGUMENTS" value="" />
+  <configuration default="false" name="allReach24" type="DotNetProject" factoryName=".NET Project"
+                 folderName="AllPairs">
+    <option name="EXE_PATH" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0/Karesansui.Benchmarks"/>
+    <option name="PROGRAM_PARAMETERS" value="--size=24 --dest=edge-719 allReach"/>
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Karesansui.Benchmarks/bin/Release/net6.0"/>
+    <option name="PASS_PARENT_ENVS" value="1"/>
+    <option name="USE_EXTERNAL_CONSOLE" value="0"/>
+    <option name="USE_MONO" value="0"/>
+    <option name="RUNTIME_ARGUMENTS" value=""/>
     <option name="PROJECT_PATH" value="$PROJECT_DIR$/Timepiece.Benchmarks/Timepiece.Benchmarks.csproj"/>
-    <option name="PROJECT_EXE_PATH_TRACKING" value="1" />
-    <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
-    <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
-    <option name="PROJECT_KIND" value="DotNetCore" />
-    <option name="PROJECT_TFM" value="net6.0" />
+    <option name="PROJECT_EXE_PATH_TRACKING" value="1"/>
+    <option name="PROJECT_ARGUMENTS_TRACKING" value="1"/>
+    <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1"/>
+    <option name="PROJECT_KIND" value="DotNetCore"/>
+    <option name="PROJECT_TFM" value="net6.0"/>
     <method v="2">
-      <option name="Build" />
+      <option name="Build"/>
     </method>
   </configuration>
 </component>

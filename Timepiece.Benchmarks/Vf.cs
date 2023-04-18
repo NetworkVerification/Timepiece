@@ -1,6 +1,7 @@
 using System.Numerics;
 using Timepiece.Networks;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
@@ -76,7 +77,7 @@ public static class Vf
     var stableProperties =
       topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
   public static Vf<Unit> ValleyFreePathLength(uint numPods, string destination)
@@ -96,7 +97,7 @@ public static class Vf
     var stableProperties =
       topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
-      System.Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<SymbolicValue<Unit>>());
   }
 
 

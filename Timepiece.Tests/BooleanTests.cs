@@ -5,6 +5,7 @@ using Timepiece.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -18,7 +19,7 @@ public static class BooleanTests
     var initialValues = topology.MapNodes(n => Eq<string>(n, "A"));
 
     var convergeTime = new BigInteger(2);
-    return new BooleanNetwork<Unit>(topology, initialValues, annotations, System.Array.Empty<SymbolicValue<Unit>>(),
+    return new BooleanNetwork<Unit>(topology, initialValues, annotations, Array.Empty<SymbolicValue<Unit>>(),
       convergeTime);
   }
 
@@ -42,7 +43,7 @@ public static class BooleanTests
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
     {
       {"A", Lang.Globally(Lang.Identity<bool>())},
-      {"B", Lang.Globally(Lang.Identity<bool>())},
+      {"B", Lang.Globally(Lang.Identity<bool>())}
     };
     var net = Net(annotations);
 
@@ -58,7 +59,7 @@ public static class BooleanTests
     Dictionary<string, Zen<bool>> initialValues =
       topology.MapNodes(n => Constant(n == FatTree.FatTreeLayer.Edge.Node(19)));
     var net = new BooleanNetwork<Unit>(topology, initialValues, annotations,
-      System.Array.Empty<SymbolicValue<Unit>>(), new BigInteger(4))
+      Array.Empty<SymbolicValue<Unit>>(), new BigInteger(4))
     {
       MonolithicProperties =
       {

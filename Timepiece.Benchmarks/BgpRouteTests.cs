@@ -11,8 +11,11 @@ public static class BgpRouteTests
     var r1 = Zen.Symbolic<BgpRoute>();
     var r2 = Zen.Symbolic<BgpRoute>();
 
-    Zen<bool> TestLp(Zen<BgpRoute> b1, Zen<BgpRoute> b2) => Zen.Implies(
-      b1.GetLp() > b2.GetLp(), b1.Min(b2) == b1);
+    Zen<bool> TestLp(Zen<BgpRoute> b1, Zen<BgpRoute> b2)
+    {
+      return Zen.Implies(
+        b1.GetLp() > b2.GetLp(), b1.Min(b2) == b1);
+    }
 
     var test = Zen.And(TestLp(r1, r2), TestLp(r2, r1));
     Assert.False(Zen.Not(test).Solve().IsSatisfiable());
@@ -24,8 +27,11 @@ public static class BgpRouteTests
     var r1 = Zen.Symbolic<BgpRoute>();
     var r2 = Zen.Symbolic<BgpRoute>();
 
-    Zen<bool> TestPathLength(Zen<BgpRoute> b1, Zen<BgpRoute> b2) => Zen.Implies(
-      Zen.And(b1.GetLp() == b2.GetLp(), b1.GetAsPathLength() < b2.GetAsPathLength()), b1.Min(b2) == b1);
+    Zen<bool> TestPathLength(Zen<BgpRoute> b1, Zen<BgpRoute> b2)
+    {
+      return Zen.Implies(
+        Zen.And(b1.GetLp() == b2.GetLp(), b1.GetAsPathLength() < b2.GetAsPathLength()), b1.Min(b2) == b1);
+    }
 
     var test = Zen.And(TestPathLength(r1, r2), TestPathLength(r2, r1));
     Assert.False(Zen.Not(test).Solve().IsSatisfiable());
@@ -37,11 +43,13 @@ public static class BgpRouteTests
     var r1 = Zen.Symbolic<BgpRoute>();
     var r2 = Zen.Symbolic<BgpRoute>();
 
-    Zen<bool> TestOrigin(Zen<BgpRoute> b1, Zen<BgpRoute> b2) =>
-      Zen.Implies(
+    Zen<bool> TestOrigin(Zen<BgpRoute> b1, Zen<BgpRoute> b2)
+    {
+      return Zen.Implies(
         Zen.And(b1.GetLp() == b2.GetLp(), b1.GetAsPathLength() == b2.GetAsPathLength(),
           b1.GetOriginType() > b2.GetOriginType()),
         b1.Min(b2) == b1);
+    }
 
     var test = Zen.And(TestOrigin(r1, r2), TestOrigin(r2, r1));
     Assert.False(Zen.Not(test).Solve().IsSatisfiable());
@@ -53,11 +61,13 @@ public static class BgpRouteTests
     var r1 = Zen.Symbolic<BgpRoute>();
     var r2 = Zen.Symbolic<BgpRoute>();
 
-    Zen<bool> TestMed(Zen<BgpRoute> b1, Zen<BgpRoute> b2) =>
-      Zen.Implies(
+    Zen<bool> TestMed(Zen<BgpRoute> b1, Zen<BgpRoute> b2)
+    {
+      return Zen.Implies(
         Zen.And(b1.GetLp() == b2.GetLp(), b1.GetAsPathLength() == b2.GetAsPathLength(),
           b1.GetOriginType() == b2.GetOriginType(), b1.GetMed() < b2.GetMed()),
         b1.Min(b2) == b1);
+    }
 
     var test = Zen.And(TestMed(r1, r2), TestMed(r2, r1));
     Assert.False(Zen.Not(test).Solve().IsSatisfiable());

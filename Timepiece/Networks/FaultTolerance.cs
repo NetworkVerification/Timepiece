@@ -45,7 +45,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
   }
 
   /// <summary>
-  /// Return true if the given edge is in the sequence of failed edges, and false otherwise.
+  ///   Return true if the given edge is in the sequence of failed edges, and false otherwise.
   /// </summary>
   /// <param name="failedEdges"></param>
   /// <param name="edge"></param>

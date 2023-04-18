@@ -1,15 +1,15 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Reachability" type="CompoundRunConfigurationType">
-    <toRun name="hijack12" type="DotNetProject" />
-    <toRun name="hijack16" type="DotNetProject" />
-    <toRun name="hijack20" type="DotNetProject" />
-    <toRun name="hijack24" type="DotNetProject" />
-    <toRun name="hijack28" type="DotNetProject" />
-    <toRun name="hijack32" type="DotNetProject" />
-    <toRun name="hijack36" type="DotNetProject" />
-    <toRun name="hijack4" type="DotNetProject" />
-    <toRun name="hijack40" type="DotNetProject" />
-    <toRun name="hijack8" type="DotNetProject" />
-    <method v="2" />
+    <toRun name="hijack12" type="DotNetProject"/>
+    <toRun name="hijack16" type="DotNetProject"/>
+    <toRun name="hijack20" type="DotNetProject"/>
+    <toRun name="hijack24" type="DotNetProject"/>
+    <toRun name="hijack28" type="DotNetProject"/>
+    <toRun name="hijack32" type="DotNetProject"/>
+    <toRun name="hijack36" type="DotNetProject"/>
+    <toRun name="hijack4" type="DotNetProject"/>
+    <toRun name="hijack40" type="DotNetProject"/>
+    <toRun name="hijack8" type="DotNetProject"/>
+    <method v="2"/>
   </configuration>
 </component>

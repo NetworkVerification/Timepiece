@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Timepiece.Angler.UntypedAst.AstExpr;
 
 namespace Timepiece.Angler.UntypedAst.AstStmt;
@@ -19,14 +18,8 @@ public class IfThenElse : Statement
   public override void Rename(string oldVar, string newVar)
   {
     Guard.Rename(oldVar, newVar);
-    foreach (var s in ThenCase)
-    {
-      s.Rename(oldVar, newVar);
-    }
+    foreach (var s in ThenCase) s.Rename(oldVar, newVar);
 
-    foreach (var s in ElseCase)
-    {
-      s.Rename(oldVar, newVar);
-    }
+    foreach (var s in ElseCase) s.Rename(oldVar, newVar);
   }
 }

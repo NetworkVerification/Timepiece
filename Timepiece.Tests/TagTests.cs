@@ -4,6 +4,7 @@ using System.Numerics;
 using Timepiece.Networks;
 using Xunit;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -36,7 +37,7 @@ public static class TagTests
 
     return new Network<CSetRoute, Unit>(topology, topology.MapEdges(transfer), Merge, initial,
       annotations,
-      modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
+      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Network<SetRoute, Unit> SetNet(Dictionary<string, Func<Zen<SetRoute>, Zen<bool>>> monolithicProperties,
@@ -59,7 +60,7 @@ public static class TagTests
 
     return new Network<SetRoute, Unit>(topology, topology.MapEdges(SetTransfer), Merge, initial,
       annotations,
-      modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
+      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
   private static Func<(string, string), Func<Zen<CSetRoute>, Zen<CSetRoute>>> CSetTransferWithBehavior(
@@ -84,7 +85,7 @@ public static class TagTests
     {
       {"A", p => Zen.And(p.Item1() == 0, p.Item2() == CSet.Empty<string>())},
       {"B", p => Zen.And(p.Item1() == 1, p.Item2().Contains("A"))},
-      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))},
+      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))}
     };
     var net = CSetNet(CSetTransferWithBehavior(addBehavior), monolithicProperties,
       new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>());
@@ -96,13 +97,14 @@ public static class TagTests
   {
     CSetNetPassesGoodMonoChecks(CSet.Add);
   }
+
   private static void CSetNetFailsBadMonoChecks(CSetAdd addBehavior)
   {
     var monolithicProperties = new Dictionary<string, Func<Zen<CSetRoute>, Zen<bool>>>
     {
       {"A", p => p.Item1() == 0},
       {"B", p => p.Item1() == 0},
-      {"C", p => p.Item1() == 0},
+      {"C", p => p.Item1() == 0}
     };
     var net = CSetNet(CSetTransferWithBehavior(addBehavior), monolithicProperties,
       new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>());
@@ -122,7 +124,7 @@ public static class TagTests
     {
       {"A", p => Zen.And(p.Item1() == 0, p.Item2() == Set.Empty<string>())},
       {"B", p => Zen.And(p.Item1() == 1, p.Item2().Contains("A"))},
-      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))},
+      {"C", p => Zen.And(p.Item1() == 2, p.Item2().Contains("A"), p.Item2().Contains("B"))}
     };
     var net = SetNet(monolithicProperties,
       new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>());
@@ -136,7 +138,7 @@ public static class TagTests
     {
       {"A", p => p.Item1() == 0},
       {"B", p => p.Item1() == 0},
-      {"C", p => p.Item1() == 0},
+      {"C", p => p.Item1() == 0}
     };
     var net = SetNet(monolithicProperties,
       new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>());

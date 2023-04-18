@@ -11,6 +11,11 @@ namespace Timepiece;
 
 public static class Profile
 {
+  /// <summary>
+  ///   Table field header for wall clock time.
+  /// </summary>
+  private const string WallTimeHeader = "wall";
+
   public static void RunCmpPerNode<T, TS>(Network<T, TS> network)
   {
     RunAnnotatedWithStats(network);
@@ -105,7 +110,7 @@ public static class Profile
   }
 
   /// <summary>
-  /// Return the milliseconds taken by the given action on the given input.
+  ///   Return the milliseconds taken by the given action on the given input.
   /// </summary>
   /// <param name="f"></param>
   /// <param name="input"></param>
@@ -127,29 +132,6 @@ public static class Profile
     return s;
   }
 
-  /// <summary>
-  /// Available statistics to query on modular checks.
-  /// </summary>
-  [Flags]
-  private enum Statistics
-  {
-    None = 0,
-    Maximum = 1 << 0,
-    Minimum = 1 << 1,
-    Average = 1 << 2,
-    Median = 1 << 3,
-    NinetyNinthPercentile = 1 << 4,
-    Total = 1 << 5,
-    Individual = 1 << 6,
-    Summary = Maximum | Minimum | Average | Median | NinetyNinthPercentile | Total,
-    All = Summary | Individual
-  }
-
-  /// <summary>
-  /// Table field header for wall clock time.
-  /// </summary>
-  private const string WallTimeHeader = "wall";
-
   private static string StatisticShortForm(Statistics stat)
   {
     return stat switch
@@ -167,7 +149,7 @@ public static class Profile
   }
 
   /// <summary>
-  /// Report the time taken by all the checks.
+  ///   Report the time taken by all the checks.
   /// </summary>
   /// <param name="times"></param>
   /// <param name="stats"></param>
@@ -181,9 +163,7 @@ public static class Profile
     var data = new StringBuilder($"{times.Count}");
     Console.WriteLine("Check statistics:");
     foreach (Statistics stat in Enum.GetValues(typeof(Statistics)))
-    {
       if ((stats & stat) == stat)
-      {
         switch (stat)
         {
           case Statistics.Maximum:
@@ -225,10 +205,7 @@ public static class Profile
             data.Append($"\t{total}");
             break;
           case Statistics.Individual:
-            foreach (var (node, time) in times)
-            {
-              Console.WriteLine($"Node {node} took {time}ms");
-            }
+            foreach (var (node, time) in times) Console.WriteLine($"Node {node} took {time}ms");
 
             break;
           case Statistics.None:
@@ -238,8 +215,6 @@ public static class Profile
           default:
             throw new ArgumentOutOfRangeException(nameof(stats));
         }
-      }
-    }
 
     // add the wall clock time if it was obtained
     if (wallTime is not null)
@@ -251,5 +226,23 @@ public static class Profile
     if (!printTable) return;
     Console.WriteLine(headers);
     Console.WriteLine(data);
+  }
+
+  /// <summary>
+  ///   Available statistics to query on modular checks.
+  /// </summary>
+  [Flags]
+  private enum Statistics
+  {
+    None = 0,
+    Maximum = 1 << 0,
+    Minimum = 1 << 1,
+    Average = 1 << 2,
+    Median = 1 << 3,
+    NinetyNinthPercentile = 1 << 4,
+    Total = 1 << 5,
+    Individual = 1 << 6,
+    Summary = Maximum | Minimum | Average | Median | NinetyNinthPercentile | Total,
+    All = Summary | Individual
   }
 }

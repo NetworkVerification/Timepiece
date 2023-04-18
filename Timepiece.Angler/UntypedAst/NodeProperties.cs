@@ -26,11 +26,11 @@ public class NodeProperties
   }
 
   /// <summary>
-  /// AS number for the given node.
+  ///   AS number for the given node.
   /// </summary>
   public int? Asn { get; set; }
 
-  private Expr Initial { get; set; }
+  private Expr Initial { get; }
 
   /// <summary>
   ///   Additional function declarations.
@@ -58,11 +58,14 @@ public class NodeProperties
   }
 
   /// <summary>
-  /// Return true if the given neighbor is considered to not be in the same AS as this node.
+  ///   Return true if the given neighbor is considered to not be in the same AS as this node.
   /// </summary>
   /// <param name="neighbor"></param>
   /// <returns></returns>
-  public bool IsExternalNeighbor(string neighbor) => Asn is null || Asn != Policies[neighbor].Asn;
+  public bool IsExternalNeighbor(string neighbor)
+  {
+    return Asn is null || Asn != Policies[neighbor].Asn;
+  }
 
   /// <summary>
   ///   Construct a node storing all the relevant information for creating a network.
@@ -99,22 +102,14 @@ public class NodeProperties
     foreach (var (neighbor, policies) in Policies)
     {
       if (policies.Export is null)
-      {
         exports[neighbor] = env.EvaluateFunction(defaultExport);
-      }
       else
-      {
         exports[neighbor] = env.EvaluateFunction(Declarations[policies.Export]);
-      }
 
       if (policies.Import is null)
-      {
         imports[neighbor] = env.EvaluateFunction(defaultImport);
-      }
       else
-      {
         imports[neighbor] = env.EvaluateFunction(Declarations[policies.Import]);
-      }
     }
 
     return new NetworkNode<RouteEnvironment>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),

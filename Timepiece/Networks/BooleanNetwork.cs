@@ -7,7 +7,7 @@ using static ZenLib.Zen;
 namespace Timepiece.Networks;
 
 /// <summary>
-///     A network with a boolean routing algebra.
+///   A network with a boolean routing algebra.
 /// </summary>
 public class BooleanNetwork<TS> : Network<bool, TS>
 {

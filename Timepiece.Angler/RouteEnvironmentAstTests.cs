@@ -30,15 +30,11 @@ public static class AstTests
     // determine the node's initial value
     Expr initial;
     if (GetAddressRange(node).Contains(D))
-    {
       initial = new WithField(
         new WithField(AstEnvironment.DefaultRoute(), "Prefix", new PrefixExpr(D)),
         "Value", new BoolExpr(true));
-    }
     else
-    {
       initial = AstEnvironment.DefaultRoute();
-    }
 
     return new NodeProperties(null,
       policies, IsValid, new Finally(time, IsValid),

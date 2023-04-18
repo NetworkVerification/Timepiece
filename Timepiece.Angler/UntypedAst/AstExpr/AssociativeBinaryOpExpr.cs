@@ -17,10 +17,7 @@ public class AssociativeBinaryOpExpr : BinaryOpExpr
   {
     while (true)
     {
-      if (es is null)
-      {
-        throw new ArgumentNullException(nameof(es), "No arguments given to binary expression");
-      }
+      if (es is null) throw new ArgumentNullException(nameof(es), "No arguments given to binary expression");
 
       if (!es.MoveNext()) return acc;
       acc = new AssociativeBinaryOpExpr(acc, es.Current, binaryOp);

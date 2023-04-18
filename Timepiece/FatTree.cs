@@ -9,7 +9,7 @@ public static class FatTree
   {
     Edge,
     Aggregation,
-    Core,
+    Core
   }
 
   // note: this needs to have a different name from ToString as we can't override that directly
@@ -26,7 +26,7 @@ public static class FatTree
   }
 
   /// <summary>
-  /// Return a node representing the given node in the fat tree.
+  ///   Return a node representing the given node in the fat tree.
   /// </summary>
   /// <param name="l">The node's layer.</param>
   /// <param name="i">The node's index.</param>

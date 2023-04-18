@@ -2,9 +2,9 @@ namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 public class BinaryOpExpr : Expr
 {
+  public readonly Func<dynamic, dynamic, dynamic> binaryOp;
   public readonly Expr expr1;
   public readonly Expr expr2;
-  public readonly Func<dynamic, dynamic, dynamic> binaryOp;
 
   public BinaryOpExpr(Expr operand1, Expr operand2, Func<dynamic, dynamic, dynamic> binaryOp)
   {

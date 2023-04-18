@@ -28,6 +28,16 @@ public class Benchmark
     RunMonolithic = runMonolithic;
   }
 
+  public BenchmarkType Bench { get; set; }
+
+  public string Destination { get; set; }
+
+  public uint N { get; set; }
+
+  public bool RunMonolithic { get; set; }
+
+  public bool Verbose { get; set; }
+
   public void Run()
   {
     switch (Bench)
@@ -74,24 +84,10 @@ public class Benchmark
   {
     net.PrintFormulas = Verbose;
     if (RunMonolithic)
-    {
       Profile.RunMonoWithStats(net);
-    }
     else
-    {
       Profile.RunAnnotatedWithStats(net);
-    }
   }
-
-  public BenchmarkType Bench { get; set; }
-
-  public string Destination { get; set; }
-
-  public uint N { get; set; }
-
-  public bool RunMonolithic { get; set; }
-
-  public bool Verbose { get; set; }
 }
 
 public enum BenchmarkType
@@ -106,7 +102,7 @@ public enum BenchmarkType
   ValleyFreeLength,
   ApValleyFree,
   FatTreeHijack,
-  ApFatTreeHijack,
+  ApFatTreeHijack
 }
 
 public static class BenchmarkTypeExtensions

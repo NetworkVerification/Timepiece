@@ -6,6 +6,7 @@ using Timepiece.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -26,7 +27,7 @@ public static class BgpNetworkTests
 
     var convergeTime = new BigInteger(2);
 
-    return new BgpNetwork(topology, initialValues, annotations, convergeTime, System.Array.Empty<SymbolicValue<Bgp>>());
+    return new BgpNetwork(topology, initialValues, annotations, convergeTime, Array.Empty<SymbolicValue<Bgp>>());
   }
 
   [Fact]
@@ -98,7 +99,7 @@ public static class BgpNetworkTests
       {
         {"A", Lang.Equals(Start)},
         {"B", Lang.Finally<Option<Bgp>>(new BigInteger(1), r => r == Start)},
-        {"C", Lang.Finally<Option<Bgp>>(new BigInteger(2), r => r == Start)},
+        {"C", Lang.Finally<Option<Bgp>>(new BigInteger(2), r => r == Start)}
       };
     var net = Net(annotations);
     NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
@@ -125,7 +126,7 @@ public static class BgpNetworkTests
       topology.MapNodes(n => n == FatTree.FatTreeLayer.Edge.Node(19) ? Start : Option.None<Bgp>());
     var annotations = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>();
     var net = new BgpNetwork(topology, initialValues, annotations, new BigInteger(4),
-      System.Array.Empty<SymbolicValue<Bgp>>())
+      Array.Empty<SymbolicValue<Bgp>>())
     {
       MonolithicProperties =
       {

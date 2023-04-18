@@ -16,9 +16,6 @@ public class Assign : Statement
   public override void Rename(string oldVar, string newVar)
   {
     Expr.Rename(oldVar, newVar);
-    if (Var == oldVar)
-    {
-      Var = newVar;
-    }
+    if (Var == oldVar) Var = newVar;
   }
 }

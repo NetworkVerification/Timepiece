@@ -4,6 +4,10 @@ namespace Timepiece.Angler;
 
 public class Environment<T>
 {
+  public readonly dynamic returnValue;
+
+  public readonly Zen<T> route;
+
   public Environment(Zen<T> route, dynamic returnValue)
   {
     this.route = route;
@@ -13,9 +17,6 @@ public class Environment<T>
   public Environment(Zen<T> route) : this(route, route)
   {
   }
-
-  public readonly Zen<T> route;
-  public readonly dynamic returnValue;
 
   public Environment<T> WithRoute(Zen<T> r)
   {
@@ -28,8 +29,8 @@ public class Environment<T>
   }
 
   /// <summary>
-  /// Checks that two environments are equal.
-  /// This is reference equality for the routes.
+  ///   Checks that two environments are equal.
+  ///   This is reference equality for the routes.
   /// </summary>
   /// <param name="other"></param>
   /// <returns></returns>
@@ -44,7 +45,7 @@ public class Environment<T>
   }
 
   /// <summary>
-  /// Return true if both environments' routes are logically equal.
+  ///   Return true if both environments' routes are logically equal.
   /// </summary>
   /// <param name="other"></param>
   /// <returns></returns>

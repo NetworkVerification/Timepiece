@@ -3,7 +3,7 @@ using ZenLib;
 namespace Timepiece.Angler.UntypedAst.AstExpr;
 
 /// <summary>
-/// Addition of two unsigned integers.
+///   Addition of two unsigned integers.
 /// </summary>
 public class Plus : AssociativeBinaryOpExpr
 {
