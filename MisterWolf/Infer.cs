@@ -247,7 +247,7 @@ public class Infer<T>
   private static Zen<bool> NextToConverge(IEnumerable<string> predecessors, Zen<BigInteger> time,
     IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray b)
   {
-    return Zen.And(predecessors.Select((j, i) => !b[i] ? time >= times[j] : time < times[j]));
+    return Zen.And(predecessors.Select((j, i) => b[i] ? time < times[j] : time >= times[j]));
   }
 
   /// <summary>
