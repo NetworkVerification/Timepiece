@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Numerics;
@@ -34,37 +35,35 @@ public class Infer<T>
   private Dictionary<string, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
 
   /// <summary>
-  /// Return a string describing a failed check.
-  /// If ancestors is not null, specify the ancestors that caused the failure (inductive check);
-  /// otherwise, assume the failure is due to the initial check.
+  ///   Return a string describing a failed check.
+  ///   If b is not null, specify the b that caused the failure (inductive check);
+  ///   otherwise, assume the failure is due to the initial check.
   /// </summary>
   /// <param name="node">A node in the topology.</param>
   /// <param name="invariantDescriptor">A descriptor of the invariant, e.g. "before" or "after".</param>
-  /// <param name="ancestors">An array of node names of the node's ancestors, or null.</param>
+  /// <param name="b">An array of node names of the node's b, or null.</param>
   /// <returns>A string describing a failed check.</returns>
-  private static string ReportFailure(string node, string invariantDescriptor, string[]? ancestors)
+  private string ReportFailure(string node, string invariantDescriptor, BitArray? b)
   {
-    if (ancestors is not null)
+    if (b is not null)
     {
-      var ancestorString = new StringBuilder();
-      foreach (var ancestor in ancestors)
+      var bString = new StringBuilder();
+      foreach (var i in Enumerable.Range(0, Topology[node].Count))
       {
-        if (ancestorString.Length > 0)
-        {
-          ancestorString.Append(", ");
-        }
-
-        ancestorString.Append(ancestor);
+        if (bString.Length > 0) bString.Append(", ");
+        // specify whether the neighbor was before or after
+        bString.Append(b[i] ? "before " : "after ");
+        bString.Append(Topology[node][i]);
       }
 
-      return $"Ancestors [{ancestorString}] do NOT imply node {node}'s {invariantDescriptor} invariant.";
+      return $"Arrangement [{bString}] does NOT imply node {node}'s {invariantDescriptor} invariant.";
     }
 
     return $"Node {node}'s {invariantDescriptor} invariant does not hold for its initial route.";
   }
 
   /// <summary>
-  /// Check that a node's initial route satisfies the given invariant.
+  ///   Check that a node's initial route satisfies the given invariant.
   /// </summary>
   /// <param name="node"></param>
   /// <param name="invariant"></param>
@@ -77,31 +76,26 @@ public class Infer<T>
   }
 
   /// <summary>
-  /// Check that the given node's invariant is implied by the invariants of the given ancestors.
-  /// An ancestor is a predecessor of the given node which has already converged to its after invariant.
-  /// Return true if the node's invariant is implied by the ancestors' invariants, and false otherwise.
+  ///   Check that the given node's invariant is implied by the invariants of its neighbors.
+  ///   The bitvector b controls whether the neighbor i sends a route satisfying its before condition
+  ///   (b[i] is true) or after condition (b[i] is false)
   /// </summary>
   /// <param name="node">A node in the topology.</param>
   /// <param name="invariant">A predicate to check on the node.</param>
-  /// <param name="ancestors">A subset of the node's predecessors.</param>
-  /// <returns>True if the invariant is always satisfied by the ancestors', and false otherwise.</returns>
-  private bool CheckAncestors(string node, Func<Zen<T>, Zen<bool>> invariant, IEnumerable<string> ancestors)
+  /// <param name="b">A bit array over the node's neighbors.</param>
+  /// <returns>True if the invariant is always satisfied by the bs, and false otherwise.</returns>
+  private bool CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant, BitArray b)
   {
     var routes = new Dictionary<string, Zen<T>>();
-    foreach (var predecessor in Topology[node])
-    {
-      routes[predecessor] = Zen.Symbolic<T>();
-    }
+    foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
 
     var newNodeRoute = UpdateNodeRoute(node, routes);
 
-    // check predecessor invariants according to whether or not the predecessor was given in ancestors
-    // we check the after invariant of an included predecessor, and otherwise the before invariant
+    // check predecessor invariants according to whether or not the predecessor was given in b
+    // we check the before invariant of a predecessor when b[i] is true, and the after invariant when b[i] is false
     var assume = Topology[node]
-      .Select(predecessor =>
-        ancestors.Contains(predecessor)
-          ? AfterInvariants[predecessor](routes[predecessor])
-          : BeforeInvariants[predecessor](routes[predecessor]));
+      .Select((predecessor, i) =>
+        b[i] ? BeforeInvariants[predecessor](routes[predecessor]) : AfterInvariants[predecessor](routes[predecessor]));
     var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
     var query = Zen.Not(check);
@@ -111,8 +105,8 @@ public class Infer<T>
   }
 
   /// <summary>
-  /// Return a route corresponding to the application of one step of the network semantics:
-  /// starting from the initial route at a node, merge in each transferred route from the node's neighbor.
+  ///   Return a route corresponding to the application of one step of the network semantics:
+  ///   starting from the initial route at a node, merge in each transferred route from the node's neighbor.
   /// </summary>
   /// <param name="node">The focal node.</param>
   /// <param name="routes">The routes of all nodes in the network.</param>
@@ -125,27 +119,14 @@ public class Infer<T>
   }
 
   /// <summary>
-  /// Return the power set of an enumerable of elements.
-  /// </summary>
-  /// <param name="set"></param>
-  /// <returns></returns>
-  private static IEnumerable<IEnumerable<TElement>> PowerSet<TElement>(IEnumerable<TElement> set)
-  {
-    var sets = new List<IEnumerable<TElement>> {Enumerable.Empty<TElement>()};
-    return set.Aggregate(sets,
-      // given the current set of sets, add new sets which extend them all by an element
-      (currentSets, element) =>
-        currentSets.Concat(currentSets.Select(s => s.Concat(new[] {element}))).ToList());
-  }
-
-  /// <summary>
-  /// Infer times for each node, such that a network annotated with these times (of the form "before until^{t} after")
-  /// should pass all the modular checks.
+  ///   Infer times for each node, such that a network annotated with these times (of the form "before until^{t} after")
+  ///   should pass all the modular checks.
+  ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
   /// </summary>
   /// <param name="printBounds">If true, print the computed bounds.</param>
   /// <param name="maxTime"></param>
   /// <returns></returns>
-  private Dictionary<string, BigInteger> InferTimes(bool printBounds, BigInteger? maxTime)
+  private Dictionary<string, BigInteger> InferTimesExplicit(bool printBounds, BigInteger? maxTime)
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -163,31 +144,31 @@ public class Infer<T>
         afterInitialChecks.Add(node);
       }
     });
-    // for each node, for each subset of its predecessors, run CheckAncestors in parallel
-    // construct a dictionary of the results of which ancestors fail to imply the two invariants
-    var beforeInductiveChecks = new ConcurrentDictionary<string, List<string[]>>();
-    var afterInductiveChecks = new ConcurrentDictionary<string, List<string[]>>();
-    var nodeAndAncestors = Topology.Nodes
-      .SelectMany(n => PowerSet(Topology[n]), (n, ancestors) => (n, ancestors));
-    // TODO: if we have check failures when predecessor u is both in ancestors and not in ancestors,
+    // for each node, for each subset of its predecessors, run CheckInductive in parallel
+    // construct a dictionary of the results of which b fail to imply the two invariants
+    var beforeInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
+    var afterInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
+    var nodeAndArrangements = Topology.Nodes
+      .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b));
+    // TODO: if we have check failures when predecessor u is both in b and not in b,
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
-    nodeAndAncestors.AsParallel()
+    nodeAndArrangements.AsParallel()
       .ForAll(tuple =>
       {
         var n = tuple.n;
-        var anc = tuple.ancestors.ToArray();
-        if (!CheckAncestors(n, BeforeInvariants[n], anc))
+        var b = tuple.b;
+        if (!CheckInductive(n, BeforeInvariants[n], b))
         {
-          Console.WriteLine(ReportFailure(n, "before", anc));
-          var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<string[]>());
-          ancestors.Add(anc);
+          Console.WriteLine(ReportFailure(n, "before", b));
+          var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
+          ancestors.Add(b);
         }
 
-        if (!CheckAncestors(n, AfterInvariants[n], anc))
+        if (!CheckInductive(n, AfterInvariants[n], b))
         {
-          Console.WriteLine(ReportFailure(n, "after", anc));
-          var ancestors = afterInductiveChecks.GetOrAdd(n, new List<string[]>());
-          ancestors.Add(anc);
+          Console.WriteLine(ReportFailure(n, "after", b));
+          var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
+          ancestors.Add(b);
         }
       });
     // construct a set of bounds to check
@@ -197,56 +178,47 @@ public class Infer<T>
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
         .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)).ToList();
     // if a maximum time is given, also require that no witness time is greater than the maximum
-    if (maxTime is not null)
-    {
-      bounds.AddRange(times.Select(pair => pair.Value <= maxTime));
-    }
+    if (maxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= maxTime));
     // for each failed inductive check, we add the following bounds:
-    // (1) if the before check failed for node n and ancestors anc, add bounds for all ancestors m in anc
+    // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 >= t_n
-    foreach (var (node, ancestors) in beforeInductiveChecks)
+    foreach (var (node, arrangements) in beforeInductiveChecks)
+    foreach (var arrangement in arrangements)
     {
-      foreach (var ancestorsGroup in ancestors)
-      {
-        var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
-          Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestorsGroup)));
-        bounds.Add(zeroBeforeBound);
-        var beforeBounds = from ancestor in ancestorsGroup
-          select Zen.Or(times[ancestor] + BigInteger.One >= times[node],
-            Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestorsGroup)));
-        bounds.AddRange(beforeBounds);
-      }
+      var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
+        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
+      bounds.Add(zeroBeforeBound);
+      var neighbors = Topology[node].Where((_, i) => arrangement[i]);
+      var beforeBounds = from neighbor in neighbors
+        select Zen.Or(times[neighbor] + BigInteger.One >= times[node],
+          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
+      bounds.AddRange(beforeBounds);
     }
 
-    // (2) if the after check failed for node n and ancestors anc, add bounds for all predecessors m of n
+    // (2) if the after check failed for node n and b anc, add bounds for all predecessors m of n
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 < t_n,
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
-    foreach (var (node, ancestors) in afterInductiveChecks)
+    foreach (var (node, arrangements) in afterInductiveChecks)
+    foreach (var arrangement in arrangements)
     {
-      foreach (var ancestorsGroup in ancestors)
-      {
-        var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
-          Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, ancestorsGroup)));
-        bounds.Add(zeroAfterBound);
-        var afterBounds = from ancestor in ancestorsGroup
-          select Zen.Or(times[ancestor] + BigInteger.One < times[node],
-            Zen.Not(NextToConverge(Topology[node], times[ancestor], times, ancestorsGroup)));
-        bounds.AddRange(afterBounds);
-        var nextBound = Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, ancestorsGroup));
-        bounds.Add(nextBound);
-      }
+      var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
+        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
+      bounds.Add(zeroAfterBound);
+      var neighbors = Topology[node].Where((_, i) => arrangement[i]);
+      var afterBounds = from neighbor in neighbors
+        select Zen.Or(times[neighbor] + BigInteger.One < times[node],
+          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
+      bounds.AddRange(afterBounds);
+      var nextBound = Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      bounds.Add(nextBound);
     }
 
     if (printBounds)
-    {
       // list the computed bounds
       foreach (var b in bounds)
-      {
         Console.WriteLine(b);
-      }
-    }
     // Console.WriteLine(bounds.Count);
 
     // we now take the conjunction of all the bounds
@@ -256,39 +228,37 @@ public class Infer<T>
 
     var model = constraints.Solve();
     if (model.IsSatisfiable())
-    {
       return new Dictionary<string, BigInteger>(times.Select(pair =>
         new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
-    }
 
     return new Dictionary<string, BigInteger>();
   }
 
   /// <summary>
-  /// Generate a conjunction of constraints on the given time: for the given predecessors and time,
-  /// the constraints require that each of the predecessor's times is at most the given time
-  /// if the predecessor is also an ancestor, and otherwise strictly greater than the given time.
+  ///   Generate a conjunction of constraints on the given time: for the given predecessors and time,
+  ///   the constraints require that each of the predecessor's times is at most the given time
+  ///   if the predecessor is also an ancestor, and otherwise strictly greater than the given time.
   /// </summary>
   /// <param name="predecessors"></param>
   /// <param name="time"></param>
   /// <param name="times"></param>
-  /// <param name="ancestors"></param>
+  /// <param name="b"></param>
   /// <returns></returns>
   private static Zen<bool> NextToConverge(IEnumerable<string> predecessors, Zen<BigInteger> time,
-    IReadOnlyDictionary<string, Zen<BigInteger>> times, string[] ancestors)
+    IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray b)
   {
-    return Zen.And(predecessors.Select(j => ancestors.Contains(j) ? time >= times[j] : time < times[j]));
+    return Zen.And(predecessors.Select((j, i) => b[i] ? time >= times[j] : time < times[j]));
   }
 
   /// <summary>
-  /// Convert the inference problem into a Timepiece network instance.
+  ///   Convert the inference problem into a Timepiece network instance.
   /// </summary>
   /// <typeparam name="TS"></typeparam>
   /// <returns></returns>
   public Network<T, TS> ToNetwork<TS>(bool printBounds, BigInteger? maxTime)
   {
     var timer = Stopwatch.StartNew();
-    var times = InferTimes(printBounds, maxTime);
+    var times = InferTimesExplicit(printBounds, maxTime);
     timer.Stop();
     var timeTaken = timer.ElapsedMilliseconds;
     Console.WriteLine($"Inference took {timeTaken}ms!");
@@ -296,10 +266,7 @@ public class Infer<T>
     if (times.Count > 0)
     {
       Console.WriteLine("Success, inferred the following times:");
-      foreach (var (node, time) in times)
-      {
-        Console.WriteLine($"{node}: {time}");
-      }
+      foreach (var (node, time) in times) Console.WriteLine($"{node}: {time}");
     }
     else
     {
