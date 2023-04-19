@@ -84,7 +84,7 @@ public class Infer<T>
   /// <param name="invariant">A predicate to check on the node.</param>
   /// <param name="b">A bit array over the node's neighbors.</param>
   /// <returns>True if the invariant is always satisfied by the bs, and false otherwise.</returns>
-  private bool CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant, BitArray b)
+  private bool CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant, IReadOnlyList<Zen<bool>> b)
   {
     var routes = new Dictionary<string, Zen<T>>();
     foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
@@ -95,7 +95,8 @@ public class Infer<T>
     // we check the before invariant of a predecessor when b[i] is true, and the after invariant when b[i] is false
     var assume = Topology[node]
       .Select((predecessor, i) =>
-        b[i] ? BeforeInvariants[predecessor](routes[predecessor]) : AfterInvariants[predecessor](routes[predecessor]));
+        Zen.If(b[i], BeforeInvariants[predecessor](routes[predecessor]),
+          AfterInvariants[predecessor](routes[predecessor])));
     var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
     var query = Zen.Not(check);
@@ -156,19 +157,123 @@ public class Infer<T>
       .ForAll(tuple =>
       {
         var n = tuple.n;
-        var b = tuple.b;
+        var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
         if (!CheckInductive(n, BeforeInvariants[n], b))
         {
-          Console.WriteLine(ReportFailure(n, "before", b));
+          Console.WriteLine(ReportFailure(n, "before", tuple.b));
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
-          ancestors.Add(b);
+          ancestors.Add(tuple.b);
         }
 
         if (!CheckInductive(n, AfterInvariants[n], b))
         {
-          Console.WriteLine(ReportFailure(n, "after", b));
+          Console.WriteLine(ReportFailure(n, "after", tuple.b));
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
-          ancestors.Add(b);
+          ancestors.Add(tuple.b);
+        }
+      });
+    // construct a set of bounds to check
+    var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
+    // add initial check bounds
+    var bounds =
+      beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
+        .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)).ToList();
+    // if a maximum time is given, also require that no witness time is greater than the maximum
+    if (maxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= maxTime));
+    // for each failed inductive check, we add the following bounds:
+    // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
+    //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
+    //     or t_m + 1 >= t_n
+    foreach (var (node, arrangements) in beforeInductiveChecks)
+    foreach (var arrangement in arrangements)
+    {
+      var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
+        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
+      bounds.Add(zeroBeforeBound);
+      var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
+      var beforeBounds = from neighbor in neighbors
+        select Zen.Or(times[neighbor] + BigInteger.One >= times[node],
+          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
+      bounds.AddRange(beforeBounds);
+    }
+
+    // (2) if the after check failed for node n and b anc, add bounds for all predecessors m of n
+    //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
+    //     or t_m + 1 < t_n,
+    //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
+    foreach (var (node, arrangements) in afterInductiveChecks)
+    foreach (var arrangement in arrangements)
+    {
+      var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
+        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
+      bounds.Add(zeroAfterBound);
+      var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
+      var afterBounds = from neighbor in neighbors
+        select Zen.Or(times[neighbor] + BigInteger.One < times[node],
+          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
+      bounds.AddRange(afterBounds);
+      var nextBound = Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      bounds.Add(nextBound);
+    }
+
+    if (printBounds)
+      // list the computed bounds
+      foreach (var b in bounds)
+        Console.WriteLine(b);
+    // Console.WriteLine(bounds.Count);
+
+    // we now take the conjunction of all the bounds
+    // and additionally restrict the times to be non-negative
+    var constraints = Zen.And(Zen.And(bounds),
+      Zen.And(times.Select(t => t.Value >= BigInteger.Zero)));
+
+    var model = constraints.Solve();
+    if (model.IsSatisfiable())
+      return new Dictionary<string, BigInteger>(times.Select(pair =>
+        new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
+
+    return new Dictionary<string, BigInteger>();
+  }
+
+  private Dictionary<string, BigInteger> InferTimesSymbolic(bool printBounds, BigInteger? maxTime)
+  {
+    var afterInitialChecks = new ConcurrentBag<string>();
+    var beforeInitialChecks = new ConcurrentBag<string>();
+    Topology.Nodes.AsParallel().ForAll(node =>
+    {
+      if (!CheckInitial(node, BeforeInvariants[node]))
+      {
+        Console.WriteLine(ReportFailure(node, "before", null));
+        beforeInitialChecks.Add(node);
+      }
+
+      if (!CheckInitial(node, AfterInvariants[node]))
+      {
+        Console.WriteLine(ReportFailure(node, "after", null));
+        afterInitialChecks.Add(node);
+      }
+    });
+    // for each node, for each subset of its predecessors, run CheckInductive in parallel
+    // construct a dictionary of the results of which b fail to imply the two invariants
+    var beforeInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
+    var afterInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
+    var nodeAndArrangements = Topology.Nodes
+      .Select(n =>
+      {
+        // generate an array of symbolic bools of length equal to the node's predecessors + 1
+        var neighbors = Topology[n].Count;
+        return (n, b: Enumerable.Repeat(Zen.Symbolic<bool>(), neighbors + 1));
+      });
+    nodeAndArrangements.AsParallel()
+      .ForAll(tuple =>
+      {
+        var n = tuple.n;
+        var b = tuple.b.ToList();
+        while (!CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b))
+        {
+          // TODO: get the model and block it
+          // TODO: save this case as one to generate constraints for
+          throw new NotImplementedException();
         }
       });
     // construct a set of bounds to check
