@@ -84,7 +84,8 @@ public class Infer<T>
   /// <param name="invariant">A predicate to check on the node.</param>
   /// <param name="b">A bit array over the node's neighbors.</param>
   /// <returns>True if the invariant is always satisfied by the bs, and false otherwise.</returns>
-  private bool CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant, IReadOnlyList<Zen<bool>> b)
+  private (bool, List<bool>?, Dictionary<string, T>?) CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant,
+    IReadOnlyList<Zen<bool>> b)
   {
     var routes = new Dictionary<string, Zen<T>>();
     foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
@@ -102,7 +103,16 @@ public class Infer<T>
     var query = Zen.Not(check);
     var model = query.Solve();
 
-    return !model.IsSatisfiable();
+    // return !model.IsSatisfiable();
+    if (model.IsSatisfiable())
+    {
+      var bSolution = b.Select(bi => model.Get(bi)).ToList();
+      var routesSolution =
+        new Dictionary<string, T>(routes.Select(p => new KeyValuePair<string, T>(p.Key, model.Get(p.Value))));
+      return (true, bSolution, routesSolution);
+    }
+
+    return (false, null, null);
   }
 
   /// <summary>
@@ -158,14 +168,14 @@ public class Infer<T>
       {
         var n = tuple.n;
         var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
-        if (!CheckInductive(n, BeforeInvariants[n], b))
+        if (!CheckInductive(n, BeforeInvariants[n], b).Item1)
         {
           Console.WriteLine(ReportFailure(n, "before", tuple.b));
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
-        if (!CheckInductive(n, AfterInvariants[n], b))
+        if (!CheckInductive(n, AfterInvariants[n], b).Item1)
         {
           Console.WriteLine(ReportFailure(n, "after", tuple.b));
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
@@ -269,7 +279,9 @@ public class Infer<T>
       {
         var n = tuple.n;
         var b = tuple.b.ToList();
-        while (!CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b))
+        var (isSat, bSol, routesSol) =
+          CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b);
+        while (isSat)
         {
           // TODO: get the model and block it
           // TODO: save this case as one to generate constraints for
