@@ -83,9 +83,11 @@ public class Infer<T>
   /// <param name="node">A node in the topology.</param>
   /// <param name="invariant">A predicate to check on the node.</param>
   /// <param name="b">A bit array over the node's neighbors.</param>
+  /// <param name="blockingClauses">An additional enumerable of clauses over b variables
+  /// to block when checking the invariant.</param>
   /// <returns>True if the invariant is always satisfied by the bs, and false otherwise.</returns>
   private (bool, List<bool>?, Dictionary<string, T>?) CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant,
-    IReadOnlyList<Zen<bool>> b)
+    IReadOnlyList<Zen<bool>> b, IEnumerable<Zen<bool>> blockingClauses)
   {
     var routes = new Dictionary<string, Zen<T>>();
     foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
@@ -109,10 +111,10 @@ public class Infer<T>
       var bSolution = b.Select(bi => model.Get(bi)).ToList();
       var routesSolution =
         new Dictionary<string, T>(routes.Select(p => new KeyValuePair<string, T>(p.Key, model.Get(p.Value))));
-      return (true, bSolution, routesSolution);
+      return (false, bSolution, routesSolution);
     }
 
-    return (false, null, null);
+    return (true, null, null);
   }
 
   /// <summary>
@@ -163,19 +165,20 @@ public class Infer<T>
       .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b));
     // TODO: if we have check failures when predecessor u is both in b and not in b,
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
+    var blockingClauses = new Zen<bool>[] { Zen.True() };
     nodeAndArrangements.AsParallel()
       .ForAll(tuple =>
       {
         var n = tuple.n;
         var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
-        if (!CheckInductive(n, BeforeInvariants[n], b).Item1)
+        if (!CheckInductive(n, BeforeInvariants[n], b, blockingClauses).Item1)
         {
           Console.WriteLine(ReportFailure(n, "before", tuple.b));
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
-        if (!CheckInductive(n, AfterInvariants[n], b).Item1)
+        if (!CheckInductive(n, AfterInvariants[n], b, blockingClauses).Item1)
         {
           Console.WriteLine(ReportFailure(n, "after", tuple.b));
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
@@ -279,13 +282,17 @@ public class Infer<T>
       {
         var n = tuple.n;
         var b = tuple.b.ToList();
-        var (isSat, bSol, routesSol) =
-          CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b);
-        while (isSat)
+        var blockingClauses = new List<Zen<bool>> { Zen.True() };
+        var (isUnsat, bSol, routesSol) =
+          CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, blockingClauses);
+        while (!isUnsat)
         {
-          // TODO: get the model and block it
-          // TODO: save this case as one to generate constraints for
-          throw new NotImplementedException();
+          // get the model and block it
+          blockingClauses.Add(Zen.Or(b.Select((bb, i) => bSol![i] ? Zen.Not(bb) : bb)));
+          // save this case as one to generate constraints for
+          var arr = (bSol![-1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
+          arr.Add(new BitArray(bSol.ToArray()));
+          // TODO: blocking clauses over routes?
         }
       });
     // construct a set of bounds to check
