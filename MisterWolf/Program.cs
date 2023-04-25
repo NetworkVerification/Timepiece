@@ -76,6 +76,9 @@ foreach (var arg in args)
       throw new ArgumentOutOfRangeException(arg);
   }
 
-  var net = infer.ToNetwork<Unit>(false, 4, InferenceStrategy.SymbolicEnumeration);
+  // uncomment to turn on verbose reporting of checks
+  // infer.Verbose = true;
+  infer.MaxTime = 4;
+  var net = infer.ToNetwork<Unit>(InferenceStrategy.Compare);
   Profile.RunAnnotated(net);
 }

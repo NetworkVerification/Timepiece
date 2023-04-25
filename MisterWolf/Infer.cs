@@ -16,8 +16,7 @@ public class Infer<T>
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<string, Zen<T>> initialValues,
     Dictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants
-  )
+    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants)
   {
     Topology = topology;
     TransferFunction = transferFunction;
@@ -27,6 +26,9 @@ public class Infer<T>
     AfterInvariants = afterInvariants;
   }
 
+  public bool Verbose { get; set; } = false;
+
+  public BigInteger? MaxTime { get; set; }
   private Topology Topology { get; }
   private Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; }
   private Func<Zen<T>, Zen<T>, Zen<T>> MergeFunction { get; }
@@ -138,10 +140,8 @@ public class Infer<T>
   ///   should pass all the modular checks.
   ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
   /// </summary>
-  /// <param name="printBounds">If true, print the computed bounds.</param>
-  /// <param name="maxTime"></param>
-  /// <returns></returns>
-  private Dictionary<string, BigInteger> InferTimesExplicit(bool printBounds, BigInteger? maxTime)
+  /// <returns>A dictionary mapping nodes to witness times.</returns>
+  private Dictionary<string, BigInteger> InferTimesExplicit()
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -192,21 +192,10 @@ public class Infer<T>
 
     // construct a set of bounds to check
     var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
-    var bounds = ComputeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
-      afterInductiveChecks, maxTime);
+    var bounds = TimeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
+      afterInductiveChecks);
 
-    if (printBounds)
-      // list the computed bounds
-      foreach (var b in bounds)
-        Console.WriteLine(b);
-    // Console.WriteLine(bounds.Count);
-
-    // we now take the conjunction of all the bounds
-    // and additionally restrict the times to be non-negative
-    var constraints = Zen.And(Zen.And(bounds),
-      Zen.And(times.Select(t => t.Value >= BigInteger.Zero)));
-
-    var model = constraints.Solve();
+    var model = bounds.Solve();
     if (model.IsSatisfiable())
       return new Dictionary<string, BigInteger>(times.Select(pair =>
         new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
@@ -214,7 +203,14 @@ public class Infer<T>
     return new Dictionary<string, BigInteger>();
   }
 
-  private Dictionary<string, BigInteger> InferTimesSymbolic(bool printBounds, BigInteger? maxTime)
+  /// <summary>
+  ///   Infer times for each node, such that a network annotated with these times (of the form "before until^{t} after")
+  ///   should pass all the modular checks.
+  ///   Symbolically enumerates the inductive condition arrangements of before/after conditions of neighbors' routes
+  ///   by asking the solver to find failing arrangements.
+  /// </summary>
+  /// <returns>A dictionary mapping nodes to witness times.</returns>
+  private Dictionary<string, BigInteger> InferTimesSymbolic()
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -241,7 +237,7 @@ public class Infer<T>
       {
         // generate an array of symbolic bools of length equal to the node's predecessors + 1
         var neighbors = Topology[n].Count;
-        return (n, b: Enumerable.Repeat(Zen.Symbolic<bool>(), neighbors + 1));
+        return (n, b: Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")));
       });
     nodeAndArrangements.AsParallel()
       .ForAll(tuple =>
@@ -261,12 +257,15 @@ public class Infer<T>
           var bArr = new BitArray(sol!.ToArray());
           Console.WriteLine(ReportFailure(n, sol[^1] ? "before" : "after", bArr));
           var sol1 = routesSol;
-          blockingClauses.Add(Zen.Or(b.Select((bb, i) => sol[i] ? Zen.Not(bb) : bb)
-            .Concat(routes.Select(m => Zen.Not(m.Value == sol1![m.Key])))));
+          // construct a blocking clause: a negation of the case where all the B variables and routes are as found by
+          // the solver
+          var blockingClause = Zen.Or(
+            b.Select((bb, i) => sol[i] ? Zen.Not(bb) : bb).Concat(
+              routes.Select(m => Zen.Not(m.Value == sol1![m.Key]))));
+          blockingClauses.Add(blockingClause);
           // save this case as one to generate constraints for
           var arr = (sol[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
           arr.Add(bArr);
-          // TODO: blocking clauses over routes?
           (isUnsat, bSol, routesSol) =
             CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes,
               blockingClauses);
@@ -275,21 +274,10 @@ public class Infer<T>
 
     // construct a set of bounds to check
     var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
-    var bounds = ComputeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
-      afterInductiveChecks, maxTime);
+    var bounds = TimeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
+      afterInductiveChecks);
 
-    if (printBounds)
-      // list the computed bounds
-      foreach (var b in bounds)
-        Console.WriteLine(b);
-    // Console.WriteLine(bounds.Count);
-
-    // we now take the conjunction of all the bounds
-    // and additionally restrict the times to be non-negative
-    var constraints = Zen.And(Zen.And(bounds),
-      Zen.And(times.Select(t => t.Value >= BigInteger.Zero)));
-
-    var model = constraints.Solve();
+    var model = bounds.Solve();
     if (model.IsSatisfiable())
       return new Dictionary<string, BigInteger>(times.Select(pair =>
         new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
@@ -297,17 +285,17 @@ public class Infer<T>
     return new Dictionary<string, BigInteger>();
   }
 
-  private List<Zen<bool>> ComputeBounds(IReadOnlyDictionary<string, Zen<BigInteger>> times,
+  private Zen<bool> TimeBounds(IReadOnlyDictionary<string, Zen<BigInteger>> times,
     ConcurrentBag<string> beforeInitialChecks,
     ConcurrentBag<string> afterInitialChecks, ConcurrentDictionary<string, List<BitArray>> beforeInductiveChecks,
-    ConcurrentDictionary<string, List<BitArray>> afterInductiveChecks, BigInteger? maxTime)
+    ConcurrentDictionary<string, List<BitArray>> afterInductiveChecks)
   {
     // add initial check bounds
     var bounds =
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
         .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)).ToList();
     // if a maximum time is given, also require that no witness time is greater than the maximum
-    if (maxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= maxTime));
+    if (MaxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= MaxTime));
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
@@ -344,7 +332,14 @@ public class Infer<T>
       bounds.Add(nextBound);
     }
 
-    return bounds;
+    if (Verbose)
+      // list the computed bounds
+      foreach (var b in bounds)
+        Console.WriteLine(b);
+
+    // return a boolean formula over the times
+    var nonNegativeTimes = Zen.And(times.Select(t => t.Value >= BigInteger.Zero));
+    return Zen.And(Zen.And(bounds), nonNegativeTimes);
   }
 
   /// <summary>
@@ -363,23 +358,44 @@ public class Infer<T>
     return Zen.And(predecessors.Select((j, i) => b[i] ? time < times[j] : time >= times[j]));
   }
 
+  public (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
+  {
+    var timer = Stopwatch.StartNew();
+    var times = inferFunc();
+    return (timer.ElapsedMilliseconds, times);
+  }
+
   /// <summary>
   ///   Convert the inference problem into a Timepiece network instance.
   /// </summary>
   /// <typeparam name="TS"></typeparam>
   /// <returns></returns>
-  public Network<T, TS> ToNetwork<TS>(bool printBounds, BigInteger? maxTime, InferenceStrategy strategy)
+  public Network<T, TS> ToNetwork<TS>(InferenceStrategy strategy)
   {
-    var timer = Stopwatch.StartNew();
-    var times = strategy switch
+    long timeTaken = 0;
+    Dictionary<string, BigInteger> times;
+    switch (strategy)
     {
-      InferenceStrategy.ExplicitEnumeration => InferTimesExplicit(printBounds, maxTime),
-      InferenceStrategy.SymbolicEnumeration => InferTimesSymbolic(printBounds, maxTime),
-      _ => throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null)
-    };
-    timer.Stop();
-    var timeTaken = timer.ElapsedMilliseconds;
-    Console.WriteLine($"Inference took {timeTaken}ms!");
+      case InferenceStrategy.ExplicitEnumeration:
+        (timeTaken, times) = InferTimesTimed(InferTimesExplicit);
+        Console.WriteLine($"Inference took {timeTaken}ms!");
+        break;
+      case InferenceStrategy.SymbolicEnumeration:
+        (timeTaken, times) = InferTimesTimed(InferTimesSymbolic);
+        Console.WriteLine($"Inference took {timeTaken}ms!");
+        break;
+      case InferenceStrategy.Compare:
+        var (explicitTimeTaken, explicitTimes) = InferTimesTimed(InferTimesExplicit);
+        var (symbolicTimeTaken, symbolicTimes) = InferTimesTimed(InferTimesSymbolic);
+        Console.WriteLine($"Explicit inference took {explicitTimeTaken}ms!");
+        Console.WriteLine($"Symbolic inference took {symbolicTimeTaken}ms!");
+        // FIXME: might spuriously report differences
+        Console.WriteLine(explicitTimes == symbolicTimes ? "Inference was consistent" : "Inference was inconsistent!");
+        times = symbolicTimes;
+        break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
+    }
 
     if (times.Count > 0)
     {
