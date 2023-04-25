@@ -76,6 +76,6 @@ foreach (var arg in args)
       throw new ArgumentOutOfRangeException(arg);
   }
 
-  var net = infer.ToNetwork<Unit>(false, 4);
+  var net = infer.ToNetwork<Unit>(false, 4, InferenceStrategy.SymbolicEnumeration);
   Profile.RunAnnotated(net);
 }

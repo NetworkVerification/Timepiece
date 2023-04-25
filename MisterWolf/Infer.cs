@@ -83,14 +83,15 @@ public class Infer<T>
   /// <param name="node">A node in the topology.</param>
   /// <param name="invariant">A predicate to check on the node.</param>
   /// <param name="b">A bit array over the node's neighbors.</param>
+  /// <param name="routes">The routes of the network for the neighboring nodes.</param>
   /// <param name="blockingClauses">An additional enumerable of clauses over b variables
   /// to block when checking the invariant.</param>
   /// <returns>True if the invariant is always satisfied by the bs, and false otherwise.</returns>
   private (bool, List<bool>?, Dictionary<string, T>?) CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant,
-    IReadOnlyList<Zen<bool>> b, IEnumerable<Zen<bool>> blockingClauses)
+    IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<string, Zen<T>> routes, IEnumerable<Zen<bool>> blockingClauses)
   {
-    var routes = new Dictionary<string, Zen<T>>();
-    foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
+    // var routes = new Dictionary<string, Zen<T>>();
+    // foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
 
     var newNodeRoute = UpdateNodeRoute(node, routes);
 
@@ -102,7 +103,8 @@ public class Infer<T>
           AfterInvariants[predecessor](routes[predecessor])));
     var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
-    var query = Zen.Not(check);
+    // var query = Zen.Not(check);
+    var query = Zen.And(Zen.And(blockingClauses), Zen.Not(check));
     var model = query.Solve();
 
     // return !model.IsSatisfiable();
@@ -165,69 +167,33 @@ public class Infer<T>
       .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b));
     // TODO: if we have check failures when predecessor u is both in b and not in b,
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
-    var blockingClauses = new Zen<bool>[] {Zen.True()};
+    var blockingClauses = new[] {Zen.True()};
     nodeAndArrangements.AsParallel()
       .ForAll(tuple =>
       {
         var n = tuple.n;
         var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
-        if (!CheckInductive(n, BeforeInvariants[n], b, blockingClauses).Item1)
+        var routes = new Dictionary<string, Zen<T>>();
+        foreach (var predecessor in Topology[n]) routes[predecessor] = Zen.Symbolic<T>();
+        if (!CheckInductive(n, BeforeInvariants[n], b, routes, blockingClauses).Item1)
         {
           Console.WriteLine(ReportFailure(n, "before", tuple.b));
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
-        if (!CheckInductive(n, AfterInvariants[n], b, blockingClauses).Item1)
+        if (!CheckInductive(n, AfterInvariants[n], b, routes, blockingClauses).Item1)
         {
           Console.WriteLine(ReportFailure(n, "after", tuple.b));
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
       });
+
     // construct a set of bounds to check
     var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
-    // add initial check bounds
-    var bounds =
-      beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
-        .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)).ToList();
-    // if a maximum time is given, also require that no witness time is greater than the maximum
-    if (maxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= maxTime));
-    // for each failed inductive check, we add the following bounds:
-    // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
-    //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
-    //     or t_m + 1 >= t_n
-    foreach (var (node, arrangements) in beforeInductiveChecks)
-    foreach (var arrangement in arrangements)
-    {
-      var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
-        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
-      bounds.Add(zeroBeforeBound);
-      var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
-      var beforeBounds = from neighbor in neighbors
-        select Zen.Or(times[neighbor] + BigInteger.One >= times[node],
-          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
-      bounds.AddRange(beforeBounds);
-    }
-
-    // (2) if the after check failed for node n and b anc, add bounds for all predecessors m of n
-    //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
-    //     or t_m + 1 < t_n,
-    //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
-    foreach (var (node, arrangements) in afterInductiveChecks)
-    foreach (var arrangement in arrangements)
-    {
-      var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
-        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
-      bounds.Add(zeroAfterBound);
-      var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
-      var afterBounds = from neighbor in neighbors
-        select Zen.Or(times[neighbor] + BigInteger.One < times[node],
-          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
-      bounds.AddRange(afterBounds);
-      var nextBound = Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, arrangement));
-      bounds.Add(nextBound);
-    }
+    var bounds = ComputeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
+      afterInductiveChecks, maxTime);
 
     if (printBounds)
       // list the computed bounds
@@ -283,23 +249,59 @@ public class Infer<T>
         var n = tuple.n;
         var b = tuple.b.ToList();
         var blockingClauses = new List<Zen<bool>> {Zen.True()};
+        var routes = new Dictionary<string, Zen<T>>();
+        foreach (var neighbor in Topology[n]) routes[neighbor] = Zen.Symbolic<T>();
         var (isUnsat, bSol, routesSol) =
-          CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, blockingClauses);
+          CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes,
+            blockingClauses);
         while (!isUnsat)
         {
           // get the model and block it
           var sol = bSol;
-          blockingClauses.Add(Zen.Or(b.Select((bb, i) => sol![i] ? Zen.Not(bb) : bb)));
+          var bArr = new BitArray(sol!.ToArray());
+          Console.WriteLine(ReportFailure(n, sol[^1] ? "before" : "after", bArr));
+          var sol1 = routesSol;
+          blockingClauses.Add(Zen.Or(b.Select((bb, i) => sol[i] ? Zen.Not(bb) : bb)
+            .Concat(routes.Select(m => Zen.Not(m.Value == sol1![m.Key])))));
           // save this case as one to generate constraints for
-          var arr = (sol![-1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
-          arr.Add(new BitArray(bSol.ToArray()));
+          var arr = (sol[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
+          arr.Add(bArr);
           // TODO: blocking clauses over routes?
           (isUnsat, bSol, routesSol) =
-            CheckInductive(n, r => Zen.If(b[-1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, blockingClauses);
+            CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes,
+              blockingClauses);
         }
       });
+
     // construct a set of bounds to check
     var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
+    var bounds = ComputeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
+      afterInductiveChecks, maxTime);
+
+    if (printBounds)
+      // list the computed bounds
+      foreach (var b in bounds)
+        Console.WriteLine(b);
+    // Console.WriteLine(bounds.Count);
+
+    // we now take the conjunction of all the bounds
+    // and additionally restrict the times to be non-negative
+    var constraints = Zen.And(Zen.And(bounds),
+      Zen.And(times.Select(t => t.Value >= BigInteger.Zero)));
+
+    var model = constraints.Solve();
+    if (model.IsSatisfiable())
+      return new Dictionary<string, BigInteger>(times.Select(pair =>
+        new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
+
+    return new Dictionary<string, BigInteger>();
+  }
+
+  private List<Zen<bool>> ComputeBounds(IReadOnlyDictionary<string, Zen<BigInteger>> times,
+    ConcurrentBag<string> beforeInitialChecks,
+    ConcurrentBag<string> afterInitialChecks, ConcurrentDictionary<string, List<BitArray>> beforeInductiveChecks,
+    ConcurrentDictionary<string, List<BitArray>> afterInductiveChecks, BigInteger? maxTime)
+  {
     // add initial check bounds
     var bounds =
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
@@ -342,23 +344,7 @@ public class Infer<T>
       bounds.Add(nextBound);
     }
 
-    if (printBounds)
-      // list the computed bounds
-      foreach (var b in bounds)
-        Console.WriteLine(b);
-    // Console.WriteLine(bounds.Count);
-
-    // we now take the conjunction of all the bounds
-    // and additionally restrict the times to be non-negative
-    var constraints = Zen.And(Zen.And(bounds),
-      Zen.And(times.Select(t => t.Value >= BigInteger.Zero)));
-
-    var model = constraints.Solve();
-    if (model.IsSatisfiable())
-      return new Dictionary<string, BigInteger>(times.Select(pair =>
-        new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
-
-    return new Dictionary<string, BigInteger>();
+    return bounds;
   }
 
   /// <summary>
@@ -382,10 +368,15 @@ public class Infer<T>
   /// </summary>
   /// <typeparam name="TS"></typeparam>
   /// <returns></returns>
-  public Network<T, TS> ToNetwork<TS>(bool printBounds, BigInteger? maxTime)
+  public Network<T, TS> ToNetwork<TS>(bool printBounds, BigInteger? maxTime, InferenceStrategy strategy)
   {
     var timer = Stopwatch.StartNew();
-    var times = InferTimesExplicit(printBounds, maxTime);
+    var times = strategy switch
+    {
+      InferenceStrategy.ExplicitEnumeration => InferTimesExplicit(printBounds, maxTime),
+      InferenceStrategy.SymbolicEnumeration => InferTimesSymbolic(printBounds, maxTime),
+      _ => throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null)
+    };
     timer.Stop();
     var timeTaken = timer.ElapsedMilliseconds;
     Console.WriteLine($"Inference took {timeTaken}ms!");
