@@ -69,12 +69,12 @@ public class Infer<T>
   /// </summary>
   /// <param name="node"></param>
   /// <param name="invariant"></param>
-  /// <returns></returns>
+  /// <returns>True if the invariant does *not* hold for the initial route, and false otherwise.</returns>
   private bool CheckInitial(string node, Func<Zen<T>, Zen<bool>> invariant)
   {
     var query = Zen.Not(invariant(InitialValues[node]));
     var model = query.Solve();
-    return !model.IsSatisfiable();
+    return model.IsSatisfiable();
   }
 
   /// <summary>
@@ -87,14 +87,12 @@ public class Infer<T>
   /// <param name="b">A bit array over the node's neighbors.</param>
   /// <param name="routes">The routes of the network for the neighboring nodes.</param>
   /// <param name="blockingClauses">An additional enumerable of clauses over b variables
-  /// to block when checking the invariant.</param>
-  /// <returns>True if the invariant is always satisfied by the bs, and false otherwise.</returns>
-  private (bool, List<bool>?, Dictionary<string, T>?) CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant,
-    IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<string, Zen<T>> routes, IEnumerable<Zen<bool>> blockingClauses)
+  ///   to block when checking the invariant.</param>
+  /// <returns>True if the invariant is *not* always satisfied by the bs, and false otherwise.</returns>
+  private List<bool>? CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant,
+    IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<string, Zen<T>> routes,
+    IEnumerable<Zen<bool>>? blockingClauses = null)
   {
-    // var routes = new Dictionary<string, Zen<T>>();
-    // foreach (var predecessor in Topology[node]) routes[predecessor] = Zen.Symbolic<T>();
-
     var newNodeRoute = UpdateNodeRoute(node, routes);
 
     // check predecessor invariants according to whether or not the predecessor was given in b
@@ -105,20 +103,10 @@ public class Infer<T>
           AfterInvariants[predecessor](routes[predecessor])));
     var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
-    // var query = Zen.Not(check);
-    var query = Zen.And(Zen.And(blockingClauses), Zen.Not(check));
+    var query = blockingClauses is null ? Zen.Not(check) : Zen.And(Zen.And(blockingClauses), Zen.Not(check));
     var model = query.Solve();
 
-    // return !model.IsSatisfiable();
-    if (model.IsSatisfiable())
-    {
-      var bSolution = b.Select(bi => model.Get(bi)).ToList();
-      var routesSolution =
-        new Dictionary<string, T>(routes.Select(p => new KeyValuePair<string, T>(p.Key, model.Get(p.Value))));
-      return (false, bSolution, routesSolution);
-    }
-
-    return (true, null, null);
+    return model.IsSatisfiable() ? b.Select(bi => model.Get(bi)).ToList() : null;
   }
 
   /// <summary>
@@ -147,13 +135,13 @@ public class Infer<T>
     var beforeInitialChecks = new ConcurrentBag<string>();
     Topology.Nodes.AsParallel().ForAll(node =>
     {
-      if (!CheckInitial(node, BeforeInvariants[node]))
+      if (CheckInitial(node, BeforeInvariants[node]))
       {
         Console.WriteLine(ReportFailure(node, "before", null));
         beforeInitialChecks.Add(node);
       }
 
-      if (!CheckInitial(node, AfterInvariants[node]))
+      if (CheckInitial(node, AfterInvariants[node]))
       {
         Console.WriteLine(ReportFailure(node, "after", null));
         afterInitialChecks.Add(node);
@@ -167,7 +155,6 @@ public class Infer<T>
       .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b));
     // TODO: if we have check failures when predecessor u is both in b and not in b,
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
-    var blockingClauses = new[] {Zen.True()};
     nodeAndArrangements.AsParallel()
       .ForAll(tuple =>
       {
@@ -175,14 +162,14 @@ public class Infer<T>
         var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
         var routes = new Dictionary<string, Zen<T>>();
         foreach (var predecessor in Topology[n]) routes[predecessor] = Zen.Symbolic<T>();
-        if (!CheckInductive(n, BeforeInvariants[n], b, routes, blockingClauses).Item1)
+        if (CheckInductive(n, BeforeInvariants[n], b, routes) is not null)
         {
           Console.WriteLine(ReportFailure(n, "before", tuple.b));
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
-        if (!CheckInductive(n, AfterInvariants[n], b, routes, blockingClauses).Item1)
+        if (CheckInductive(n, AfterInvariants[n], b, routes) is not null)
         {
           Console.WriteLine(ReportFailure(n, "after", tuple.b));
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
@@ -216,13 +203,13 @@ public class Infer<T>
     var beforeInitialChecks = new ConcurrentBag<string>();
     Topology.Nodes.AsParallel().ForAll(node =>
     {
-      if (!CheckInitial(node, BeforeInvariants[node]))
+      if (CheckInitial(node, BeforeInvariants[node]))
       {
         Console.WriteLine(ReportFailure(node, "before", null));
         beforeInitialChecks.Add(node);
       }
 
-      if (!CheckInitial(node, AfterInvariants[node]))
+      if (CheckInitial(node, AfterInvariants[node]))
       {
         Console.WriteLine(ReportFailure(node, "after", null));
         afterInitialChecks.Add(node);
@@ -235,7 +222,7 @@ public class Infer<T>
     var nodeAndArrangements = Topology.Nodes
       .Select(n =>
       {
-        // generate an array of symbolic bools of length equal to the node's predecessors + 1
+        // generate an array of symbolic booleans of length equal to the node's predecessors + 1
         var neighbors = Topology[n].Count;
         return (n, b: Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")));
       });
@@ -244,31 +231,25 @@ public class Infer<T>
       {
         var n = tuple.n;
         var b = tuple.b.ToList();
-        var blockingClauses = new List<Zen<bool>> {Zen.True()};
+        var blockingClauses = new List<Zen<bool>>();
         var routes = new Dictionary<string, Zen<T>>();
         foreach (var neighbor in Topology[n]) routes[neighbor] = Zen.Symbolic<T>();
-        var (isUnsat, bSol, routesSol) =
-          CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes,
-            blockingClauses);
-        while (!isUnsat)
+        var bSol = CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes);
+        while (bSol is not null)
         {
           // get the model and block it
-          var sol = bSol;
-          var bArr = new BitArray(sol!.ToArray());
-          Console.WriteLine(ReportFailure(n, sol[^1] ? "before" : "after", bArr));
-          var sol1 = routesSol;
-          // construct a blocking clause: a negation of the case where all the B variables and routes are as found by
-          // the solver
-          var blockingClause = Zen.Or(
-            b.Select((bb, i) => sol[i] ? Zen.Not(bb) : bb).Concat(
-              routes.Select(m => Zen.Not(m.Value == sol1![m.Key]))));
+          var bArr = new BitArray(bSol.ToArray());
+          Console.WriteLine(ReportFailure(n, bSol[^1] ? "before" : "after", bArr));
+          // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
+          var blockBs = bSol.Select((bb, i) => bb ? Zen.Not(b[i]) : b[i]);
+          var blockingClause = Zen.Or(blockBs);
           blockingClauses.Add(blockingClause);
           // save this case as one to generate constraints for
-          var arr = (sol[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
+          var arr = (bSol[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
           arr.Add(bArr);
-          (isUnsat, bSol, routesSol) =
+          bSol =
             CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes,
-              blockingClauses);
+              blockingClauses: blockingClauses);
         }
       });
 
@@ -358,7 +339,7 @@ public class Infer<T>
     return Zen.And(predecessors.Select((j, i) => b[i] ? time < times[j] : time >= times[j]));
   }
 
-  public (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
+  private (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
   {
     var timer = Stopwatch.StartNew();
     var times = inferFunc();
@@ -372,7 +353,7 @@ public class Infer<T>
   /// <returns></returns>
   public Network<T, TS> ToNetwork<TS>(InferenceStrategy strategy)
   {
-    long timeTaken = 0;
+    long timeTaken;
     Dictionary<string, BigInteger> times;
     switch (strategy)
     {
@@ -389,8 +370,18 @@ public class Infer<T>
         var (symbolicTimeTaken, symbolicTimes) = InferTimesTimed(InferTimesSymbolic);
         Console.WriteLine($"Explicit inference took {explicitTimeTaken}ms!");
         Console.WriteLine($"Symbolic inference took {symbolicTimeTaken}ms!");
-        // FIXME: might spuriously report differences
-        Console.WriteLine(explicitTimes == symbolicTimes ? "Inference was consistent" : "Inference was inconsistent!");
+        var consistentTimes = true;
+        foreach (var (node, explicitTime) in explicitTimes)
+        {
+          var symbolicTime = symbolicTimes[node];
+          if (symbolicTime == explicitTime) continue;
+          Console.WriteLine(
+            $"Node {node}: explicit time {explicitTime} is not the same as symbolic time {symbolicTime}");
+          consistentTimes = false;
+          break;
+        }
+
+        Console.WriteLine(consistentTimes ? "Inference was consistent!" : "Inference was inconsistent!");
         times = symbolicTimes;
         break;
       default:
