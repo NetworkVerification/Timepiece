@@ -271,12 +271,15 @@ public class Infer<T>
     ConcurrentBag<string> afterInitialChecks, ConcurrentDictionary<string, List<BitArray>> beforeInductiveChecks,
     ConcurrentDictionary<string, List<BitArray>> afterInductiveChecks)
   {
-    // add initial check bounds
-    var bounds =
-      beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
-        .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)).ToList();
+    // enforce that all times must be non-negative
+    var bounds = times.Select(t => t.Value >= BigInteger.Zero).ToList();
     // if a maximum time is given, also require that no witness time is greater than the maximum
     if (MaxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= MaxTime));
+
+    // add initial check bounds
+    bounds.AddRange(
+      beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
+        .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)));
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
@@ -285,12 +288,12 @@ public class Infer<T>
     foreach (var arrangement in arrangements)
     {
       var zeroBeforeBound = Zen.Or(BigInteger.One >= times[node],
-        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
+        Zen.Not(TimeInterval(Topology[node], BigInteger.Zero, times, arrangement)));
       bounds.Add(zeroBeforeBound);
       var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
       var beforeBounds = from neighbor in neighbors
         select Zen.Or(times[neighbor] + BigInteger.One >= times[node],
-          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
+          Zen.Not(TimeInterval(Topology[node], times[neighbor], times, arrangement)));
       bounds.AddRange(beforeBounds);
     }
 
@@ -302,14 +305,14 @@ public class Infer<T>
     foreach (var arrangement in arrangements)
     {
       var zeroAfterBound = Zen.Or(BigInteger.One < times[node],
-        Zen.Not(NextToConverge(Topology[node], BigInteger.Zero, times, arrangement)));
+        Zen.Not(TimeInterval(Topology[node], BigInteger.Zero, times, arrangement)));
       bounds.Add(zeroAfterBound);
       var neighbors = Topology[node].Where((_, i) => !arrangement[i]);
       var afterBounds = from neighbor in neighbors
         select Zen.Or(times[neighbor] + BigInteger.One < times[node],
-          Zen.Not(NextToConverge(Topology[node], times[neighbor], times, arrangement)));
+          Zen.Not(TimeInterval(Topology[node], times[neighbor], times, arrangement)));
       bounds.AddRange(afterBounds);
-      var nextBound = Zen.Not(NextToConverge(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
       bounds.Add(nextBound);
     }
 
@@ -318,28 +321,29 @@ public class Infer<T>
       foreach (var b in bounds)
         Console.WriteLine(b);
 
-    // return a boolean formula over the times
-    var nonNegativeTimes = Zen.And(times.Select(t => t.Value >= BigInteger.Zero));
-    return Zen.And(Zen.And(bounds), nonNegativeTimes);
+    return Zen.And(bounds);
   }
 
   /// <summary>
   ///   Generate a conjunction of constraints on the given time: for the given predecessors and time,
   ///   the constraints require that each of the predecessor's times is at most the given time
-  ///   if the predecessor is also an ancestor, and otherwise strictly greater than the given time.
+  ///   if the predecessor is set in the arrangement, and otherwise strictly greater than the given time.
   /// </summary>
-  /// <param name="predecessors"></param>
-  /// <param name="time"></param>
-  /// <param name="times"></param>
-  /// <param name="b"></param>
-  /// <returns></returns>
-  private static Zen<bool> NextToConverge(IEnumerable<string> predecessors, Zen<BigInteger> time,
-    IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray b)
+  /// <param name="predecessors">The predecessor nodes.</param>
+  /// <param name="time">The symbolic time.</param>
+  /// <param name="times">The witness times of the predecessors.</param>
+  /// <param name="arrangement">
+  /// The arrangement of the predecessors, such that if arrangement[i] is true for predecessor i,
+  /// then the given symbolic time is less than predecessor i's witness time, and otherwise greater than or equal
+  /// (when arrangement[i] is false).</param>
+  /// <returns>A conjunction over comparisons between time and the witness times.</returns>
+  private static Zen<bool> TimeInterval(IEnumerable<string> predecessors, Zen<BigInteger> time,
+    IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray arrangement)
   {
-    return Zen.And(predecessors.Select((j, i) => b[i] ? time < times[j] : time >= times[j]));
+    return Zen.And(predecessors.Select((j, i) => arrangement[i] ? time < times[j] : time >= times[j]));
   }
 
-  private (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
+  private static (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
   {
     var timer = Stopwatch.StartNew();
     var times = inferFunc();
