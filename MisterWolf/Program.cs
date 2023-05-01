@@ -40,15 +40,15 @@ Infer<Option<uint>> PathLength(Topology topology, Dictionary<string, Zen<Option<
     Lang.Omap2<uint>(Zen.Min), initialValues, beforeInvariants, afterInvariants);
 }
 
-var topology = new Topology(new Dictionary<string, List<string>>
-{
-  {"A", new List<string> {"B"}},
-  {"B", new List<string> {"A", "C"}},
-  {"C", new List<string> {"B"}},
-});
-var initialValues = topology.MapNodes(n => n.Equals("A") ? Zen.True() : Zen.False());
-// var topology = Topologies.FatTree(4);
-// var initialValues = topology.MapNodes(n => n.Equals("edge-19") ? Zen.True() : Zen.False());
+// var topology = new Topology(new Dictionary<string, List<string>>
+// {
+// {"A", new List<string> {"B"}},
+// {"B", new List<string> {"A", "C"}},
+// {"C", new List<string> {"B"}},
+// });
+// var initialValues = topology.MapNodes(n => n.Equals("A") ? Zen.True() : Zen.False());
+var topology = Topologies.FatTree(8);
+var initialValues = topology.MapNodes(n => n.Equals("edge-19") ? Zen.True() : Zen.False());
 
 if (args.Length == 0)
 {
@@ -59,6 +59,7 @@ if (args.Length == 0)
 foreach (var arg in args)
 {
   dynamic infer;
+  Console.WriteLine($"Running benchmark {arg}...");
   switch (arg)
   {
     case "reach":
@@ -79,6 +80,13 @@ foreach (var arg in args)
   // uncomment to turn on verbose reporting of checks
   // infer.Verbose = true;
   infer.MaxTime = 4;
-  var net = infer.ToNetwork<Unit>(InferenceStrategy.Compare);
-  Profile.RunAnnotated(net);
+  try
+  {
+    var net = infer.ToNetwork<Unit>(InferenceStrategy.SymbolicEnumeration);
+    Profile.RunAnnotated(net);
+  }
+  catch (ArgumentException e)
+  {
+    Console.WriteLine(e);
+  }
 }
