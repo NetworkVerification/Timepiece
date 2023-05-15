@@ -7,39 +7,6 @@ using ZenLib;
 ZenSettings.UseLargeStack = true;
 ZenSettings.LargeStackSize = 30_000_000;
 
-Infer<bool> Reachability(Topology topology, Dictionary<string, Zen<bool>> initialValues)
-{
-  // initially, the route can be anything
-  var beforeInvariants = topology.MapNodes(_ => Lang.True<bool>());
-  // eventually, it must be true
-  var afterInvariants = topology.MapNodes(_ => Lang.Identity<bool>());
-
-  return new Infer<bool>(topology, topology.MapEdges(_ => Lang.Identity<bool>()), Zen.Or, initialValues,
-    beforeInvariants, afterInvariants);
-}
-
-Infer<bool> ReachabilityStrong(Topology topology, Dictionary<string, Zen<bool>> initialValues)
-{
-  // initially, the route is false
-  var beforeInvariants = topology.MapNodes(_ => Lang.Not(Lang.Identity<bool>()));
-  // eventually, it must be true
-  var afterInvariants = topology.MapNodes(_ => Lang.Identity<bool>());
-
-  return new Infer<bool>(topology, topology.MapEdges(_ => Lang.Identity<bool>()), Zen.Or, initialValues,
-    beforeInvariants, afterInvariants);
-}
-
-Infer<Option<uint>> PathLength(Topology topology, Dictionary<string, Zen<Option<uint>>> initialValues,
-  Dictionary<string, uint> upperBounds)
-{
-  var beforeInvariants = topology.MapNodes(_ => Lang.True<Option<uint>>());
-  // eventually, the route must be less than the specified max
-  var afterInvariants = new Dictionary<string, Func<Zen<Option<uint>>, Zen<bool>>>(upperBounds.Select(b =>
-    new KeyValuePair<string, Func<Zen<Option<uint>>, Zen<bool>>>(b.Key, Lang.IfSome<uint>(x => x <= b.Value))));
-  return new Infer<Option<uint>>(topology, topology.MapEdges(_ => Lang.Omap<uint, uint>(x => x + 1)),
-    Lang.Omap2<uint>(Zen.Min), initialValues, beforeInvariants, afterInvariants);
-}
-
 // var topology = new Topology(new Dictionary<string, List<string>>
 // {
 // {"A", new List<string> {"B"}},
@@ -47,8 +14,10 @@ Infer<Option<uint>> PathLength(Topology topology, Dictionary<string, Zen<Option<
 // {"C", new List<string> {"B"}},
 // });
 // var initialValues = topology.MapNodes(n => n.Equals("A") ? Zen.True() : Zen.False());
-var topology = Topologies.FatTree(8);
-var initialValues = topology.MapNodes(n => n.Equals("edge-19") ? Zen.True() : Zen.False());
+const int numPods = 8;
+var topology = Topologies.LabelledFatTree(numPods);
+var destination = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(numPods, 2) * 1.25 - 1));
+var initialValues = topology.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False());
 
 if (args.Length == 0)
 {
@@ -62,16 +31,41 @@ foreach (var arg in args)
   Console.WriteLine($"Running benchmark {arg}...");
   switch (arg)
   {
-    case "reach":
-      infer = Reachability(topology, initialValues);
+    case "spreach":
+      infer = Benchmark.BooleanReachability(topology, initialValues);
       break;
-    case "reach2":
-      infer = ReachabilityStrong(topology, initialValues);
+    case "spreach2":
+      infer = Benchmark.StrongBooleanReachability(topology, initialValues);
       break;
-    case "len":
-      infer = PathLength(topology, topology.MapNodes(n => n == "A" ? Option.Some(0U) : Option.Null<uint>()),
-        new Dictionary<string, uint>(topology.Nodes.Select((node, index) =>
-          new KeyValuePair<string, uint>(node, (uint) index))));
+    case "splen":
+      // infer = Benchmark.SingleDestinationPathLength(topology, "A",
+      // new Dictionary<string, uint>(topology.Nodes.Select((node, index) =>
+      // new KeyValuePair<string, uint>(node, (uint) index))));
+      var upperBounds = topology.MapNodes(n =>
+      {
+        if (n == destination)
+        {
+          return 0U;
+        }
+
+        if (n.IsAggregation() && topology.L(destination) == topology.L(n))
+        {
+          return 1U;
+        }
+
+        if (n.IsAggregation() && topology.L(destination) != topology.L(n))
+        {
+          return 3U;
+        }
+
+        if (n.IsEdge() && topology.L(destination) != topology.L(n))
+        {
+          return 4U;
+        }
+
+        return 2U;
+      });
+      infer = Benchmark.SingleDestinationOintPathLength(topology, destination, upperBounds);
       break;
     default:
       throw new ArgumentOutOfRangeException(arg);

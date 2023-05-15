@@ -261,6 +261,7 @@ public static class Topologies
     var podNumbers = new Dictionary<string, int>();
     var neighbors = new Dictionary<string, List<string>>();
     var coreNodes = (int) Math.Floor(Math.Pow(numPods / 2.0, 2));
+    // initialize neighbors for each node
     for (var i = 0; i < coreNodes; i++)
     {
       var name = Timepiece.FatTree.FatTreeLayer.Core.Node(i);
@@ -268,6 +269,7 @@ public static class Topologies
       neighbors.Add(name, new List<string>());
     }
 
+    // construct each pod's edges
     for (var p = 0; p < numPods; p++)
     {
       var aggregates = new List<string>();
@@ -275,6 +277,7 @@ public static class Topologies
       var firstAggregateNode = neighbors.Count;
       var firstEdgeNode = firstAggregateNode + numPods / 2;
       var lastEdgeNode = firstEdgeNode + numPods / 2;
+      // get pod's aggregation nodes
       for (var j = firstAggregateNode; j < firstEdgeNode; j++)
       {
         var name = Timepiece.FatTree.FatTreeLayer.Aggregation.Node(j);
@@ -283,6 +286,7 @@ public static class Topologies
         neighbors.Add(name, new List<string>());
       }
 
+      // get pod's edge nodes
       for (var k = firstEdgeNode; k < lastEdgeNode; k++)
       {
         var name = Timepiece.FatTree.FatTreeLayer.Edge.Node(k);
@@ -291,6 +295,7 @@ public static class Topologies
         neighbors.Add(name, new List<string>());
       }
 
+      // add all cross-tier edges
       foreach (var aggregate in aggregates)
       foreach (var edge in edges)
       {
@@ -299,6 +304,7 @@ public static class Topologies
       }
     }
 
+    // add core-to-pod edges
     for (var c = 0; c < coreNodes; c++)
     {
       var coreNode = Timepiece.FatTree.FatTreeLayer.Core.Node(c);
