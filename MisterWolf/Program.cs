@@ -38,9 +38,6 @@ foreach (var arg in args)
       infer = Benchmark.StrongBooleanReachability(topology, initialValues);
       break;
     case "splen":
-      // infer = Benchmark.SingleDestinationPathLength(topology, "A",
-      // new Dictionary<string, uint>(topology.Nodes.Select((node, index) =>
-      // new KeyValuePair<string, uint>(node, (uint) index))));
       var upperBounds = topology.MapNodes(n =>
       {
         if (n == destination)
