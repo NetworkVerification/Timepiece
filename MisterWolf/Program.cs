@@ -62,7 +62,7 @@ foreach (var arg in args)
 
         return 2U;
       });
-      infer = Benchmark.SingleDestinationOintPathLength(topology, destination, upperBounds);
+      infer = Benchmark.SingleDestinationOptionUintPathLength(topology, destination, upperBounds);
       break;
     default:
       throw new ArgumentOutOfRangeException(arg);
@@ -73,7 +73,7 @@ foreach (var arg in args)
   infer.MaxTime = 4;
   try
   {
-    var net = infer.ToNetwork<Unit>(InferenceStrategy.SymbolicEnumeration);
+    var net = infer.ToNetwork(InferenceStrategy.SymbolicEnumeration);
     Profile.RunAnnotated(net);
   }
   catch (ArgumentException e)

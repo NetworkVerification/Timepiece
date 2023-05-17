@@ -27,7 +27,7 @@ public static class Benchmark
       beforeInvariants, afterInvariants);
   }
 
-  internal static Infer<Option<uint>> OintPathLength(Topology topology,
+  internal static Infer<Option<uint>> OptionUintPathLength(Topology topology,
     Initialization<Option<uint>> init,
     Dictionary<string, uint> upperBounds)
   {
@@ -39,10 +39,10 @@ public static class Benchmark
       Lang.Omap2<uint>(Zen.Min), init.InitialValues, beforeInvariants, afterInvariants);
   }
 
-  internal static Infer<Option<uint>> SingleDestinationOintPathLength(Topology topology, string destination,
+  internal static Infer<Option<uint>> SingleDestinationOptionUintPathLength(Topology topology, string destination,
     Dictionary<string, uint> upperBounds)
   {
-    return OintPathLength(topology,
+    return OptionUintPathLength(topology,
       new Initialization<Option<uint>>(topology, destination, Option.Some(0U), Option.None<uint>()),
       upperBounds);
   }
