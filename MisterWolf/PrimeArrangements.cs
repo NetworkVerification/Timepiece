@@ -2,32 +2,6 @@ using System.Collections;
 
 namespace MisterWolf;
 
-class ArrangementEqualityComparer : EqualityComparer<bool?[]>
-{
-  public override bool Equals(bool?[]? x, bool?[]? y)
-  {
-    if (x is null && y is null)
-      return true;
-    if (x is null || y is null)
-      return false;
-    if (x.Length != y.Length)
-      return false;
-
-    var allEqual = true;
-    for (var i = 0; i < x.Length; i++)
-    {
-      allEqual &= x[i] == y[i];
-    }
-
-    return allEqual;
-  }
-
-  public override int GetHashCode(bool?[] obj)
-  {
-    throw new NotImplementedException();
-  }
-}
-
 public static class PrimeArrangements
 {
   /// <summary>
