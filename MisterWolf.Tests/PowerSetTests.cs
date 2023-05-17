@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace MisterWolf;
+namespace MisterWolf.Tests;
 
 public static class PowerSetTests
 {

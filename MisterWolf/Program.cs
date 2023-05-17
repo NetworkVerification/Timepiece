@@ -14,7 +14,7 @@ ZenSettings.LargeStackSize = 30_000_000;
 // {"C", new List<string> {"B"}},
 // });
 // var initialValues = topology.MapNodes(n => n.Equals("A") ? Zen.True() : Zen.False());
-const int numPods = 8;
+const int numPods = 4;
 var topology = Topologies.LabelledFatTree(numPods);
 var destination = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(numPods, 2) * 1.25 - 1));
 var initialValues = topology.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False());
@@ -69,7 +69,7 @@ foreach (var arg in args)
   }
 
   // uncomment to turn on verbose reporting of checks
-  // infer.Verbose = true;
+  infer.PrintBounds = true;
   infer.MaxTime = 4;
   try
   {

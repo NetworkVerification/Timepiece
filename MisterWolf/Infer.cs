@@ -261,11 +261,15 @@ public class Infer<T> : Network<T, Unit>
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
         .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)));
 
+    var simplifiedBeforeInductiveChecks = beforeInductiveChecks.Select(p =>
+      new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    var simplifiedAfterInductiveChecks = afterInductiveChecks.Select(p =>
+      new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 >= t_n
-    foreach (var (node, arrangements) in beforeInductiveChecks)
+    foreach (var (node, arrangements) in simplifiedBeforeInductiveChecks)
     foreach (IEnumerable<Zen<bool>>? beforeBounds in from arrangement in arrangements
              select BoundArrangement(node, times, arrangement))
     {
@@ -276,11 +280,13 @@ public class Infer<T> : Network<T, Unit>
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 < t_n,
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
-    foreach (var (node, arrangements) in afterInductiveChecks)
+    foreach (var (node, arrangements) in simplifiedAfterInductiveChecks)
     foreach (var arrangement in arrangements)
     {
       bounds.AddRange(BoundArrangement(node, times, arrangement));
-      var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      // var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
+      var nextBound = Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times));
       bounds.Add(nextBound);
     }
 
@@ -311,6 +317,16 @@ public class Infer<T> : Network<T, Unit>
     return Zen.And(predecessors.Select((j, i) => arrangement[i] ? time < times[j] : time >= times[j]));
   }
 
+  private static Zen<bool> TimeInterval(IEnumerable<string> earlierNeighbors,
+    IEnumerable<string> laterNeighbors,
+    Zen<BigInteger> time,
+    IReadOnlyDictionary<string, Zen<BigInteger>> times)
+  {
+    var neighborBounds = earlierNeighbors.Select(en => time < times[en])
+      .Concat(laterNeighbors.Select(ln => time >= times[ln])).ToArray();
+    return neighborBounds.Length > 0 ? Zen.And(neighborBounds) : true;
+  }
+
   /// <summary>
   /// Return an enumerable of boolean constraints representing that
   /// there does not exist a time such that the given arrangement can occur.
@@ -334,6 +350,43 @@ public class Infer<T> : Network<T, Unit>
       select Zen.Or(
         arrangement[^1] ? lowerBound + BigInteger.One >= times[node] : lowerBound + BigInteger.One < times[node],
         Zen.Not(TimeInterval(Topology[node], lowerBound, times, arrangement)));
+  }
+
+  private (List<string>, List<string>) PartitionNeighborsByArrangement(string node, IReadOnlyList<bool?> arrangement)
+  {
+    var earlierNeighbors = new List<string>();
+    var laterNeighbors = new List<string>();
+    for (var i = 0; i < Topology[node].Count; i++)
+    {
+      if (arrangement[i] is null) continue;
+      if ((bool) arrangement[i]!)
+      {
+        earlierNeighbors.Add(Topology[node][i]);
+      }
+      else
+      {
+        laterNeighbors.Add(Topology[node][i]);
+      }
+    }
+
+    return (earlierNeighbors, laterNeighbors);
+  }
+
+  private IEnumerable<Zen<bool>> BoundArrangement(string node, IReadOnlyDictionary<string, Zen<BigInteger>> times,
+    IReadOnlyList<bool?> arrangement)
+  {
+    var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
+    var lowerBounds = Enumerable.Repeat(Zen.Constant(BigInteger.Zero), 1)
+      .Concat(laterNeighbors.Select(n => times[n]));
+    return from lowerBound in lowerBounds
+      select Zen.Or(
+        // if arrangement[^1] is null, then we can ignore it entirely
+        arrangement[^1] is null
+          ? false
+          : (bool) arrangement[^1]!
+            ? lowerBound + BigInteger.One >= times[node]
+            : lowerBound + BigInteger.One < times[node],
+        Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node], times)));
   }
 
   private static (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
