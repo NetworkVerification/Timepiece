@@ -6,7 +6,7 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
-public class ShortestPath<TS> : Network<Option<BigInteger>, TS>
+public class ShortestPath<TS> : AnnotatedNetwork<Option<BigInteger>, TS>
 {
   public ShortestPath(Topology topology,
     Dictionary<string, Zen<Option<BigInteger>>> initialValues,

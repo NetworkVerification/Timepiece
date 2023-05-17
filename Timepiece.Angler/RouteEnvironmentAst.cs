@@ -59,7 +59,7 @@ public class RouteEnvironmentAst : Ast
   {
   }
 
-  public Network<RouteEnvironment, RouteEnvironment> ToNetwork()
+  public AnnotatedNetwork<RouteEnvironment, RouteEnvironment> ToNetwork()
   {
     return ToNetwork(RouteEnvironmentExtensions.MinOptional, DefaultExport, DefaultImport);
   }

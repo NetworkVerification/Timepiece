@@ -7,7 +7,7 @@ using ZenLib;
 
 namespace Timepiece.Angler;
 
-using EnvNet = Network<RouteEnvironment, RouteEnvironment>;
+using EnvNet = AnnotatedNetwork<RouteEnvironment, RouteEnvironment>;
 
 public class Internet2 : RouteEnvironmentAst
 {

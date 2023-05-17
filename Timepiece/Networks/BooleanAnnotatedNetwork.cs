@@ -9,9 +9,9 @@ namespace Timepiece.Networks;
 /// <summary>
 ///   A network with a boolean routing algebra.
 /// </summary>
-public class BooleanNetwork<TS> : Network<bool, TS>
+public class BooleanAnnotatedNetwork<TS> : AnnotatedNetwork<bool, TS>
 {
-  public BooleanNetwork(Topology topology,
+  public BooleanAnnotatedNetwork(Topology topology,
     Dictionary<string, Zen<bool>> initialValues,
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
     SymbolicValue<TS>[] symbolics,

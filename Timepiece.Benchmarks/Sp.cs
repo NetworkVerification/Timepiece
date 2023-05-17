@@ -5,7 +5,7 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Sp<TS> : Network<Option<BgpRoute>, TS>
+public class Sp<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
 {
   /// <summary>
   ///   Construct a verifiable network performing shortest-path routing to a single given destination.

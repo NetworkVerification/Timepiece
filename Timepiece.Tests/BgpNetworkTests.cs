@@ -14,7 +14,8 @@ public static class BgpNetworkTests
 {
   private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp());
 
-  private static BgpNetwork Net(Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
+  private static BgpAnnotatedNetwork Net(
+    Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(3);
 
@@ -27,7 +28,8 @@ public static class BgpNetworkTests
 
     var convergeTime = new BigInteger(2);
 
-    return new BgpNetwork(topology, initialValues, annotations, convergeTime, Array.Empty<SymbolicValue<Bgp>>());
+    return new BgpAnnotatedNetwork(topology, initialValues, annotations, convergeTime,
+      Array.Empty<SymbolicValue<Bgp>>());
   }
 
   [Fact]
@@ -125,7 +127,7 @@ public static class BgpNetworkTests
     Dictionary<string, Zen<Option<Bgp>>> initialValues =
       topology.MapNodes(n => n == FatTree.FatTreeLayer.Edge.Node(19) ? Start : Option.None<Bgp>());
     var annotations = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>();
-    var net = new BgpNetwork(topology, initialValues, annotations, new BigInteger(4),
+    var net = new BgpAnnotatedNetwork(topology, initialValues, annotations, new BigInteger(4),
       Array.Empty<SymbolicValue<Bgp>>())
     {
       MonolithicProperties =

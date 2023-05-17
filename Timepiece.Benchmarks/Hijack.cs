@@ -7,7 +7,7 @@ namespace Timepiece.Benchmarks;
 // a route which is tagged as internal (false) or external (true)
 using TaggedRoute = Pair<Option<BgpRoute>, bool>;
 
-public class Hijack<TS> : Network<TaggedRoute, TS>
+public class Hijack<TS> : AnnotatedNetwork<TaggedRoute, TS>
 {
   public Hijack(Topology topology, Dictionary<string, Zen<TaggedRoute>> initialValues, string hijacker,
     Zen<uint> destinationPrefix,

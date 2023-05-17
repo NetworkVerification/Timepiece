@@ -27,7 +27,7 @@ public static class FaultToleranceTests
 
     var failedEdges = Zen.Symbolic<FSeq<(string, string)>>(depth: topology.NEdges);
 
-    return new FaultTolerance<Unit>(new UnitNetwork(topology), initialValues, annotations,
+    return new FaultTolerance<Unit>(new UnitAnnotatedNetwork(topology), initialValues, annotations,
       modularProperties,
       monolithicProperties, failedEdges, 1);
   }

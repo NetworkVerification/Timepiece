@@ -9,7 +9,7 @@ namespace Timepiece.Networks;
 
 using LpRoute = Pair<BigInteger, BigInteger>;
 
-public class LocalPref : Network<LpRoute, UnitNetwork>
+public class LocalPref : AnnotatedNetwork<LpRoute, UnitAnnotatedNetwork>
 {
   public LocalPref(Topology topology,
     Dictionary<string, Zen<LpRoute>> initialValues,
@@ -22,7 +22,7 @@ public class LocalPref : Network<LpRoute, UnitNetwork>
       annotations,
       topology.MapNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
       topology.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
-      Array.Empty<SymbolicValue<UnitNetwork>>())
+      Array.Empty<SymbolicValue<UnitAnnotatedNetwork>>())
   {
   }
 

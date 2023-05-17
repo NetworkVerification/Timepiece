@@ -10,8 +10,8 @@ public static class BlockToExternal
   /// </summary>
   /// <param name="net"></param>
   /// <returns></returns>
-  public static Network<RouteEnvironment, RouteEnvironment> StrongInitialConstraints(
-    Network<RouteEnvironment, RouteEnvironment> net)
+  public static AnnotatedNetwork<RouteEnvironment, RouteEnvironment> StrongInitialConstraints(
+    AnnotatedNetwork<RouteEnvironment, RouteEnvironment> net)
   {
     // modify the external route symbolics to not have the BTE tag
     foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external"))) s.Constraint = Internet2.BteTagAbsent;
@@ -33,8 +33,8 @@ public static class BlockToExternal
     return net;
   }
 
-  public static Network<RouteEnvironment, RouteEnvironment> WeakerInitialConstraints(
-    Network<RouteEnvironment, RouteEnvironment> net)
+  public static AnnotatedNetwork<RouteEnvironment, RouteEnvironment> WeakerInitialConstraints(
+    AnnotatedNetwork<RouteEnvironment, RouteEnvironment> net)
   {
     foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external")))
       s.Constraint =

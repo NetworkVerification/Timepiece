@@ -16,27 +16,27 @@ public static class Profile
   /// </summary>
   private const string WallTimeHeader = "wall";
 
-  public static void RunCmpPerNode<T, TS>(Network<T, TS> network)
+  public static void RunCmpPerNode<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
   {
-    RunAnnotatedWithStats(network);
-    RunMonoWithStats(network);
+    RunAnnotatedWithStats(annotatedNetwork);
+    RunMonoWithStats(annotatedNetwork);
   }
 
-  public static void RunMonoWithStats<T, TS>(Network<T, TS> network)
+  public static void RunMonoWithStats<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
   {
     const string headers = "n\ttotal";
-    var monoTime = Time(RunMono, network);
-    var data = $"{network.Topology.Nodes.Length}\t{monoTime}";
+    var monoTime = Time(RunMono, annotatedNetwork);
+    var data = $"{annotatedNetwork.Topology.Nodes.Length}\t{monoTime}";
     Console.WriteLine($"Monolithic verification took {monoTime}ms");
     Console.WriteLine(headers);
     Console.WriteLine(data);
   }
 
-  public static void RunMono<T, TS>(Network<T, TS> network)
+  public static void RunMono<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
   {
     try
     {
-      var s = network.CheckMonolithic();
+      var s = annotatedNetwork.CheckMonolithic();
       if (!s.HasValue) return;
       s.Value.ReportCheckFailure();
       Console.WriteLine("Error, monolithic verification failed!");
@@ -48,11 +48,11 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotatedWithStats<T, TS>(Network<T, TS> network)
+  public static void RunAnnotatedWithStats<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
   {
     var processes = Environment.ProcessorCount;
     Console.WriteLine($"Environment.ProcessorCount: {processes}");
-    var numNodes = network.Topology.Nodes.Length;
+    var numNodes = annotatedNetwork.Topology.Nodes.Length;
     var nodeTimes = new ConcurrentDictionary<string, long>(processes * 2, numNodes);
     long? t = null;
     try
@@ -82,7 +82,7 @@ public static class Profile
         var allFailed = failedNodes.Aggregate(new StringBuilder(), (builder, n) => builder.Append($" {n}"));
         Console.WriteLine(
           $"Counterexamples occurred at nodes:{allFailed}");
-      }, network);
+      }, annotatedNetwork);
       Console.WriteLine($"Modular verification took {t}ms");
     }
     catch (ZenException e)
@@ -96,9 +96,9 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotated<T, TS>(Network<T, TS> network)
+  public static void RunAnnotated<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
   {
-    var s = network.CheckAnnotations();
+    var s = annotatedNetwork.CheckAnnotations();
     if (!s.HasValue)
     {
       Console.WriteLine("    All the modular checks passed!");

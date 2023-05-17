@@ -6,22 +6,20 @@ using System.Text;
 using Timepiece;
 using Timepiece.Networks;
 using ZenLib;
+using Array = System.Array;
 
 namespace MisterWolf;
 
-public class Infer<T>
+public class Infer<T> : Network<T, Unit>
 {
   public Infer(Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<string, Zen<T>> initialValues,
     Dictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants)
+    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : base(topology, transferFunction, mergeFunction,
+    initialValues, Array.Empty<SymbolicValue<Unit>>())
   {
-    Topology = topology;
-    TransferFunction = transferFunction;
-    MergeFunction = mergeFunction;
-    InitialValues = initialValues;
     BeforeInvariants = beforeInvariants;
     AfterInvariants = afterInvariants;
   }
@@ -29,10 +27,6 @@ public class Infer<T>
   public bool Verbose { get; set; } = false;
 
   public BigInteger? MaxTime { get; set; }
-  private Topology Topology { get; }
-  private Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; }
-  private Func<Zen<T>, Zen<T>, Zen<T>> MergeFunction { get; }
-  private Dictionary<string, Zen<T>> InitialValues { get; }
   private Dictionary<string, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
   private Dictionary<string, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
 
@@ -107,20 +101,6 @@ public class Infer<T>
     var model = query.Solve();
 
     return model.IsSatisfiable() ? b.Select(bi => model.Get(bi)).ToList() : null;
-  }
-
-  /// <summary>
-  ///   Return a route corresponding to the application of one step of the network semantics:
-  ///   starting from the initial route at a node, merge in each transferred route from the node's neighbor.
-  /// </summary>
-  /// <param name="node">The focal node.</param>
-  /// <param name="routes">The routes of all nodes in the network.</param>
-  /// <returns>A route.</returns>
-  private Zen<T> UpdateNodeRoute(string node, IReadOnlyDictionary<string, Zen<T>> routes)
-  {
-    return Topology[node].Aggregate(InitialValues[node],
-      (current, predecessor) =>
-        MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
 
   /// <summary>
@@ -355,7 +335,7 @@ public class Infer<T>
   /// </summary>
   /// <typeparam name="TS"></typeparam>
   /// <returns></returns>
-  public Network<T, TS> ToNetwork<TS>(InferenceStrategy strategy)
+  public AnnotatedNetwork<T, TS> ToNetwork<TS>(InferenceStrategy strategy)
   {
     long timeTaken;
     Dictionary<string, BigInteger> times;
@@ -403,7 +383,8 @@ public class Infer<T>
     }
 
     var annotations = Topology.MapNodes(n => Lang.Until(times[n], BeforeInvariants[n], AfterInvariants[n]));
-    return new Network<T, TS>(Topology, TransferFunction, MergeFunction, InitialValues, annotations, annotations,
+    return new AnnotatedNetwork<T, TS>(Topology, TransferFunction, MergeFunction, InitialValues, annotations,
+      annotations,
       AfterInvariants, new SymbolicValue<TS>[] { });
   }
 }

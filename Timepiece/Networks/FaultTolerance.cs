@@ -7,7 +7,7 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
-public class FaultTolerance<T> : Network<Option<T>, (string, string)>
+public class FaultTolerance<T> : AnnotatedNetwork<Option<T>, (string, string)>
 {
   public FaultTolerance(Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
@@ -28,7 +28,7 @@ public class FaultTolerance<T> : Network<Option<T>, (string, string)>
     TransferFunction = Transfer(transferFunction, Symbolics);
   }
 
-  public FaultTolerance(Network<T, object> net,
+  public FaultTolerance(AnnotatedNetwork<T, object> net,
     Dictionary<string, Zen<Option<T>>> initialValues,
     Func<SymbolicValue<(string, string)>[], Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>>
       annotations,

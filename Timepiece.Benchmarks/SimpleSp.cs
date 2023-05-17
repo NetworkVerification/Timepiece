@@ -5,7 +5,7 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class SimpleSp<TS> : Network<Option<SimpleBgpRoute>, TS>
+public class SimpleSp<TS> : AnnotatedNetwork<Option<SimpleBgpRoute>, TS>
 {
   public SimpleSp(Topology topology, string destination,
     Dictionary<string, Func<Zen<Option<SimpleBgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,

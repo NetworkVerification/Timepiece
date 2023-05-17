@@ -14,7 +14,7 @@ namespace Timepiece.Tests;
 /// </summary>
 public static class SetReachabilityTests
 {
-  private static Network<CSet<string>, Unit> Net(Topology topology, BigInteger convergeTime,
+  private static AnnotatedNetwork<CSet<string>, Unit> Net(Topology topology, BigInteger convergeTime,
     Dictionary<string, Func<Zen<CSet<string>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var transferFunctions = topology.MapEdges<Func<Zen<CSet<string>>, Zen<CSet<string>>>>(_ => r => r);
@@ -23,7 +23,7 @@ public static class SetReachabilityTests
     var property = ContainsAll(topology);
     var monolithicProperties = topology.MapNodes(_ => property);
     var modularProperties = topology.MapNodes(_ => Lang.Finally(convergeTime, property));
-    return new Network<CSet<string>, Unit>(topology, transferFunctions, CSet.Union, initialValues, annotations,
+    return new AnnotatedNetwork<CSet<string>, Unit>(topology, transferFunctions, CSet.Union, initialValues, annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 

@@ -4,7 +4,7 @@ using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
-public class AutonomousSystem<TS> : Network<Option<BgpRoute>, TS>
+public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
 {
   public AutonomousSystem(Topology topology, string externalSrc, string externalDest,
     Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> transferFunction,

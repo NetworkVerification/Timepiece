@@ -5,7 +5,7 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Vf<TS> : Network<Option<BgpRoute>, TS>
+public class Vf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
 {
   public Vf(Topology topology, string destination, string tag,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,

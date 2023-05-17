@@ -7,9 +7,9 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
-public class BgpNetwork : Network<Option<Bgp>, Bgp>
+public class BgpAnnotatedNetwork : AnnotatedNetwork<Option<Bgp>, Bgp>
 {
-  public BgpNetwork(Topology topology,
+  public BgpAnnotatedNetwork(Topology topology,
     Dictionary<string, Zen<Option<Bgp>>> initialValues,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime,

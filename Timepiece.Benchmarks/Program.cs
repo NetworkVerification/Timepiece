@@ -22,10 +22,10 @@ var sizeOption = new Option<uint>(
 };
 var destOption = new Option<string>(
   new[] {"--dest", "-d"},
-  description: "The destination node of the benchmark")
-{
-  IsRequired = false
-};
+  description: "The destination node of the benchmark");
+var inferOption = new Option<bool>(
+  new[] {"--infer", "-I"},
+  "If given, infer witness times rather than giving them");
 var verboseOption = new Option<bool>(
   new[] {"--verbose", "-v"},
   "If given, print Zen formulas to stdout");
@@ -38,15 +38,16 @@ var benchArgument = new Argument<BenchmarkType>(
   parse: result => result.Tokens.Single().Value.Parse());
 rootCommand.Add(sizeOption);
 rootCommand.Add(destOption);
+rootCommand.Add(inferOption);
 rootCommand.Add(benchArgument);
 rootCommand.Add(verboseOption);
 rootCommand.Add(monoOption);
 
 rootCommand.SetHandler(
-  (uint size, string dest, BenchmarkType bench, bool verbose, bool mono) =>
+  (size, dest, bench, verbose, mono, infer) =>
   {
     Console.WriteLine($"k={size}");
-    new Benchmark(size, dest, bench, verbose, mono).Run();
-  }, sizeOption, destOption, benchArgument, verboseOption, monoOption);
+    new Benchmark(size, dest, bench, verbose, mono, infer).Run();
+  }, sizeOption, destOption, benchArgument, verboseOption, monoOption, inferOption);
 
 await rootCommand.InvokeAsync(args);

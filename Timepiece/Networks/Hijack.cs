@@ -10,7 +10,7 @@ namespace Timepiece.Networks;
 // a route which is tagged as external or internal
 using TaggedRoute = Pair<BigInteger, bool>;
 
-public class Hijack : Network<Option<TaggedRoute>, Option<TaggedRoute>>
+public class Hijack : AnnotatedNetwork<Option<TaggedRoute>, Option<TaggedRoute>>
 {
   public static Zen<Option<TaggedRoute>> DestRoute =
     Option.Create(Pair.Create<BigInteger, bool>(BigInteger.Zero, false));

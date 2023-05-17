@@ -32,10 +32,10 @@ foreach (var arg in args)
   switch (arg)
   {
     case "spreach":
-      infer = Benchmark.BooleanReachability(topology, initialValues);
+      infer = Benchmark.BooleanReachability(topology, new Initialization<bool>(initialValues));
       break;
     case "spreach2":
-      infer = Benchmark.StrongBooleanReachability(topology, initialValues);
+      infer = Benchmark.StrongBooleanReachability(topology, new Initialization<bool>(initialValues));
       break;
     case "splen":
       var upperBounds = topology.MapNodes(n =>

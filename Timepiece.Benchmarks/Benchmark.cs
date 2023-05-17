@@ -4,7 +4,7 @@ namespace Timepiece.Benchmarks;
 
 public class Benchmark
 {
-  public Benchmark(uint n, string? destination, BenchmarkType type, bool verbose, bool runMonolithic)
+  public Benchmark(uint n, string? destination, BenchmarkType type, bool verbose, bool runMonolithic, bool inferTimes)
   {
     N = n;
     if (type.HasSymbolicDestination())
@@ -26,6 +26,7 @@ public class Benchmark
     Bench = type;
     Verbose = verbose;
     RunMonolithic = runMonolithic;
+    InferTimes = inferTimes;
   }
 
   public BenchmarkType Bench { get; set; }
@@ -37,6 +38,8 @@ public class Benchmark
   public bool RunMonolithic { get; set; }
 
   public bool Verbose { get; set; }
+
+  public bool InferTimes { get; set; }
 
   public void Run()
   {
@@ -80,7 +83,7 @@ public class Benchmark
     }
   }
 
-  private void RunProfiler<T, TS>(Network<T, TS> net)
+  private void RunProfiler<T, TS>(AnnotatedNetwork<T, TS> net)
   {
     net.PrintFormulas = Verbose;
     if (RunMonolithic)

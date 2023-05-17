@@ -114,7 +114,7 @@ public class Ast
       : new SymbolicValue<RouteEnvironment>(name, Predicates[predicate].Evaluate(new AstEnvironment()));
   }
 
-  public Network<RouteEnvironment, RouteEnvironment> ToNetwork(
+  public AnnotatedNetwork<RouteEnvironment, RouteEnvironment> ToNetwork(
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
     AstFunction<RouteEnvironment> defaultExport, AstFunction<RouteEnvironment> defaultImport)
   {
@@ -172,7 +172,7 @@ public class Ast
       topology.MapNodes<Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(n =>
         Lang.Finally(convergeTime, monolithicProperties[n]));
 
-    return new Network<RouteEnvironment, RouteEnvironment>(topology,
+    return new AnnotatedNetwork<RouteEnvironment, RouteEnvironment>(topology,
       transferFunction,
       mergeFunction,
       initFunction,

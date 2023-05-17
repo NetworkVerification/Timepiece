@@ -4,9 +4,9 @@ using Array = System.Array;
 
 namespace Timepiece.Networks;
 
-public class UnitNetwork : Network<Unit, object>
+public class UnitAnnotatedNetwork : AnnotatedNetwork<Unit, object>
 {
-  public UnitNetwork(Topology topology) : base(topology,
+  public UnitAnnotatedNetwork(Topology topology) : base(topology,
     topology.MapEdges(_ => Lang.Identity<Unit>()), (_, _) => new Unit(),
     topology.MapNodes<Zen<Unit>>(_ => new Unit()),
     topology.MapNodes(_ => Lang.Globally(UnitPredicate())),
