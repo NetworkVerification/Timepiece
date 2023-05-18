@@ -1,6 +1,5 @@
 using System.Numerics;
 using MisterWolf;
-using Timepiece.Datatypes;
 using Timepiece.Networks;
 using ZenLib;
 using Array = System.Array;
@@ -51,6 +50,15 @@ public class AnnotatedSp<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
   }
 }
 
+public class InferSp : Infer<Option<BgpRoute>>
+{
+  public InferSp(Sp<Unit> sp, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) :
+    base(sp, beforeInvariants, afterInvariants)
+  {
+  }
+}
+
 /// <summary>
 ///   Static factory class for Sp networks.
 /// </summary>
@@ -62,7 +70,7 @@ public static class Sp
   /// <param name="numPods"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  public static Sp<Unit> ConcreteFatTreeSp(uint numPods, string destination)
+  private static Sp<Unit> ConcreteFatTreeSp(uint numPods, string destination)
   {
     return new Sp<Unit>(Topologies.FatTree(numPods), destination, Array.Empty<SymbolicValue<Unit>>());
   }
@@ -80,14 +88,16 @@ public static class Sp
     // no safety property
     var safetyProperties = sp.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties = sp.Topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
-    Dictionary<string,Func<Zen<Option<BgpRoute>>,Zen<BigInteger>,Zen<bool>>> annotations;
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
-      Console.WriteLine("Inferring witness times...");
-      var infer = new Infer<Option<BgpRoute>>(sp, safetyProperties, stableProperties);
-      var (timeTaken, witnessTimes) = Infer<Option<BgpRoute>>.InferTimesTimed(infer.InferTimesSymbolic);
-      Console.WriteLine($"Inference took {timeTaken}ms");
-      annotations = sp.Topology.MapNodes(n => Lang.Finally(witnessTimes[n], stableProperties[n]));
+      var infer = new InferSp(sp, safetyProperties, stableProperties)
+      {
+        // specify a maximum time so that we ensure that the safety check still holds
+        // in this case, the maximum must be the network's converge time
+        MaxTime = new BigInteger(4)
+      };
+      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
     }
     else
     {
@@ -101,16 +111,36 @@ public static class Sp
   }
 
   // slightly weaker path length property with simpler annotations
-  public static AnnotatedSp<Unit> PathLengthNoSafety(uint numPods, string destination)
+  public static AnnotatedSp<Unit> PathLengthNoSafety(uint numPods, string destination, bool inferTimes)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
     var distances = sp.Topology.BreadthFirstSearch(destination);
 
-    var annotations =
-      distances.Select(p => (n: p.Key, a: Lang.Until(p.Value,
-          Lang.OrSome<BgpRoute>(b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= BigInteger.Zero)),
-          Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(p.Value)))))
-        .ToDictionary(p => p.n, p => p.a);
+    var before = Lang.OrSome<BgpRoute>(b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= BigInteger.Zero));
+    var afterConditions =
+      distances.Select(p => (n: p.Key, after: Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(p.Value))))
+        .ToDictionary(p => p.n, p => p.after);
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
+    if (inferTimes)
+    {
+      var infer = new InferSp(sp, sp.Topology.MapNodes(_ => before), afterConditions)
+      {
+        // specify a maximum time so that we ensure that the safety check still holds
+        // in this case, the maximum must be the network's converge time
+        MaxTime = new BigInteger(4)
+      };
+      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
+    }
+    else
+    {
+      annotations =
+        distances.Select(p =>
+          {
+            var after = Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(p.Value));
+            return (n: p.Key, a: Lang.Until(p.Value, before, after));
+          })
+          .ToDictionary(p => p.n, p => p.a);
+    }
 
     var stableProperties =
       sp.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));

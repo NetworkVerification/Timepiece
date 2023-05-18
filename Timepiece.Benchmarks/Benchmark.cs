@@ -52,7 +52,7 @@ public class Benchmark
         RunProfiler(Sp.PathLength(N, Destination));
         break;
       case BenchmarkType.SpPathLengthWeak:
-        RunProfiler(Sp.PathLengthNoSafety(N, Destination));
+        RunProfiler(Sp.PathLengthNoSafety(N, Destination, InferTimes));
         break;
       case BenchmarkType.ApReachable:
         RunProfiler(Sp.AllPairsReachability(N));
@@ -64,7 +64,7 @@ public class Benchmark
         RunProfiler(Sp.AllPairsPathLengthNoSafety(N));
         break;
       case BenchmarkType.ValleyFree:
-        RunProfiler(Vf.ValleyFreeReachable(N, Destination));
+        RunProfiler(Vf.ValleyFreeReachable(N, Destination, InferTimes));
         break;
       case BenchmarkType.ValleyFreeLength:
         RunProfiler(Vf.ValleyFreePathLength(N, Destination));

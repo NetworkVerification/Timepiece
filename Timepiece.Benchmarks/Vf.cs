@@ -1,39 +1,29 @@
 using System.Numerics;
+using MisterWolf;
 using Timepiece.Networks;
 using ZenLib;
 using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Vf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
+public class Vf<TS> : Network<Option<BgpRoute>, TS>
 {
-  public Vf(Topology topology, string destination, string tag,
-    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties,
-    SymbolicValue<TS>[] symbolics) :
-    this(topology,
-      topology.MapNodes(n =>
-        n == destination ? Option.Create<BgpRoute>(new BgpRoute()) : Option.None<BgpRoute>()),
-      tag, annotations, stableProperties, safetyProperties, symbolics)
-  {
-  }
-
   public Vf(Topology topology, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
-    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties,
     SymbolicValue<TS>[] symbolics) :
-    base(topology, Transfer(topology, tag),
-      Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
-      initialValues,
-      annotations, stableProperties, safetyProperties, new BigInteger(4), symbolics)
+    base(topology, Transfer(topology, tag), Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
+      initialValues, symbolics)
   {
   }
 
+  public Vf(Topology topology, string destination, string tag, SymbolicValue<TS>[] symbolics) :
+    this(topology,
+      topology.MapNodes(n => n == destination ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
+      tag, symbolics)
+  {
+  }
 
-  private static Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>>
-    Transfer(Topology topology, string tag)
+  private static Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> Transfer(
+    Topology topology, string tag)
   {
     return topology.MapEdges(e =>
     {
@@ -55,37 +45,76 @@ public class Vf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
   }
 }
 
+public class AnnotatedVf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
+{
+  public AnnotatedVf(Vf<TS> vf,
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) :
+    base(vf, annotations, stableProperties, safetyProperties, new BigInteger(4))
+  {
+  }
+}
+
+public class InferVf : Infer<Option<BgpRoute>>
+{
+  public InferVf(Vf<Unit> vf, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) : base(vf, beforeInvariants,
+    afterInvariants)
+  {
+  }
+}
+
 public static class Vf
 {
   private const string DownTag = "down";
 
-  public static Vf<Unit> ValleyFreeReachable(uint numPods, string destination)
+  private static Vf<Unit> ConcreteFatTreeVf(uint numPods, string destination)
   {
-    var topology = Topologies.FatTree(numPods);
-    var distances = topology.BreadthFirstSearch(destination);
-    var annotations =
-      topology.MapNodes(n =>
-        Lang.Until(distances[n], Lang.IsNone<BgpRoute>(),
-          Lang.IfSome(distances[n] < 2
-            // require that the safety property holds at time t,
-            // and that the LP equals the default, and the path length equals t
-            ? b => Zen.And(Zen.Not(b.HasCommunity(DownTag)),
-              BgpRouteExtensions.EqLengthDefaultLp(distances[n])(b))
-            : BgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
-    var safetyProperties =
-      topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
-    var stableProperties =
-      topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
-    return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+    return new Vf<Unit>(Topologies.FatTree(numPods), destination, DownTag, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  public static Vf<Unit> ValleyFreePathLength(uint numPods, string destination)
+  public static AnnotatedVf<Unit> ValleyFreeReachable(uint numPods, string destination, bool inferTimes)
   {
-    var topology = Topologies.FatTree(numPods);
-    var distances = topology.BreadthFirstSearch(destination);
+    var vf = ConcreteFatTreeVf(numPods, destination);
+    var distances = vf.Topology.BreadthFirstSearch(destination);
+    var afterConditions = vf.Topology.MapNodes(n =>
+      Lang.IfSome(distances[n] < 2
+        // require that the LP equals the default, and the path length equals the distance
+        ? b => Zen.And(Zen.Not(b.HasCommunity(DownTag)),
+          BgpRouteExtensions.EqLengthDefaultLp(distances[n])(b))
+        : BgpRouteExtensions.EqLengthDefaultLp(distances[n])));
+
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
+    if (inferTimes)
+    {
+      var infer = new InferVf(vf, vf.Topology.MapNodes(_ => Lang.IsNone<BgpRoute>()), afterConditions)
+      {
+        MaxTime = 4,
+        PrintBounds = true,
+      };
+      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
+    }
+    else
+    {
+      annotations =
+        vf.Topology.MapNodes(n => Lang.Until(distances[n], Lang.IsNone<BgpRoute>(),
+          afterConditions[n]));
+    }
+
+    var safetyProperties =
+      vf.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+    var stableProperties =
+      vf.Topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
+  }
+
+  public static AnnotatedVf<Unit> ValleyFreePathLength(uint numPods, string destination)
+  {
+    var vf = ConcreteFatTreeVf(numPods, destination);
+    var distances = vf.Topology.BreadthFirstSearch(destination);
     var annotations =
-      topology.MapNodes(n =>
+      vf.Topology.MapNodes(n =>
         Lang.Until(distances[n], Lang.IsNone<BgpRoute>(),
           distances[n] < 2
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
@@ -93,18 +122,22 @@ public static class Vf
               BgpRouteExtensions.EqLengthDefaultLp(distances[n])(b)))
             : Lang.IfSome(BgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
     var safetyProperties =
-      topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+      vf.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties =
-      topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    return new Vf<Unit>(topology, destination, DownTag, annotations, stableProperties, safetyProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      vf.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
   }
 
 
-  public static Vf<Pair<string, int>> AllPairsValleyFreeReachable(uint numPods)
+  public static AnnotatedVf<Pair<string, int>> AllPairsValleyFreeReachable(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(topology);
+    var initialValues =
+      topology.MapNodes(n => Option.Create<BgpRoute>(new BgpRoute())
+        .Where(_ => dest.Equals(topology, n)));
+    var symbolics = new SymbolicValue<Pair<string, int>>[] {dest};
+    var vf = new Vf<Pair<string, int>>(topology, initialValues, DownTag, symbolics);
     var annotations =
       topology.MapNodes(n =>
       {
@@ -120,10 +153,6 @@ public static class Vf
       });
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
-    Dictionary<string, Zen<Option<BgpRoute>>> initialValues =
-      topology.MapNodes(n => Option.Create<BgpRoute>(new BgpRoute())
-        .Where(_ => dest.Equals(topology, n)));
-    return new Vf<Pair<string, int>>(topology, initialValues, DownTag, annotations, stableProperties, safetyProperties,
-      new SymbolicValue<Pair<string, int>>[] {dest});
+    return new AnnotatedVf<Pair<string, int>>(vf, annotations, stableProperties, safetyProperties);
   }
 }

@@ -16,23 +16,36 @@ public class Infer<T> : Network<T, Unit>
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<string, Zen<T>> initialValues,
-    Dictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : base(topology, transferFunction, mergeFunction,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : base(topology, transferFunction, mergeFunction,
     initialValues, Array.Empty<SymbolicValue<Unit>>())
   {
     BeforeInvariants = beforeInvariants;
     AfterInvariants = afterInvariants;
   }
 
-  public Infer(Network<T, Unit> net, Dictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
+  public Infer(Network<T, Unit> net, IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
     net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants) {}
 
+  /// <summary>
+  /// If true, print the generated bounds to standard output.
+  /// </summary>
   public bool PrintBounds { get; set; } = false;
 
+  /// <summary>
+  /// If true, report all failures to standard output.
+  /// </summary>
+  public bool ReportFailures { get; set; } = false;
+
+  /// <summary>
+  /// If true, report all times inferred to standard output.
+  /// </summary>
+  public bool PrintTimes { get; set; } = false;
+
   public BigInteger? MaxTime { get; set; }
-  private Dictionary<string, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
-  private Dictionary<string, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
+  protected IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
+  protected IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
 
   /// <summary>
   ///   Return a string describing a failed check.
@@ -60,6 +73,11 @@ public class Infer<T> : Network<T, Unit>
     }
 
     return $"Node {node}'s {invariantDescriptor} invariant does not hold for its initial route.";
+  }
+
+  private void PrintFailure(string node, string invariantDescriptor, BitArray? b) {
+    if (ReportFailures)
+      Console.WriteLine(ReportFailure(node, invariantDescriptor, b));
   }
 
   /// <summary>
@@ -121,13 +139,13 @@ public class Infer<T> : Network<T, Unit>
     {
       if (CheckInitial(node, BeforeInvariants[node]))
       {
-        Console.WriteLine(ReportFailure(node, "before", null));
+        PrintFailure(node, "before", null);
         beforeInitialChecks.Add(node);
       }
 
       if (CheckInitial(node, AfterInvariants[node]))
       {
-        Console.WriteLine(ReportFailure(node, "after", null));
+        PrintFailure(node, "after", null);
         afterInitialChecks.Add(node);
       }
     });
@@ -148,14 +166,14 @@ public class Infer<T> : Network<T, Unit>
         foreach (var predecessor in Topology[n]) routes[predecessor] = Zen.Symbolic<T>();
         if (CheckInductive(n, BeforeInvariants[n], b, routes) is not null)
         {
-          Console.WriteLine(ReportFailure(n, "before", tuple.b));
+          PrintFailure(n, "before", tuple.b);
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
         if (CheckInductive(n, AfterInvariants[n], b, routes) is not null)
         {
-          Console.WriteLine(ReportFailure(n, "after", tuple.b));
+          PrintFailure(n, "after", tuple.b);
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
@@ -189,13 +207,13 @@ public class Infer<T> : Network<T, Unit>
     {
       if (CheckInitial(node, BeforeInvariants[node]))
       {
-        Console.WriteLine(ReportFailure(node, "before", null));
+        PrintFailure(node, "before", null);
         beforeInitialChecks.Add(node);
       }
 
       if (CheckInitial(node, AfterInvariants[node]))
       {
-        Console.WriteLine(ReportFailure(node, "after", null));
+        PrintFailure(node, "after", null);
         afterInitialChecks.Add(node);
       }
     });
@@ -223,7 +241,7 @@ public class Infer<T> : Network<T, Unit>
         {
           // get the model and block it
           var bArr = new BitArray(bSol.ToArray());
-          Console.WriteLine(ReportFailure(n, bSol[^1] ? "before" : "after", bArr));
+          PrintFailure(n, bSol[^1] ? "before" : "after", bArr);
           // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
           var blockBs = bSol.Select((bb, i) => bb ? Zen.Not(b[i]) : b[i]);
           var blockingClause = Zen.Or(blockBs);
@@ -401,11 +419,14 @@ public class Infer<T> : Network<T, Unit>
   }
 
   /// <summary>
-  ///   Convert the inference problem into a Timepiece network instance.
+  /// Infer suitable annotations for a Timepiece <c>AnnotatedNetwork{T,TS}</c> instance.
+  /// The given inference strategy determines the form of inference used.
   /// </summary>
-  /// <returns></returns>
-  public AnnotatedNetwork<T, Unit> ToNetwork(InferenceStrategy strategy)
+  /// <param name="strategy">the <c>InferenceStrategy</c> inference strategy: see <see cref="InferenceStrategy"/></param>
+  /// <returns>a dictionary from nodes to temporal predicates</returns>
+  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> InferAnnotations(InferenceStrategy strategy)
   {
+    Console.WriteLine("Inferring witness times...");
     long timeTaken;
     Dictionary<string, BigInteger> times;
     switch (strategy)
@@ -443,17 +464,17 @@ public class Infer<T> : Network<T, Unit>
 
     if (times.Count > 0)
     {
-      Console.WriteLine("Success, inferred the following times:");
-      foreach (var (node, time) in times) Console.WriteLine($"{node}: {time}");
+      if (PrintTimes)
+      {
+        Console.WriteLine("Success, inferred the following times:");
+        foreach (var (node, time) in times) Console.WriteLine($"{node}: {time}");
+      }
     }
     else
     {
       throw new ArgumentException("Failed to infer times!");
     }
 
-    var annotations = Topology.MapNodes(n => Lang.Until(times[n], BeforeInvariants[n], AfterInvariants[n]));
-    return new AnnotatedNetwork<T, Unit>(Topology, TransferFunction, MergeFunction, InitialValues, annotations,
-      annotations,
-      AfterInvariants, Symbolics);
+    return Topology.MapNodes(n => Lang.Until(times[n], BeforeInvariants[n], AfterInvariants[n]));
   }
 }
