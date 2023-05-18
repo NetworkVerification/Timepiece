@@ -1,4 +1,6 @@
 using System.Numerics;
+using MisterWolf;
+using Timepiece.Datatypes;
 using Timepiece.Networks;
 using ZenLib;
 using Array = System.Array;
@@ -43,7 +45,8 @@ public class AnnotatedSp<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
   /// <inheritdoc cref="AnnotatedNetwork{T,TS}(Timepiece.Networks.Network{T,TS},System.Collections.Generic.Dictionary{string,System.Func{ZenLib.Zen{T},ZenLib.Zen{System.Numerics.BigInteger},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{string,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{string,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Numerics.BigInteger)"/>
   public AnnotatedSp(Sp<TS> sp, Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) : base(sp, annotations, stableProperties, safetyProperties, new BigInteger(4))
+    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) : base(sp, annotations,
+    stableProperties, safetyProperties, new BigInteger(4))
   {
   }
 }
@@ -69,17 +72,31 @@ public static class Sp
   /// </summary>
   /// <param name="numPods"></param>
   /// <param name="destination"></param>
+  /// <param name="inferTimes"></param>
   /// <returns></returns>
-  public static AnnotatedSp<Unit> Reachability(uint numPods, string destination)
+  public static AnnotatedSp<Unit> Reachability(uint numPods, string destination, bool inferTimes)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
-    var distances = sp.Topology.BreadthFirstSearch(destination);
-    var annotations =
-      distances.Select(p => (n: p.Key, a: Lang.Finally<Option<BgpRoute>>(p.Value, Option.IsSome)))
-        .ToDictionary(p => p.n, p => p.a);
-    var stableProperties = sp.Topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
     // no safety property
     var safetyProperties = sp.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+    var stableProperties = sp.Topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    Dictionary<string,Func<Zen<Option<BgpRoute>>,Zen<BigInteger>,Zen<bool>>> annotations;
+    if (inferTimes)
+    {
+      Console.WriteLine("Inferring witness times...");
+      var infer = new Infer<Option<BgpRoute>>(sp, safetyProperties, stableProperties);
+      var (timeTaken, witnessTimes) = Infer<Option<BgpRoute>>.InferTimesTimed(infer.InferTimesSymbolic);
+      Console.WriteLine($"Inference took {timeTaken}ms");
+      annotations = sp.Topology.MapNodes(n => Lang.Finally(witnessTimes[n], stableProperties[n]));
+    }
+    else
+    {
+      var distances = sp.Topology.BreadthFirstSearch(destination);
+      annotations =
+        distances.Select(p => (n: p.Key, a: Lang.Finally<Option<BgpRoute>>(p.Value, Option.IsSome)))
+          .ToDictionary(p => p.n, p => p.a);
+    }
+
     return new AnnotatedSp<Unit>(sp, annotations, stableProperties, safetyProperties);
   }
 

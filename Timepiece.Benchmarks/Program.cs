@@ -38,10 +38,10 @@ var benchArgument = new Argument<BenchmarkType>(
   parse: result => result.Tokens.Single().Value.Parse());
 rootCommand.Add(sizeOption);
 rootCommand.Add(destOption);
-rootCommand.Add(inferOption);
 rootCommand.Add(benchArgument);
 rootCommand.Add(verboseOption);
 rootCommand.Add(monoOption);
+rootCommand.Add(inferOption);
 
 rootCommand.SetHandler(
   (size, dest, bench, verbose, mono, infer) =>

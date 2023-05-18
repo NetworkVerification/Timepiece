@@ -46,7 +46,7 @@ public class Benchmark
     switch (Bench)
     {
       case BenchmarkType.SpReachable:
-        RunProfiler(Sp.Reachability(N, Destination));
+        RunProfiler(Sp.Reachability(N, Destination, InferTimes));
         break;
       case BenchmarkType.SpPathLength:
         RunProfiler(Sp.PathLength(N, Destination));

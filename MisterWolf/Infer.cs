@@ -24,6 +24,10 @@ public class Infer<T> : Network<T, Unit>
     AfterInvariants = afterInvariants;
   }
 
+  public Infer(Network<T, Unit> net, Dictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
+    Dictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
+    net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants) {}
+
   public bool PrintBounds { get; set; } = false;
 
   public BigInteger? MaxTime { get; set; }
@@ -109,7 +113,7 @@ public class Infer<T> : Network<T, Unit>
   ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
   /// </summary>
   /// <returns>A dictionary mapping nodes to witness times.</returns>
-  private Dictionary<string, BigInteger> InferTimesExplicit()
+  public Dictionary<string, BigInteger> InferTimesExplicit()
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -177,7 +181,7 @@ public class Infer<T> : Network<T, Unit>
   ///   by asking the solver to find failing arrangements.
   /// </summary>
   /// <returns>A dictionary mapping nodes to witness times.</returns>
-  private Dictionary<string, BigInteger> InferTimesSymbolic()
+  public Dictionary<string, BigInteger> InferTimesSymbolic()
   {
     var afterInitialChecks = new ConcurrentBag<string>();
     var beforeInitialChecks = new ConcurrentBag<string>();
@@ -389,7 +393,7 @@ public class Infer<T> : Network<T, Unit>
         Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node], times)));
   }
 
-  private static (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
+  public static (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
   {
     var timer = Stopwatch.StartNew();
     var times = inferFunc();
