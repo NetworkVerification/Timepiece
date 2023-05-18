@@ -37,6 +37,14 @@ public class Network<T, TS>
   /// </summary>
   public SymbolicValue<TS>[] Symbolics { get; set; }
 
+  /// <summary>
+  /// Construct a new <c>Network</c>.
+  /// </summary>
+  /// <param name="topology">a network topology</param>
+  /// <param name="transferFunction">a dictionary from edges to transfer functions</param>
+  /// <param name="mergeFunction">a function for merging two routes</param>
+  /// <param name="initialValues">a dictionary from nodes to initial routes</param>
+  /// <param name="symbolics">an array of symbolic values</param>
   public Network(Topology topology, Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, Dictionary<string, Zen<T>> initialValues,
     SymbolicValue<TS>[] symbolics)

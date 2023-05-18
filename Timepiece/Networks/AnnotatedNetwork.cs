@@ -16,16 +16,16 @@ namespace Timepiece.Networks;
 public class AnnotatedNetwork<T, TS> : Network<T, TS>
 {
   /// <summary>
-  ///   Construct a new Network.
+  ///   Construct a new <c>AnnotatedNetwork{T,TS}</c>.
   /// </summary>
-  /// <param name="topology"></param>
-  /// <param name="transferFunction"></param>
-  /// <param name="mergeFunction"></param>
-  /// <param name="initialValues"></param>
-  /// <param name="annotations"></param>
-  /// <param name="modularProperties"></param>
-  /// <param name="monolithicProperties"></param>
-  /// <param name="symbolics"></param>
+  /// <param name="topology">The network topology.</param>
+  /// <param name="transferFunction">A Dictionary from edges to transfer functions.</param>
+  /// <param name="mergeFunction">The merge function.</param>
+  /// <param name="initialValues">A Dictionary from nodes to initial routes.</param>
+  /// <param name="annotations">A Dictionary from nodes to temporal predicates.</param>
+  /// <param name="modularProperties">A Dictionary from nodes to temporal predicates.</param>
+  /// <param name="monolithicProperties">A Dictionary from nodes to predicates.</param>
+  /// <param name="symbolics">An array of symbolic values.</param>
   public AnnotatedNetwork(
     Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
@@ -42,11 +42,11 @@ public class AnnotatedNetwork<T, TS> : Network<T, TS>
   }
 
   /// <summary>
-  ///   Construct a new Network using an alternate properties definition.
+  ///   Construct a new <c>AnnotatedNetwork{T,TS}</c> using an alternate properties definition.
   ///   For modular checking, for each node we check a property
-  ///   Globally(safetyProperties[n]) and Finally(convergeTime, stableProperties[n]).
+  ///   <c>Globally(safetyProperties[n])</c> and <c>Finally(convergeTime, stableProperties[n])</c>.
   ///   For monolithic checking, for each node we check a property
-  ///   safetyProperties[n] and stableProperties[n].
+  ///   <c>safetyProperties[n]</c> and <c>stableProperties[n]</c>.
   /// </summary>
   /// <param name="topology">The network topology.</param>
   /// <param name="transferFunction"></param>
@@ -75,6 +75,21 @@ public class AnnotatedNetwork<T, TS> : Network<T, TS>
     symbolics)
   {
   }
+
+  /// <summary>
+  /// Construct a new <c>AnnotatedNetwork{T,TS}</c> from another, using an alternate properties definition.
+  /// </summary>
+  /// <param name="net"></param>
+  /// <param name="annotations"></param>
+  /// <param name="stableProperties"></param>
+  /// <param name="safetyProperties"></param>
+  /// <param name="convergeTime"></param>
+  public AnnotatedNetwork(Network<T, TS> net,
+    Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> safetyProperties,
+    BigInteger convergeTime) : this(net.Topology, net.TransferFunction, net.MergeFunction,
+    net.InitialValues, annotations, stableProperties, safetyProperties, convergeTime, net.Symbolics) {}
 
   /// <summary>
   ///   The modular safety properties that we want to check (includes time).
