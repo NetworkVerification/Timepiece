@@ -2,9 +2,13 @@
 
 using System.CommandLine;
 using Timepiece.Benchmarks;
+using ZenLib;
+
+ZenSettings.UseLargeStack = true;
+ZenSettings.LargeStackSize = 30_000_000;
 
 var rootCommand = new RootCommand("Timepiece benchmark runner");
-var sizeOption = new Option<uint>(
+var sizeOption = new System.CommandLine.Option<uint>(
   new[] {"--size", "-k"},
   description: "The size of the benchmark (number of pods for fattrees)",
   parseArgument: result =>
@@ -20,16 +24,16 @@ var sizeOption = new Option<uint>(
 {
   IsRequired = true
 };
-var destOption = new Option<string>(
+var destOption = new System.CommandLine.Option<string>(
   new[] {"--dest", "-d"},
   description: "The destination node of the benchmark");
-var inferOption = new Option<bool>(
+var inferOption = new System.CommandLine.Option<bool>(
   new[] {"--infer", "-I"},
   "If given, infer witness times rather than giving them");
-var verboseOption = new Option<bool>(
+var verboseOption = new System.CommandLine.Option<bool>(
   new[] {"--verbose", "-v"},
   "If given, print Zen formulas to stdout");
-var monoOption = new Option<bool>(
+var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically simulating Minesweeper");
 var benchArgument = new Argument<BenchmarkType>(

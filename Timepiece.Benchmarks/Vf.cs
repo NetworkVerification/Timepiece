@@ -90,8 +90,7 @@ public static class Vf
     {
       var infer = new InferVf(vf, vf.Topology.MapNodes(_ => Lang.IsNone<BgpRoute>()), afterConditions)
       {
-        MaxTime = 4,
-        PrintBounds = true,
+        MaxTime = 4
       };
       annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
     }

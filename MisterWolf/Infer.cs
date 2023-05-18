@@ -283,15 +283,15 @@ public class Infer<T> : Network<T, Unit>
       beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
         .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)));
 
-    var simplifiedBeforeInductiveChecks = beforeInductiveChecks.Select(p =>
-      new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
-    var simplifiedAfterInductiveChecks = afterInductiveChecks.Select(p =>
-      new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    // var simplifiedBeforeInductiveChecks = beforeInductiveChecks.Select(p =>
+      // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    // var simplifiedAfterInductiveChecks = afterInductiveChecks.Select(p =>
+      // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 >= t_n
-    foreach (var (node, arrangements) in simplifiedBeforeInductiveChecks)
+    foreach (var (node, arrangements) in beforeInductiveChecks)
     foreach (IEnumerable<Zen<bool>>? beforeBounds in from arrangement in arrangements
              select BoundArrangement(node, times, arrangement))
     {
@@ -302,13 +302,13 @@ public class Infer<T> : Network<T, Unit>
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 < t_n,
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
-    foreach (var (node, arrangements) in simplifiedAfterInductiveChecks)
+    foreach (var (node, arrangements) in afterInductiveChecks)
     foreach (var arrangement in arrangements)
     {
       bounds.AddRange(BoundArrangement(node, times, arrangement));
-      // var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
-      var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
-      var nextBound = Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times));
+      var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      // var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
+      // var nextBound = Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times));
       bounds.Add(nextBound);
     }
 
