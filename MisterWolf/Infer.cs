@@ -6,27 +6,29 @@ using System.Text;
 using Timepiece;
 using Timepiece.Networks;
 using ZenLib;
-using Array = System.Array;
 
 namespace MisterWolf;
 
-public class Infer<T> : Network<T, Unit>
+public class Infer<T, TS> : Network<T, TS>
 {
   public Infer(Topology topology,
     Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<string, Zen<T>> initialValues,
     IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : base(topology, transferFunction, mergeFunction,
-    initialValues, Array.Empty<SymbolicValue<Unit>>())
+    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants,
+    SymbolicValue<TS>[] symbolics) : base(topology, transferFunction, mergeFunction,
+    initialValues, symbolics)
   {
     BeforeInvariants = beforeInvariants;
     AfterInvariants = afterInvariants;
   }
 
-  public Infer(Network<T, Unit> net, IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
+  public Infer(Network<T, TS> net, IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
-    net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants) {}
+    net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants, net.Symbolics)
+  {
+  }
 
   /// <summary>
   /// If true, print the generated bounds to standard output.
@@ -75,7 +77,8 @@ public class Infer<T> : Network<T, Unit>
     return $"Node {node}'s {invariantDescriptor} invariant does not hold for its initial route.";
   }
 
-  private void PrintFailure(string node, string invariantDescriptor, BitArray? b) {
+  private void PrintFailure(string node, string invariantDescriptor, BitArray? b)
+  {
     if (ReportFailures)
       Console.WriteLine(ReportFailure(node, invariantDescriptor, b));
   }
@@ -88,7 +91,7 @@ public class Infer<T> : Network<T, Unit>
   /// <returns>True if the invariant does *not* hold for the initial route, and false otherwise.</returns>
   private bool CheckInitial(string node, Func<Zen<T>, Zen<bool>> invariant)
   {
-    var query = Zen.Not(invariant(InitialValues[node]));
+    var query = Zen.And(GetSymbolicConstraints(), Zen.Not(invariant(InitialValues[node])));
     var model = query.Solve();
     return model.IsSatisfiable();
   }
@@ -119,7 +122,9 @@ public class Infer<T> : Network<T, Unit>
           AfterInvariants[predecessor](routes[predecessor])));
     var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
-    var query = blockingClauses is null ? Zen.Not(check) : Zen.And(Zen.And(blockingClauses), Zen.Not(check));
+    var query = blockingClauses is null
+      ? Zen.And(GetSymbolicConstraints(), Zen.Not(check))
+      : Zen.And(GetSymbolicConstraints(), Zen.And(blockingClauses), Zen.Not(check));
     var model = query.Solve();
 
     return model.IsSatisfiable() ? b.Select(bi => model.Get(bi)).ToList() : null;
@@ -284,9 +289,9 @@ public class Infer<T> : Network<T, Unit>
         .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)));
 
     // var simplifiedBeforeInductiveChecks = beforeInductiveChecks.Select(p =>
-      // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
     // var simplifiedAfterInductiveChecks = afterInductiveChecks.Select(p =>
-      // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),

@@ -17,10 +17,10 @@ public static class BooleanTests
     var topology = Topologies.Path(2);
 
     var initialValues = topology.MapNodes(n => Eq<string>(n, "A"));
+    var net = new BooleanNetwork<Unit>(topology, initialValues, Array.Empty<SymbolicValue<Unit>>());
 
     var convergeTime = new BigInteger(2);
-    return new BooleanAnnotatedNetwork<Unit>(topology, initialValues, annotations, Array.Empty<SymbolicValue<Unit>>(),
-      convergeTime);
+    return new BooleanAnnotatedNetwork<Unit>(net, annotations, convergeTime);
   }
 
   [Fact]
@@ -52,20 +52,20 @@ public static class BooleanTests
   }
 
   [Fact]
-  public static void FattreeMonoChecks()
+  public static void FatTreeMonoChecks()
   {
     var topology = Topologies.FatTree(4);
-    var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>();
-    Dictionary<string, Zen<bool>> initialValues =
+    var initialValues =
       topology.MapNodes(n => Constant(n == FatTree.FatTreeLayer.Edge.Node(19)));
-    var net = new BooleanAnnotatedNetwork<Unit>(topology, initialValues, annotations,
-      Array.Empty<SymbolicValue<Unit>>(), new BigInteger(4))
+    var net = new BooleanNetwork<Unit>(topology, initialValues, Array.Empty<SymbolicValue<Unit>>());
+    var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>();
+    var annotatedNetwork = new BooleanAnnotatedNetwork<Unit>(net, annotations, new BigInteger(4))
     {
       MonolithicProperties =
       {
         [FatTree.FatTreeLayer.Edge.Node(7)] = _ => False()
       }
     };
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+    NetworkAssert.CheckUnsoundCheck(annotatedNetwork, SmtCheck.Monolithic);
   }
 }

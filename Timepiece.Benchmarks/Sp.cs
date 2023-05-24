@@ -50,7 +50,7 @@ public class AnnotatedSp<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
   }
 }
 
-public class InferSp : Infer<Option<BgpRoute>>
+public class InferSp : Infer<Option<BgpRoute>, Unit>
 {
   public InferSp(Sp<Unit> sp, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) :

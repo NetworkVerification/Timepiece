@@ -17,7 +17,6 @@ ZenSettings.LargeStackSize = 30_000_000;
 const int numPods = 4;
 var topology = Topologies.LabelledFatTree(numPods);
 var destination = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(numPods, 2) * 1.25 - 1));
-var initialValues = topology.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False());
 
 if (args.Length == 0)
 {
@@ -31,12 +30,6 @@ foreach (var arg in args)
   Console.WriteLine($"Running benchmark {arg}...");
   switch (arg)
   {
-    case "spreach":
-      infer = Benchmark.BooleanReachability(topology, new Initialization<bool>(initialValues));
-      break;
-    case "spreach2":
-      infer = Benchmark.StrongBooleanReachability(topology, new Initialization<bool>(initialValues));
-      break;
     case "splen":
       var upperBounds = topology.MapNodes(n =>
       {

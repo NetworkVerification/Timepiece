@@ -204,11 +204,14 @@ public static class Topologies
   ///   Create a path digraph topology.
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
+  /// <param name="alphaNames">
+  /// If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
+  /// </param>
   /// <returns></returns>
-  public static Topology Path(uint numNodes)
+  public static Topology Path(uint numNodes, bool alphaNames = true)
   {
     var neighbors = new Dictionary<string, List<string>>();
-    for (var i = 0; i < numNodes; i++) neighbors.Add(ToBase26(i + 1), new List<string>());
+    for (var i = 0; i < numNodes; i++) neighbors.Add(alphaNames ? ToBase26(i + 1) : i.ToString(), new List<string>());
 
     var nodes = neighbors.Keys.ToArray();
     for (var i = 1; i < numNodes; i++)
@@ -225,11 +228,14 @@ public static class Topologies
   ///   Create a complete digraph topology.
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
+  /// <param name="alphaNames">
+  /// If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
+  /// </param>
   /// <returns></returns>
-  public static Topology Complete(uint numNodes)
+  public static Topology Complete(uint numNodes, bool alphaNames = true)
   {
     var neighbors = new Dictionary<string, List<string>>();
-    for (var i = 0; i < numNodes; i++) neighbors.Add(ToBase26(i + 1), new List<string>());
+    for (var i = 0; i < numNodes; i++) neighbors.Add(alphaNames ? ToBase26(i + 1) : i.ToString(), new List<string>());
 
     var nodes = neighbors.Keys;
     foreach (var (node, adj) in neighbors)

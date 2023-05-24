@@ -73,7 +73,7 @@ public class Benchmark
         RunProfiler(Vf.AllPairsValleyFreeReachable(N));
         break;
       case BenchmarkType.FatTreeHijack:
-        RunProfiler(Hijack.HijackFiltered(N, Destination));
+        RunProfiler(Hijack.HijackFiltered(N, Destination, InferTimes));
         break;
       case BenchmarkType.ApFatTreeHijack:
         RunProfiler(Hijack.AllPairsHijackFiltered(N));

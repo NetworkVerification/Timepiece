@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
-using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
@@ -11,16 +10,13 @@ namespace Timepiece.Networks;
 /// </summary>
 public class BooleanAnnotatedNetwork<TS> : AnnotatedNetwork<bool, TS>
 {
-  public BooleanAnnotatedNetwork(Topology topology,
-    Dictionary<string, Zen<bool>> initialValues,
+  public BooleanAnnotatedNetwork(Network<bool, TS> net,
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
-    SymbolicValue<TS>[] symbolics,
     BigInteger convergeTime)
-    : base(topology, topology.MapEdges(_ => Lang.Identity<bool>()),
-      Or, initialValues, annotations,
-      topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
-      topology.MapNodes(_ => Lang.Identity<bool>()),
-      symbolics)
+    : base(net,
+      annotations,
+      net.Topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
+      net.Topology.MapNodes(_ => Lang.Identity<bool>()))
   {
   }
 }

@@ -56,7 +56,7 @@ public class AnnotatedVf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
   }
 }
 
-public class InferVf : Infer<Option<BgpRoute>>
+public class InferVf : Infer<Option<BgpRoute>, Unit>
 {
   public InferVf(Vf<Unit> vf, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) : base(vf, beforeInvariants,

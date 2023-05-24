@@ -77,6 +77,22 @@ public class AnnotatedNetwork<T, TS> : Network<T, TS>
   }
 
   /// <summary>
+  /// Construct a new <c>AnnotatedNetwork{T,TS}</c> from another.
+  /// </summary>
+  /// <param name="net"></param>
+  /// <param name="annotations"></param>
+  /// <param name="modularProperties"></param>
+  /// <param name="monolithicProperties"></param>
+  public AnnotatedNetwork(Network<T, TS> net,
+    Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<string, Func<Zen<T>, Zen<bool>>> monolithicProperties) : this(net.Topology, net.TransferFunction,
+    net.MergeFunction,
+    net.InitialValues, annotations, modularProperties, monolithicProperties, net.Symbolics)
+  {
+  }
+
+  /// <summary>
   /// Construct a new <c>AnnotatedNetwork{T,TS}</c> from another, using an alternate properties definition.
   /// </summary>
   /// <param name="net"></param>
@@ -89,7 +105,9 @@ public class AnnotatedNetwork<T, TS> : Network<T, TS>
     IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> safetyProperties,
     BigInteger convergeTime) : this(net.Topology, net.TransferFunction, net.MergeFunction,
-    net.InitialValues, annotations, stableProperties, safetyProperties, convergeTime, net.Symbolics) {}
+    net.InitialValues, annotations, stableProperties, safetyProperties, convergeTime, net.Symbolics)
+  {
+  }
 
   /// <summary>
   ///   The modular safety properties that we want to check (includes time).
