@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
-using Array = System.Array;
 
 namespace Timepiece.Networks;
 
 using LpRoute = Pair<BigInteger, BigInteger>;
 
-public class LocalPref : AnnotatedNetwork<LpRoute, UnitAnnotatedNetwork>
+public class LocalPref<TS> : AnnotatedNetwork<LpRoute, TS>
 {
   public LocalPref(Topology topology,
     Dictionary<string, Zen<LpRoute>> initialValues,
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
-    BigInteger convergeTime)
+    BigInteger convergeTime,
+    SymbolicValue<TS>[] symbolics)
     : base(topology,
       topology.MapEdges(_ => Lang.Product(Lang.Identity<BigInteger>(), Lang.Incr(new BigInteger(1)))),
       Merge,
@@ -22,7 +22,7 @@ public class LocalPref : AnnotatedNetwork<LpRoute, UnitAnnotatedNetwork>
       annotations,
       topology.MapNodes(_ => Lang.Finally<LpRoute>(convergeTime, ReachabilityProperty)),
       topology.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => ReachabilityProperty),
-      Array.Empty<SymbolicValue<UnitAnnotatedNetwork>>())
+      symbolics)
   {
   }
 

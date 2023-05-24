@@ -12,7 +12,7 @@ using LpRoute = Pair<BigInteger, BigInteger>;
 
 public static class LocalPrefTests
 {
-  private static LocalPref Net(
+  private static LocalPref<Unit> Net(
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(2);
@@ -24,7 +24,7 @@ public static class LocalPrefTests
     };
 
     var convergeTime = new BigInteger(10);
-    return new LocalPref(topology, initialValues, annotations, convergeTime);
+    return new LocalPref<Unit>(topology, initialValues, annotations, convergeTime, new SymbolicValue<Unit>[] { });
   }
 
   [Fact]

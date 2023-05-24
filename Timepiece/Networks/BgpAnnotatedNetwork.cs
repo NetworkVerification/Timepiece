@@ -7,13 +7,13 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
-public class BgpAnnotatedNetwork : AnnotatedNetwork<Option<Bgp>, Bgp>
+public class BgpAnnotatedNetwork<TS> : AnnotatedNetwork<Option<Bgp>, TS>
 {
   public BgpAnnotatedNetwork(Topology topology,
     Dictionary<string, Zen<Option<Bgp>>> initialValues,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime,
-    SymbolicValue<Bgp>[] symbolics) : base(topology,
+    SymbolicValue<TS>[] symbolics) : base(topology,
     topology.MapEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(Bgp.Min),
     initialValues, annotations, topology.MapNodes(_ => Lang.Finally<Option<Bgp>>(convergeTime, Option.IsSome)),
     topology.MapNodes(_ => Lang.IsSome<Bgp>()), symbolics)

@@ -28,7 +28,7 @@ public class FaultTolerance<T> : AnnotatedNetwork<Option<T>, (string, string)>
     TransferFunction = Transfer(transferFunction, Symbolics);
   }
 
-  public FaultTolerance(AnnotatedNetwork<T, object> net,
+  public FaultTolerance(Network<T, Unit> net,
     Dictionary<string, Zen<Option<T>>> initialValues,
     Func<SymbolicValue<(string, string)>[], Dictionary<string, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>>
       annotations,

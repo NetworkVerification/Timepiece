@@ -11,7 +11,13 @@ namespace Timepiece.Tests;
 
 public static class BooleanTests
 {
-  private static BooleanAnnotatedNetwork<Unit> Net(
+  private static AnnotatedNetwork<bool, TS> BooleanAnnotatedNetwork<TS>(Network<bool, TS> net,
+    Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
+    BigInteger convergeTime) => new(net, annotations,
+    net.Topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
+    net.Topology.MapNodes(_ => Lang.Identity<bool>()));
+
+  private static AnnotatedNetwork<bool, Unit> Net(
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(2);
@@ -20,7 +26,7 @@ public static class BooleanTests
     var net = new BooleanNetwork<Unit>(topology, initialValues, Array.Empty<SymbolicValue<Unit>>());
 
     var convergeTime = new BigInteger(2);
-    return new BooleanAnnotatedNetwork<Unit>(net, annotations, convergeTime);
+    return BooleanAnnotatedNetwork(net, annotations, convergeTime);
   }
 
   [Fact]
@@ -59,13 +65,9 @@ public static class BooleanTests
       topology.MapNodes(n => Constant(n == FatTree.FatTreeLayer.Edge.Node(19)));
     var net = new BooleanNetwork<Unit>(topology, initialValues, Array.Empty<SymbolicValue<Unit>>());
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>();
-    var annotatedNetwork = new BooleanAnnotatedNetwork<Unit>(net, annotations, new BigInteger(4))
-    {
-      MonolithicProperties =
-      {
-        [FatTree.FatTreeLayer.Edge.Node(7)] = _ => False()
-      }
-    };
+    var annotatedNetwork = BooleanAnnotatedNetwork(net, annotations, new BigInteger(4));
+    // change edge-7's annotation to a bad property
+    annotatedNetwork.MonolithicProperties[FatTree.FatTreeLayer.Edge.Node(7)] = _ => False();
     NetworkAssert.CheckUnsoundCheck(annotatedNetwork, SmtCheck.Monolithic);
   }
 }

@@ -46,7 +46,7 @@ public static class InferTests
   private static readonly Func<Zen<bool>, Zen<bool>>[] BeforeInvariantPredicates =
   {
     Lang.Not(Lang.Identity<bool>()),
-    Lang.Const(true),
+    Lang.True<bool>()
   };
 
   public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>> cartesianData =
