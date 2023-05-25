@@ -16,13 +16,13 @@ public static class Profile
   /// </summary>
   private const string WallTimeHeader = "wall";
 
-  public static void RunCmpPerNode<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
+  public static void RunCmpPerNode<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
   {
     RunAnnotatedWithStats(annotatedNetwork);
     RunMonoWithStats(annotatedNetwork);
   }
 
-  public static void RunMonoWithStats<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
+  public static void RunMonoWithStats<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
   {
     const string headers = "n\ttotal";
     var monoTime = Time(RunMono, annotatedNetwork);
@@ -32,7 +32,7 @@ public static class Profile
     Console.WriteLine(data);
   }
 
-  public static void RunMono<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
+  public static void RunMono<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
   {
     try
     {
@@ -48,12 +48,12 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotatedWithStats<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
+  public static void RunAnnotatedWithStats<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
   {
     var processes = Environment.ProcessorCount;
     Console.WriteLine($"Environment.ProcessorCount: {processes}");
     var numNodes = annotatedNetwork.Topology.Nodes.Length;
-    var nodeTimes = new ConcurrentDictionary<string, long>(processes * 2, numNodes);
+    var nodeTimes = new ConcurrentDictionary<TV, long>(processes * 2, numNodes);
     long? t = null;
     try
     {
@@ -61,7 +61,7 @@ public static class Profile
       {
         var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
         var passed = true;
-        var failedNodes = new List<string>();
+        var failedNodes = new List<TV>();
         foreach (var (node, counterexample) in s)
         {
           if (!counterexample.HasValue) continue;
@@ -96,7 +96,7 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotated<T, TS>(AnnotatedNetwork<T, TS> annotatedNetwork)
+  public static void RunAnnotated<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
   {
     var s = annotatedNetwork.CheckAnnotations();
     if (!s.HasValue)
@@ -123,7 +123,7 @@ public static class Profile
     return timer.ElapsedMilliseconds;
   }
 
-  public static T LogCheckTime<T>(string node, IDictionary<string, long> times, Func<T> checkFunction)
+  public static T LogCheckTime<T, TV>(TV node, IDictionary<TV, long> times, Func<T> checkFunction)
   {
     var timer = Stopwatch.StartNew();
     var s = checkFunction();
@@ -156,7 +156,7 @@ public static class Profile
   /// <param name="wallTime"></param>
   /// <param name="printTable"></param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
-  private static void ReportCheckTimes(IDictionary<string, long> times, Statistics stats, long? wallTime,
+  private static void ReportCheckTimes<TV>(IDictionary<TV, long> times, Statistics stats, long? wallTime,
     bool printTable)
   {
     var headers = new StringBuilder("n");

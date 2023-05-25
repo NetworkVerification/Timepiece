@@ -4,9 +4,9 @@ using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
-public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
+public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string, TS>
 {
-  public AutonomousSystem(Topology topology, string externalSrc, string externalDest,
+  public AutonomousSystem(Topology<string> topology, string externalSrc, string externalDest,
     Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> transferFunction,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
@@ -25,7 +25,7 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
     return r => Zen.Implies(Zen.And(Zen.Not(relationships[0].Value), Zen.Not(relationships[1].Value)), r.IsNone());
   }
 
-  private static Topology AsWithExternalPeers(uint nodes, int peers)
+  private static Topology<string> AsWithExternalPeers(uint nodes, int peers)
   {
     var internalTopology = Topologies.Complete(nodes);
     var newNeighbors = internalTopology.Neighbors;
@@ -37,7 +37,7 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
       newNeighbors.Add(externalNode, new List<string> {currentNode});
     }
 
-    return new Topology(newNeighbors);
+    return new Topology<string>(newNeighbors);
   }
 
   // public static AutonomousSystem<Option<BgpRoute>> BlockToExternal(uint nodes)
@@ -62,7 +62,7 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
     internalTopology["A"].Add(externalSrc);
     // add an edge to the external dest from the topology
     internalTopology.Add(externalDest, new List<string> {"B"});
-    var topology = new Topology(internalTopology);
+    var topology = new Topology<string>(internalTopology);
     var transfer = topology.MapEdges(e =>
       e switch
       {

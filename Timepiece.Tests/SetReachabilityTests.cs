@@ -14,20 +14,20 @@ namespace Timepiece.Tests;
 /// </summary>
 public static class SetReachabilityTests
 {
-  private static AnnotatedNetwork<CSet<string>, Unit> Net(Topology topology, BigInteger convergeTime,
-    Dictionary<string, Func<Zen<CSet<string>>, Zen<BigInteger>, Zen<bool>>> annotations)
+  private static AnnotatedNetwork<CSet<TV>, TV, Unit> Net<TV>(Topology<TV> topology, BigInteger convergeTime,
+    Dictionary<TV, Func<Zen<CSet<TV>>, Zen<BigInteger>, Zen<bool>>> annotations) where TV : notnull
   {
-    var transferFunctions = topology.MapEdges<Func<Zen<CSet<string>>, Zen<CSet<string>>>>(_ => r => r);
-    var initialValues = topology.MapNodes(n => CSet.Empty<string>().Add(n));
+    var transferFunctions = topology.MapEdges<Func<Zen<CSet<TV>>, Zen<CSet<TV>>>>(_ => r => r);
+    var initialValues = topology.MapNodes(n => CSet.Empty<TV>().Add(n));
 
     var property = ContainsAll(topology);
     var monolithicProperties = topology.MapNodes(_ => property);
     var modularProperties = topology.MapNodes(_ => Lang.Finally(convergeTime, property));
-    return new AnnotatedNetwork<CSet<string>, Unit>(topology, transferFunctions, CSet.Union, initialValues, annotations,
+    return new AnnotatedNetwork<CSet<TV>, TV, Unit>(topology, transferFunctions, CSet.Union, initialValues, annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Func<Zen<CSet<string>>, Zen<bool>> ContainsAll(Topology topology)
+  private static Func<Zen<CSet<TV>>, Zen<bool>> ContainsAll<TV>(Topology<TV> topology) where TV : notnull
   {
     return route =>
       topology.FoldNodes(Zen.True(), (b, n) => Zen.And(b, route.Contains(n)));
@@ -49,7 +49,7 @@ public static class SetReachabilityTests
   [Fact]
   public static void DiamondSoundAnnotationsPassChecks()
   {
-    var topology = new Topology(new Dictionary<string, List<string>>
+    var topology = new Topology<string>(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
       {"B", new List<string> {"A", "C", "D"}},
@@ -79,7 +79,7 @@ public static class SetReachabilityTests
   [Fact]
   public static void SquareUnsoundAnnotationsFailChecks()
   {
-    var topology = new Topology(new Dictionary<string, List<string>>
+    var topology = new Topology<string>(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
       {"B", new List<string> {"A", "D"}},
@@ -100,7 +100,7 @@ public static class SetReachabilityTests
   [Fact]
   public static void SquareSoundAnnotationsPassChecks()
   {
-    var topology = new Topology(new Dictionary<string, List<string>>
+    var topology = new Topology<string>(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
       {"B", new List<string> {"A", "D"}},

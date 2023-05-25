@@ -7,22 +7,22 @@ namespace Timepiece.Tests;
 
 public static class NetworkAssert
 {
-  public static void CheckSound<T, TS>(AnnotatedNetwork<T, TS> net)
+  public static void CheckSound<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
   {
-    Assert.Equal(Option.None<State<T, TS>>(), net.CheckAnnotations());
+    Assert.Equal(Option.None<State<T, TV, TS>>(), net.CheckAnnotations());
   }
 
-  public static void CheckSoundMonolithic<T, TS>(AnnotatedNetwork<T, TS> net)
+  public static void CheckSoundMonolithic<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
   {
-    Assert.Equal(Option.None<State<T, TS>>(), net.CheckMonolithic());
+    Assert.Equal(Option.None<State<T, TV, TS>>(), net.CheckMonolithic());
   }
 
-  public static void CheckUnsound<T, TS>(AnnotatedNetwork<T, TS> net)
+  public static void CheckUnsound<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
   {
     Assert.True(net.CheckAnnotations().HasValue);
   }
 
-  public static void CheckUnsoundCheck<T, TS>(AnnotatedNetwork<T, TS> net, SmtCheck check)
+  public static void CheckUnsoundCheck<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net, SmtCheck check)
   {
     Assert.True(check switch
     {

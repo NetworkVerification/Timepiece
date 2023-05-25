@@ -5,7 +5,7 @@ namespace Timepiece.Benchmarks;
 
 public class SymbolicDestination : SymbolicValue<Pair<string, int>>
 {
-  public SymbolicDestination(LabelledTopology<int> topology) : base("dest",
+  public SymbolicDestination(LabelledTopology<string, int> topology) : base("dest",
     p => topology.ExistsNode(n => Zen.And(n.IsEdge(), DestEquals(p, topology, n))))
   {
     Node = Value.Item1();
@@ -46,12 +46,12 @@ public class SymbolicDestination : SymbolicValue<Pair<string, int>>
   /// <param name="topology"></param>
   /// <param name="node"></param>
   /// <returns></returns>
-  public Zen<bool> Equals(LabelledTopology<int> topology, string node)
+  public Zen<bool> Equals(LabelledTopology<string, int> topology, string node)
   {
     return DestEquals(Value, topology, node);
   }
 
-  private static Zen<bool> DestEquals(Zen<Pair<string, int>> p, LabelledTopology<int> topology, string node)
+  private static Zen<bool> DestEquals(Zen<Pair<string, int>> p, LabelledTopology<string, int> topology, string node)
   {
     return Zen.And(p.Item1() == node, p.Item2() == topology.L(node));
   }
@@ -67,7 +67,7 @@ public static class TopologyExtensions
   /// <param name="topology">The network topology.</param>
   /// <param name="predicate">The Zen predicate over nodes.</param>
   /// <returns>A Zen boolean.</returns>
-  public static Zen<bool> ExistsNode(this Topology topology, Func<string, Zen<bool>> predicate)
+  public static Zen<bool> ExistsNode(this Topology<string> topology, Func<string, Zen<bool>> predicate)
   {
     return topology.FoldNodes(Zen.False(), (disjuncts, n) => Zen.Or(disjuncts, predicate(n)));
   }
@@ -80,7 +80,7 @@ public static class TopologyExtensions
   /// <param name="topology">The network topology.</param>
   /// <param name="predicate">The Zen predicate over nodes.</param>
   /// <returns>A Zen boolean.</returns>
-  public static Zen<bool> ForAllNodes(this Topology topology, Func<string, Zen<bool>> predicate)
+  public static Zen<bool> ForAllNodes(this Topology<string> topology, Func<string, Zen<bool>> predicate)
   {
     return topology.FoldNodes(Zen.True(), (conjuncts, n) => Zen.And(conjuncts, predicate(n)));
   }

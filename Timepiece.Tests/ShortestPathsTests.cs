@@ -11,15 +11,10 @@ public static class ShortestPathsTests
 {
   private static readonly SymbolicValue<BigInteger> DRoute = new("d", r => r >= BigInteger.Zero);
 
-  private static readonly ShortestPath<Unit> Concrete = new(Topologies.Path(3),
-    new Dictionary<string, Zen<Option<BigInteger>>>
-    {
-      {"A", Option.Some(new BigInteger(0))},
-      {"B", Option.None<BigInteger>()},
-      {"C", Option.None<BigInteger>()}
-    }, new SymbolicValue<Unit>[] { });
+  private static readonly ShortestPath<string, Unit> Concrete = new(Topologies.Path(3), "A",
+    System.Array.Empty<SymbolicValue<Unit>>());
 
-  private static readonly ShortestPath<BigInteger> SymbolicRoute = new(Topologies.Complete(3),
+  private static readonly ShortestPath<string, BigInteger> SymbolicRoute = new(Topologies.Complete(3),
     new Dictionary<string, Zen<Option<BigInteger>>>
     {
       {"A", Option.Create(DRoute.Value)},
@@ -27,10 +22,10 @@ public static class ShortestPathsTests
       {"C", Option.None<BigInteger>()}
     }, new[] {DRoute});
 
-  private static ShortestPath<string> SymbolicDestination(Topology topology)
+  private static ShortestPath<string, string> SymbolicDestination(Topology<string> topology)
   {
     var dest = new SymbolicValue<string>("dest", s => topology.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, s == n)));
-    return new ShortestPath<string>(topology,
+    return new ShortestPath<string, string>(topology,
       topology.MapNodes(n => Zen.If(dest.EqualsValue(n),
         Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>())), new[] {dest});
   }
@@ -46,19 +41,19 @@ public static class ShortestPathsTests
       {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))}
     };
 
-  private static AnnotatedNetwork<Option<BigInteger>, Unit> AnnotatedConcrete(
+  private static AnnotatedNetwork<Option<BigInteger>, string, Unit> AnnotatedConcrete(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> stableProperties)
   {
-    return new AnnotatedNetwork<Option<BigInteger>, Unit>(Concrete, annotations,
+    return new AnnotatedNetwork<Option<BigInteger>, string, Unit>(Concrete, annotations,
       stableProperties, Concrete.Topology.MapNodes(_ => Lang.True<Option<BigInteger>>()), 4);
   }
 
-  private static AnnotatedNetwork<Option<BigInteger>, BigInteger> AnnotatedSymbolicRoute(
+  private static AnnotatedNetwork<Option<BigInteger>, string, BigInteger> AnnotatedSymbolicRoute(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> stableProperties)
   {
-    return new AnnotatedNetwork<Option<BigInteger>, BigInteger>(SymbolicRoute, annotations, stableProperties,
+    return new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(SymbolicRoute, annotations, stableProperties,
       SymbolicRoute.Topology.MapNodes(_ => Lang.True<Option<BigInteger>>()), 2);
   }
 
@@ -174,7 +169,7 @@ public static class ShortestPathsTests
             Option.IsNone, Option.IsSome)
         }
       };
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, string>(net, annotations,
       topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.IsSome<BigInteger>())),
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
@@ -193,7 +188,7 @@ public static class ShortestPathsTests
         {"B", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
         {"C", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)}
       };
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, string>(net, annotations,
       topology.MapNodes(_ => Lang.Finally(new BigInteger(3), Lang.IsSome<BigInteger>())),
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 

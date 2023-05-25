@@ -9,18 +9,19 @@ namespace Timepiece.Networks;
 ///   Represents a network.
 /// </summary>
 /// <typeparam name="T">The type of the routes.</typeparam>
+/// <typeparam name="TV">The type of nodes.</typeparam>
 /// <typeparam name="TS">The type of symbolic values associated with the network.</typeparam>
-public class Network<T, TS>
+public class Network<T, TV, TS>
 {
   /// <summary>
   ///   The topology of the network.
   /// </summary>
-  public Topology Topology { get; }
+  public Topology<TV> Topology { get; }
 
   /// <summary>
   ///   The transfer function for each edge.
   /// </summary>
-  public Dictionary<(string, string), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
+  public Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
 
   /// <summary>
   ///   The merge function for routes.
@@ -30,7 +31,7 @@ public class Network<T, TS>
   /// <summary>
   ///   The initial values for each node.
   /// </summary>
-  public Dictionary<string, Zen<T>> InitialValues { get; protected init; }
+  public Dictionary<TV, Zen<T>> InitialValues { get; protected init; }
 
   /// <summary>
   ///   Any symbolics on the network's components.
@@ -45,8 +46,8 @@ public class Network<T, TS>
   /// <param name="mergeFunction">a function for merging two routes</param>
   /// <param name="initialValues">a dictionary from nodes to initial routes</param>
   /// <param name="symbolics">an array of symbolic values</param>
-  public Network(Topology topology, Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
-    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, Dictionary<string, Zen<T>> initialValues,
+  public Network(Topology<TV> topology, Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
+    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, Dictionary<TV, Zen<T>> initialValues,
     SymbolicValue<TS>[] symbolics)
   {
     Topology = topology;
@@ -63,7 +64,7 @@ public class Network<T, TS>
   /// <param name="node">The focal node.</param>
   /// <param name="routes">The routes of all nodes in the network.</param>
   /// <returns>A route.</returns>
-  protected Zen<T> UpdateNodeRoute(string node, IReadOnlyDictionary<string, Zen<T>> routes)
+  protected Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes)
   {
     return Topology[node].Aggregate(InitialValues[node],
       (current, predecessor) =>

@@ -11,9 +11,9 @@ namespace Timepiece.Tests;
 
 public static class DisagreeTests
 {
-  private static readonly Zen<BigInteger> _nullRoute = new BigInteger(20);
+  private static readonly Zen<BigInteger> NullRoute = new BigInteger(20);
 
-  private static AnnotatedNetwork<BigInteger, Unit> Net(
+  private static AnnotatedNetwork<BigInteger, string, Unit> Net(
     Dictionary<string, Func<Zen<BigInteger>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Complete(3);
@@ -21,12 +21,13 @@ public static class DisagreeTests
     var initialValues = new Dictionary<string, Zen<BigInteger>>
     {
       {"A", new BigInteger(0)},
-      {"B", _nullRoute},
-      {"C", _nullRoute}
+      {"B", NullRoute},
+      {"C", NullRoute}
     };
 
 
-    return new AnnotatedNetwork<BigInteger, Unit>(topology, topology.MapEdges(_ => Lang.Incr(1)), Merge, initialValues,
+    return new AnnotatedNetwork<BigInteger, string, Unit>(topology, topology.MapEdges(_ => Lang.Incr(1)), Merge,
+      initialValues,
       annotations, topology.MapNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
       topology.MapNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),
       Array.Empty<SymbolicValue<Unit>>());
@@ -55,11 +56,11 @@ public static class DisagreeTests
     {
       {"A", Lang.Equals<BigInteger>(BigInteger.Zero)},
       {
-        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
+        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == NullRoute,
           r => And(r > BigInteger.Zero, r < new BigInteger(3)))
       },
       {
-        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
+        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == NullRoute,
           r => And(r > BigInteger.Zero, r < new BigInteger(3)))
       }
     };
@@ -77,11 +78,11 @@ public static class DisagreeTests
     {
       {"A", Lang.Equals<BigInteger>(BigInteger.Zero)},
       {
-        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
+        "B", Lang.Until<BigInteger>(BigInteger.One, r => r == NullRoute,
           r => r == new BigInteger(1))
       },
       {
-        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == _nullRoute,
+        "C", Lang.Until<BigInteger>(BigInteger.One, r => r == NullRoute,
           r => r == new BigInteger(2))
       }
     };

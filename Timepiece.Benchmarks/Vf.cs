@@ -6,24 +6,24 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Vf<TS> : Network<Option<BgpRoute>, TS>
+public class Vf<TS> : Network<Option<BgpRoute>, string, TS>
 {
-  public Vf(Topology topology, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
+  public Vf(Topology<string> topology, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
     SymbolicValue<TS>[] symbolics) :
     base(topology, Transfer(topology, tag), Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
       initialValues, symbolics)
   {
   }
 
-  public Vf(Topology topology, string destination, string tag, SymbolicValue<TS>[] symbolics) :
+  public Vf(Topology<string> topology, string destination, string tag, SymbolicValue<TS>[] symbolics) :
     this(topology,
-      topology.MapNodes(n => n == destination ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
+      topology.MapNodes(n => n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
       tag, symbolics)
   {
   }
 
   private static Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> Transfer(
-    Topology topology, string tag)
+    Topology<string> topology, string tag)
   {
     return topology.MapEdges(e =>
     {
@@ -45,7 +45,7 @@ public class Vf<TS> : Network<Option<BgpRoute>, TS>
   }
 }
 
-public class AnnotatedVf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
+public class AnnotatedVf<TS> : AnnotatedNetwork<Option<BgpRoute>, string, TS>
 {
   public AnnotatedVf(Vf<TS> vf,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -56,7 +56,7 @@ public class AnnotatedVf<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
   }
 }
 
-public class InferVf : Infer<Option<BgpRoute>, Unit>
+public class InferVf : Infer<Option<BgpRoute>, string, Unit>
 {
   public InferVf(Vf<Unit> vf, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) : base(vf, beforeInvariants,

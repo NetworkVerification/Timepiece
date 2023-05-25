@@ -13,13 +13,13 @@ namespace Timepiece;
 ///   whose edges point to those nodes.
 ///   Using predecessors makes it efficient to represent our network semantics.
 /// </summary>
-public class Topology
+public class Topology<TV> where TV: notnull
 {
   /// <summary>
   ///   Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
   [JsonConstructor]
-  public Topology(Dictionary<string, List<string>> neighbors)
+  public Topology(Dictionary<TV, List<TV>> neighbors)
   {
     Neighbors = neighbors;
     NEdges = Neighbors.Sum(p => p.Value.Count);
@@ -36,27 +36,27 @@ public class Topology
   ///   The edges for each node in the network.
   /// </summary>
   [JsonPropertyName("edges")]
-  public Dictionary<string, List<string>> Neighbors { get; set; }
+  public Dictionary<TV, List<TV>> Neighbors { get; set; }
 
   /// <summary>
   ///   The nodes in the network and their names.
   /// </summary>
   [JsonIgnore]
-  public string[] Nodes { get; set; }
+  public TV[] Nodes { get; set; }
 
-  public string this[uint id] => Nodes[id];
+  public TV this[uint id] => Nodes[id];
 
   /// <summary>
   ///   Return the predecessors of a given node.
   /// </summary>
-  public List<string> this[string node] => Neighbors[node];
+  public List<TV> this[TV node] => Neighbors[node];
 
   /// <summary>
   ///   Return true if the topology contains the given node.
   /// </summary>
   /// <param name="node">A node.</param>
   /// <returns>True if the node is present, false otherwise.</returns>
-  public bool HasNode(string node)
+  public bool HasNode(TV node)
   {
     return Neighbors.ContainsKey(node);
   }
@@ -67,13 +67,13 @@ public class Topology
   /// <param name="nodeFunc">The function over every node.</param>
   /// <typeparam name="T">The return type of the function.</typeparam>
   /// <returns>A dictionary representing the result of the function for every node.</returns>
-  public Dictionary<string, T> MapNodes<T>(Func<string, T> nodeFunc)
+  public Dictionary<TV, T> MapNodes<T>(Func<TV, T> nodeFunc)
   {
-    return new Dictionary<string, T>(
-      Nodes.Select(node => new KeyValuePair<string, T>(node, nodeFunc(node))));
+    return new Dictionary<TV, T>(
+      Nodes.Select(node => new KeyValuePair<TV, T>(node, nodeFunc(node))));
   }
 
-  public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, string, TAcc> f)
+  public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, TV, TAcc> f)
   {
     return Nodes.Aggregate(initial, f);
   }
@@ -82,7 +82,7 @@ public class Topology
   ///   Return all the edges in the network.
   /// </summary>
   /// <returns></returns>
-  private IEnumerable<(string, string)> AllEdges()
+  private IEnumerable<(TV, TV)> AllEdges()
   {
     return Neighbors
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (nbr, node.Key));
@@ -94,13 +94,13 @@ public class Topology
   /// <param name="edgeFunc"></param>
   /// <typeparam name="T"></typeparam>
   /// <returns></returns>
-  public Dictionary<(string, string), T> MapEdges<T>(Func<(string, string), T> edgeFunc)
+  public Dictionary<(TV, TV), T> MapEdges<T>(Func<(TV, TV), T> edgeFunc)
   {
-    var edges = AllEdges().Select(e => new KeyValuePair<(string, string), T>(e, edgeFunc(e)));
-    return new Dictionary<(string, string), T>(edges);
+    var edges = AllEdges().Select(e => new KeyValuePair<(TV, TV), T>(e, edgeFunc(e)));
+    return new Dictionary<(TV, TV), T>(edges);
   }
 
-  public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (string, string), TAcc> f)
+  public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (TV, TV), TAcc> f)
   {
     return AllEdges().Aggregate(initial, f);
   }
@@ -128,10 +128,10 @@ public class Topology
   /// </summary>
   /// <param name="goal">The goal node.</param>
   /// <returns>A dictionary from nodes to their distance (number of edges) to the goal node.</returns>
-  public Dictionary<string, BigInteger> BreadthFirstSearch(string goal)
+  public Dictionary<TV, BigInteger> BreadthFirstSearch(TV goal)
   {
-    var q = new Queue<string>();
-    var visited = new Dictionary<string, BigInteger>
+    var q = new Queue<TV>();
+    var visited = new Dictionary<TV, BigInteger>
     {
       {goal, 0}
     };
@@ -155,9 +155,9 @@ public class Topology
 /// <summary>
 ///   Represents the topology of an NV network with node labels.
 /// </summary>
-public class LabelledTopology<T> : Topology
+public class LabelledTopology<TV, T> : Topology<TV>
 {
-  public LabelledTopology(Dictionary<string, List<string>> neighbors, Dictionary<string, T> labels) : base(neighbors)
+  public LabelledTopology(Dictionary<TV, List<TV>> neighbors, Dictionary<TV, T> labels) : base(neighbors)
   {
     Labels = labels;
   }
@@ -165,14 +165,14 @@ public class LabelledTopology<T> : Topology
   /// <summary>
   ///   Labels for the nodes of the topology.
   /// </summary>
-  public Dictionary<string, T> Labels { get; }
+  public Dictionary<TV, T> Labels { get; }
 
   /// <summary>
   ///   Return the given node's label.
   /// </summary>
   /// <param name="node">A node in the topology.</param>
   /// <returns>The label for that node.</returns>
-  public T L(string node)
+  public T L(TV node)
   {
     return Labels[node];
   }
@@ -181,9 +181,9 @@ public class LabelledTopology<T> : Topology
   ///   Convert the LabelledTopology to an unlabelled one.
   /// </summary>
   /// <returns>An equivalent Topology.</returns>
-  public Topology ToUnlabelled()
+  public Topology<TV> ToUnlabelled()
   {
-    return new Topology(Neighbors);
+    return new Topology<TV>(Neighbors);
   }
 }
 
@@ -208,7 +208,7 @@ public static class Topologies
   /// If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
   /// </param>
   /// <returns></returns>
-  public static Topology Path(uint numNodes, bool alphaNames = true)
+  public static Topology<string> Path(uint numNodes, bool alphaNames = true)
   {
     var neighbors = new Dictionary<string, List<string>>();
     for (var i = 0; i < numNodes; i++) neighbors.Add(alphaNames ? ToBase26(i + 1) : i.ToString(), new List<string>());
@@ -221,7 +221,7 @@ public static class Topologies
       neighbors[nodes[i]].Add(nodes[i - 1]);
     }
 
-    return new Topology(neighbors);
+    return new Topology<string>(neighbors);
   }
 
   /// <summary>
@@ -232,7 +232,7 @@ public static class Topologies
   /// If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
   /// </param>
   /// <returns></returns>
-  public static Topology Complete(uint numNodes, bool alphaNames = true)
+  public static Topology<string> Complete(uint numNodes, bool alphaNames = true)
   {
     var neighbors = new Dictionary<string, List<string>>();
     for (var i = 0; i < numNodes; i++) neighbors.Add(alphaNames ? ToBase26(i + 1) : i.ToString(), new List<string>());
@@ -242,7 +242,7 @@ public static class Topologies
       // add all other nodes except the current one
       adj.AddRange(nodes.Where(n => n != node));
 
-    return new Topology(neighbors);
+    return new Topology<string>(neighbors);
   }
 
   /// <summary>
@@ -250,7 +250,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numPods">Number of pods in the fattree.</param>
   /// <returns></returns>
-  public static Topology FatTree(uint numPods)
+  public static Topology<string> FatTree(uint numPods)
   {
     return LabelledFatTree(numPods).ToUnlabelled();
   }
@@ -262,7 +262,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numPods">Number of pods in the fattree.</param>
   /// <returns>A fattree topology with pod labels.</returns>
-  public static LabelledTopology<int> LabelledFatTree(uint numPods)
+  public static LabelledTopology<string, int> LabelledFatTree(uint numPods)
   {
     var podNumbers = new Dictionary<string, int>();
     var neighbors = new Dictionary<string, List<string>>();
@@ -324,6 +324,6 @@ public static class Topologies
       }
     }
 
-    return new LabelledTopology<int>(neighbors, podNumbers);
+    return new LabelledTopology<string, int>(neighbors, podNumbers);
   }
 }

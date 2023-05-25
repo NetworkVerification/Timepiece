@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Timepiece.Tests.Networks;
 using Timepiece.Networks;
 using Xunit;
 using ZenLib;
@@ -9,7 +10,7 @@ namespace Timepiece.Tests;
 
 public static class FaultToleranceTests
 {
-  private static FaultTolerance<Unit> UnitFtNet(
+  private static FaultTolerance<Unit, string> UnitFtNet(
     Func<SymbolicValue<(string, string)>[], Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>>
       annotations)
   {
@@ -27,8 +28,8 @@ public static class FaultToleranceTests
 
     var failedEdges = Zen.Symbolic<FSeq<(string, string)>>(depth: topology.NEdges);
 
-    var unitNetwork = new UnitNetwork<Unit>(topology, new SymbolicValue<Unit>[] { });
-    return new FaultTolerance<Unit>(unitNetwork, initialValues, annotations, modularProperties, monolithicProperties,
+    var unitNetwork = new UnitNetwork<string, Unit>(topology, System.Array.Empty<SymbolicValue<Unit>>());
+    return new FaultTolerance<Unit, string>(unitNetwork, initialValues, annotations, modularProperties, monolithicProperties,
       failedEdges, 1);
   }
 
@@ -44,13 +45,13 @@ public static class FaultToleranceTests
           {
             "B",
             Lang.Finally(
-              Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "B")), new BigInteger(2),
+              Zen.If<BigInteger>(FaultTolerance<Unit, string>.IsFailed(edges, ("A", "B")), new BigInteger(2),
                 new BigInteger(1)),
               Lang.IsSome<Unit>())
           },
           {
             "C", Lang.Finally(
-              Zen.If<BigInteger>(FaultTolerance<Unit>.IsFailed(edges, ("A", "C")), new BigInteger(2),
+              Zen.If<BigInteger>(FaultTolerance<Unit, string>.IsFailed(edges, ("A", "C")), new BigInteger(2),
                 new BigInteger(1)),
               Lang.IsSome<Unit>())
           }

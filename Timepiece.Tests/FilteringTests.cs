@@ -13,7 +13,7 @@ public static class FilteringTests
 {
   private const string Tag = "t";
 
-  private static readonly Topology Topology = new(new Dictionary<string, List<string>>
+  private static readonly Topology<string> Topology = new(new Dictionary<string, List<string>>
   {
     {"n", new List<string>()},
     {"w", new List<string>()},
@@ -22,7 +22,7 @@ public static class FilteringTests
     {"e", new List<string> {"d"}}
   });
 
-  public static AnnotatedNetwork<Option<Bgp>, Unit> Net(
+  public static AnnotatedNetwork<Option<Bgp>, string, Unit> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>> monolithicProperties)
@@ -35,12 +35,12 @@ public static class FilteringTests
       {"d", Option.None<Bgp>()},
       {"e", Option.None<Bgp>()}
     };
-    return new AnnotatedNetwork<Option<Bgp>, Unit>(Topology, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
+    return new AnnotatedNetwork<Option<Bgp>, string, Unit>(Topology, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
       initialValues,
       annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static AnnotatedNetwork<Pair<Option<Bgp>, bool>, Unit> NetGhostState(
+  private static AnnotatedNetwork<Pair<Option<Bgp>, bool>, string, Unit> NetGhostState(
     Dictionary<string, Func<Zen<Pair<Option<Bgp>, bool>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Pair<Option<Bgp>, bool>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Pair<Option<Bgp>, bool>>, Zen<bool>>> monolithicProperties)
@@ -54,7 +54,7 @@ public static class FilteringTests
       {"e", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())}
     };
     var transfer = Transfer();
-    return new AnnotatedNetwork<Pair<Option<Bgp>, bool>, Unit>(Topology,
+    return new AnnotatedNetwork<Pair<Option<Bgp>, bool>, string, Unit>(Topology,
       Topology.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
       Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(Bgp.Min), p => p.Item1()),
       initialValues,

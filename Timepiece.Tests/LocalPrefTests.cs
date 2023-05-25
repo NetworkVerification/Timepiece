@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Timepiece.Networks;
+using Timepiece.Tests.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
@@ -12,19 +13,31 @@ using LpRoute = Pair<BigInteger, BigInteger>;
 
 public static class LocalPrefTests
 {
-  private static LocalPref<Unit> Net(
+  private static LocalPref<string, Unit> Net
+  {
+    get
+    {
+      var topology = Topologies.Path(2);
+
+      var initialValues = new Dictionary<string, Zen<LpRoute>>
+      {
+        {"A", Pair.Create(Constant(BigInteger.One), Constant(BigInteger.Zero))},
+        {"B", Pair.Create(Constant(BigInteger.One), Constant(new BigInteger(10)))}
+      };
+      return new LocalPref<string, Unit>(topology, initialValues, System.Array.Empty<SymbolicValue<Unit>>());
+    }
+  }
+
+  private static Zen<bool> IsReachable(Zen<LpRoute> r) => r.Item2() < new BigInteger(10);
+
+  private static AnnotatedNetwork<LpRoute, string, Unit> AnnotatedNetwork(
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
-    var topology = Topologies.Path(2);
-
-    var initialValues = new Dictionary<string, Zen<LpRoute>>
-    {
-      {"A", Pair.Create(Constant(BigInteger.One), Constant(BigInteger.Zero))},
-      {"B", Pair.Create(Constant(BigInteger.One), Constant(new BigInteger(10)))}
-    };
-
     var convergeTime = new BigInteger(10);
-    return new LocalPref<Unit>(topology, initialValues, annotations, convergeTime, new SymbolicValue<Unit>[] { });
+    return new AnnotatedNetwork<LpRoute, string, Unit>(Net, annotations,
+      Net.Topology.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => IsReachable),
+      Net.Topology.MapNodes(_ => Lang.True<LpRoute>()),
+      convergeTime);
   }
 
   [Fact]
@@ -46,7 +59,7 @@ public static class LocalPrefTests
             snd => And(snd > BigInteger.Zero, snd < new BigInteger(10))))
       }
     };
-    var net = Net(annotations);
+    var net = AnnotatedNetwork(annotations);
 
     NetworkAssert.CheckSound(net);
   }
@@ -68,7 +81,7 @@ public static class LocalPrefTests
             Implies(route.Item1() == BigInteger.One, route.Item2() < new BigInteger(10))))
       }
     };
-    var net = Net(annotations);
+    var net = AnnotatedNetwork(annotations);
 
     NetworkAssert.CheckUnsound(net);
   }

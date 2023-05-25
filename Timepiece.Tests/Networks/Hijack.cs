@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Timepiece.Networks;
 using ZenLib;
 using static ZenLib.Zen;
 using Array = System.Array;
 
-namespace Timepiece.Networks;
+namespace Timepiece.Tests.Networks;
 
 // a route which is tagged as external or internal
 using TaggedRoute = Pair<BigInteger, bool>;
 
-public class Hijack : AnnotatedNetwork<Option<TaggedRoute>, Option<TaggedRoute>>
+public class Hijack : AnnotatedNetwork<Option<Pair<BigInteger, bool>>, string, Option<TaggedRoute>>
 {
   public static Zen<Option<TaggedRoute>> DestRoute =
     Option.Create(Pair.Create<BigInteger, bool>(BigInteger.Zero, false));
@@ -27,7 +28,7 @@ public class Hijack : AnnotatedNetwork<Option<TaggedRoute>, Option<TaggedRoute>>
   /// <param name="dest">The internal destination node.</param>
   /// <param name="annotations">The network annotations.</param>
   /// <param name="convergeTime">The time at which the network state converges.</param>
-  public Hijack(Topology topology, string hijacker, string dest,
+  public Hijack(Topology<string> topology, string hijacker, string dest,
     Func<SymbolicValue<Option<TaggedRoute>>,
       Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>> annotations,
     BigInteger convergeTime)

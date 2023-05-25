@@ -9,11 +9,11 @@ using ZenLib.ModelChecking;
 
 namespace Timepiece;
 
-public class State<T, TS>
+public class State<T, TV, TS>
 {
-  private readonly Option<(string, T)> _focusedNode = Option.None<(string, T)>();
+  private readonly Option<(TV, T)> _focusedNode = Option.None<(TV, T)>();
   public readonly SmtCheck check;
-  public readonly Dictionary<string, T> nodeStates;
+  public readonly Dictionary<TV, T> nodeStates;
   public readonly Dictionary<string, TS> symbolicStates;
   public readonly Option<BigInteger> time;
 
@@ -26,12 +26,12 @@ public class State<T, TS>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
   /// <param name="check">Which check led to the generation of this state.</param>
-  public State(ZenSolution model, string node, Zen<T> route, Option<Zen<BigInteger>> time,
+  public State(ZenSolution model, TV node, Zen<T> route, Option<Zen<BigInteger>> time,
     IEnumerable<SymbolicValue<TS>> symbolics, SmtCheck check)
   {
     this.check = check;
     this.time = time.Select(model.Get);
-    nodeStates = new Dictionary<string, T> {{node, model.Get(route)}};
+    nodeStates = new Dictionary<TV, T> {{node, model.Get(route)}};
     symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
   }
 
@@ -44,8 +44,8 @@ public class State<T, TS>
   /// <param name="neighborStates">The Zen variables referring to this node's neighbors' routes.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  public State(ZenSolution model, string node, Zen<T> nodeRoute,
-    IEnumerable<KeyValuePair<string, Zen<T>>> neighborStates,
+  public State(ZenSolution model, TV node, Zen<T> nodeRoute,
+    IEnumerable<KeyValuePair<TV, Zen<T>>> neighborStates,
     Zen<BigInteger> time, IEnumerable<SymbolicValue<TS>> symbolics)
   {
     check = SmtCheck.Inductive;
@@ -61,7 +61,7 @@ public class State<T, TS>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="nodeStates">The Zen variables referring to each node and its route.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  public State(ZenSolution model, IEnumerable<KeyValuePair<string, Zen<T>>> nodeStates,
+  public State(ZenSolution model, IEnumerable<KeyValuePair<TV, Zen<T>>> nodeStates,
     IEnumerable<SymbolicValue<TS>> symbolics)
   {
     check = SmtCheck.Monolithic;

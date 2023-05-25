@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Timepiece.Datatypes;
-using Timepiece.Networks;
+using Timepiece.Tests.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
@@ -14,7 +14,7 @@ public static class BgpNetworkTests
 {
   private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp());
 
-  private static BgpAnnotatedNetwork<Unit> Net(
+  private static BgpAnnotatedNetwork<string, Unit> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(3);
@@ -28,7 +28,7 @@ public static class BgpNetworkTests
 
     var convergeTime = new BigInteger(2);
 
-    return new BgpAnnotatedNetwork<Unit>(topology, initialValues, annotations, convergeTime,
+    return new BgpAnnotatedNetwork<string, Unit>(topology, initialValues, annotations, convergeTime,
       Array.Empty<SymbolicValue<Unit>>());
   }
 
@@ -127,7 +127,7 @@ public static class BgpNetworkTests
     Dictionary<string, Zen<Option<Bgp>>> initialValues =
       topology.MapNodes(n => n == FatTree.FatTreeLayer.Edge.Node(19) ? Start : Option.None<Bgp>());
     var annotations = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>();
-    var net = new BgpAnnotatedNetwork<Unit>(topology, initialValues, annotations, new BigInteger(4),
+    var net = new BgpAnnotatedNetwork<string, Unit>(topology, initialValues, annotations, new BigInteger(4),
       Array.Empty<SymbolicValue<Unit>>())
     {
       MonolithicProperties =

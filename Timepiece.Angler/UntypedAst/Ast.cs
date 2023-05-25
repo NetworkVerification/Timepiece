@@ -114,7 +114,7 @@ public class Ast
       : new SymbolicValue<RouteEnvironment>(name, Predicates[predicate].Evaluate(new AstEnvironment()));
   }
 
-  public AnnotatedNetwork<RouteEnvironment, RouteEnvironment> ToNetwork(
+  public AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment> ToNetwork(
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
     AstFunction<RouteEnvironment> defaultExport, AstFunction<RouteEnvironment> defaultImport)
   {
@@ -164,7 +164,7 @@ public class Ast
           importFunctions[edge](importedRoute), exported);
       });
 
-    var topology = new Topology(edges);
+    var topology = new Topology<string>(edges);
     // construct a reasonable estimate of the modular properties by checking that the monolithic properties
     // will eventually hold at a time equal to the number of nodes in the network (i.e. the longest path possible)
     var convergeTime = ConvergeTime ?? new BigInteger(topology.NEdges);
@@ -172,7 +172,7 @@ public class Ast
       topology.MapNodes<Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(n =>
         Lang.Finally(convergeTime, monolithicProperties[n]));
 
-    return new AnnotatedNetwork<RouteEnvironment, RouteEnvironment>(topology,
+    return new AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment>(topology,
       transferFunction,
       mergeFunction,
       initFunction,

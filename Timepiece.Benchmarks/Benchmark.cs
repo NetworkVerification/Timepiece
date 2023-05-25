@@ -83,7 +83,7 @@ public class Benchmark
     }
   }
 
-  private void RunProfiler<T, TS>(AnnotatedNetwork<T, TS> net)
+  private void RunProfiler<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
   {
     net.PrintFormulas = Verbose;
     if (RunMonolithic)

@@ -6,7 +6,7 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Sp<TS> : Network<Option<BgpRoute>, TS>
+public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatable<TV>
 {
   /// <summary>
   ///   Construct a network performing shortest-path routing to a single given destination.
@@ -14,10 +14,10 @@ public class Sp<TS> : Network<Option<BgpRoute>, TS>
   /// <param name="topology"></param>
   /// <param name="destination"></param>
   /// <param name="symbolics"></param>
-  public Sp(Topology topology, string destination, SymbolicValue<TS>[] symbolics) :
+  public Sp(Topology<TV> topology, TV destination, SymbolicValue<TS>[] symbolics) :
     this(topology,
       topology.MapNodes(n =>
-        n == destination ? Option.Create<BgpRoute>(new BgpRoute()) : Option.None<BgpRoute>()), symbolics)
+        n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()), symbolics)
   {
   }
 
@@ -28,8 +28,8 @@ public class Sp<TS> : Network<Option<BgpRoute>, TS>
   /// <param name="topology"></param>
   /// <param name="initialValues"></param>
   /// <param name="symbolics"></param>
-  public Sp(Topology topology,
-    Dictionary<string, Zen<Option<BgpRoute>>> initialValues,
+  public Sp(Topology<TV> topology,
+    Dictionary<TV, Zen<Option<BgpRoute>>> initialValues,
     SymbolicValue<TS>[] symbolics) : base(topology,
     topology.MapEdges(_ => Lang.Omap<BgpRoute, BgpRoute>(BgpRouteExtensions.IncrementAsPath)),
     Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
@@ -39,21 +39,21 @@ public class Sp<TS> : Network<Option<BgpRoute>, TS>
   }
 }
 
-public class AnnotatedSp<TS> : AnnotatedNetwork<Option<BgpRoute>, TS>
+public class AnnotatedSp<TV, TS> : AnnotatedNetwork<Option<BgpRoute>, TV, TS> where TV : IEquatable<TV>
 {
-  /// <inheritdoc cref="AnnotatedNetwork{T,TS}(Timepiece.Networks.Network{T,TS},System.Collections.Generic.Dictionary{string,System.Func{ZenLib.Zen{T},ZenLib.Zen{System.Numerics.BigInteger},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{string,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{string,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Numerics.BigInteger)"/>
-  public AnnotatedSp(Sp<TS> sp, Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) : base(sp, annotations,
+  /// <inheritdoc cref="AnnotatedNetwork{T,TV,TS}(Timepiece.Networks.Network{T,TV,TS},System.Collections.Generic.Dictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{System.Numerics.BigInteger},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Numerics.BigInteger)"/>
+  public AnnotatedSp(Sp<TV, TS> sp, Dictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) : base(sp, annotations,
     stableProperties, safetyProperties, new BigInteger(4))
   {
   }
 }
 
-public class InferSp : Infer<Option<BgpRoute>, Unit>
+public class InferSp<TV, TS> : Infer<Option<BgpRoute>, TV, TS> where TV : IEquatable<TV>
 {
-  public InferSp(Sp<Unit> sp, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) :
+  public InferSp(Sp<TV, TS> sp, IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) :
     base(sp, beforeInvariants, afterInvariants)
   {
   }
@@ -70,9 +70,9 @@ public static class Sp
   /// <param name="numPods"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  private static Sp<Unit> ConcreteFatTreeSp(uint numPods, string destination)
+  private static Sp<string, Unit> ConcreteFatTreeSp(uint numPods, string destination)
   {
-    return new Sp<Unit>(Topologies.FatTree(numPods), destination, Array.Empty<SymbolicValue<Unit>>());
+    return new Sp<string, Unit>(Topologies.FatTree(numPods), destination, Array.Empty<SymbolicValue<Unit>>());
   }
 
   /// <summary>
@@ -82,7 +82,7 @@ public static class Sp
   /// <param name="destination"></param>
   /// <param name="inferTimes"></param>
   /// <returns></returns>
-  public static AnnotatedSp<Unit> Reachability(uint numPods, string destination, bool inferTimes)
+  public static AnnotatedSp<string, Unit> Reachability(uint numPods, string destination, bool inferTimes)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
     // no safety property
@@ -91,7 +91,7 @@ public static class Sp
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
-      var infer = new InferSp(sp, safetyProperties, stableProperties)
+      var infer = new InferSp<string, Unit>(sp, safetyProperties, stableProperties)
       {
         // specify a maximum time so that we ensure that the safety check still holds
         // in this case, the maximum must be the network's converge time
@@ -107,11 +107,11 @@ public static class Sp
           .ToDictionary(p => p.n, p => p.a);
     }
 
-    return new AnnotatedSp<Unit>(sp, annotations, stableProperties, safetyProperties);
+    return new AnnotatedSp<string, Unit>(sp, annotations, stableProperties, safetyProperties);
   }
 
   // slightly weaker path length property with simpler annotations
-  public static AnnotatedSp<Unit> PathLengthNoSafety(uint numPods, string destination, bool inferTimes)
+  public static AnnotatedSp<string, Unit> PathLengthNoSafety(uint numPods, string destination, bool inferTimes)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
     var distances = sp.Topology.BreadthFirstSearch(destination);
@@ -123,7 +123,7 @@ public static class Sp
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
-      var infer = new InferSp(sp, sp.Topology.MapNodes(_ => before), afterConditions)
+      var infer = new InferSp<string, Unit>(sp, sp.Topology.MapNodes(_ => before), afterConditions)
       {
         // specify a maximum time so that we ensure that the safety check still holds
         // in this case, the maximum must be the network's converge time
@@ -145,7 +145,7 @@ public static class Sp
     var stableProperties =
       sp.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = sp.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
-    return new AnnotatedSp<Unit>(sp, annotations, stableProperties, safetyProperties);
+    return new AnnotatedSp<string, Unit>(sp, annotations, stableProperties, safetyProperties);
   }
 
   /// <summary>
@@ -155,7 +155,7 @@ public static class Sp
   /// <param name="numPods"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  public static AnnotatedSp<Unit> PathLength(uint numPods, string destination)
+  public static AnnotatedSp<string, Unit> PathLength(uint numPods, string destination)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
     var distances = sp.Topology.BreadthFirstSearch(destination);
@@ -170,10 +170,10 @@ public static class Sp
       sp.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = sp.Topology.MapNodes(_ =>
       Lang.Union(Lang.IsNone<BgpRoute>(), Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
-    return new AnnotatedSp<Unit>(sp, annotations, stableProperties, safetyProperties);
+    return new AnnotatedSp<string, Unit>(sp, annotations, stableProperties, safetyProperties);
   }
 
-  public static AnnotatedSp<Pair<string, int>> AllPairsReachability(uint numPods)
+  public static AnnotatedSp<string, Pair<string, int>> AllPairsReachability(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(topology);
@@ -182,15 +182,15 @@ public static class Sp
       topology.MapNodes(n =>
         Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
     var symbolicValues = new SymbolicValue<Pair<string, int>>[] {dest};
-    var sp = new Sp<Pair<string, int>>(topology, initialValues, symbolicValues);
+    var sp = new Sp<string, Pair<string, int>>(topology, initialValues, symbolicValues);
     var stableProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var annotations = topology.MapNodes(n =>
       Lang.Finally(dest.SymbolicDistance(n, topology.L(n)), Lang.IsSome<BgpRoute>()));
-    return new AnnotatedSp<Pair<string, int>>(sp, annotations, stableProperties, safetyProperties);
+    return new AnnotatedSp<string, Pair<string, int>>(sp, annotations, stableProperties, safetyProperties);
   }
 
-  public static AnnotatedSp<Pair<string, int>> AllPairsPathLength(uint numPods)
+  public static AnnotatedSp<string, Pair<string, int>> AllPairsPathLength(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(topology);
@@ -199,7 +199,7 @@ public static class Sp
       topology.MapNodes(n =>
         Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
     var symbolics = new SymbolicValue<Pair<string, int>>[] {dest};
-    var sp = new Sp<Pair<string, int>>(topology, initialValues, symbolics);
+    var sp = new Sp<string, Pair<string, int>>(topology, initialValues, symbolics);
     var stableProperties = topology.MapNodes(_ =>
       Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     var safetyProperties = topology.MapNodes(_ =>
@@ -213,10 +213,10 @@ public static class Sp
           Lang.IsNone<BgpRoute>(),
           Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(distance)));
       });
-    return new AnnotatedSp<Pair<string, int>>(sp, annotations, stableProperties, safetyProperties);
+    return new AnnotatedSp<string, Pair<string, int>>(sp, annotations, stableProperties, safetyProperties);
   }
 
-  public static AnnotatedSp<Pair<string, int>> AllPairsPathLengthNoSafety(uint numPods)
+  public static AnnotatedSp<string, Pair<string, int>> AllPairsPathLengthNoSafety(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(topology);
@@ -224,7 +224,7 @@ public static class Sp
     var initialValues =
       topology.MapNodes(n =>
         Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
-    var sp = new Sp<Pair<string, int>>(topology, initialValues,
+    var sp = new Sp<string, Pair<string, int>>(topology, initialValues,
       new SymbolicValue<Pair<string, int>>[] {dest});
     var stableProperties = topology.MapNodes(_ =>
       Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
@@ -237,6 +237,6 @@ public static class Sp
           Lang.OrSome<BgpRoute>(b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= BigInteger.Zero)),
           Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(distance)));
       });
-    return new AnnotatedSp<Pair<string, int>>(sp, annotations, stableProperties, safetyProperties);
+    return new AnnotatedSp<string, Pair<string, int>>(sp, annotations, stableProperties, safetyProperties);
   }
 }

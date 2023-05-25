@@ -9,14 +9,14 @@ using ZenLib;
 
 namespace MisterWolf;
 
-public class Infer<T, TS> : Network<T, TS>
+public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
 {
-  public Infer(Topology topology,
-    Dictionary<(string, string), Func<Zen<T>, Zen<T>>> transferFunction,
+  public Infer(Topology<TV> topology,
+    Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
-    Dictionary<string, Zen<T>> initialValues,
-    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants,
+    Dictionary<TV, Zen<T>> initialValues,
+    IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> afterInvariants,
     SymbolicValue<TS>[] symbolics) : base(topology, transferFunction, mergeFunction,
     initialValues, symbolics)
   {
@@ -24,8 +24,8 @@ public class Infer<T, TS> : Network<T, TS>
     AfterInvariants = afterInvariants;
   }
 
-  public Infer(Network<T, TS> net, IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
+  public Infer(Network<T, TV, TS> net, IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
     net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants, net.Symbolics)
   {
   }
@@ -46,8 +46,8 @@ public class Infer<T, TS> : Network<T, TS>
   public bool PrintTimes { get; set; } = false;
 
   public BigInteger? MaxTime { get; set; }
-  protected IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
-  protected IReadOnlyDictionary<string, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
+  protected IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
+  protected IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
 
   /// <summary>
   ///   Return a string describing a failed check.
@@ -58,7 +58,7 @@ public class Infer<T, TS> : Network<T, TS>
   /// <param name="invariantDescriptor">A descriptor of the invariant, e.g. "before" or "after".</param>
   /// <param name="b">An array of node names of the node's b, or null.</param>
   /// <returns>A string describing a failed check.</returns>
-  private string ReportFailure(string node, string invariantDescriptor, BitArray? b)
+  private string ReportFailure(TV node, string invariantDescriptor, BitArray? b)
   {
     if (b is not null)
     {
@@ -77,7 +77,7 @@ public class Infer<T, TS> : Network<T, TS>
     return $"Node {node}'s {invariantDescriptor} invariant does not hold for its initial route.";
   }
 
-  private void PrintFailure(string node, string invariantDescriptor, BitArray? b)
+  private void PrintFailure(TV node, string invariantDescriptor, BitArray? b)
   {
     if (ReportFailures)
       Console.WriteLine(ReportFailure(node, invariantDescriptor, b));
@@ -89,7 +89,7 @@ public class Infer<T, TS> : Network<T, TS>
   /// <param name="node"></param>
   /// <param name="invariant"></param>
   /// <returns>True if the invariant does *not* hold for the initial route, and false otherwise.</returns>
-  private bool CheckInitial(string node, Func<Zen<T>, Zen<bool>> invariant)
+  private bool CheckInitial(TV node, Func<Zen<T>, Zen<bool>> invariant)
   {
     var query = Zen.And(GetSymbolicConstraints(), Zen.Not(invariant(InitialValues[node])));
     var model = query.Solve();
@@ -108,8 +108,8 @@ public class Infer<T, TS> : Network<T, TS>
   /// <param name="blockingClauses">An additional enumerable of clauses over b variables
   ///   to block when checking the invariant.</param>
   /// <returns>True if the invariant is *not* always satisfied by the bs, and false otherwise.</returns>
-  private List<bool>? CheckInductive(string node, Func<Zen<T>, Zen<bool>> invariant,
-    IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<string, Zen<T>> routes,
+  private List<bool>? CheckInductive(TV node, Func<Zen<T>, Zen<bool>> invariant,
+    IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<TV, Zen<T>> routes,
     IEnumerable<Zen<bool>>? blockingClauses = null)
   {
     var newNodeRoute = UpdateNodeRoute(node, routes);
@@ -136,10 +136,10 @@ public class Infer<T, TS> : Network<T, TS>
   ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
   /// </summary>
   /// <returns>A dictionary mapping nodes to witness times.</returns>
-  public Dictionary<string, BigInteger> InferTimesExplicit()
+  public Dictionary<TV, BigInteger> InferTimesExplicit()
   {
-    var afterInitialChecks = new ConcurrentBag<string>();
-    var beforeInitialChecks = new ConcurrentBag<string>();
+    var afterInitialChecks = new ConcurrentBag<TV>();
+    var beforeInitialChecks = new ConcurrentBag<TV>();
     Topology.Nodes.AsParallel().ForAll(node =>
     {
       if (CheckInitial(node, BeforeInvariants[node]))
@@ -156,8 +156,8 @@ public class Infer<T, TS> : Network<T, TS>
     });
     // for each node, for each subset of its predecessors, run CheckInductive in parallel
     // construct a dictionary of the results of which b fail to imply the two invariants
-    var beforeInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
-    var afterInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
+    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
+    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
     var nodeAndArrangements = Topology.Nodes
       .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b));
     // TODO: if we have check failures when predecessor u is both in b and not in b,
@@ -167,7 +167,7 @@ public class Infer<T, TS> : Network<T, TS>
       {
         var n = tuple.n;
         var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
-        var routes = new Dictionary<string, Zen<T>>();
+        var routes = new Dictionary<TV, Zen<T>>();
         foreach (var predecessor in Topology[n]) routes[predecessor] = Zen.Symbolic<T>();
         if (CheckInductive(n, BeforeInvariants[n], b, routes) is not null)
         {
@@ -191,10 +191,10 @@ public class Infer<T, TS> : Network<T, TS>
 
     var model = bounds.Solve();
     if (model.IsSatisfiable())
-      return new Dictionary<string, BigInteger>(times.Select(pair =>
-        new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
+      return new Dictionary<TV, BigInteger>(times.Select(pair =>
+        new KeyValuePair<TV, BigInteger>(pair.Key, model.Get(pair.Value))));
 
-    return new Dictionary<string, BigInteger>();
+    return new Dictionary<TV, BigInteger>();
   }
 
   /// <summary>
@@ -204,10 +204,10 @@ public class Infer<T, TS> : Network<T, TS>
   ///   by asking the solver to find failing arrangements.
   /// </summary>
   /// <returns>A dictionary mapping nodes to witness times.</returns>
-  public Dictionary<string, BigInteger> InferTimesSymbolic()
+  public Dictionary<TV, BigInteger> InferTimesSymbolic()
   {
-    var afterInitialChecks = new ConcurrentBag<string>();
-    var beforeInitialChecks = new ConcurrentBag<string>();
+    var afterInitialChecks = new ConcurrentBag<TV>();
+    var beforeInitialChecks = new ConcurrentBag<TV>();
     Topology.Nodes.AsParallel().ForAll(node =>
     {
       if (CheckInitial(node, BeforeInvariants[node]))
@@ -224,8 +224,8 @@ public class Infer<T, TS> : Network<T, TS>
     });
     // for each node, for each subset of its predecessors, run CheckInductive in parallel
     // construct a dictionary of the results of which b fail to imply the two invariants
-    var beforeInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
-    var afterInductiveChecks = new ConcurrentDictionary<string, List<BitArray>>();
+    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
+    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
     var nodeAndArrangements = Topology.Nodes
       .Select(n =>
       {
@@ -239,7 +239,7 @@ public class Infer<T, TS> : Network<T, TS>
         var n = tuple.n;
         var b = tuple.b.ToList();
         var blockingClauses = new List<Zen<bool>>();
-        var routes = new Dictionary<string, Zen<T>>();
+        var routes = new Dictionary<TV, Zen<T>>();
         foreach (var neighbor in Topology[n]) routes[neighbor] = Zen.Symbolic<T>();
         var bSol = CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes);
         while (bSol is not null)
@@ -267,16 +267,16 @@ public class Infer<T, TS> : Network<T, TS>
 
     var model = bounds.Solve();
     if (model.IsSatisfiable())
-      return new Dictionary<string, BigInteger>(times.Select(pair =>
-        new KeyValuePair<string, BigInteger>(pair.Key, model.Get(pair.Value))));
+      return new Dictionary<TV, BigInteger>(times.Select(pair =>
+        new KeyValuePair<TV, BigInteger>(pair.Key, model.Get(pair.Value))));
 
-    return new Dictionary<string, BigInteger>();
+    return new Dictionary<TV, BigInteger>();
   }
 
-  private Zen<bool> TimeBounds(IReadOnlyDictionary<string, Zen<BigInteger>> times,
-    ConcurrentBag<string> beforeInitialChecks,
-    ConcurrentBag<string> afterInitialChecks, ConcurrentDictionary<string, List<BitArray>> beforeInductiveChecks,
-    ConcurrentDictionary<string, List<BitArray>> afterInductiveChecks)
+  private Zen<bool> TimeBounds(IReadOnlyDictionary<TV, Zen<BigInteger>> times,
+    ConcurrentBag<TV> beforeInitialChecks,
+    ConcurrentBag<TV> afterInitialChecks, ConcurrentDictionary<TV, List<BitArray>> beforeInductiveChecks,
+    ConcurrentDictionary<TV, List<BitArray>> afterInductiveChecks)
   {
     // enforce that all times must be non-negative
     var bounds = times.Select(t => t.Value >= BigInteger.Zero).ToList();
@@ -285,13 +285,13 @@ public class Infer<T, TS> : Network<T, TS>
 
     // add initial check bounds
     bounds.AddRange(
-      beforeInitialChecks.Select<string, Zen<bool>>(node => times[node] == BigInteger.Zero)
-        .Concat(afterInitialChecks.Select<string, Zen<bool>>(node => times[node] > BigInteger.Zero)));
+      beforeInitialChecks.Select<TV, Zen<bool>>(node => times[node] == BigInteger.Zero)
+        .Concat(afterInitialChecks.Select<TV, Zen<bool>>(node => times[node] > BigInteger.Zero)));
 
     // var simplifiedBeforeInductiveChecks = beforeInductiveChecks.Select(p =>
-    // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    // new KeyValuePair<TV, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
     // var simplifiedAfterInductiveChecks = afterInductiveChecks.Select(p =>
-    // new KeyValuePair<string, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
+    // new KeyValuePair<TV, IEnumerable<bool?[]>>(p.Key, PrimeArrangements.SimplifyArrangements(p.Value)));
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
@@ -338,16 +338,16 @@ public class Infer<T, TS> : Network<T, TS>
   /// then the given symbolic time is less than predecessor i's witness time, and otherwise greater than or equal
   /// (when arrangement[i] is false).</param>
   /// <returns>A conjunction over comparisons between time and the witness times.</returns>
-  private static Zen<bool> TimeInterval(IEnumerable<string> predecessors, Zen<BigInteger> time,
-    IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray arrangement)
+  private static Zen<bool> TimeInterval(IEnumerable<TV> predecessors, Zen<BigInteger> time,
+    IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement)
   {
     return Zen.And(predecessors.Select((j, i) => arrangement[i] ? time < times[j] : time >= times[j]));
   }
 
-  private static Zen<bool> TimeInterval(IEnumerable<string> earlierNeighbors,
-    IEnumerable<string> laterNeighbors,
+  private static Zen<bool> TimeInterval(IEnumerable<TV> earlierNeighbors,
+    IEnumerable<TV> laterNeighbors,
     Zen<BigInteger> time,
-    IReadOnlyDictionary<string, Zen<BigInteger>> times)
+    IReadOnlyDictionary<TV, Zen<BigInteger>> times)
   {
     var neighborBounds = earlierNeighbors.Select(en => time < times[en])
       .Concat(laterNeighbors.Select(ln => time >= times[ln])).ToArray();
@@ -365,8 +365,8 @@ public class Infer<T, TS> : Network<T, TS>
   /// <param name="times">The witness times of the node and its predecessors.</param>
   /// <param name="arrangement">A bitarray representing the neighbors and node, in order (neighbors then node).</param>
   /// <returns>An enumerable of constraints.</returns>
-  private IEnumerable<Zen<bool>> BoundArrangement(string node,
-    IReadOnlyDictionary<string, Zen<BigInteger>> times, BitArray arrangement)
+  private IEnumerable<Zen<bool>> BoundArrangement(TV node,
+    IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement)
   {
     // the instantiated bounds are 0 and all neighbors that have already converged (the arrangement is false at the neighbor)
     var lowerBounds = Enumerable.Repeat(Zen.Constant(BigInteger.Zero), 1)
@@ -379,10 +379,10 @@ public class Infer<T, TS> : Network<T, TS>
         Zen.Not(TimeInterval(Topology[node], lowerBound, times, arrangement)));
   }
 
-  private (List<string>, List<string>) PartitionNeighborsByArrangement(string node, IReadOnlyList<bool?> arrangement)
+  private (List<TV>, List<TV>) PartitionNeighborsByArrangement(TV node, IReadOnlyList<bool?> arrangement)
   {
-    var earlierNeighbors = new List<string>();
-    var laterNeighbors = new List<string>();
+    var earlierNeighbors = new List<TV>();
+    var laterNeighbors = new List<TV>();
     for (var i = 0; i < Topology[node].Count; i++)
     {
       if (arrangement[i] is null) continue;
@@ -399,7 +399,7 @@ public class Infer<T, TS> : Network<T, TS>
     return (earlierNeighbors, laterNeighbors);
   }
 
-  private IEnumerable<Zen<bool>> BoundArrangement(string node, IReadOnlyDictionary<string, Zen<BigInteger>> times,
+  private IEnumerable<Zen<bool>> BoundArrangement(TV node, IReadOnlyDictionary<TV, Zen<BigInteger>> times,
     IReadOnlyList<bool?> arrangement)
   {
     var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
@@ -416,7 +416,7 @@ public class Infer<T, TS> : Network<T, TS>
         Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node], times)));
   }
 
-  public static (long, Dictionary<string, BigInteger>) InferTimesTimed(Func<Dictionary<string, BigInteger>> inferFunc)
+  public static (long, Dictionary<TV, BigInteger>) InferTimesTimed(Func<Dictionary<TV, BigInteger>> inferFunc)
   {
     var timer = Stopwatch.StartNew();
     var times = inferFunc();
@@ -429,11 +429,11 @@ public class Infer<T, TS> : Network<T, TS>
   /// </summary>
   /// <param name="strategy">the <c>InferenceStrategy</c> inference strategy: see <see cref="InferenceStrategy"/></param>
   /// <returns>a dictionary from nodes to temporal predicates</returns>
-  public Dictionary<string, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> InferAnnotations(InferenceStrategy strategy)
+  public Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> InferAnnotations(InferenceStrategy strategy)
   {
     Console.WriteLine("Inferring witness times...");
     long timeTaken;
-    Dictionary<string, BigInteger> times;
+    Dictionary<TV, BigInteger> times;
     switch (strategy)
     {
       case InferenceStrategy.ExplicitEnumeration:
