@@ -92,7 +92,7 @@ public static class Vf
       {
         MaxTime = 4
       };
-      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
+      annotations = infer.InferAnnotationsWithStats(InferenceStrategy.SymbolicEnumeration);
     }
     else
     {

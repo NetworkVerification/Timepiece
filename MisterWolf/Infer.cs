@@ -130,154 +130,276 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     return model.IsSatisfiable() ? b.Select(bi => model.Get(bi)).ToList() : null;
   }
 
-  /// <summary>
-  ///   Infer times for each node, such that a network annotated with these times (of the form "before until^{t} after")
-  ///   should pass all the modular checks.
-  ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
-  /// </summary>
-  /// <returns>A dictionary mapping nodes to witness times.</returns>
-  public Dictionary<TV, BigInteger> InferTimesExplicit()
+  public Dictionary<TV, BigInteger> InferTimes(InferenceStrategy strategy)
+  {
+    var (beforeInitialChecks, afterInitialChecks) = FailingInitialChecks();
+    // for each node, for each subset of its predecessors, run CheckInductive in parallel
+    // construct a dictionary of the results of which b fail to imply the two invariants
+    IReadOnlyDictionary<TV, List<BitArray>> beforeInductiveChecks;
+    IReadOnlyDictionary<TV, List<BitArray>> afterInductiveChecks;
+    switch (strategy)
+    {
+      case InferenceStrategy.ExplicitEnumeration:
+        (beforeInductiveChecks, afterInductiveChecks) = EnumerateArrangementsExplicit();
+        break;
+      case InferenceStrategy.SymbolicEnumeration:
+        (beforeInductiveChecks, afterInductiveChecks) = EnumerateArrangementsSymbolic();
+        break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
+    }
+
+    return InferTimesFromChecks(beforeInitialChecks, afterInitialChecks, beforeInductiveChecks, afterInductiveChecks);
+  }
+
+  public Dictionary<TV, BigInteger> InferTimesWith<TAcc1, TAcc2>(InferenceStrategy strategy,
+    TAcc1 beforeInitialCollector,
+    TAcc1 afterInitialCollector, TAcc2 beforeInductiveCollector, TAcc2 afterInductiveCollector,
+    Action<TV, TAcc1, Action> initialF, Action<TV, BitArray, TAcc2, Action> inductiveF)
+  {
+    var (beforeInitialChecks, afterInitialChecks) =
+      FailingInitialChecksWith(beforeInitialCollector, afterInitialCollector, initialF);
+    // for each node, for each subset of its predecessors, run CheckInductive in parallel
+    // construct a dictionary of the results of which b fail to imply the two invariants
+    IReadOnlyDictionary<TV, List<BitArray>> beforeInductiveChecks;
+    IReadOnlyDictionary<TV, List<BitArray>> afterInductiveChecks;
+    switch (strategy)
+    {
+      case InferenceStrategy.ExplicitEnumeration:
+        (beforeInductiveChecks, afterInductiveChecks) =
+          EnumerateArrangementsExplicitWith(beforeInductiveCollector, afterInductiveCollector, inductiveF);
+        break;
+      case InferenceStrategy.SymbolicEnumeration:
+        (beforeInductiveChecks, afterInductiveChecks) =
+          EnumerateArrangementsSymbolicWith(beforeInductiveCollector,
+            (n, acc, g) => inductiveF(n, new BitArray(0), acc, g));
+        break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
+    }
+
+    return InferTimesFromChecks(beforeInitialChecks, afterInitialChecks, beforeInductiveChecks, afterInductiveChecks);
+  }
+
+  private (IReadOnlyCollection<TV>, IReadOnlyCollection<TV>) FailingInitialChecks()
   {
     var afterInitialChecks = new ConcurrentBag<TV>();
     var beforeInitialChecks = new ConcurrentBag<TV>();
     Topology.Nodes.AsParallel().ForAll(node =>
     {
-      if (CheckInitial(node, BeforeInvariants[node]))
-      {
-        PrintFailure(node, "before", null);
-        beforeInitialChecks.Add(node);
-      }
-
-      if (CheckInitial(node, AfterInvariants[node]))
-      {
-        PrintFailure(node, "after", null);
-        afterInitialChecks.Add(node);
-      }
+      if (CheckInitial(node, BeforeInvariants[node])) beforeInitialChecks.Add(node);
+      if (CheckInitial(node, AfterInvariants[node])) afterInitialChecks.Add(node);
     });
-    // for each node, for each subset of its predecessors, run CheckInductive in parallel
-    // construct a dictionary of the results of which b fail to imply the two invariants
-    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
-    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
-    var nodeAndArrangements = Topology.Nodes
+    return (beforeInitialChecks, afterInitialChecks);
+  }
+
+  /// <summary>
+  /// Check all nodes' initial values against the invariants and return which nodes' invariants failed.
+  /// </summary>
+  /// <returns>Two collections collecting all nodes that failed the before invariant (the first collection),
+  /// or the second invariant (the second collection).</returns>
+  private (IReadOnlyCollection<TV>, IReadOnlyCollection<TV>) FailingInitialChecksWith<TAcc>(TAcc beforeCollector,
+    TAcc afterCollector, Action<TV, TAcc, Action> f)
+  {
+    var afterInitialChecks = new ConcurrentBag<TV>();
+    var beforeInitialChecks = new ConcurrentBag<TV>();
+    Topology.Nodes.AsParallel().ForAll(node =>
+    {
+      f(node, beforeCollector, () =>
+      {
+        if (CheckInitial(node, BeforeInvariants[node]))
+        {
+          // PrintFailure(node, "before", null);
+          beforeInitialChecks.Add(node);
+        }
+      });
+
+      f(node, afterCollector, () =>
+      {
+        if (CheckInitial(node, AfterInvariants[node]))
+        {
+          // PrintFailure(node, "after", null);
+          afterInitialChecks.Add(node);
+        }
+      });
+    });
+    return (beforeInitialChecks, afterInitialChecks);
+  }
+
+  /// <summary>
+  ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
+  /// </summary>
+  /// <returns>Two dictionaries mapping nodes to arrangements that fail the checks.</returns>
+  private (IReadOnlyDictionary<TV, List<BitArray>>, IReadOnlyDictionary<TV, List<BitArray>>)
+    EnumerateArrangementsExplicit()
+  {
+    var processes = Environment.ProcessorCount;
+    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    var explicitArrangements = Topology.Nodes
       .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b));
-    // TODO: if we have check failures when predecessor u is both in b and not in b,
-    // TODO: then we should exclude it from the generated bounds (since its value won't matter)
-    nodeAndArrangements.AsParallel()
+    explicitArrangements.AsParallel()
       .ForAll(tuple =>
       {
         var n = tuple.n;
         var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
-        var routes = new Dictionary<TV, Zen<T>>();
-        foreach (var predecessor in Topology[n]) routes[predecessor] = Zen.Symbolic<T>();
+        var routes = Topology[n].ToDictionary(predecessor => predecessor, _ => Zen.Symbolic<T>());
+
         if (CheckInductive(n, BeforeInvariants[n], b, routes) is not null)
         {
-          PrintFailure(n, "before", tuple.b);
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
         if (CheckInductive(n, AfterInvariants[n], b, routes) is not null)
         {
-          PrintFailure(n, "after", tuple.b);
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
       });
-
-    // construct a set of bounds to check
-    var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
-    var bounds = TimeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
-      afterInductiveChecks);
-
-    var model = bounds.Solve();
-    if (model.IsSatisfiable())
-      return new Dictionary<TV, BigInteger>(times.Select(pair =>
-        new KeyValuePair<TV, BigInteger>(pair.Key, model.Get(pair.Value))));
-
-    return new Dictionary<TV, BigInteger>();
+    return (beforeInductiveChecks, afterInductiveChecks);
   }
 
   /// <summary>
-  ///   Infer times for each node, such that a network annotated with these times (of the form "before until^{t} after")
-  ///   should pass all the modular checks.
-  ///   Symbolically enumerates the inductive condition arrangements of before/after conditions of neighbors' routes
-  ///   by asking the solver to find failing arrangements.
+  ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
   /// </summary>
-  /// <returns>A dictionary mapping nodes to witness times.</returns>
-  public Dictionary<TV, BigInteger> InferTimesSymbolic()
+  /// <returns>Two dictionaries mapping nodes to arrangements that fail the checks.</returns>
+  private (IReadOnlyDictionary<TV, List<BitArray>>, IReadOnlyDictionary<TV, List<BitArray>>)
+    EnumerateArrangementsExplicitWith<TAcc>(TAcc beforeCollector, TAcc afterCollector,
+      Action<TV, BitArray, TAcc, Action> f)
   {
-    var afterInitialChecks = new ConcurrentBag<TV>();
-    var beforeInitialChecks = new ConcurrentBag<TV>();
-    Topology.Nodes.AsParallel().ForAll(node =>
-    {
-      if (CheckInitial(node, BeforeInvariants[node]))
-      {
-        PrintFailure(node, "before", null);
-        beforeInitialChecks.Add(node);
-      }
-
-      if (CheckInitial(node, AfterInvariants[node]))
-      {
-        PrintFailure(node, "after", null);
-        afterInitialChecks.Add(node);
-      }
-    });
-    // for each node, for each subset of its predecessors, run CheckInductive in parallel
-    // construct a dictionary of the results of which b fail to imply the two invariants
-    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
-    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>();
-    var nodeAndArrangements = Topology.Nodes
-      .Select(n =>
-      {
-        // generate an array of symbolic booleans of length equal to the node's predecessors + 1
-        var neighbors = Topology[n].Count;
-        return (n, b: Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")));
-      });
-    nodeAndArrangements.AsParallel()
+    var processes = Environment.ProcessorCount;
+    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    Topology.Nodes
+      // generate 2^{Topology[n].Count} arrangements for each node
+      .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b))
+      .AsParallel()
       .ForAll(tuple =>
       {
         var n = tuple.n;
-        var b = tuple.b.ToList();
-        var blockingClauses = new List<Zen<bool>>();
-        var routes = new Dictionary<TV, Zen<T>>();
-        foreach (var neighbor in Topology[n]) routes[neighbor] = Zen.Symbolic<T>();
-        var bSol = CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes);
-        while (bSol is not null)
+        var b = tuple.b.Cast<bool>().Select(Zen.Constant).ToList();
+        var routes = Topology[n].ToDictionary(predecessor => predecessor, _ => Zen.Symbolic<T>());
+        f(n, tuple.b, beforeCollector, () =>
         {
-          // get the model and block it
-          var bArr = new BitArray(bSol.ToArray());
-          PrintFailure(n, bSol[^1] ? "before" : "after", bArr);
-          // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
-          var blockBs = bSol.Select((bb, i) => bb ? Zen.Not(b[i]) : b[i]);
-          var blockingClause = Zen.Or(blockBs);
-          blockingClauses.Add(blockingClause);
-          // save this case as one to generate constraints for
-          var arr = (bSol[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(n, new List<BitArray>());
-          arr.Add(bArr);
-          bSol =
-            CheckInductive(n, r => Zen.If(b[^1], BeforeInvariants[n](r), AfterInvariants[n](r)), b, routes,
-              blockingClauses: blockingClauses);
-        }
+          if (CheckInductive(n, BeforeInvariants[n], b, routes) is null) return;
+          // PrintFailure(n, "before", tuple.b);
+          var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
+          ancestors.Add(tuple.b);
+        });
+
+        f(n, tuple.b, afterCollector, () =>
+        {
+          if (CheckInductive(n, AfterInvariants[n], b, routes) is null) return;
+          // PrintFailure(n, "after", tuple.b);
+          var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
+          ancestors.Add(tuple.b);
+        });
       });
 
-    // construct a set of bounds to check
-    var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
-    var bounds = TimeBounds(times, beforeInitialChecks, afterInitialChecks, beforeInductiveChecks,
-      afterInductiveChecks);
-
-    var model = bounds.Solve();
-    if (model.IsSatisfiable())
-      return new Dictionary<TV, BigInteger>(times.Select(pair =>
-        new KeyValuePair<TV, BigInteger>(pair.Key, model.Get(pair.Value))));
-
-    return new Dictionary<TV, BigInteger>();
+    return (beforeInductiveChecks, afterInductiveChecks);
   }
 
-  private Zen<bool> TimeBounds(IReadOnlyDictionary<TV, Zen<BigInteger>> times,
-    ConcurrentBag<TV> beforeInitialChecks,
-    ConcurrentBag<TV> afterInitialChecks, ConcurrentDictionary<TV, List<BitArray>> beforeInductiveChecks,
-    ConcurrentDictionary<TV, List<BitArray>> afterInductiveChecks)
+  /// <summary>
+  /// Return all arrangements for the given node that cause the inductive check to fail.
+  /// Uses a solver to search for the arrangements, rather than explicitly enumerating them.
+  /// </summary>
+  /// <param name="node"></param>
+  /// <returns></returns>
+  private IEnumerable<BitArray> FindAllArrangements(TV node)
   {
+    // keep track of the arrangements that fail
+    var foundArrangements = new List<BitArray>();
+    // generate an array of symbolic booleans of length equal to the node's predecessors + 1
+    var neighbors = Topology[node].Count;
+    var b = Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")).ToList();
+    var blockingClauses = new List<Zen<bool>>();
+    var routes = Topology[node].ToDictionary(neighbor => neighbor, _ => Zen.Symbolic<T>());
+    var bSol = CheckInductive(node, r => Zen.If(b[^1], BeforeInvariants[node](r), AfterInvariants[node](r)), b, routes);
+    while (bSol is not null)
+    {
+      // get the model and block it
+      var bArr = new BitArray(bSol.ToArray());
+      // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
+      var blockBs = bSol.Select((bb, i) => bb ? Zen.Not(b[i]) : b[i]);
+      var blockingClause = Zen.Or(blockBs);
+      blockingClauses.Add(blockingClause);
+      // save this case as one to generate constraints for
+      foundArrangements.Add(bArr);
+      bSol =
+        CheckInductive(node, r => Zen.If(b[^1], BeforeInvariants[node](r), AfterInvariants[node](r)), b, routes,
+          blockingClauses: blockingClauses);
+    }
+
+    return foundArrangements;
+  }
+
+  /// <summary>
+  ///   Symbolically enumerates the inductive condition arrangements of before/after conditions of neighbors' routes
+  ///   by asking the solver to find failing arrangements.
+  /// </summary>
+  /// <returns>Two dictionaries mapping nodes to failing arrangements.</returns>
+  private (IReadOnlyDictionary<TV, List<BitArray>>, IReadOnlyDictionary<TV, List<BitArray>>)
+    EnumerateArrangementsSymbolic()
+  {
+    var processes = Environment.ProcessorCount;
+    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    Topology.Nodes
+      .AsParallel()
+      .ForAll(node =>
+      {
+        var arrangements = FindAllArrangements(node);
+        foreach (var arr in arrangements)
+        {
+          // NOTE: could we simplify further and just use one dictionary?
+          var failed = (arr[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(node, new List<BitArray>());
+          failed.Add(arr);
+        }
+      });
+    return (beforeInductiveChecks, afterInductiveChecks);
+  }
+
+  private (IReadOnlyDictionary<TV, List<BitArray>>, IReadOnlyDictionary<TV, List<BitArray>>)
+    EnumerateArrangementsSymbolicWith<TAcc>(TAcc collector, Action<TV, TAcc, Action> f)
+  {
+    var processes = Environment.ProcessorCount;
+    var beforeInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    var afterInductiveChecks = new ConcurrentDictionary<TV, List<BitArray>>(processes * 2, Topology.Nodes.Length);
+    Topology.Nodes
+      .AsParallel()
+      .ForAll(node =>
+      {
+        f(node, collector, () =>
+        {
+          var arrangements = FindAllArrangements(node);
+          foreach (var arr in arrangements)
+          {
+            // NOTE: could we simplify further and just use one dictionary?
+            var failed = (arr[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(node, new List<BitArray>());
+            failed.Add(arr);
+          }
+        });
+      });
+    return (beforeInductiveChecks, afterInductiveChecks);
+  }
+
+  /// <summary>
+  /// Return a dictionary from nodes to witness times, such that the returned witness times
+  /// ensure that all the given arrangements are blocked, or an empty dictionary if no such witness times exist.
+  /// </summary>
+  /// <param name="beforeInitialChecks">Nodes where the before invariant failed to hold on the initial value.</param>
+  /// <param name="afterInitialChecks">Nodes where the after invariant failed to hold on the initial value.</param>
+  /// <param name="beforeInductiveChecks">Node arrangements where the inductive check failed with the before invariant.</param>
+  /// <param name="afterInductiveChecks">Node arrangements where the inductive check failed with the after invariant.</param>
+  /// <returns></returns>
+  private Dictionary<TV, BigInteger> InferTimesFromChecks(IEnumerable<TV> beforeInitialChecks,
+    IEnumerable<TV> afterInitialChecks, IReadOnlyDictionary<TV, List<BitArray>> beforeInductiveChecks,
+    IReadOnlyDictionary<TV, List<BitArray>> afterInductiveChecks)
+  {
+    // TODO: if we have check failures when predecessor u is both in b and not in b,
+    // TODO: then we should exclude it from the generated bounds (since its value won't matter)
+    var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
     // enforce that all times must be non-negative
     var bounds = times.Select(t => t.Value >= BigInteger.Zero).ToList();
     // if a maximum time is given, also require that no witness time is greater than the maximum
@@ -317,12 +439,16 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       bounds.Add(nextBound);
     }
 
+    // print the computed bounds
     if (PrintBounds)
-      // list the computed bounds
       foreach (var b in bounds)
         Console.WriteLine(b);
 
-    return Zen.And(bounds);
+    var model = Zen.And(bounds).Solve();
+    if (model.IsSatisfiable())
+      return new Dictionary<TV, BigInteger>(times.Select(pair =>
+        new KeyValuePair<TV, BigInteger>(pair.Key, model.Get(pair.Value))));
+    return new Dictionary<TV, BigInteger>();
   }
 
   /// <summary>
@@ -416,11 +542,18 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
         Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node], times)));
   }
 
-  public static (long, Dictionary<TV, BigInteger>) InferTimesTimed(Func<Dictionary<TV, BigInteger>> inferFunc)
+  public static (long, Dictionary<TV, BigInteger>) Time(Func<Dictionary<TV, BigInteger>> inferFunc)
   {
     var timer = Stopwatch.StartNew();
     var times = inferFunc();
     return (timer.ElapsedMilliseconds, times);
+  }
+
+  public static void LogActionTime<TKey>(TKey key, IDictionary<TKey, long> times, Action inferAction)
+  {
+    var timer = Stopwatch.StartNew();
+    inferAction();
+    times.Add(key, timer.ElapsedMilliseconds);
   }
 
   /// <summary>
@@ -429,57 +562,53 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// </summary>
   /// <param name="strategy">the <c>InferenceStrategy</c> inference strategy: see <see cref="InferenceStrategy"/></param>
   /// <returns>a dictionary from nodes to temporal predicates</returns>
-  public Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> InferAnnotations(InferenceStrategy strategy)
+  public Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> InferAnnotationsWithStats(InferenceStrategy strategy)
   {
-    Console.WriteLine("Inferring witness times...");
-    long timeTaken;
-    Dictionary<TV, BigInteger> times;
-    switch (strategy)
+    var processes = Environment.ProcessorCount;
+    Console.WriteLine($"Environment.ProcessorCount: {processes}");
+    var numNodes = Topology.Nodes.Length;
+    var inferBeforeInitialTimes = new ConcurrentDictionary<TV, long>(processes * 2, numNodes);
+    var inferAfterInitialTimes = new ConcurrentDictionary<TV, long>(processes * 2, numNodes);
+    var inferBeforeInductiveTimes = new ConcurrentDictionary<(TV, BitArray), long>(processes * 2, numNodes);
+    var inferAfterInductiveTimes = new ConcurrentDictionary<(TV, BitArray), long>(processes * 2, numNodes);
+    try
     {
-      case InferenceStrategy.ExplicitEnumeration:
-        (timeTaken, times) = InferTimesTimed(InferTimesExplicit);
-        Console.WriteLine($"Inference took {timeTaken}ms!");
-        break;
-      case InferenceStrategy.SymbolicEnumeration:
-        (timeTaken, times) = InferTimesTimed(InferTimesSymbolic);
-        Console.WriteLine($"Inference took {timeTaken}ms!");
-        break;
-      case InferenceStrategy.Compare:
-        var (explicitTimeTaken, explicitTimes) = InferTimesTimed(InferTimesExplicit);
-        var (symbolicTimeTaken, symbolicTimes) = InferTimesTimed(InferTimesSymbolic);
-        Console.WriteLine($"Explicit inference took {explicitTimeTaken}ms!");
-        Console.WriteLine($"Symbolic inference took {symbolicTimeTaken}ms!");
-        var consistentTimes = true;
-        foreach (var (node, explicitTime) in explicitTimes)
+      Console.WriteLine("Inferring witness times...");
+      var (timeTaken, witnessTimes) = Time(() => InferTimesWith(strategy, inferBeforeInitialTimes,
+        inferAfterInitialTimes,
+        inferBeforeInductiveTimes, inferAfterInductiveTimes,
+        LogActionTime,
+        (node, arr, times, f) => LogActionTime((node, arr), times, f)));
+      Console.WriteLine($"Inference took {timeTaken}ms!");
+
+      if (witnessTimes.Count > 0)
+      {
+        if (PrintTimes)
         {
-          var symbolicTime = symbolicTimes[node];
-          if (symbolicTime == explicitTime) continue;
-          Console.WriteLine(
-            $"Node {node}: explicit time {explicitTime} is not the same as symbolic time {symbolicTime}");
-          consistentTimes = false;
-          break;
+          Console.WriteLine("Success, inferred the following times:");
+          foreach (var (node, time) in witnessTimes) Console.WriteLine($"{node}: {time}");
         }
 
-        Console.WriteLine(consistentTimes ? "Inference was consistent!" : "Inference was inconsistent!");
-        times = symbolicTimes;
-        break;
-      default:
-        throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
-    }
-
-    if (times.Count > 0)
-    {
-      if (PrintTimes)
-      {
-        Console.WriteLine("Success, inferred the following times:");
-        foreach (var (node, time) in times) Console.WriteLine($"{node}: {time}");
+        return Topology.MapNodes(n => Lang.Until(witnessTimes[n], BeforeInvariants[n], AfterInvariants[n]));
       }
     }
-    else
+    catch (ZenException e)
     {
-      throw new ArgumentException("Failed to infer times!");
+      Console.WriteLine("Error, inference did not complete:");
+      Console.WriteLine(e.Message);
+    }
+    finally
+    {
+      Console.WriteLine("Before initial statistics:");
+      StatisticsExtensions.ReportTimes(inferBeforeInitialTimes, Statistics.Summary, null, false);
+      Console.WriteLine("After initial statistics:");
+      StatisticsExtensions.ReportTimes(inferAfterInitialTimes, Statistics.Summary, null, false);
+      Console.WriteLine("Before inductive statistics:");
+      StatisticsExtensions.ReportTimes(inferBeforeInductiveTimes, Statistics.Summary, null, false);
+      Console.WriteLine("After inductive statistics:");
+      StatisticsExtensions.ReportTimes(inferAfterInductiveTimes, Statistics.Summary, null, false);
     }
 
-    return Topology.MapNodes(n => Lang.Until(times[n], BeforeInvariants[n], AfterInvariants[n]));
+    throw new ArgumentException("Failed to infer times!");
   }
 }

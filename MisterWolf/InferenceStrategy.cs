@@ -4,5 +4,4 @@ public enum InferenceStrategy
 {
   ExplicitEnumeration,
   SymbolicEnumeration,
-  Compare,
 }

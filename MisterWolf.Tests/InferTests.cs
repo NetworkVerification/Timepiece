@@ -60,7 +60,7 @@ public static class InferTests
     var infer = new Infer<bool, string, Unit>(BoolNet(topology, "0"),
       topology.MapNodes(_ => beforePredicate),
       topology.MapNodes(_ => Lang.Identity<bool>()));
-    var times = infer.InferTimesSymbolic();
+    var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
   }
@@ -78,7 +78,7 @@ public static class InferTests
     var infer = new Infer<bool, string, Unit>(BoolNet(topology, destination),
       topology.MapNodes(_ => beforePredicate),
       topology.MapNodes(_ => Lang.Identity<bool>()));
-    var times = infer.InferTimesSymbolic();
+    var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= distances[node]);
   }
@@ -90,7 +90,7 @@ public static class InferTests
     var topology = Topologies.Path(numNodes, false);
     var infer = new Infer<bool, string, string>(BoolNetMultiDest(topology),
       topology.MapNodes(_ => Lang.Const(true)), topology.MapNodes(_ => Lang.Identity<bool>()));
-    var times = infer.InferTimesExplicit();
+    var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count == 0, "Time inference should fail for multi-destination.");
   }
 
@@ -114,7 +114,7 @@ public static class InferTests
     // eventually, the route must be less than the specified max
     var afterInvariants = topology.MapNodes(n => Lang.IfSome<BigInteger>(x => x <= BigInteger.Parse(n)));
     var infer = new Infer<Option<BigInteger>, string, Unit>(net, beforeInvariants, afterInvariants);
-    var times = infer.InferTimesSymbolic();
+    var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
   }

@@ -13,7 +13,7 @@ namespace Timepiece;
 ///   whose edges point to those nodes.
 ///   Using predecessors makes it efficient to represent our network semantics.
 /// </summary>
-public class Topology<TV> where TV: notnull
+public class Topology<TV> where TV : notnull
 {
   /// <summary>
   ///   Construct a Topology given a mapping from nodes to their predecessors.
@@ -69,8 +69,7 @@ public class Topology<TV> where TV: notnull
   /// <returns>A dictionary representing the result of the function for every node.</returns>
   public Dictionary<TV, T> MapNodes<T>(Func<TV, T> nodeFunc)
   {
-    return new Dictionary<TV, T>(
-      Nodes.Select(node => new KeyValuePair<TV, T>(node, nodeFunc(node))));
+    return Nodes.ToDictionary(node => node, nodeFunc);
   }
 
   public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, TV, TAcc> f)
@@ -96,8 +95,7 @@ public class Topology<TV> where TV: notnull
   /// <returns></returns>
   public Dictionary<(TV, TV), T> MapEdges<T>(Func<(TV, TV), T> edgeFunc)
   {
-    var edges = AllEdges().Select(e => new KeyValuePair<(TV, TV), T>(e, edgeFunc(e)));
-    return new Dictionary<(TV, TV), T>(edges);
+    return AllEdges().ToDictionary(e => e, edgeFunc);
   }
 
   public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (TV, TV), TAcc> f)

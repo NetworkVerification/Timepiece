@@ -97,7 +97,7 @@ public static class Sp
         // in this case, the maximum must be the network's converge time
         MaxTime = new BigInteger(4)
       };
-      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
+      annotations = infer.InferAnnotationsWithStats(InferenceStrategy.SymbolicEnumeration);
     }
     else
     {
@@ -129,7 +129,7 @@ public static class Sp
         // in this case, the maximum must be the network's converge time
         MaxTime = new BigInteger(4)
       };
-      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
+      annotations = infer.InferAnnotationsWithStats(InferenceStrategy.SymbolicEnumeration);
     }
     else
     {

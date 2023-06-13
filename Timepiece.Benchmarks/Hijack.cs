@@ -8,7 +8,7 @@ namespace Timepiece.Benchmarks;
 // a route which is tagged as internal (false) or external (true)
 using TaggedRoute = Pair<Option<BgpRoute>, bool>;
 
-public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV: IEquatable<TV>
+public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV : IEquatable<TV>
 {
   public Hijack(Topology<TV> topology, Dictionary<TV, Zen<TaggedRoute>> initialValues, TV hijacker,
     Zen<uint> destinationPrefix, SymbolicValue<TS>[] symbolics)
@@ -61,7 +61,7 @@ public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV: IEquatable<
   }
 }
 
-public class AnnotatedHijack<TV, TS> : AnnotatedNetwork<TaggedRoute, TV, TS> where TV: IEquatable<TV>
+public class AnnotatedHijack<TV, TS> : AnnotatedNetwork<TaggedRoute, TV, TS> where TV : IEquatable<TV>
 {
   public AnnotatedHijack(Network<TaggedRoute, TV, TS> net,
     Dictionary<TV, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -72,7 +72,7 @@ public class AnnotatedHijack<TV, TS> : AnnotatedNetwork<TaggedRoute, TV, TS> whe
   }
 }
 
-public class InferHijack<TV> : Infer<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> where TV: notnull
+public class InferHijack<TV> : Infer<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> where TV : notnull
 {
   public InferHijack(Network<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> hijack,
     IReadOnlyDictionary<TV, Func<Zen<TaggedRoute>, Zen<bool>>> beforeInvariants,
@@ -114,7 +114,7 @@ public static class Hijack
       {
         MaxTime = 4
       };
-      annotations = infer.InferAnnotations(InferenceStrategy.SymbolicEnumeration);
+      annotations = infer.InferAnnotationsWithStats(InferenceStrategy.SymbolicEnumeration);
     }
     else
     {
@@ -132,7 +132,8 @@ public static class Hijack
           .ToDictionary(p => p.Item1, p => p.Item2);
     }
 
-    return new AnnotatedHijack<string, Pair<Option<BgpRoute>, uint>>(hijack, annotations, stableProperties, safetyProperties);
+    return new AnnotatedHijack<string, Pair<Option<BgpRoute>, uint>>(hijack, annotations, stableProperties,
+      safetyProperties);
   }
 
   private static Func<Zen<TaggedRoute>, Zen<bool>> MapInternal(Func<Zen<Option<BgpRoute>>, Zen<bool>> f)
@@ -200,7 +201,8 @@ public static class Hijack
   /// <param name="topology"></param>
   /// <param name="hijackerLabel"></param>
   /// <returns></returns>
-  private static LabelledTopology<string, T> HijackTopology<T>(string hijacker, LabelledTopology<string, T> topology, T hijackerLabel)
+  private static LabelledTopology<string, T> HijackTopology<T>(string hijacker, LabelledTopology<string, T> topology,
+    T hijackerLabel)
   {
     var withHijacker = HijackAdjList(hijacker, topology);
     var labels = topology.Labels;
