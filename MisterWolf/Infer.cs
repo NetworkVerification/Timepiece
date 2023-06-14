@@ -561,6 +561,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// The given inference strategy determines the form of inference used.
   /// </summary>
   /// <param name="strategy">the <c>InferenceStrategy</c> inference strategy: see <see cref="InferenceStrategy"/></param>
+  /// <exception cref="ArgumentOutOfRangeException">if an invalid inference strategy is given</exception>
   /// <returns>a dictionary from nodes to temporal predicates</returns>
   public Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> InferAnnotationsWithStats(InferenceStrategy strategy)
   {
@@ -603,10 +604,21 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       StatisticsExtensions.ReportTimes(inferBeforeInitialTimes, Statistics.Summary, null, false);
       Console.WriteLine("After initial statistics:");
       StatisticsExtensions.ReportTimes(inferAfterInitialTimes, Statistics.Summary, null, false);
-      Console.WriteLine("Before inductive statistics:");
-      StatisticsExtensions.ReportTimes(inferBeforeInductiveTimes, Statistics.Summary, null, false);
-      Console.WriteLine("After inductive statistics:");
-      StatisticsExtensions.ReportTimes(inferAfterInductiveTimes, Statistics.Summary, null, false);
+      switch (strategy)
+      {
+        case InferenceStrategy.ExplicitEnumeration:
+          Console.WriteLine("Before inductive statistics:");
+          StatisticsExtensions.ReportTimes(inferBeforeInductiveTimes, Statistics.Summary, null, false);
+          Console.WriteLine("After inductive statistics:");
+          StatisticsExtensions.ReportTimes(inferAfterInductiveTimes, Statistics.Summary, null, false);
+          break;
+        case InferenceStrategy.SymbolicEnumeration:
+          var inferMaxInductiveTimes = inferBeforeInductiveTimes
+            .ToDictionary(p => p.Key.Item1, p => p.Value);
+          Console.WriteLine("Inductive statistics:");
+          StatisticsExtensions.ReportTimes(inferMaxInductiveTimes, Statistics.Summary, null, false);
+          break;
+      }
     }
 
     throw new ArgumentException("Failed to infer times!");
