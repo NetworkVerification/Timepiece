@@ -25,7 +25,7 @@ public enum Statistics
 
 public static class StatisticsExtensions
 {
-  public static string ToString(this Statistics stat)
+  public static string ShortHand(this Statistics stat)
   {
     return stat switch
     {
@@ -70,39 +70,39 @@ public static class StatisticsExtensions
         switch (stat)
         {
           case Statistics.Maximum:
-            headers.Append($"\t{stat.ToString()}");
+            headers.Append($"\t{stat.ShortHand()}");
             var (maxKey, maxTime) = times.MaxBy(p => p.Value);
             data.Append($"\t{maxTime}");
             Console.WriteLine($"Maximum time: {maxKey} in {maxTime}ms");
             break;
           case Statistics.Minimum:
-            headers.Append($"\t{stat.ToString()}");
+            headers.Append($"\t{stat.ShortHand()}");
             var (minKey, minTime) = times.MinBy(p => p.Value);
             Console.WriteLine($"Minimum time: {minKey} in {minTime}ms");
             data.Append($"\t{minTime}");
             break;
           case Statistics.Average:
-            headers.Append($"\t{stat.ToString()}");
+            headers.Append($"\t{stat.ShortHand()}");
             var avg = times.Average(p => p.Value);
             Console.WriteLine($"Average time: {avg}ms");
             data.Append($"\t{avg}");
             break;
           case Statistics.Median:
-            headers.Append($"\t{stat.ToString()}");
+            headers.Append($"\t{stat.ShortHand()}");
             var midpoint = times.Count / 2;
             var (medianKey, medianTime) = times.OrderBy(p => p.Value).ElementAt(midpoint);
             Console.WriteLine($"Median time: {medianKey} in {medianTime}ms");
             data.Append($"\t{medianTime}");
             break;
           case Statistics.NinetyNinthPercentile:
-            headers.Append($"\t{stat.ToString()}");
+            headers.Append($"\t{stat.ShortHand()}");
             var ninetyNinth = (int) (times.Count * 0.99);
             var (ninetyNinthKey, ninetyNinthTime) = times.OrderBy(p => p.Value).ElementAt(ninetyNinth);
             Console.WriteLine($"99th percentile time: {ninetyNinthKey} in {ninetyNinthTime}ms");
             data.Append($"\t{ninetyNinthTime}");
             break;
           case Statistics.Total:
-            headers.Append($"\t{stat.ToString()}");
+            headers.Append($"\t{stat.ShortHand()}");
             var total = times.Sum(p => p.Value);
             Console.WriteLine($"Total time: {total}ms");
             data.Append($"\t{total}");
