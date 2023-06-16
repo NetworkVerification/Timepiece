@@ -22,6 +22,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   {
     BeforeInvariants = beforeInvariants;
     AfterInvariants = afterInvariants;
+    NumInductiveFailures = topology.MapNodes(_ => 0);
   }
 
   public Infer(Network<T, TV, TS> net, IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> beforeInvariants,
@@ -39,6 +40,11 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// If true, report all failures to standard output.
   /// </summary>
   public bool ReportFailures { get; set; } = false;
+
+  /// <summary>
+  /// Record the number of inductive check failures for each node.
+  /// </summary>
+  private Dictionary<TV, int> NumInductiveFailures { get; }
 
   /// <summary>
   /// If true, report all times inferred to standard output.
@@ -133,8 +139,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   public Dictionary<TV, BigInteger> InferTimes(InferenceStrategy strategy)
   {
     var (beforeInitialChecks, afterInitialChecks) = FailingInitialChecks();
-    // for each node, for each subset of its predecessors, run CheckInductive in parallel
-    // construct a dictionary of the results of which b fail to imply the two invariants
+    // construct dictionaries listing which arrangements fail to imply the before and after invariants
     IReadOnlyDictionary<TV, List<BitArray>> beforeInductiveChecks;
     IReadOnlyDictionary<TV, List<BitArray>> afterInductiveChecks;
     switch (strategy)
@@ -209,7 +214,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       {
         if (CheckInitial(node, BeforeInvariants[node]))
         {
-          // PrintFailure(node, "before", null);
+          PrintFailure(node, "before", null);
           beforeInitialChecks.Add(node);
         }
       });
@@ -218,7 +223,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       {
         if (CheckInitial(node, AfterInvariants[node]))
         {
-          // PrintFailure(node, "after", null);
+          PrintFailure(node, "after", null);
           afterInitialChecks.Add(node);
         }
       });
@@ -247,12 +252,14 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
 
         if (CheckInductive(n, BeforeInvariants[n], b, routes) is not null)
         {
+          NumInductiveFailures[n]++;
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
 
         if (CheckInductive(n, AfterInvariants[n], b, routes) is not null)
         {
+          NumInductiveFailures[n]++;
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         }
@@ -283,7 +290,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
         f(n, tuple.b, beforeCollector, () =>
         {
           if (CheckInductive(n, BeforeInvariants[n], b, routes) is null) return;
-          // PrintFailure(n, "before", tuple.b);
+          NumInductiveFailures[n]++;
+          PrintFailure(n, "before", tuple.b);
           var ancestors = beforeInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         });
@@ -291,7 +299,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
         f(n, tuple.b, afterCollector, () =>
         {
           if (CheckInductive(n, AfterInvariants[n], b, routes) is null) return;
-          // PrintFailure(n, "after", tuple.b);
+          NumInductiveFailures[n]++;
+          PrintFailure(n, "after", tuple.b);
           var ancestors = afterInductiveChecks.GetOrAdd(n, new List<BitArray>());
           ancestors.Add(tuple.b);
         });
@@ -320,6 +329,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     {
       // get the model and block it
       var bArr = new BitArray(bSol.ToArray());
+      PrintFailure(node, bArr[^1] ? "before" : "after", bArr);
       // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
       var blockBs = bSol.Select((bb, i) => bb ? Zen.Not(b[i]) : b[i]);
       var blockingClause = Zen.Or(blockBs);
@@ -355,6 +365,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
           // NOTE: could we simplify further and just use one dictionary?
           var failed = (arr[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(node, new List<BitArray>());
           failed.Add(arr);
+          NumInductiveFailures[node]++;
         }
       });
     return (beforeInductiveChecks, afterInductiveChecks);
@@ -378,6 +389,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
             // NOTE: could we simplify further and just use one dictionary?
             var failed = (arr[^1] ? beforeInductiveChecks : afterInductiveChecks).GetOrAdd(node, new List<BitArray>());
             failed.Add(arr);
+            NumInductiveFailures[node]++;
           }
         });
       });
@@ -604,6 +616,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       StatisticsExtensions.ReportTimes(inferBeforeInitialTimes, Statistics.Summary, null, false);
       Console.WriteLine("After initial statistics:");
       StatisticsExtensions.ReportTimes(inferAfterInitialTimes, Statistics.Summary, null, false);
+      Console.WriteLine("Inductive failure statistics:");
+      FiveNumberSummary(NumInductiveFailures);
       switch (strategy)
       {
         case InferenceStrategy.ExplicitEnumeration:
@@ -622,5 +636,21 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     }
 
     throw new ArgumentException("Failed to infer times!");
+  }
+
+  private static void FiveNumberSummary(IDictionary<TV, int> d)
+  {
+    var len = d.Count;
+    var ordered = d.OrderBy(p => p.Value).ToArray();
+    var (minNode, min) = ordered[0];
+    var (maxNode, max) = ordered[^1];
+    var (medNode, med) = ordered[len / 2];
+    var (lowerNode, lower) = ordered[len / 4];
+    var (upperNode, upper) = ordered[3 * len / 4];
+    Console.WriteLine($"Minimum node {minNode}: {min}");
+    Console.WriteLine($"Lower-quantile node {lowerNode}: {lower}");
+    Console.WriteLine($"Median node {medNode}: {med}");
+    Console.WriteLine($"Upper-quantile node {upperNode}: {upper}");
+    Console.WriteLine($"Maximum node {maxNode}: {max}");
   }
 }

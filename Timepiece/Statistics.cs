@@ -129,4 +129,8 @@ public static class StatisticsExtensions
     Console.WriteLine(headers);
     Console.WriteLine(data);
   }
+
+  public static void ReportCounts<TKey>(IDictionary<TKey, int> counts, Statistics stats)
+  {
+  }
 }
