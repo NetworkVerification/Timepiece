@@ -40,6 +40,7 @@ public static class Profile
     {
       Console.WriteLine("Error, monolithic verification did not complete:");
       Console.WriteLine(e.Message);
+      Console.WriteLine(e.StackTrace);
     }
   }
 
