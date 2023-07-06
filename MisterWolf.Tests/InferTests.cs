@@ -168,8 +168,8 @@ public static class InferTests
     };
     var infer = new Infer<Option<BigInteger>, string, Unit>(net, beforeInvariants, afterInvariants)
     {
+      // fix the maximum time at 2
       MaxTime = 2,
-      PrintBounds = true,
     };
     var times = infer.InferTimes(InferenceStrategy.ExplicitEnumeration);
     // check that all times are correct
