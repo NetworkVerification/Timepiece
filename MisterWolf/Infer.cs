@@ -464,7 +464,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   }
 
   /// <summary>
-  ///   Generate a conjunction of constraints on the given time: for the given predecessors and time,
+  ///   Generate a disjunction of constraints on the given time: for the given predecessors and time,
   ///   the constraints require that each of the predecessor's times is at most the given time
   ///   if the predecessor is set in the arrangement, and otherwise strictly greater than the given time.
   /// </summary>
@@ -473,8 +473,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// <param name="times">The witness times of the predecessors.</param>
   /// <param name="arrangement">
   /// The arrangement of the predecessors, such that if arrangement[i] is true for predecessor i,
-  /// then the given symbolic time is less than predecessor i's witness time, and otherwise greater than or equal
-  /// (when arrangement[i] is false).</param>
+  /// then the given symbolic time is greater than or equal to predecessor i's witness time,
+  /// and otherwise less than (when arrangement[i] is false).</param>
   /// <returns>A disjunction over comparisons between time and the witness times.</returns>
   private static Zen<bool> TimeInterval(IEnumerable<TV> predecessors, Zen<BigInteger> time,
     IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement)
@@ -489,7 +489,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   {
     var neighborBounds = earlierNeighbors.Select(en => time >= times[en])
       .Concat(laterNeighbors.Select(ln => time < times[ln])).ToArray();
-    return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : true;
+    return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : false;
   }
 
   /// <summary>
