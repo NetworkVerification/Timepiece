@@ -445,9 +445,9 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     foreach (var arrangement in arrangements)
     {
       bounds.AddRange(BoundArrangement(node, times, arrangement, false));
-      var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
+      var nextBound = TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement);
       // var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
-      // var nextBound = Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times));
+      // var nextBound = TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times);
       bounds.Add(nextBound);
     }
 
@@ -475,11 +475,11 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// The arrangement of the predecessors, such that if arrangement[i] is true for predecessor i,
   /// then the given symbolic time is less than predecessor i's witness time, and otherwise greater than or equal
   /// (when arrangement[i] is false).</param>
-  /// <returns>A conjunction over comparisons between time and the witness times.</returns>
+  /// <returns>A disjunction over comparisons between time and the witness times.</returns>
   private static Zen<bool> TimeInterval(IEnumerable<TV> predecessors, Zen<BigInteger> time,
     IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement)
   {
-    return Zen.And(predecessors.Select((j, i) => arrangement[i] ? time < times[j] : time >= times[j]));
+    return Zen.Or(predecessors.Select((j, i) => arrangement[i] ? time >= times[j] : time < times[j]));
   }
 
   private static Zen<bool> TimeInterval(IEnumerable<TV> earlierNeighbors,
@@ -487,9 +487,9 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     Zen<BigInteger> time,
     IReadOnlyDictionary<TV, Zen<BigInteger>> times)
   {
-    var neighborBounds = earlierNeighbors.Select(en => time < times[en])
-      .Concat(laterNeighbors.Select(ln => time >= times[ln])).ToArray();
-    return neighborBounds.Length > 0 ? Zen.And(neighborBounds) : true;
+    var neighborBounds = earlierNeighbors.Select(en => time >= times[en])
+      .Concat(laterNeighbors.Select(ln => time < times[ln])).ToArray();
+    return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : true;
   }
 
   /// <summary>
@@ -515,7 +515,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     return from lowerBound in lowerBounds
       select Zen.Or(
         before ? lowerBound + BigInteger.One >= times[node] : lowerBound + BigInteger.One < times[node],
-        Zen.Not(TimeInterval(Topology[node], lowerBound, times, arrangement)));
+        TimeInterval(Topology[node], lowerBound, times, arrangement));
   }
 
   private (List<TV>, List<TV>) PartitionNeighborsByArrangement(TV node, IReadOnlyList<bool?> arrangement)
@@ -552,7 +552,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
           : (bool) arrangement[^1]!
             ? lowerBound + BigInteger.One >= times[node]
             : lowerBound + BigInteger.One < times[node],
-        Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node], times)));
+        TimeInterval(earlierNeighbors, laterNeighbors, times[node], times));
   }
 
   public static (long, Dictionary<TV, BigInteger>) Time(Func<Dictionary<TV, BigInteger>> inferFunc)
