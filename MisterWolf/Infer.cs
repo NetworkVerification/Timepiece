@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Numerics;
 using System.Text;
@@ -413,12 +414,12 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
     var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
     // enforce that all times must be non-negative
-    var bounds = times.Select(t => t.Value >= BigInteger.Zero).ToList();
+    var bounds = times.Select(t => t.Value >= BigInteger.Zero).ToImmutableHashSet();
     // if a maximum time is given, also require that no witness time is greater than the maximum
-    if (MaxTime is not null) bounds.AddRange(times.Select(pair => pair.Value <= MaxTime));
+    if (MaxTime is not null) bounds = bounds.Union(times.Select(pair => pair.Value <= MaxTime));
 
     // add initial check bounds
-    bounds.AddRange(
+    bounds = bounds.Union(
       beforeInitialChecks.Select<TV, Zen<bool>>(node => times[node] == BigInteger.Zero)
         .Concat(afterInitialChecks.Select<TV, Zen<bool>>(node => times[node] > BigInteger.Zero)));
 
@@ -431,10 +432,9 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 >= t_n
     foreach (var (node, arrangements) in beforeInductiveChecks)
-    foreach (IEnumerable<Zen<bool>>? beforeBounds in from arrangement in arrangements
-             select BoundArrangement(node, times, arrangement, true))
     {
-      bounds.AddRange(beforeBounds);
+      bounds = (from arrangement in arrangements select BoundArrangement(node, times, arrangement, true)).Aggregate(
+        bounds, (current, beforeBounds) => current.Union(beforeBounds));
     }
 
     // (2) if the after check failed for node n and b anc, add bounds for all predecessors m of n
@@ -444,11 +444,11 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     foreach (var (node, arrangements) in afterInductiveChecks)
     foreach (var arrangement in arrangements)
     {
-      bounds.AddRange(BoundArrangement(node, times, arrangement, false));
       var nextBound = TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement);
       // var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
       // var nextBound = TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times);
-      bounds.Add(nextBound);
+      bounds = bounds.Add(nextBound)
+        .Union(BoundArrangement(node, times, arrangement, false));
     }
 
     // print the computed bounds
