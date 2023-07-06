@@ -483,7 +483,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       // skip cases where the symbolic time is for the given predecessor,
       // but would be set to be less than itself
       // (arrangement is false and the symbolic time is equal to the predecessor's time)
-      .Where((j, i) => arrangement[i] || !time.Equals(times[j]))
+      // .Where((j, i) => arrangement[i] || !time.Equals(times[j]))
       .Select((j, i) => arrangement[i] ? time >= times[j] : time < times[j]).ToArray();
     return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : false;
   }
