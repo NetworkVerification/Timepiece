@@ -479,7 +479,13 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   private static Zen<bool> TimeInterval(IEnumerable<TV> predecessors, Zen<BigInteger> time,
     IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement)
   {
-    return Zen.Or(predecessors.Select((j, i) => arrangement[i] ? time >= times[j] : time < times[j]));
+    var neighborBounds = predecessors
+      // skip cases where the symbolic time is for the given predecessor,
+      // but would be set to be less than itself
+      // (arrangement is false and the symbolic time is equal to the predecessor's time)
+      .Where((j, i) => arrangement[i] || !time.Equals(times[j]))
+      .Select((j, i) => arrangement[i] ? time >= times[j] : time < times[j]).ToArray();
+    return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : false;
   }
 
   private static Zen<bool> TimeInterval(IEnumerable<TV> earlierNeighbors,
