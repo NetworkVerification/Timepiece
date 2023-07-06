@@ -23,6 +23,21 @@ public static class InferTests
       topology.MapNodes(n => dest.EqualsValue(n)), new[] {dest});
   }
 
+  // a triangular integer network where the path A-B-C is cheaper than the path A-C
+  private static Network<Option<BigInteger>, string, Unit> TriangleNet()
+  {
+    var topology = Topologies.Complete(3, alphaNames: true);
+    var transfer =
+      topology.MapEdges<Func<Zen<Option<BigInteger>>, Zen<Option<BigInteger>>>>(e =>
+        e.Item1 == "B" || e.Item2 == "B"
+          ? Lang.Omap<BigInteger, BigInteger>(x => x + BigInteger.One)
+          : Lang.Omap<BigInteger, BigInteger>(x => x + new BigInteger(3)));
+    return new Network<Option<BigInteger>, string, Unit>(topology, transfer, Lang.Omap2<BigInteger>(Zen.Min),
+      topology.MapNodes<Zen<Option<BigInteger>>>(n =>
+        n == "A" ? Option.Create<BigInteger>(BigInteger.Zero) : Option.Null<BigInteger>()),
+      Array.Empty<SymbolicValue<Unit>>());
+  }
+
   /// <summary>
   ///
   /// </summary>
@@ -117,5 +132,55 @@ public static class InferTests
     var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
+  }
+
+  public static TheoryData<Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>> TriangleNetBeforeInvariants =>
+    new()
+    {
+      // allowing any route before convergence
+      new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
+      {
+        {"A", s => s == Option.Some(new BigInteger(0))},
+        // is a nonnegative integer or "infinity" (none)
+        {"B", s => s.Where(x => x < BigInteger.Zero).IsNone()},
+        {"C", s => s.Where(x => x < BigInteger.Zero).IsNone()}
+      },
+      // allowing exact routes before convergence
+      new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
+      {
+        {"A", s => s == Option.Some(new BigInteger(0))},
+        {"B", s => s == Option.None<BigInteger>()},
+        {"C", s => Zen.Or(s == Option.None<BigInteger>(), s == Option.Some(new BigInteger(3)))}
+      }
+    };
+
+  [Theory]
+  [MemberData(nameof(TriangleNetBeforeInvariants))]
+  public static void CheckTriangleNetInferSucceeds(
+    Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> beforeInvariants)
+  {
+    var net = TriangleNet();
+    var afterInvariants = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
+    {
+      {"A", s => s == Option.Some(new BigInteger(0))},
+      {"B", s => s == Option.Some(new BigInteger(1))},
+      {"C", s => s == Option.Some(new BigInteger(2))}
+    };
+    var infer = new Infer<Option<BigInteger>, string, Unit>(net, beforeInvariants, afterInvariants)
+    {
+      MaxTime = 2,
+      PrintBounds = true,
+    };
+    var times = infer.InferTimes(InferenceStrategy.ExplicitEnumeration);
+    // check that all times are correct
+    Assert.True(times.Count > 0, "Failed to infer times.");
+    Assert.Equal(1, times["B"]);
+    Assert.Equal(2, times["C"]);
+    // confirm that all checks pass
+    var annotations = net.Topology.MapNodes(n => Lang.Until(times[n], beforeInvariants[n], afterInvariants[n]));
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, Unit>(net, annotations,
+      net.Topology.MapNodes(n => Lang.Finally(new BigInteger(2), Lang.IsSome<BigInteger>())),
+      net.Topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
+    Assert.Equal(Option.None<State<Option<BigInteger>, string, Unit>>(), annotated.CheckAnnotations());
   }
 }

@@ -432,7 +432,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     //     or t_m + 1 >= t_n
     foreach (var (node, arrangements) in beforeInductiveChecks)
     foreach (IEnumerable<Zen<bool>>? beforeBounds in from arrangement in arrangements
-             select BoundArrangement(node, times, arrangement))
+             select BoundArrangement(node, times, arrangement, true))
     {
       bounds.AddRange(beforeBounds);
     }
@@ -444,7 +444,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     foreach (var (node, arrangements) in afterInductiveChecks)
     foreach (var arrangement in arrangements)
     {
-      bounds.AddRange(BoundArrangement(node, times, arrangement));
+      bounds.AddRange(BoundArrangement(node, times, arrangement, false));
       var nextBound = Zen.Not(TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement));
       // var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
       // var nextBound = Zen.Not(TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times));
@@ -502,9 +502,10 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// <param name="node">The node for which the arrangement is being considered.</param>
   /// <param name="times">The witness times of the node and its predecessors.</param>
   /// <param name="arrangement">A bitarray representing the neighbors and node, in order (neighbors then node).</param>
+  /// <param name="before">True if the bound is for the given node's before invariant, and false for its after invariant.</param>
   /// <returns>An enumerable of constraints.</returns>
   private IEnumerable<Zen<bool>> BoundArrangement(TV node,
-    IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement)
+    IReadOnlyDictionary<TV, Zen<BigInteger>> times, BitArray arrangement, bool before)
   {
     // the instantiated bounds are 0 and all neighbors that have already converged (the arrangement is false at the neighbor)
     var lowerBounds = Enumerable.Repeat(Zen.Constant(BigInteger.Zero), 1)
@@ -513,7 +514,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     // for each lower bound, add a disjunction that rules out the case
     return from lowerBound in lowerBounds
       select Zen.Or(
-        arrangement[^1] ? lowerBound + BigInteger.One >= times[node] : lowerBound + BigInteger.One < times[node],
+        before ? lowerBound + BigInteger.One >= times[node] : lowerBound + BigInteger.One < times[node],
         Zen.Not(TimeInterval(Topology[node], lowerBound, times, arrangement)));
   }
 
