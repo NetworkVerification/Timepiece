@@ -49,7 +49,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// <summary>
   /// If true, log the times taken by inference to the Infer dictionaries.
   /// </summary>
-  public bool LogInferenceTime { get; set; } = false;
+  public bool LogInferenceTime { get; set; }
 
   /// <summary>
   /// If true, print the generated bounds to standard output.
@@ -72,8 +72,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   public bool PrintTimes { get; set; } = false;
 
   public BigInteger? MaxTime { get; set; }
-  protected IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
-  protected IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
+  private IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> BeforeInvariants { get; }
+  private IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> AfterInvariants { get; }
 
   /// <summary>
   ///   Return a string describing a failed check.
@@ -133,7 +133,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   /// <param name="routes">The routes of the network for the neighboring nodes.</param>
   /// <param name="blockingClauses">An additional enumerable of clauses over b variables
   ///   to block when checking the invariant.</param>
-  /// <returns>True if the invariant is *not* always satisfied by the bs, and false otherwise.</returns>
+  /// <returns>An arrangement b which causes the invariant to *not* always be satisfied if one exists, and null otherwise.</returns>
   private List<bool>? CheckInductive(TV node, Func<Zen<T>, Zen<bool>> invariant,
     IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<TV, Zen<T>> routes,
     IEnumerable<Zen<bool>>? blockingClauses = null)
@@ -173,6 +173,10 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
       case InferenceStrategy.SymbolicEnumeration:
         (beforeInductiveChecks, afterInductiveChecks) =
           EnumerateArrangementsSymbolic();
+        break;
+      case InferenceStrategy.SelectiveEnumeration:
+        (beforeInductiveChecks, afterInductiveChecks) =
+          EnumerateArrangementsSelective();
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
@@ -310,6 +314,65 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
         });
       });
     return (beforeInductiveChecks, afterInductiveChecks);
+  }
+
+  private (IReadOnlyDictionary<TV, List<BitArray>>, IReadOnlyDictionary<TV, List<BitArray>>)
+    EnumerateArrangementsSelective()
+  {
+    var routes = Topology.MapNodes(_ => Zen.Symbolic<T>());
+    // generate the "T1" table
+    var t1 = new Dictionary<(TV, bool), Dictionary<(TV, bool), bool>>();
+    foreach (var (node, neighbors) in Topology.Neighbors)
+    {
+      t1[(node, true)] = new Dictionary<(TV, bool), bool>();
+      t1[(node, false)] = new Dictionary<(TV, bool), bool>();
+      foreach (var neighbor in neighbors)
+      {
+        var combinations = new[] {(true, true), (true, false), (false, true), (false, false)};
+        // TODO: change CheckInductive to allow us to "turn off" some neighbors
+        // FIXME: change the b
+        foreach (var (bu, bv) in combinations)
+        {
+          t1[(node, bv)][(neighbor, bu)] = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node],
+            new Zen<bool>[] { }, routes) is null;
+        }
+      }
+    }
+
+    // generate the "T2" table
+    var t2 = new Dictionary<(TV, bool), Dictionary<(TV, bool, TV, bool), bool>>();
+    foreach (var (node, neighbors) in Topology.Neighbors)
+    {
+      t2[(node, true)] = new Dictionary<(TV, bool, TV, bool), bool>();
+      t2[(node, false)] = new Dictionary<(TV, bool, TV, bool), bool>();
+      foreach (var (neighbor1, neighbor2) in from neighbor1 in neighbors
+               from neighbor2 in neighbors
+               select (neighbor1, neighbor2))
+      {
+        var combinations = new[]
+        {
+          (true, true, true), (true, false, true), (false, true, true), (false, false, true),
+          (true, true, false), (true, false, false), (false, true, false), (false, false, false)
+        };
+        // if the two neighbors agree, we can skip checking the pair
+        foreach (var (b1, b2, bv) in combinations)
+        {
+          if (t1[(node, bv)][(neighbor1, b1)] == t1[(node, bv)][(neighbor2, b2)])
+          {
+            t2[(node, bv)][(neighbor1, b1, neighbor2, b2)] = t1[(node, bv)][(neighbor1, b1)];
+          }
+          else
+          {
+            t2[(node, bv)][(neighbor1, b1, neighbor2, b2)] =
+              CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node], new Zen<bool>[] { },
+                routes) is null;
+          }
+        }
+      }
+    }
+
+    // reconstruct the result for every arrangement
+    throw new NotImplementedException();
   }
 
   /// <summary>
