@@ -1,6 +1,6 @@
 .git
 # ignore these directories which we don't benchmark
-MisterWolf/
+MisterWolf.Tests/
 Timepiece.Tests/
 # ignore generated files
 */obj/*

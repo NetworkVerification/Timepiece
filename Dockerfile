@@ -10,12 +10,15 @@ WORKDIR /timepiece
 COPY Timepiece/Timepiece.csproj Timepiece/
 COPY Timepiece.Benchmarks/Timepiece.Benchmarks.csproj Timepiece.Benchmarks/
 COPY Timepiece.Angler/Timepiece.Angler.csproj Timepiece.Angler/
+COPY MisterWolf/MisterWolf.csproj MisterWolf/
 RUN dotnet restore "Timepiece/Timepiece.csproj"
+RUN dotnet restore "MisterWolf/MisterWolf.csproj"
 RUN dotnet restore "Timepiece.Benchmarks/Timepiece.Benchmarks.csproj"
 RUN dotnet restore "Timepiece.Angler/Timepiece.Angler.csproj"
 
 # copy the other files
 COPY Timepiece Timepiece
+COPY MisterWolf MisterWolf
 COPY Timepiece.Benchmarks Timepiece.Benchmarks
 COPY Timepiece.Angler Timepiece.Angler
 RUN dotnet build Timepiece.Benchmarks -c Release -o /timepiece/build
