@@ -12,18 +12,17 @@ import re
 import subprocess
 import sys
 
-# regex patterns for identifying table rows for modular and monolithic benchmarks
-MOD_PAT = re.compile(
-    r"^(n\tmax\tmin\tavg\tmed\t99p\ttotal\twall)\n((?:[\d\.]+\s)*)", re.M
-)
-MONO_PAT = re.compile(r"^(n\ttotal)\n((?:[\d\.]+\s)*)", re.M)
 
-
-def output_to_rows(s: str, is_mono: bool = False) -> list[dict[str, float]]:
-    """Convert the given text to dictionary rows."""
+def table_pattern_to_rows(s: str, pat: re.Pattern[str]) -> list[dict[str, float]]:
+    """
+    Convert the given text representing a one-row table
+    to dictionary rows according to the specified pattern.
+    The pattern should have two match groups: one for the table header,
+    and one for the table data.
+    """
     return [
         dict(zip(match[1].split("\t"), map(float, match[2].split("\t"))))
-        for match in (MONO_PAT if is_mono else MOD_PAT).finditer(s)
+        for match in pat.finditer(s)
     ]
 
 
@@ -58,14 +57,20 @@ def run_dotnet(dll_file, options, timeout, output_file) -> tuple[Response, list[
     Return the return code of running the process and any collected table rows.
     """
     args = ["dotnet", dll_file] + options
-    # run the process, redirecting stderr to stdout,
-    # timing out after TIMEOUT,
+    # run the process, redirecting stderr to stdout, timing out after TIMEOUT,
     # and raising an exception if the return code is non-zero
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # regex patterns for identifying table rows for modular and monolithic benchmarks
+    if "-m" in options:  # monolithic pattern
+        output_pat = re.compile(r"^(n\ttotal)\n((?:[\d\.]+\s)*)", re.M)
+    else:  # modular pattern
+        output_pat = re.compile(
+            r"^(n\tmax\tmin\tavg\tmed\t99p\ttotal\twall)\n((?:[\d\.]+\s)*)", re.M
+        )
     try:
         output, _ = proc.communicate(timeout=timeout)
         tee_output(output, output_file)
-        rows = output_to_rows(output.decode("utf-8"), "-m" in options)
+        rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
         return (Response.SUCCESS, rows)
     except KeyboardInterrupt:
         kill_output = "Killing process..."
@@ -73,7 +78,7 @@ def run_dotnet(dll_file, options, timeout, output_file) -> tuple[Response, list[
         proc.terminate()
         output, _ = proc.communicate()
         tee_output(output, output_file)
-        rows = output_to_rows(output.decode("utf-8"), "-m" in options)
+        rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
         return (Response.USER_INTERRUPT, rows)
     except subprocess.TimeoutExpired:
         timeout_output = "Timed out after {time} seconds".format(time=timeout)
@@ -81,7 +86,7 @@ def run_dotnet(dll_file, options, timeout, output_file) -> tuple[Response, list[
         proc.kill()
         output, _ = proc.communicate()
         tee_output(output, output_file)
-        rows = output_to_rows(output.decode("utf-8"), "-m" in options)
+        rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
         return (Response.TIMEOUT, rows)
 
 
@@ -288,12 +293,11 @@ if __name__ == "__main__":
                 "total",
                 "wall",
             ]
-        averaged_rows = []
+        # we use multiple trials to avoid noise in the results, hence we want to take the minimum
+        min_rows = []
         for _, g in itertools.groupby(rows, key=lambda r: r["n"]):
             groups = list(g)
-            averaged_rows.append(
-                {h: sum(r[h] for r in groups) / len(groups) for h in headers}
-            )
+            min_rows.append({h: min(r[h] for r in groups) for h in headers})
         # create a .dat file in the results directory adjacent to logs
         results_path = pathlib.Path("results")
         if not results_path.exists():
@@ -302,4 +306,4 @@ if __name__ == "__main__":
         with open(dat_file, "w") as dat:
             writer = csv.DictWriter(dat, fieldnames=headers, delimiter="\t")
             writer.writeheader()
-            writer.writerows(averaged_rows)
+            writer.writerows(min_rows)

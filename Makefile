@@ -4,6 +4,7 @@ NTRIALS := 1
 TIMEOUT := 60
 MINSIZE := 4
 MAXSIZE := 40
+RUNALLCMD := python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat
 LOGDIR := logs
 RESULTDIR := results
 ANGLERDIR := angler
@@ -21,22 +22,23 @@ image: Dockerfile INTERNET2.angler.json run_all.py
 
 # run the monolithic benchmark
 $(RESULTDIR)/%-m.dat: | image
-	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat -- $(*F) -m
-	docker cp $(CONTAINER):/timepiece/logs .
-	docker cp $(CONTAINER):/timepiece/results .
-	docker rm $(CONTAINER)
+	docker run --rm --name $(CONTAINER) \
+		--mount type=bind,source=$(RESULTDIR),target=/timepiece/$(RESULTDIR) \
+		--mount type=bind,source=$(LOGDIR),target=/timepiece/$(LOGDIR) \
+		$(IMAGE) $(RUNALLCMD) -- $(*F) -m
 
 # run the modular benchmark
 $(RESULTDIR)/%.dat: | image
-	docker run --name $(CONTAINER) $(IMAGE) python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat -- $(*F)
-	docker cp $(CONTAINER):/timepiece/logs .
-	docker cp $(CONTAINER):/timepiece/results .
-	docker rm $(CONTAINER)
+	docker run --rm --name $(CONTAINER) \
+		--mount type=bind,source=$(RESULTDIR),target=/timepiece/$(RESULTDIR) \
+		--mount type=bind,source=$(LOGDIR),target=/timepiece/$(LOGDIR) \
+		$(IMAGE) $(RUNALLCMD) -- $(*F)
 
 # generate the plot from the benchmarks
 # use the first prereq as \benchmod and the second as \benchmono
 $(RESULTDIR)/%.pdf: $(RESULTDIR)/%.dat $(RESULTDIR)/%-m.dat
-	pdflatex -jobname $(*F) -halt-on-error -output-directory results "\newcommand\timeout{$(TIMEOUT)}\newcommand\benchmod{$(word 1,$(^F))}\newcommand\benchmono{$(word 2,$(^F))}\input{plot.tex}"
+	pdflatex -jobname $(*F) -halt-on-error -output-directory $(RESULTDIR) \
+	"\newcommand\timeout{$(TIMEOUT)}\newcommand\benchmod{$(word 1,$(^F))}\newcommand\benchmono{$(word 2,$(^F))}\input{plot.tex}"
 
 bench:	$(addprefix $(RESULTDIR)/, $(POLICIES:=.dat)) $(addprefix $(RESULTDIR)/, $(POLICIES:=-m.dat))
 
