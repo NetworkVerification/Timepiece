@@ -1,6 +1,6 @@
 # Logging and results files
-logs
-results
+logs*
+results*
 
 # User-specific files
 *.rsuser

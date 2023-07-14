@@ -15,9 +15,17 @@ Our Docker image can also be used to run Timepiece using this JSON input.
 
 The minimal required dependencies are [Docker](https://www.docker.com/)
 and [Make](https://www.gnu.org/software/make/).
-We use a couple of shell utilities that should be present on most Unix machines
-to extract and evaluate our benchmarks, namely `test`, `timeout` and `tee`.
 To generate plots, we require a **LaTeX distribution** with pgfplots.
+
+We use [bind mounts](https://docs.docker.com/storage/bind-mounts/) to read and write
+from the results and logs files.
+
+### Windows
+
+We've tested this artifact using Linux and MacOS, and our Makefile uses common
+Unix commands such as `sh`, `date`, `mkdir`, `mv` and `rm` to manipulate files.
+You may need to change these commands to the appropriate Windows equivalents
+if running this artifact on Windows.
 
 ### Step 0. Set up
 
@@ -27,14 +35,7 @@ build if your machine is out of space.
 Running `docker system prune` can help delete old containers and
 images you no longer use.
 
-Ensure that you have the following tools installed and
-available from the command line:
-
-- `make`
-- `test`
-- `timeout`
-- `tee`
-
+Ensure that you have `make` installed and available from the command line.
 Ensure your system has `pdflatex` installed, along with the following packages
 (available in most standard LaTeX distributions like TeX Live and MikTeX):
 
@@ -55,27 +56,28 @@ You should see a series of messages to your screen as Docker describes
 the stages of the build.
 
 We include the `INTERNET2.angler.json` file that we generated in the repository
-to save build time. This file is used to test Internet2.
-It is quite large (~1GB) and copied to the Docker image during the build,
-which will add a few seconds to the build time.
-We also provide the infrastructure to regenerate this file from the Internet2
-network configurations if so desired in the `angler` directory.
+to save build time. This file is used to test Internet2 and is quite large (~1GB).
+We provide the infrastructure to regenerate this file from the Internet2
+network configurations (if so desired) in the `angler` directory.
 
 ### Step 2. Run the benchmarks: `make bench`
 
 Now run `make bench` to run the benchmarks.
 This will use the defaults defined in the Makefile for running the benchmarks,
-which give each benchmark only a minute to run before timing out (controlled by
-the TIMEOUT variable).
+which give each benchmark _only a minute to run_ before timing out (controlled by
+the `TIMEOUT` variable).
 As such, many of the larger benchmarks will time out sooner than our reported
 results in the paper.
-Nonetheless, this should test that everything is working as intended.
+Nonetheless, this should test that everything can run as intended.
+
 `make bench` will run each fattree policy benchmark modularly and monolithically,
-from a fattree of k=4 pods to k=40 pods (controlled by the MINSIZE and MAXSIZE variables).
-The policies run are controlled by the POLICIES variable.
+from a fattree of k=4 pods to k=40 pods (controlled by the `MINSIZE` and `MAXSIZE` variables).
+The policies run are controlled by the `POLICIES` variable.
 Output is captured by the Python script [`run_all.py`](./run_all.py), which buffers
 it to the screen: you may therefore have to wait some time before any output appears.
-By default, each benchmark runs once (controlled by the NTRIALS variable)
+By default, each benchmark runs once (controlled by the `NTRIALS` variable):
+you can automatically instruct `run_all.py` to take the minimum of multiple trials
+(to reduce the impact of noise) by increasing `NTRIALS`.
 
 The output of each benchmark should be a report of the time taken to verify each
 benchmark. For the fattree benchmarks, we expect all benchmarks to either pass
@@ -84,7 +86,7 @@ Output should roughly resemble:
 
 ```
 $ make bench
-Running benchmark k=4 with options: r
+Running benchmark k=4 with options: reach
 Trial 0 of 1 started ...
 k=4
 Inferred destination node: edge-19
@@ -98,7 +100,7 @@ Average check time: ...
 Median check time: node ... in ...
 99th percentile check time: node ... in ...
 Total check time: ...
-Running benchmark k=8 with options: r
+Running benchmark k=8 with options: reach
 Trial 0 of 1 started ...
 k=8
 Inferred destination node: edge-79
@@ -109,8 +111,8 @@ Environment.ProcessorCount: ...
 
 After a benchmark finishes running, the log of all output is saved to the `logs/`
 directory as a `$(POLICY).txt` file (`$(POLICY)-m.txt` for monolithic benchmarks).
-When the `--dat` option is supplied to `run_all.py`, it also generates a `.dat` file
-which is used to generate the plot for the corresponding benchmark. These files are
+The `--dat` option, supplied to `run_all.py`, instructs the script to generate a `.dat` file.
+This file is used to generate the plot for the corresponding benchmark. These files are
 saved to the `results/` directory as `$(POLICY).dat` or `$(POLICY)-m.dat`.
 Each line of the `.dat` file is the average across trials of each statistic.
 For modular benchmarks, these include:
@@ -183,21 +185,21 @@ The generated plots have slightly different names from the plots in the paper,
 as the policies are listed in shorthand rather than their full names.
 The mapping between them is:
 
-- `results/r.pdf`: the SpReach benchmark
-- `results/lw.pdf`: the SpLen benchmark
-- `results/v.pdf`: the SpVf benchmark
-- `results/h.pdf`: the SpHijack benchmark
-- `results/ar.pdf`: the ApReach benchmark
-- `results/alw.pdf`: the ApLen benchmark
-- `results/av.pdf`: the ApVf benchmark
-- `results/ah.pdf`: the ApHijack benchmark
+- `results/reach.pdf`: the SpReach benchmark
+- `results/lengthWeak.pdf`: the SpLen benchmark
+- `results/valley.pdf`: the SpVf benchmark
+- `results/hijack.pdf`: the SpHijack benchmark
+- `results/allReach.pdf`: the ApReach benchmark
+- `results/allLengthWeak.pdf`: the ApLen benchmark
+- `results/allValley.pdf`: the ApVf benchmark
+- `results/allHijack.pdf`: the ApHijack benchmark
 
 #### Step 4. Run the Internet2 benchmarks: `make logs/internet2.txt`
 
 For the Internet2 benchmark, we run the docker container again, asking it to use
 Timepiece.Angler to evaluate the Internet2 benchmark.
 Timepiece.Angler works differently from Timepiece.Benchmarks: it reads in a given
-.angler.json file and deserializes it to determine the network's behavior.
+`.angler.json` file and deserializes it to determine the network's behavior.
 This process takes a few seconds, at the end of which standard output should report:
 
 ```
@@ -262,7 +264,7 @@ without median or 99th percentile times reported.)
 
 As we claim in the paper, results should show timeouts occur quickly for
 the monolithic benchmarks (around k=8 or k=12), with the exception of
-the SpReach (r) benchmark, which is sufficiently simple to run to completion.
+the SpReach (reach) benchmark, which is sufficiently simple to run to completion.
 Times should be larger for Ap benchmarks over Sp benchmarks.
 
 We _cannot guarantee_ that the exact times reported in the paper will hold
@@ -286,7 +288,7 @@ on page 18 of the paper (under Wide-area networks).
 
 ### Making INTERNET2.angler.json from scratch
 
-You can use the Makefile's `make INTERNET2.angler.json` command
+You can use the Makefile's `make angler/INTERNET2.angler.json` command
 to build the Internet2 benchmark from its configuration files.
 Included in the `angler` repository is the `internet2.sh` shell script,
 which builds a Docker image for running Angler on the Internet2 benchmark's
@@ -387,3 +389,6 @@ as the `tptest` container is already in use.
 If you run a benchmark again after a log file has previously been generated,
 `make` may skip that benchmark.
 You must delete or rename the old log files before running make again.
+The `make clean` recipe will delete the logs and results files,
+while the `make archive` recipe will move them to a new directory
+specifying the current time.

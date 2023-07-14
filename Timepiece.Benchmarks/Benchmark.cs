@@ -119,7 +119,7 @@ public static class BenchmarkTypeExtensions
       "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
       "ar" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
       "al" or "allLength" or "ApPathLength" => BenchmarkType.ApPathLength,
-      "alw" or "AllLengthWeak" or "ApPathLengthWeak" => BenchmarkType.ApPathLengthWeak,
+      "alw" or "allLengthWeak" or "ApPathLengthWeak" => BenchmarkType.ApPathLengthWeak,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
       "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
       "av" or "allValley" or "ApValleyFree" => BenchmarkType.ApValleyFree,

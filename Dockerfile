@@ -35,4 +35,4 @@ ENV DOTNET_EnableDiagnostics=0
 WORKDIR /timepiece
 COPY --from=publish /timepiece/publish publish
 COPY run_all.py .
-COPY INTERNET2.angler.json .
+# COPY INTERNET2.angler.json .
