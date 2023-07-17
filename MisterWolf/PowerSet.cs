@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Immutable;
 
 namespace MisterWolf;
 
@@ -8,20 +8,27 @@ namespace MisterWolf;
 public static class PowerSet
 {
   /// <summary>
-  ///   Return an array of bit arrays representing all possible
+  ///   Return an enumerable of boolean lists representing all possible
   ///   choices from the given number of elements.
   /// </summary>
-  /// <param name="elements">The number of elements of each bit array.</param>
+  /// <param name="elements">The number of elements of each boolean list.</param>
   /// <returns>
-  ///   An enumerable of bitarrays representing the power set of the elements,
-  ///   ranging from 0 to 2^(number of neighbors) - 1.
+  ///   An enumerable of immutable lists representing the power set of the elements,
+  ///   ranging from 0 to 2^(number of elements) - 1.
   /// </returns>
-  public static IEnumerable<BitArray> BitPSet(int elements)
+  public static IEnumerable<IReadOnlyList<bool>> BitPSet(int elements)
   {
-    // the number of arrangements is 2^(elements), i.e. 1 bit-shifted elements times
-    var numberOfArrangements = 1 << elements;
-    // initialize a new list of bit arrays where each bit represents an element being on or off
-    return Enumerable.Range(0, numberOfArrangements).Select(i => new BitArray(BitConverter.GetBytes(i)));
+    // the number of lists is 2^(elements), i.e. 1 bit-shifted elements times
+    IEnumerable<ImmutableList<bool>> sets = new List<ImmutableList<bool>>(1 << elements)
+      {Enumerable.Repeat(false, elements).ToImmutableList()};
+    for (var i = 0; i < elements; i++)
+    {
+      var i1 = i;
+      var enumerable = sets.ToArray();
+      sets = enumerable.Concat(enumerable.Select(b => b.SetItem(i1, true)));
+    }
+
+    return sets;
   }
 
   /// <summary>
