@@ -80,16 +80,26 @@ public class Digraph<TV> where TV : notnull
 
   /// <summary>
   /// Add a new edge from a neighbor to the node.
+  /// If either the neighbor or the node are not already in the digraph, add them.
   /// </summary>
   /// <param name="node"></param>
   /// <param name="neighbor"></param>
   public void AddEdge(TV node, TV neighbor)
   {
+    if (!HasNode(node))
+    {
+      Nodes.Add(node);
+      Neighbors.Add(node, ImmutableSortedSet<TV>.Empty);
+    }
+
     if (!HasNode(neighbor))
     {
       Nodes.Add(neighbor);
       Neighbors.Add(neighbor, ImmutableSortedSet<TV>.Empty);
     }
+
+    // if the edge already exists, do nothing
+    if (Neighbors[node].Contains(neighbor)) return;
 
     Neighbors.Add(node, Neighbors[node].Add(neighbor));
     NEdges++;

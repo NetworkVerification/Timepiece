@@ -326,16 +326,21 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   private (IReadOnlyDictionary<TV, List<IReadOnlyList<bool>>>, IReadOnlyDictionary<TV, List<IReadOnlyList<bool>>>)
     EnumerateArrangementsSelective()
   {
+    var beforeInductiveChecks = new Dictionary<TV, List<IReadOnlyList<bool>>>();
+    var afterInductiveChecks = new Dictionary<TV, List<IReadOnlyList<bool>>>();
     // a graph representing which arrangements pass
-    var passArrangementGraph = new Dictionary<(TV, bool), HashSet<(TV, bool)>>();
-    var failArrangementGraph = new Dictionary<(TV, bool), HashSet<(TV, bool)>>();
+    var passArrangementNeighbors = new Dictionary<(TV, bool), ImmutableSortedSet<(TV, bool)>>();
+    var failArrangementNeighbors = new Dictionary<(TV, bool), ImmutableSortedSet<(TV, bool)>>();
     foreach (var node in Digraph.Nodes)
     {
-      passArrangementGraph.Add((node, false), new HashSet<(TV, bool)>());
-      passArrangementGraph.Add((node, true), new HashSet<(TV, bool)>());
-      failArrangementGraph.Add((node, false), new HashSet<(TV, bool)>());
-      failArrangementGraph.Add((node, true), new HashSet<(TV, bool)>());
+      passArrangementNeighbors.Add((node, false), ImmutableSortedSet<(TV, bool)>.Empty);
+      passArrangementNeighbors.Add((node, true), ImmutableSortedSet<(TV, bool)>.Empty);
+      failArrangementNeighbors.Add((node, false), ImmutableSortedSet<(TV, bool)>.Empty);
+      failArrangementNeighbors.Add((node, true), ImmutableSortedSet<(TV, bool)>.Empty);
     }
+
+    var passArrangementGraph = new Digraph<(TV, bool)>(passArrangementNeighbors);
+    var failArrangementGraph = new Digraph<(TV, bool)>(failArrangementNeighbors);
 
     var routes = Digraph.MapNodes(_ => Zen.Symbolic<T>());
     // generate the "T1" table
@@ -382,12 +387,16 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
         {
           if (!t1[(node, bv)].Contains((neighbor1, b1)) && !t1[(node, bv)].Contains((neighbor2, b2)))
           {
-            // both neighbors fail: do nothing
+            // both neighbors fail
+            failArrangementGraph.AddEdge((neighbor1, b1), (neighbor2, b2));
+            failArrangementGraph.AddEdge((neighbor2, b2), (neighbor1, b1));
           }
           else if (t1[(node, bv)].Contains((neighbor1, b1)) && t1[(node, bv)].Contains((neighbor2, b2)))
           {
             // both neighbors pass
             t2[(node, bv)].Add((neighbor1, b1, neighbor2, b2));
+            passArrangementGraph.AddEdge((neighbor1, b1), (neighbor2, b2));
+            passArrangementGraph.AddEdge((neighbor2, b2), (neighbor1, b1));
           }
           else
           {
@@ -397,22 +406,35 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
             if (check is null)
             {
               t2[(node, bv)].Add((neighbor1, b1, neighbor2, b2));
-              passArrangementGraph[(neighbor1, b1)].Add((neighbor2, b2));
-              passArrangementGraph[(neighbor2, b2)].Add((neighbor1, b1));
+              passArrangementGraph.AddEdge((neighbor1, b1), (neighbor2, b2));
+              passArrangementGraph.AddEdge((neighbor2, b2), (neighbor1, b1));
             }
             else
             {
-              failArrangementGraph[(neighbor1, b1)].Add((neighbor2, b2));
-              failArrangementGraph[(neighbor2, b2)].Add((neighbor1, b1));
+              failArrangementGraph.AddEdge((neighbor1, b1), (neighbor2, b2));
+              failArrangementGraph.AddEdge((neighbor2, b2), (neighbor1, b1));
             }
           }
+        }
+      }
+
+      // reconstruct the result for every arrangement
+      foreach (var (neighbor, inv) in passArrangementGraph.Nodes)
+      {
+        var component = passArrangementGraph.BreadthFirstSearch((neighbor, inv));
+        // TODO: this seems wrong
+        if (component.Count < Digraph.Nodes.Count) continue;
+        var arrangement = component.ToDictionary(p => p.Key.Item1, p => p.Key.Item2);
+        // add the arrangement to the appropriate dictionary
+        if ((inv ? beforeInductiveChecks : afterInductiveChecks).TryGetValue(node, out var arrangements))
+        {
+          arrangements.Add(Digraph[node].Select(n => arrangement[n]).ToList());
         }
       }
     }
 
     // reconstruct the result for every arrangement
-    // we can essentially do this by finding every path through the entire graph doing a BFS
-
+    // we can do this by finding every connected component that contains all the nodes
     throw new NotImplementedException();
   }
 
