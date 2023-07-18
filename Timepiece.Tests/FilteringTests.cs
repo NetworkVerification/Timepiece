@@ -13,7 +13,7 @@ public static class FilteringTests
 {
   private const string Tag = "t";
 
-  private static readonly Topology<string> Topology = new(new Dictionary<string, List<string>>
+  private static readonly Digraph<string> Digraph = new(new Dictionary<string, List<string>>
   {
     {"n", new List<string>()},
     {"w", new List<string>()},
@@ -35,7 +35,7 @@ public static class FilteringTests
       {"d", Option.None<Bgp>()},
       {"e", Option.None<Bgp>()}
     };
-    return new AnnotatedNetwork<Option<Bgp>, string, Unit>(Topology, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
+    return new AnnotatedNetwork<Option<Bgp>, string, Unit>(Digraph, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
       initialValues,
       annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
@@ -54,8 +54,8 @@ public static class FilteringTests
       {"e", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())}
     };
     var transfer = Transfer();
-    return new AnnotatedNetwork<Pair<Option<Bgp>, bool>, string, Unit>(Topology,
-      Topology.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
+    return new AnnotatedNetwork<Pair<Option<Bgp>, bool>, string, Unit>(Digraph,
+      Digraph.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
       Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(Bgp.Min), p => p.Item1()),
       initialValues,
       annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
@@ -64,7 +64,7 @@ public static class FilteringTests
   private static Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>> Transfer()
   {
     // add the tag on nv and wv, drop if tagged on de
-    return Topology.MapEdges(e => e switch
+    return Digraph.MapEdges(e => e switch
     {
       ("w", "v") => Lang.Omap<Bgp, Bgp>(b => b.IncrementAsLength().AddTag(Tag)),
       ("n", "v") => _ => Option.None<Bgp>(),

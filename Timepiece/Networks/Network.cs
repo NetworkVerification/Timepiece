@@ -16,7 +16,7 @@ public class Network<T, TV, TS>
   /// <summary>
   ///   The topology of the network.
   /// </summary>
-  public Topology<TV> Topology { get; }
+  public Digraph<TV> Digraph { get; }
 
   /// <summary>
   ///   The transfer function for each edge.
@@ -41,16 +41,16 @@ public class Network<T, TV, TS>
   /// <summary>
   /// Construct a new <c>Network</c>.
   /// </summary>
-  /// <param name="topology">a network topology</param>
+  /// <param name="digraph">a network topology</param>
   /// <param name="transferFunction">a dictionary from edges to transfer functions</param>
   /// <param name="mergeFunction">a function for merging two routes</param>
   /// <param name="initialValues">a dictionary from nodes to initial routes</param>
   /// <param name="symbolics">an array of symbolic values</param>
-  public Network(Topology<TV> topology, Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
+  public Network(Digraph<TV> digraph, Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, Dictionary<TV, Zen<T>> initialValues,
     SymbolicValue<TS>[] symbolics)
   {
-    Topology = topology;
+    Digraph = digraph;
     TransferFunction = transferFunction;
     MergeFunction = mergeFunction;
     InitialValues = initialValues;
@@ -66,7 +66,7 @@ public class Network<T, TV, TS>
   /// <returns>A route.</returns>
   protected Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes)
   {
-    return Topology[node].Aggregate(InitialValues[node],
+    return Digraph[node].Aggregate(InitialValues[node],
       (current, predecessor) =>
         MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }

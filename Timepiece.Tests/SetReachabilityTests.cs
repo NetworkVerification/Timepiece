@@ -14,23 +14,23 @@ namespace Timepiece.Tests;
 /// </summary>
 public static class SetReachabilityTests
 {
-  private static AnnotatedNetwork<CSet<TV>, TV, Unit> Net<TV>(Topology<TV> topology, BigInteger convergeTime,
+  private static AnnotatedNetwork<CSet<TV>, TV, Unit> Net<TV>(Digraph<TV> digraph, BigInteger convergeTime,
     Dictionary<TV, Func<Zen<CSet<TV>>, Zen<BigInteger>, Zen<bool>>> annotations) where TV : notnull
   {
-    var transferFunctions = topology.MapEdges<Func<Zen<CSet<TV>>, Zen<CSet<TV>>>>(_ => r => r);
-    var initialValues = topology.MapNodes(n => CSet.Empty<TV>().Add(n));
+    var transferFunctions = digraph.MapEdges<Func<Zen<CSet<TV>>, Zen<CSet<TV>>>>(_ => r => r);
+    var initialValues = digraph.MapNodes(n => CSet.Empty<TV>().Add(n));
 
-    var property = ContainsAll(topology);
-    var monolithicProperties = topology.MapNodes(_ => property);
-    var modularProperties = topology.MapNodes(_ => Lang.Finally(convergeTime, property));
-    return new AnnotatedNetwork<CSet<TV>, TV, Unit>(topology, transferFunctions, CSet.Union, initialValues, annotations,
+    var property = ContainsAll(digraph);
+    var monolithicProperties = digraph.MapNodes(_ => property);
+    var modularProperties = digraph.MapNodes(_ => Lang.Finally(convergeTime, property));
+    return new AnnotatedNetwork<CSet<TV>, TV, Unit>(digraph, transferFunctions, CSet.Union, initialValues, annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static Func<Zen<CSet<TV>>, Zen<bool>> ContainsAll<TV>(Topology<TV> topology) where TV : notnull
+  private static Func<Zen<CSet<TV>>, Zen<bool>> ContainsAll<TV>(Digraph<TV> digraph) where TV : notnull
   {
     return route =>
-      topology.FoldNodes(Zen.True(), (b, n) => Zen.And(b, route.Contains(n)));
+      digraph.FoldNodes(Zen.True(), (b, n) => Zen.And(b, route.Contains(n)));
   }
 
   [Fact]
@@ -49,7 +49,7 @@ public static class SetReachabilityTests
   [Fact]
   public static void DiamondSoundAnnotationsPassChecks()
   {
-    var topology = new Topology<string>(new Dictionary<string, List<string>>
+    var topology = new Digraph<string>(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
       {"B", new List<string> {"A", "C", "D"}},
@@ -79,7 +79,7 @@ public static class SetReachabilityTests
   [Fact]
   public static void SquareUnsoundAnnotationsFailChecks()
   {
-    var topology = new Topology<string>(new Dictionary<string, List<string>>
+    var topology = new Digraph<string>(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
       {"B", new List<string> {"A", "D"}},
@@ -100,7 +100,7 @@ public static class SetReachabilityTests
   [Fact]
   public static void SquareSoundAnnotationsPassChecks()
   {
-    var topology = new Topology<string>(new Dictionary<string, List<string>>
+    var topology = new Digraph<string>(new Dictionary<string, List<string>>
     {
       {"A", new List<string> {"B", "C"}},
       {"B", new List<string> {"A", "D"}},

@@ -43,7 +43,7 @@ public static class Reachability
           : (p.Key, Lang.Finally<RouteEnvironment>(new BigInteger(2), Internet2.HasInternalRoute)))
       .ToDictionary(p => p.Item1, p => p.Item2);
     var monolithicProperties =
-      net.Topology.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => Internet2.HasInternalRoute);
+      net.Digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => Internet2.HasInternalRoute);
     net.Annotations = modularProperties;
     net.ModularProperties = modularProperties;
     net.MonolithicProperties = monolithicProperties;

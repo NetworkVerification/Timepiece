@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Numerics;
 using MisterWolf;
 using Timepiece.Networks;
@@ -10,19 +11,19 @@ using TaggedRoute = Pair<Option<BgpRoute>, bool>;
 
 public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV : IEquatable<TV>
 {
-  public Hijack(Topology<TV> topology, Dictionary<TV, Zen<TaggedRoute>> initialValues, TV hijacker,
+  public Hijack(Digraph<TV> digraph, Dictionary<TV, Zen<TaggedRoute>> initialValues, TV hijacker,
     Zen<uint> destinationPrefix, SymbolicValue<TS>[] symbolics)
-    : base(topology, Transfer(topology, hijacker, destinationPrefix), Merge(destinationPrefix), initialValues,
+    : base(digraph, Transfer(digraph, hijacker, destinationPrefix), Merge(destinationPrefix), initialValues,
       symbolics)
   {
   }
 
-  public Hijack(Topology<TV> topology, TV destination, TV hijacker,
+  public Hijack(Digraph<TV> digraph, TV destination, TV hijacker,
     Zen<Option<BgpRoute>> hijackRoute,
     Zen<uint> destinationPrefix,
     SymbolicValue<TS>[] symbolics)
-    : this(topology,
-      topology.MapNodes(n => n.Equals(destination)
+    : this(digraph,
+      digraph.MapNodes(n => n.Equals(destination)
         ? Pair.Create(
           Option.Create(BgpRouteExtensions.ToDestination(destinationPrefix)),
           Zen.False())
@@ -44,14 +45,14 @@ public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV : IEquatable
   ///   Define the transfer function to filter all routes claiming to be from the
   ///   destination prefix sent from the hijacker.
   /// </summary>
-  /// <param name="topology"></param>
+  /// <param name="digraph"></param>
   /// <param name="hijacker"></param>
   /// <param name="destinationPrefix"></param>
   /// <returns></returns>
-  private static Dictionary<(TV, TV), Func<Zen<TaggedRoute>, Zen<TaggedRoute>>> Transfer(Topology<TV> topology,
+  private static Dictionary<(TV, TV), Func<Zen<TaggedRoute>, Zen<TaggedRoute>>> Transfer(Digraph<TV> digraph,
     TV hijacker, Zen<uint> destinationPrefix)
   {
-    return topology.MapEdges(e =>
+    return digraph.MapEdges(e =>
       Lang.Product(
         Lang.Test(
           Lang.IfSome<BgpRoute>(b => Zen.And(b.GetDestination() == destinationPrefix, e.Item1.Equals(hijacker))),
@@ -102,11 +103,11 @@ public static class Hijack
     Dictionary<string, Func<Zen<Pair<Option<BgpRoute>, bool>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
-      var beforeInvariants = hijack.Topology.MapNodes(n =>
+      var beforeInvariants = hijack.Digraph.MapNodes(n =>
       {
         return n == HijackNode ? Lang.True<TaggedRoute>() : r => DestinationRouteIsInternal(destinationPrefix, r);
       });
-      var afterInvariants = hijack.Topology.MapNodes(n => n == HijackNode
+      var afterInvariants = hijack.Digraph.MapNodes(n => n == HijackNode
         ? Lang.True<TaggedRoute>()
         : Lang.Intersect(r => DestinationRouteIsInternal(destinationPrefix, r),
           MapInternal(r => HasDestinationRoute(destinationPrefix, r))));
@@ -198,30 +199,31 @@ public static class Hijack
   ///   Add a hijacker node to the topology, connected to all of the core nodes.
   /// </summary>
   /// <param name="hijacker"></param>
-  /// <param name="topology"></param>
+  /// <param name="digraph"></param>
   /// <param name="hijackerLabel"></param>
   /// <returns></returns>
-  private static LabelledTopology<string, T> HijackTopology<T>(string hijacker, LabelledTopology<string, T> topology,
+  private static LabelledDigraph<string, T> HijackTopology<T>(string hijacker, LabelledDigraph<string, T> digraph,
     T hijackerLabel)
   {
-    var withHijacker = HijackAdjList(hijacker, topology);
-    var labels = topology.Labels;
+    var withHijacker = HijackAdjList(hijacker, digraph);
+    var labels = digraph.Labels;
     labels[hijacker] = hijackerLabel;
 
-    return new LabelledTopology<string, T>(withHijacker, labels);
+    return new LabelledDigraph<string, T>(withHijacker, labels);
   }
 
-  private static Topology<string> HijackTopology(string hijacker, Topology<string> topology)
+  private static Digraph<string> HijackTopology(string hijacker, Digraph<string> digraph)
   {
-    return new Topology<string>(HijackAdjList(hijacker, topology));
+    return new Digraph<string>(HijackAdjList(hijacker, digraph));
   }
 
-  private static Dictionary<string, List<string>> HijackAdjList(string hijacker,
-    Topology<string> topology)
+  private static IDictionary<string, ImmutableSortedSet<string>> HijackAdjList(string hijacker,
+    Digraph<string> digraph)
   {
-    var withHijacker = topology.Neighbors;
-    withHijacker[hijacker] = topology.Nodes.Where(n => n.IsCore()).ToList();
-    foreach (var node in withHijacker[hijacker]) withHijacker[node].Add(hijacker);
+    var withHijacker = digraph.Neighbors;
+    withHijacker[hijacker] = digraph.Nodes.Where(n => n.IsCore()).ToImmutableSortedSet();
+    foreach (var node in withHijacker[hijacker])
+      withHijacker[node] = withHijacker[node].Add(hijacker);
 
     return withHijacker;
   }

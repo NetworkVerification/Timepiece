@@ -10,7 +10,7 @@ namespace Timepiece.Tests.Networks;
 
 public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> where TV : notnull
 {
-  public FaultTolerance(Topology<TV> topology,
+  public FaultTolerance(Digraph<TV> digraph,
     Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<TV, Zen<Option<T>>> initialValues,
@@ -18,12 +18,12 @@ public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> w
       annotations,
     Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<TV, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
-    Zen<FSeq<(TV, TV)>> failedEdges, uint numFailed) : base(topology,
+    Zen<FSeq<(TV, TV)>> failedEdges, uint numFailed) : base(digraph,
     new Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>>(),
     Lang.Omap2(mergeFunction), initialValues,
     new Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(),
     modularProperties, monolithicProperties,
-    CreateSymbolics(topology, failedEdges, numFailed))
+    CreateSymbolics(digraph, failedEdges, numFailed))
   {
     Annotations = annotations(Symbolics);
     TransferFunction = Transfer(transferFunction, Symbolics);
@@ -35,11 +35,11 @@ public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> w
       annotations,
     Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<TV, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
-    Zen<FSeq<(TV, TV)>> failedEdges, uint numFailed) : base(net.Topology,
+    Zen<FSeq<(TV, TV)>> failedEdges, uint numFailed) : base(net.Digraph,
     new Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>>(), Lang.Omap2(net.MergeFunction),
     initialValues,
     new Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(), modularProperties, monolithicProperties,
-    CreateSymbolics(net.Topology, failedEdges, numFailed))
+    CreateSymbolics(net.Digraph, failedEdges, numFailed))
   {
     Annotations = annotations(Symbolics);
     TransferFunction = Transfer(net.TransferFunction, Symbolics);
@@ -57,7 +57,7 @@ public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> w
   }
 
   private static SymbolicValue<(TV, TV)>[] CreateSymbolics(
-    Topology<TV> topology,
+    Digraph<TV> digraph,
     Zen<FSeq<(TV, TV)>> failedEdges,
     uint numFailed)
   {
@@ -67,7 +67,7 @@ public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> w
       var e = new SymbolicValue<(TV, TV)>($"e{i}")
       {
         Constraint = p =>
-          And(topology.FoldEdges(False(), (b, edge) => Or(b, Constant(edge) == p)), failedEdges.Contains(p))
+          And(digraph.FoldEdges(False(), (b, edge) => Or(b, Constant(edge) == p)), failedEdges.Contains(p))
       };
       symbolics[i] = e;
     }

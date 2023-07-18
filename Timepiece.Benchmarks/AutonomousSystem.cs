@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Numerics;
 using Timepiece.Networks;
 using ZenLib;
@@ -6,14 +7,14 @@ namespace Timepiece.Benchmarks;
 
 public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string, TS>
 {
-  public AutonomousSystem(Topology<string> topology, string externalSrc, string externalDest,
+  public AutonomousSystem(Digraph<string> digraph, string externalSrc, string externalDest,
     Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> transferFunction,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties,
-    BigInteger convergeTime, SymbolicValue<TS>[] symbolics) : base(topology, transferFunction,
+    BigInteger convergeTime, SymbolicValue<TS>[] symbolics) : base(digraph, transferFunction,
     Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
-    topology.MapNodes(n =>
+    digraph.MapNodes(n =>
       n == externalSrc ? Option.Create<BgpRoute>(new BgpRoute()) : Option.None<BgpRoute>()),
     annotations, stableProperties, safetyProperties, convergeTime, symbolics)
   {
@@ -25,19 +26,19 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string, T
     return r => Zen.Implies(Zen.And(Zen.Not(relationships[0].Value), Zen.Not(relationships[1].Value)), r.IsNone());
   }
 
-  private static Topology<string> AsWithExternalPeers(uint nodes, int peers)
+  private static Digraph<string> AsWithExternalPeers(uint nodes, int peers)
   {
     var internalTopology = Topologies.Complete(nodes);
     var newNeighbors = internalTopology.Neighbors;
     for (var i = 0; i < peers; i++)
     {
       var externalNode = $"external-{i}";
-      var currentNode = internalTopology.Nodes[i % internalTopology.Nodes.Length];
-      newNeighbors[currentNode].Add(externalNode);
-      newNeighbors.Add(externalNode, new List<string> {currentNode});
+      var currentNode = internalTopology[i % internalTopology.Nodes.Count];
+      newNeighbors[currentNode] = newNeighbors[currentNode].Add(externalNode);
+      newNeighbors.Add(externalNode, ImmutableSortedSet.Create(currentNode));
     }
 
-    return new Topology<string>(newNeighbors);
+    return new Digraph<string>(newNeighbors);
   }
 
   // public static AutonomousSystem<Option<BgpRoute>> BlockToExternal(uint nodes)
@@ -55,14 +56,13 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string, T
 
   public static AutonomousSystem<bool> NoTransitSound(uint nodes)
   {
-    var internalTopology = Topologies.Complete(nodes).Neighbors;
+    var topology = Topologies.Complete(nodes);
     const string externalSrc = "externalSrc";
     const string externalDest = "externalDest";
     // add an edge from the external source into the topology
-    internalTopology["A"].Add(externalSrc);
+    topology.AddEdge("A", externalSrc);
     // add an edge to the external dest from the topology
-    internalTopology.Add(externalDest, new List<string> {"B"});
-    var topology = new Topology<string>(internalTopology);
+    topology.AddEdge(externalDest, "B");
     var transfer = topology.MapEdges(e =>
       e switch
       {

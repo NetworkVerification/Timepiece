@@ -11,12 +11,12 @@ public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatabl
   /// <summary>
   ///   Construct a network performing shortest-path routing to a single given destination.
   /// </summary>
-  /// <param name="topology"></param>
+  /// <param name="digraph"></param>
   /// <param name="destination"></param>
   /// <param name="symbolics"></param>
-  public Sp(Topology<TV> topology, TV destination, SymbolicValue<TS>[] symbolics) :
-    this(topology,
-      topology.MapNodes(n =>
+  public Sp(Digraph<TV> digraph, TV destination, SymbolicValue<TS>[] symbolics) :
+    this(digraph,
+      digraph.MapNodes(n =>
         n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()), symbolics)
   {
   }
@@ -25,13 +25,13 @@ public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatabl
   ///   Construct a network performing shortest-path routing; the initial values and convergence time
   ///   must be given.
   /// </summary>
-  /// <param name="topology"></param>
+  /// <param name="digraph"></param>
   /// <param name="initialValues"></param>
   /// <param name="symbolics"></param>
-  public Sp(Topology<TV> topology,
+  public Sp(Digraph<TV> digraph,
     Dictionary<TV, Zen<Option<BgpRoute>>> initialValues,
-    SymbolicValue<TS>[] symbolics) : base(topology,
-    topology.MapEdges(_ => Lang.Omap<BgpRoute, BgpRoute>(BgpRouteExtensions.IncrementAsPath)),
+    SymbolicValue<TS>[] symbolics) : base(digraph,
+    digraph.MapEdges(_ => Lang.Omap<BgpRoute, BgpRoute>(BgpRouteExtensions.IncrementAsPath)),
     Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
     initialValues,
     symbolics)
@@ -86,8 +86,8 @@ public static class Sp
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
     // no safety property
-    var safetyProperties = sp.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
-    var stableProperties = sp.Topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    var safetyProperties = sp.Digraph.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+    var stableProperties = sp.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
@@ -101,7 +101,7 @@ public static class Sp
     }
     else
     {
-      var distances = sp.Topology.BreadthFirstSearch(destination);
+      var distances = sp.Digraph.BreadthFirstSearch(destination);
       annotations =
         distances.Select(p => (n: p.Key, a: Lang.Finally<Option<BgpRoute>>(p.Value, Option.IsSome)))
           .ToDictionary(p => p.n, p => p.a);
@@ -114,7 +114,7 @@ public static class Sp
   public static AnnotatedSp<string, Unit> PathLengthNoSafety(uint numPods, string destination, bool inferTimes)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
-    var distances = sp.Topology.BreadthFirstSearch(destination);
+    var distances = sp.Digraph.BreadthFirstSearch(destination);
 
     var before = Lang.OrSome<BgpRoute>(b => Zen.And(b.LpEquals(100), b.GetAsPathLength() >= BigInteger.Zero));
     var afterConditions =
@@ -123,7 +123,7 @@ public static class Sp
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
-      var infer = new InferSp<string, Unit>(sp, sp.Topology.MapNodes(_ => before), afterConditions)
+      var infer = new InferSp<string, Unit>(sp, sp.Digraph.MapNodes(_ => before), afterConditions)
       {
         // specify a maximum time so that we ensure that the safety check still holds
         // in this case, the maximum must be the network's converge time
@@ -143,8 +143,8 @@ public static class Sp
     }
 
     var stableProperties =
-      sp.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    var safetyProperties = sp.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+      sp.Digraph.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = sp.Digraph.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     return new AnnotatedSp<string, Unit>(sp, annotations, stableProperties, safetyProperties);
   }
 
@@ -158,7 +158,7 @@ public static class Sp
   public static AnnotatedSp<string, Unit> PathLength(uint numPods, string destination)
   {
     var sp = ConcreteFatTreeSp(numPods, destination);
-    var distances = sp.Topology.BreadthFirstSearch(destination);
+    var distances = sp.Digraph.BreadthFirstSearch(destination);
 
     var annotations =
       distances.Select(p => (p.Key, Lang.Until(p.Value,
@@ -167,8 +167,8 @@ public static class Sp
         .ToDictionary(p => p.Item1, p => p.Item2);
 
     var stableProperties =
-      sp.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    var safetyProperties = sp.Topology.MapNodes(_ =>
+      sp.Digraph.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    var safetyProperties = sp.Digraph.MapNodes(_ =>
       Lang.Union(Lang.IsNone<BgpRoute>(), Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4)))));
     return new AnnotatedSp<string, Unit>(sp, annotations, stableProperties, safetyProperties);
   }

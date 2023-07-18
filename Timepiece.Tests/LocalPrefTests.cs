@@ -35,8 +35,8 @@ public static class LocalPrefTests
   {
     var convergeTime = new BigInteger(10);
     return new AnnotatedNetwork<LpRoute, string, Unit>(Net, annotations,
-      Net.Topology.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => IsReachable),
-      Net.Topology.MapNodes(_ => Lang.True<LpRoute>()),
+      Net.Digraph.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => IsReachable),
+      Net.Digraph.MapNodes(_ => Lang.True<LpRoute>()),
       convergeTime);
   }
 

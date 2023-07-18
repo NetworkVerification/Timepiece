@@ -22,16 +22,16 @@ public static class ShortestPathsTests
       {"C", Option.None<BigInteger>()}
     }, new[] {DRoute});
 
-  private static ShortestPath<string, string> SymbolicDestination(Topology<string> topology)
+  private static ShortestPath<string, string> SymbolicDestination(Digraph<string> digraph)
   {
-    var dest = new SymbolicValue<string>("dest", s => topology.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, s == n)));
-    return new ShortestPath<string, string>(topology,
-      topology.MapNodes(n => Zen.If(dest.EqualsValue(n),
+    var dest = new SymbolicValue<string>("dest", s => digraph.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, s == n)));
+    return new ShortestPath<string, string>(digraph,
+      digraph.MapNodes(n => Zen.If(dest.EqualsValue(n),
         Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>())), new[] {dest});
   }
 
   private static readonly Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> ConcreteWeakSafetyProperties =
-    Concrete.Topology.MapNodes(_ => Lang.IsSome<BigInteger>());
+    Concrete.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>());
 
   private static readonly Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> ConcreteStrongSafetyProperties =
     new()
@@ -46,7 +46,7 @@ public static class ShortestPathsTests
     IReadOnlyDictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> stableProperties)
   {
     return new AnnotatedNetwork<Option<BigInteger>, string, Unit>(Concrete, annotations,
-      stableProperties, Concrete.Topology.MapNodes(_ => Lang.True<Option<BigInteger>>()), 4);
+      stableProperties, Concrete.Digraph.MapNodes(_ => Lang.True<Option<BigInteger>>()), 4);
   }
 
   private static AnnotatedNetwork<Option<BigInteger>, string, BigInteger> AnnotatedSymbolicRoute(
@@ -54,7 +54,7 @@ public static class ShortestPathsTests
     IReadOnlyDictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> stableProperties)
   {
     return new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(SymbolicRoute, annotations, stableProperties,
-      SymbolicRoute.Topology.MapNodes(_ => Lang.True<Option<BigInteger>>()), 2);
+      SymbolicRoute.Digraph.MapNodes(_ => Lang.True<Option<BigInteger>>()), 2);
   }
 
   [Fact]
@@ -119,7 +119,7 @@ public static class ShortestPathsTests
       {"B", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= DRoute.Value))},
       {"C", Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r >= DRoute.Value))}
     };
-    var net = AnnotatedSymbolicRoute(annotations, SymbolicRoute.Topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
+    var net = AnnotatedSymbolicRoute(annotations, SymbolicRoute.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
     NetworkAssert.CheckSound(net);
   }
@@ -133,7 +133,7 @@ public static class ShortestPathsTests
       {"B", Lang.Finally(new BigInteger(1), Lang.IfSome<BigInteger>(r => r <= DRoute.Value))},
       {"C", Lang.Finally(new BigInteger(1), Lang.IfSome<BigInteger>(r => r <= DRoute.Value))}
     };
-    var net = AnnotatedSymbolicRoute(annotations, SymbolicRoute.Topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
+    var net = AnnotatedSymbolicRoute(annotations, SymbolicRoute.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
     NetworkAssert.CheckUnsound(net);
   }

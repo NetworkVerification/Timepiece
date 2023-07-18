@@ -18,20 +18,20 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   private ConcurrentDictionary<(TV, IReadOnlyList<bool>), long> InferBeforeInductiveTimes { get; set; }
   private ConcurrentDictionary<(TV, IReadOnlyList<bool>), long> InferAfterInductiveTimes { get; set; }
 
-  public Infer(Topology<TV> topology,
+  public Infer(Digraph<TV> digraph,
     Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<TV, Zen<T>> initialValues,
     IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> afterInvariants,
-    SymbolicValue<TS>[] symbolics) : base(topology, transferFunction, mergeFunction,
+    SymbolicValue<TS>[] symbolics) : base(digraph, transferFunction, mergeFunction,
     initialValues, symbolics)
   {
     BeforeInvariants = beforeInvariants;
     AfterInvariants = afterInvariants;
-    NumInductiveFailures = topology.MapNodes(_ => 0);
+    NumInductiveFailures = digraph.MapNodes(_ => 0);
     // set up the time logging dictionaries
-    var numNodes = Topology.Nodes.Length;
+    var numNodes = Digraph.Nodes.Count;
     InferBeforeInitialTimes = new ConcurrentDictionary<TV, long>(_processes * 2, numNodes);
     InferAfterInitialTimes = new ConcurrentDictionary<TV, long>(_processes * 2, numNodes);
     InferInductiveTimes = new ConcurrentDictionary<TV, long>(_processes * 2, numNodes);
@@ -40,7 +40,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   }
 
   public Infer(Network<T, TV, TS> net, IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Topology, net.TransferFunction,
+    IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> afterInvariants) : this(net.Digraph, net.TransferFunction,
     net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants, net.Symbolics)
   {
   }
@@ -88,12 +88,12 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     if (b is not null)
     {
       var bString = new StringBuilder();
-      foreach (var i in Enumerable.Range(0, Topology[node].Count))
+      foreach (var i in Enumerable.Range(0, Digraph[node].Count))
       {
         if (bString.Length > 0) bString.Append(", ");
         // specify whether the neighbor was before or after
         bString.Append(b[i] ? "before " : "after ");
-        bString.Append(Topology[node][i]);
+        bString.Append(Digraph[node][i]);
       }
 
       return $"Arrangement [{bString}] does NOT imply node {node}'s {invariantDescriptor} invariant.";
@@ -141,7 +141,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
 
     // check predecessor invariants according to whether or not the predecessor was given in b
     // we check the before invariant of a predecessor when b[i] is true, and the after invariant when b[i] is false
-    var assume = Topology[node]
+    var assume = Digraph[node]
       .Select((predecessor, i) =>
         b[i] is null
           ? Zen.True() // skip nodes where b[i] is null
@@ -195,7 +195,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   {
     var afterInitialChecks = new ConcurrentBag<TV>();
     var beforeInitialChecks = new ConcurrentBag<TV>();
-    Topology.Nodes.AsParallel().ForAll(node =>
+    Digraph.Nodes.AsParallel().ForAll(node =>
     {
       LogActionTime(node, InferBeforeInitialTimes, () =>
       {
@@ -226,18 +226,18 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     EnumerateArrangementsExplicit()
   {
     var beforeInductiveChecks =
-      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Topology.Nodes.Length);
+      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Digraph.Nodes.Count);
     var afterInductiveChecks =
-      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Topology.Nodes.Length);
-    Topology.Nodes
+      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Digraph.Nodes.Count);
+    Digraph.Nodes
       // generate 2^{Topology[n].Count} arrangements for each node
-      .SelectMany(n => PowerSet.BitPSet(Topology[n].Count), (n, b) => (n, b))
+      .SelectMany(n => PowerSet.BitPSet(Digraph[n].Count), (n, b) => (n, b))
       .AsParallel()
       .ForAll(tuple =>
       {
         var n = tuple.n;
         var b = tuple.b.Select(Zen.Constant).ToList();
-        var routes = Topology[n].ToDictionary(predecessor => predecessor, _ => Zen.Symbolic<T>());
+        var routes = Digraph[n].ToDictionary(predecessor => predecessor, _ => Zen.Symbolic<T>());
         LogActionTime(tuple, InferBeforeInductiveTimes, () =>
         {
           if (CheckInductive(n, BeforeInvariants[n], b, routes) is null) return;
@@ -272,10 +272,10 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     var foundArrangements = new List<IReadOnlyList<bool>>();
     // generate an array of symbolic booleans of length equal to the node's predecessors + 1
     // each arrangement is a three-valued bitvector over the predecessors and the node
-    var neighbors = Topology[node].Count;
+    var neighbors = Digraph[node].Count;
     var b = Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")).ToList();
     var blockingClauses = new List<Zen<bool>>();
-    var routes = Topology[node].ToDictionary(neighbor => neighbor, _ => Zen.Symbolic<T>());
+    var routes = Digraph[node].ToDictionary(neighbor => neighbor, _ => Zen.Symbolic<T>());
     var bSol = CheckInductive(node, r => Zen.If(b[^1], BeforeInvariants[node](r), AfterInvariants[node](r)), b, routes);
     while (bSol is not null)
     {
@@ -300,10 +300,10 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     EnumerateArrangementsSymbolic()
   {
     var beforeInductiveChecks =
-      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Topology.Nodes.Length);
+      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Digraph.Nodes.Count);
     var afterInductiveChecks =
-      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Topology.Nodes.Length);
-    Topology.Nodes
+      new ConcurrentDictionary<TV, List<IReadOnlyList<bool>>>(_processes * 2, Digraph.Nodes.Count);
+    Digraph.Nodes
       .AsParallel()
       .ForAll(node =>
       {
@@ -326,61 +326,93 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   private (IReadOnlyDictionary<TV, List<IReadOnlyList<bool>>>, IReadOnlyDictionary<TV, List<IReadOnlyList<bool>>>)
     EnumerateArrangementsSelective()
   {
-    var routes = Topology.MapNodes(_ => Zen.Symbolic<T>());
-    // generate the "T1" table
-    var t1 = new Dictionary<(TV, bool), Dictionary<(TV, bool), bool>>();
-    var t1Combinations = new[] {(true, true), (true, false), (false, true), (false, false)};
-    foreach (var (node, neighbors) in Topology.Neighbors)
+    // a graph representing which arrangements pass
+    var passArrangementGraph = new Dictionary<(TV, bool), HashSet<(TV, bool)>>();
+    var failArrangementGraph = new Dictionary<(TV, bool), HashSet<(TV, bool)>>();
+    foreach (var node in Digraph.Nodes)
     {
-      t1[(node, true)] = new Dictionary<(TV, bool), bool>();
-      t1[(node, false)] = new Dictionary<(TV, bool), bool>();
+      passArrangementGraph.Add((node, false), new HashSet<(TV, bool)>());
+      passArrangementGraph.Add((node, true), new HashSet<(TV, bool)>());
+      failArrangementGraph.Add((node, false), new HashSet<(TV, bool)>());
+      failArrangementGraph.Add((node, true), new HashSet<(TV, bool)>());
+    }
+
+    var routes = Digraph.MapNodes(_ => Zen.Symbolic<T>());
+    // generate the "T1" table
+    // for succinctness, we use a hashset to contain all the cases that pass
+    var t1 = new Dictionary<(TV, bool), HashSet<(TV, bool)>>();
+    var t1Combinations = new[] {(true, true), (true, false), (false, true), (false, false)};
+    foreach (var (node, neighbors) in Digraph.Neighbors)
+    {
+      t1[(node, true)] = new HashSet<(TV, bool)>();
+      t1[(node, false)] = new HashSet<(TV, bool)>();
       for (var i = 0; i < neighbors.Count; i++)
       {
         var neighbor = neighbors[i];
         foreach (var (bu, bv) in t1Combinations)
         {
           var b = Enumerable.Range(0, neighbors.Count).Select(j => i == j ? Zen.Constant(bu) : null).ToList();
-          t1[(node, bv)][(neighbor, bu)] = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node],
-            b, routes) is null;
+          var check = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node],
+            b, routes);
+          // if the check passed, add the neighbor to the set
+          if (check is null)
+            t1[(node, bv)].Add((neighbor, bu));
         }
       }
     }
 
     // generate the "T2" table
-    var t2 = new Dictionary<(TV, bool), Dictionary<(TV, bool, TV, bool), bool>>();
+    // again, we use a hashset to represent which cases pass or fail
+    var t2 = new Dictionary<(TV, bool), HashSet<(TV, bool, TV, bool)>>();
     var t2Combinations = new[]
     {
       (true, true, true), (true, false, true), (false, true, true), (false, false, true),
       (true, true, false), (true, false, false), (false, true, false), (false, false, false)
     };
-    foreach (var (node, neighbors) in Topology.Neighbors)
+    foreach (var (node, neighbors) in Digraph.Neighbors)
     {
-      t2[(node, true)] = new Dictionary<(TV, bool, TV, bool), bool>();
-      t2[(node, false)] = new Dictionary<(TV, bool, TV, bool), bool>();
+      t2[(node, true)] = new HashSet<(TV, bool, TV, bool)>();
+      t2[(node, false)] = new HashSet<(TV, bool, TV, bool)>();
       for (var i1 = 0; i1 < neighbors.Count; i1++)
       for (var i2 = 0; i2 < neighbors.Count; i2++)
       {
         var neighbor1 = neighbors[i1];
         var neighbor2 = neighbors[i2];
-        // if the two neighbors agree, we can skip checking the pair
         foreach (var (b1, b2, bv) in t2Combinations)
         {
-          if (t1[(node, bv)][(neighbor1, b1)] == t1[(node, bv)][(neighbor2, b2)])
+          if (!t1[(node, bv)].Contains((neighbor1, b1)) && !t1[(node, bv)].Contains((neighbor2, b2)))
           {
-            t2[(node, bv)][(neighbor1, b1, neighbor2, b2)] = t1[(node, bv)][(neighbor1, b1)];
+            // both neighbors fail: do nothing
+          }
+          else if (t1[(node, bv)].Contains((neighbor1, b1)) && t1[(node, bv)].Contains((neighbor2, b2)))
+          {
+            // both neighbors pass
+            t2[(node, bv)].Add((neighbor1, b1, neighbor2, b2));
           }
           else
           {
             var b = Enumerable.Range(0, neighbors.Count).Select(j => i1 == j ? Zen.Constant(b1) :
               i2 == j ? Zen.Constant(b2) : null).ToList();
-            t2[(node, bv)][(neighbor1, b1, neighbor2, b2)] =
-              CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node], b, routes) is null;
+            var check = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node], b, routes);
+            if (check is null)
+            {
+              t2[(node, bv)].Add((neighbor1, b1, neighbor2, b2));
+              passArrangementGraph[(neighbor1, b1)].Add((neighbor2, b2));
+              passArrangementGraph[(neighbor2, b2)].Add((neighbor1, b1));
+            }
+            else
+            {
+              failArrangementGraph[(neighbor1, b1)].Add((neighbor2, b2));
+              failArrangementGraph[(neighbor2, b2)].Add((neighbor1, b1));
+            }
           }
         }
       }
     }
 
     // reconstruct the result for every arrangement
+    // we can essentially do this by finding every path through the entire graph doing a BFS
+
     throw new NotImplementedException();
   }
 
@@ -399,7 +431,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   {
     // TODO: if we have check failures when predecessor u is both in b and not in b,
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
-    var times = Topology.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
+    var times = Digraph.MapNodes(node => Zen.Symbolic<BigInteger>($"{node}-time"));
     // enforce that all times must be non-negative
     var bounds = times.Select(t => t.Value >= BigInteger.Zero).ToImmutableHashSet();
     // if a maximum time is given, also require that no witness time is greater than the maximum
@@ -431,7 +463,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
     foreach (var (node, arrangements) in afterInductiveChecks)
     foreach (var arrangement in arrangements)
     {
-      var nextBound = TimeInterval(Topology[node], times[node] - BigInteger.One, times, arrangement);
+      var nextBound = TimeInterval(Digraph[node], times[node] - BigInteger.One, times, arrangement);
       // var (earlierNeighbors, laterNeighbors) = PartitionNeighborsByArrangement(node, arrangement);
       // var nextBound = TimeInterval(earlierNeighbors, laterNeighbors, times[node] - BigInteger.One, times);
       bounds = bounds.Add(nextBound)
@@ -502,29 +534,29 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
   {
     // the instantiated bounds are 0 and all neighbors that have already converged (the arrangement is false at the neighbor)
     var lowerBounds = Enumerable.Repeat(Zen.Constant(BigInteger.Zero), 1)
-      .Concat(from neighbor in Topology[node].Where((_, i) => !arrangement[i]) // indexed where has no query syntax form
+      .Concat(from neighbor in Digraph[node].Where((_, i) => !arrangement[i]) // indexed where has no query syntax form
         select times[neighbor]);
     // for each lower bound, add a disjunction that rules out the case
     return from lowerBound in lowerBounds
       select Zen.Or(
         before ? lowerBound + BigInteger.One >= times[node] : lowerBound + BigInteger.One < times[node],
-        TimeInterval(Topology[node], lowerBound, times, arrangement));
+        TimeInterval(Digraph[node], lowerBound, times, arrangement));
   }
 
   private (List<TV>, List<TV>) PartitionNeighborsByArrangement(TV node, IReadOnlyList<bool?> arrangement)
   {
     var earlierNeighbors = new List<TV>();
     var laterNeighbors = new List<TV>();
-    for (var i = 0; i < Topology[node].Count; i++)
+    for (var i = 0; i < Digraph[node].Count; i++)
     {
       if (arrangement[i] is null) continue;
       if ((bool) arrangement[i]!)
       {
-        earlierNeighbors.Add(Topology[node][i]);
+        earlierNeighbors.Add(Digraph[node][i]);
       }
       else
       {
-        laterNeighbors.Add(Topology[node][i]);
+        laterNeighbors.Add(Digraph[node][i]);
       }
     }
 
@@ -601,7 +633,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : notnull
           foreach (var (node, time) in witnessTimes) Console.WriteLine($"{node}: {time}");
         }
 
-        return Topology.MapNodes(n => Lang.Until(witnessTimes[n], BeforeInvariants[n], AfterInvariants[n]));
+        return Digraph.MapNodes(n => Lang.Until(witnessTimes[n], BeforeInvariants[n], AfterInvariants[n]));
       }
     }
     catch (ZenException e)

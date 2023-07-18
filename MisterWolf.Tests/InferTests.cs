@@ -10,17 +10,17 @@ namespace MisterWolf.Tests;
 public static class InferTests
 {
   // a boolean network where one node has a route initially and others do not
-  private static Network<bool, TV, Unit> BoolNet<TV>(Topology<TV> topology, TV destination) where TV : IEquatable<TV> =>
-    new BooleanNetwork<TV, Unit>(topology,
-      topology.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<SymbolicValue<Unit>>());
+  private static Network<bool, TV, Unit> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV> =>
+    new BooleanNetwork<TV, Unit>(digraph,
+      digraph.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<SymbolicValue<Unit>>());
 
   // a boolean network where one symbolically-chosen node has a route initially and others do not
-  private static Network<bool, TV, TV> BoolNetMultiDest<TV>(Topology<TV> topology) where TV : notnull
+  private static Network<bool, TV, TV> BoolNetMultiDest<TV>(Digraph<TV> digraph) where TV : notnull
   {
     var dest = new SymbolicValue<TV>("dest",
-      x => topology.Nodes.Aggregate(Zen.False(), (b, n) => Zen.Or(b, x == n)));
-    return new BooleanNetwork<TV, TV>(topology,
-      topology.MapNodes(n => dest.EqualsValue(n)), new[] {dest});
+      x => digraph.Nodes.Aggregate(Zen.False(), (b, n) => Zen.Or(b, x == n)));
+    return new BooleanNetwork<TV, TV>(digraph,
+      digraph.MapNodes(n => dest.EqualsValue(n)), new[] {dest});
   }
 
   // a triangular integer network where the path A-B-C is cheaper than the path A-C
@@ -44,7 +44,7 @@ public static class InferTests
   /// <param name="fatTree"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  private static Dictionary<string, uint> FatTreeDistances(LabelledTopology<string, int> fatTree, string destination)
+  private static Dictionary<string, uint> FatTreeDistances(LabelledDigraph<string, int> fatTree, string destination)
   {
     return fatTree.MapNodes(n =>
     {
@@ -177,10 +177,10 @@ public static class InferTests
     Assert.Equal(1, times["B"]);
     Assert.Equal(2, times["C"]);
     // confirm that all checks pass
-    var annotations = net.Topology.MapNodes(n => Lang.Until(times[n], beforeInvariants[n], afterInvariants[n]));
+    var annotations = net.Digraph.MapNodes(n => Lang.Until(times[n], beforeInvariants[n], afterInvariants[n]));
     var annotated = new AnnotatedNetwork<Option<BigInteger>, string, Unit>(net, annotations,
-      net.Topology.MapNodes(n => Lang.Finally(new BigInteger(2), Lang.IsSome<BigInteger>())),
-      net.Topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
+      net.Digraph.MapNodes(n => Lang.Finally(new BigInteger(2), Lang.IsSome<BigInteger>())),
+      net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
     Assert.Equal(Option.None<State<Option<BigInteger>, string, Unit>>(), annotated.CheckAnnotations());
   }
 }

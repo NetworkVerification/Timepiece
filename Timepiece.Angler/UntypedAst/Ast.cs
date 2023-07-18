@@ -164,7 +164,7 @@ public class Ast
           importFunctions[edge](importedRoute), exported);
       });
 
-    var topology = new Topology<string>(edges);
+    var topology = new Digraph<string>(edges);
     // construct a reasonable estimate of the modular properties by checking that the monolithic properties
     // will eventually hold at a time equal to the number of nodes in the network (i.e. the longest path possible)
     var convergeTime = ConvergeTime ?? new BigInteger(topology.NEdges);

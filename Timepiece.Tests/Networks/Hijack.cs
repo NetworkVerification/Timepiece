@@ -23,31 +23,31 @@ public class Hijack : AnnotatedNetwork<Option<Pair<BigInteger, bool>>, string, O
   ///   All members of the network should prefer internal routes over external ones.
   ///   Raises an ArgumentOutOfRangeException if either the destination or hijacker is not present in the given topology.
   /// </summary>
-  /// <param name="topology">The given network's topology.</param>
+  /// <param name="digraph">The given network's topology.</param>
   /// <param name="hijacker">The hijacking external node.</param>
   /// <param name="dest">The internal destination node.</param>
   /// <param name="annotations">The network annotations.</param>
   /// <param name="convergeTime">The time at which the network state converges.</param>
-  public Hijack(Topology<string> topology, string hijacker, string dest,
+  public Hijack(Digraph<string> digraph, string hijacker, string dest,
     Func<SymbolicValue<Option<TaggedRoute>>,
       Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>> annotations,
     BigInteger convergeTime)
-    : base(topology,
-      topology.MapEdges(_ => Lang.Omap(Lang.Product(Lang.Incr(1), Lang.Identity<bool>()))),
+    : base(digraph,
+      digraph.MapEdges(_ => Lang.Omap(Lang.Product(Lang.Incr(1), Lang.Identity<bool>()))),
       Lang.Omap2<TaggedRoute>(Merge),
       new Dictionary<string, Zen<Option<TaggedRoute>>>(),
       new Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>(),
-      topology.MapNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
-      topology.MapNodes(n => Property(hijacker, n)),
+      digraph.MapNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
+      digraph.MapNodes(n => Property(hijacker, n)),
       Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
   {
-    if (!topology.HasNode(hijacker))
+    if (!digraph.HasNode(hijacker))
       throw new ArgumentOutOfRangeException($"Hijack network does not contain the given hijacker node {hijacker}.");
 
-    if (!topology.HasNode(dest))
+    if (!digraph.HasNode(dest))
       throw new ArgumentOutOfRangeException($"Hijack network does not contain the given destination node {dest}.");
 
-    InitialValues = topology.MapNodes(n =>
+    InitialValues = digraph.MapNodes(n =>
       n == hijacker ? HijackRoute.Value :
       n == dest ? DestRoute : Option.Null<TaggedRoute>());
     Symbolics = new[] {HijackRoute};

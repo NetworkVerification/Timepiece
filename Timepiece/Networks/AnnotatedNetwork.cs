@@ -19,7 +19,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   /// <summary>
   ///   Construct a new <c>AnnotatedNetwork{T,TV,TS}</c>.
   /// </summary>
-  /// <param name="topology">The network topology.</param>
+  /// <param name="digraph">The network topology.</param>
   /// <param name="transferFunction">A Dictionary from edges to transfer functions.</param>
   /// <param name="mergeFunction">The merge function.</param>
   /// <param name="initialValues">A Dictionary from nodes to initial routes.</param>
@@ -28,14 +28,14 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   /// <param name="monolithicProperties">A Dictionary from nodes to predicates.</param>
   /// <param name="symbolics">An array of symbolic values.</param>
   public AnnotatedNetwork(
-    Topology<TV> topology,
+    Digraph<TV> digraph,
     Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<TV, Zen<T>> initialValues,
     Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<TV, Func<Zen<T>, Zen<bool>>> monolithicProperties,
-    SymbolicValue<TS>[] symbolics) : base(topology, transferFunction, mergeFunction, initialValues, symbolics)
+    SymbolicValue<TS>[] symbolics) : base(digraph, transferFunction, mergeFunction, initialValues, symbolics)
   {
     Annotations = annotations;
     ModularProperties = modularProperties;
@@ -49,7 +49,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   ///   For monolithic checking, for each node we check a property
   ///   <c>safetyProperties[n]</c> and <c>stableProperties[n]</c>.
   /// </summary>
-  /// <param name="topology">The network topology.</param>
+  /// <param name="digraph">The network topology.</param>
   /// <param name="transferFunction"></param>
   /// <param name="mergeFunction"></param>
   /// <param name="initialValues"></param>
@@ -58,7 +58,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   /// <param name="safetyProperties">Properties which are always true (in the modular network).</param>
   /// <param name="convergeTime">The convergence time of the network.</param>
   /// <param name="symbolics"></param>
-  public AnnotatedNetwork(Topology<TV> topology,
+  public AnnotatedNetwork(Digraph<TV> digraph,
     Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<TV, Zen<T>> initialValues,
@@ -66,13 +66,13 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
     IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> safetyProperties,
     BigInteger convergeTime,
-    SymbolicValue<TS>[] symbolics) : this(topology,
+    SymbolicValue<TS>[] symbolics) : this(digraph,
     transferFunction, mergeFunction, initialValues, annotations,
     // modular properties: Finally(stable) + Globally(safety)
-    topology.MapNodes(n =>
+    digraph.MapNodes(n =>
       Lang.Intersect(Lang.Finally(convergeTime, stableProperties[n]), Lang.Globally(safetyProperties[n]))),
     // monolithic properties: stable + safety
-    topology.MapNodes(n => Lang.Intersect(stableProperties[n], safetyProperties[n])),
+    digraph.MapNodes(n => Lang.Intersect(stableProperties[n], safetyProperties[n])),
     symbolics)
   {
   }
@@ -87,7 +87,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   public AnnotatedNetwork(Network<T, TV, TS> net,
     Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> modularProperties,
-    Dictionary<TV, Func<Zen<T>, Zen<bool>>> monolithicProperties) : this(net.Topology, net.TransferFunction,
+    Dictionary<TV, Func<Zen<T>, Zen<bool>>> monolithicProperties) : this(net.Digraph, net.TransferFunction,
     net.MergeFunction,
     net.InitialValues, annotations, modularProperties, monolithicProperties, net.Symbolics)
   {
@@ -105,7 +105,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
     Dictionary<TV, Func<Zen<T>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<TV, Func<Zen<T>, Zen<bool>>> safetyProperties,
-    BigInteger convergeTime) : this(net.Topology, net.TransferFunction, net.MergeFunction,
+    BigInteger convergeTime) : this(net.Digraph, net.TransferFunction, net.MergeFunction,
     net.InitialValues, annotations, stableProperties, safetyProperties, convergeTime, net.Symbolics)
   {
   }
@@ -139,9 +139,9 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   public Dictionary<TV, Option<State<T, TV, TS>>> CheckAnnotationsWith<TAcc>(TAcc collector,
     Func<TV, TAcc, Func<Option<State<T, TV, TS>>>, Option<State<T, TV, TS>>> f)
   {
-    var routes = Topology.MapNodes(node => Symbolic<T>($"{node}-route"));
+    var routes = Digraph.MapNodes(node => Symbolic<T>($"{node}-route"));
     var time = Symbolic<BigInteger>("time");
-    var s = Topology.Nodes
+    var s = Digraph.Nodes
       // call f for each node
       .AsParallel()
       .Select(node => (node, f(node, collector, () => CheckAnnotations(node, routes, time))))
@@ -193,7 +193,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TV, TS>> CheckBaseCase()
   {
-    return Topology.Nodes.AsParallel().Aggregate(Option.None<State<T, TV, TS>>(),
+    return Digraph.Nodes.AsParallel().Aggregate(Option.None<State<T, TV, TS>>(),
       (current, node) => current.OrElse(() => CheckBaseCase(node)));
   }
 
@@ -203,7 +203,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
   public Option<State<T, TV, TS>> CheckAssertions()
   {
-    return Topology.Nodes.AsParallel().Aggregate(Option.None<State<T, TV, TS>>(),
+    return Digraph.Nodes.AsParallel().Aggregate(Option.None<State<T, TV, TS>>(),
       (current, node) => current.OrElse(() => CheckAssertions(node)));
   }
 
@@ -237,14 +237,14 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   public Option<State<T, TV, TS>> CheckInductive()
   {
     // create symbolic values for each node.
-    var routes = Topology.MapNodes(node => Symbolic<T>($"{node}-route"));
+    var routes = Digraph.MapNodes(node => Symbolic<T>($"{node}-route"));
 
     // create a symbolic time variable.
     var time = Symbolic<BigInteger>("time");
 
     // check the inductive invariant for each node.
     // Parallel.ForEach(Topology.Nodes, node => CheckInductive(node, routes, time))
-    return Topology.Nodes.AsParallel().Select(
+    return Digraph.Nodes.AsParallel().Select(
         node => CheckInductive(node, routes, time))
       .Aggregate(Option.None<State<T, TV, TS>>(), (current, s) => current.OrElse(() => s));
   }
@@ -267,7 +267,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
 
     // collect all of the symbolics from neighbors.
     var assume = new List<Zen<bool>> {time > new BigInteger(0)};
-    assume.AddRange(Topology[node].Select(neighbor =>
+    assume.AddRange(Digraph[node].Select(neighbor =>
       Annotations[neighbor](routes[neighbor], time - new BigInteger(1))));
 
     // now we need to ensure the new route after merging implies the annotation for this node.
@@ -284,7 +284,7 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
     var model = query.Solve();
 
     if (!model.IsSatisfiable()) return Option.None<State<T, TV, TS>>();
-    var neighborRoutes = routes.Where(pair => Topology[node].Contains(pair.Key));
+    var neighborRoutes = routes.Where(pair => Digraph[node].Contains(pair.Key));
     var state = new State<T, TV, TS>(model, node, newNodeRoute, neighborRoutes, time, Symbolics);
     return Option.Some(state);
   }
@@ -296,13 +296,13 @@ public class AnnotatedNetwork<T, TV, TS> : Network<T, TV, TS>
   public Option<State<T, TV, TS>> CheckMonolithic()
   {
     // create symbolic values for each node.
-    var routes = Topology.MapNodes(node => Symbolic<T>($"{node}-route"));
+    var routes = Digraph.MapNodes(node => Symbolic<T>($"{node}-route"));
 
     // add the assertions
-    var assertions = Topology.Nodes.Select(node => MonolithicProperties[node](routes[node]));
+    var assertions = Digraph.Nodes.Select(node => MonolithicProperties[node](routes[node]));
 
     // add constraints for each node, that its route is the merge of all the neighbors and init
-    var constraints = Topology.Nodes.Select(node =>
+    var constraints = Digraph.Nodes.Select(node =>
       routes[node] == UpdateNodeRoute(node, routes));
 
     var check = And(GetSymbolicConstraints(), And(constraints.ToArray()), Not(And(assertions.ToArray())));

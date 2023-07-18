@@ -14,8 +14,8 @@ public static class BooleanTests
   private static AnnotatedNetwork<bool, TV, TS> BooleanAnnotatedNetwork<TV, TS>(Network<bool, TV, TS> net,
     Dictionary<TV, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime) where TV : notnull => new(net, annotations,
-    net.Topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
-    net.Topology.MapNodes(_ => Lang.Identity<bool>()));
+    net.Digraph.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
+    net.Digraph.MapNodes(_ => Lang.Identity<bool>()));
 
   private static AnnotatedNetwork<bool, string, Unit> Net(
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations)

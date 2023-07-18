@@ -8,24 +8,24 @@ namespace Timepiece.Benchmarks;
 
 public class Vf<TS> : Network<Option<BgpRoute>, string, TS>
 {
-  public Vf(Topology<string> topology, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
+  public Vf(Digraph<string> digraph, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
     SymbolicValue<TS>[] symbolics) :
-    base(topology, Transfer(topology, tag), Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
+    base(digraph, Transfer(digraph, tag), Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
       initialValues, symbolics)
   {
   }
 
-  public Vf(Topology<string> topology, string destination, string tag, SymbolicValue<TS>[] symbolics) :
-    this(topology,
-      topology.MapNodes(n => n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
+  public Vf(Digraph<string> digraph, string destination, string tag, SymbolicValue<TS>[] symbolics) :
+    this(digraph,
+      digraph.MapNodes(n => n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
       tag, symbolics)
   {
   }
 
   private static Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> Transfer(
-    Topology<string> topology, string tag)
+    Digraph<string> digraph, string tag)
   {
-    return topology.MapEdges(e =>
+    return digraph.MapEdges(e =>
     {
       var increment = Lang.Omap<BgpRoute, BgpRoute>(BgpRouteExtensions.IncrementAsPath);
       var (src, snk) = e;
@@ -77,8 +77,8 @@ public static class Vf
   public static AnnotatedVf<Unit> ValleyFreeReachable(uint numPods, string destination, bool inferTimes)
   {
     var vf = ConcreteFatTreeVf(numPods, destination);
-    var distances = vf.Topology.BreadthFirstSearch(destination);
-    var afterConditions = vf.Topology.MapNodes(n =>
+    var distances = vf.Digraph.BreadthFirstSearch(destination);
+    var afterConditions = vf.Digraph.MapNodes(n =>
       Lang.IfSome(distances[n] < 2
         // require that the LP equals the default, and the path length equals the distance
         ? b => Zen.And(Zen.Not(b.HasCommunity(DownTag)),
@@ -88,7 +88,7 @@ public static class Vf
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations;
     if (inferTimes)
     {
-      var infer = new InferVf(vf, vf.Topology.MapNodes(_ => Lang.IsNone<BgpRoute>()), afterConditions)
+      var infer = new InferVf(vf, vf.Digraph.MapNodes(_ => Lang.IsNone<BgpRoute>()), afterConditions)
       {
         MaxTime = 4
       };
@@ -97,23 +97,23 @@ public static class Vf
     else
     {
       annotations =
-        vf.Topology.MapNodes(n => Lang.Until(distances[n], Lang.IsNone<BgpRoute>(),
+        vf.Digraph.MapNodes(n => Lang.Until(distances[n], Lang.IsNone<BgpRoute>(),
           afterConditions[n]));
     }
 
     var safetyProperties =
-      vf.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+      vf.Digraph.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties =
-      vf.Topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
+      vf.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
     return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
   }
 
   public static AnnotatedVf<Unit> ValleyFreePathLength(uint numPods, string destination)
   {
     var vf = ConcreteFatTreeVf(numPods, destination);
-    var distances = vf.Topology.BreadthFirstSearch(destination);
+    var distances = vf.Digraph.BreadthFirstSearch(destination);
     var annotations =
-      vf.Topology.MapNodes(n =>
+      vf.Digraph.MapNodes(n =>
         Lang.Until(distances[n], Lang.IsNone<BgpRoute>(),
           distances[n] < 2
             // require that the safety property holds at time t, and that the LP equals the default, and the path length equals t
@@ -121,9 +121,9 @@ public static class Vf
               BgpRouteExtensions.EqLengthDefaultLp(distances[n])(b)))
             : Lang.IfSome(BgpRouteExtensions.EqLengthDefaultLp(distances[n]))));
     var safetyProperties =
-      vf.Topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
+      vf.Digraph.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties =
-      vf.Topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+      vf.Digraph.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
   }
 

@@ -21,7 +21,7 @@ public static class Profile
   {
     const string headers = "n\ttotal";
     var monoTime = Time(RunMono, annotatedNetwork);
-    var data = $"{annotatedNetwork.Topology.Nodes.Length}\t{monoTime}";
+    var data = $"{annotatedNetwork.Digraph.Nodes.Count}\t{monoTime}";
     Console.WriteLine($"Monolithic verification took {monoTime}ms");
     Console.WriteLine(headers);
     Console.WriteLine(data);
@@ -48,7 +48,7 @@ public static class Profile
   {
     var processes = Environment.ProcessorCount;
     Console.WriteLine($"Environment.ProcessorCount: {processes}");
-    var numNodes = annotatedNetwork.Topology.Nodes.Length;
+    var numNodes = annotatedNetwork.Digraph.Nodes.Count;
     var nodeTimes = new ConcurrentDictionary<TV, long>(processes * 2, numNodes);
     long? t = null;
     try

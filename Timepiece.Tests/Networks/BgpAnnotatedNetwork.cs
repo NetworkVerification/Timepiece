@@ -10,14 +10,14 @@ namespace Timepiece.Tests.Networks;
 
 public class BgpAnnotatedNetwork<TV, TS> : AnnotatedNetwork<Option<Bgp>, TV, TS> where TV : notnull
 {
-  public BgpAnnotatedNetwork(Topology<TV> topology,
+  public BgpAnnotatedNetwork(Digraph<TV> digraph,
     Dictionary<TV, Zen<Option<Bgp>>> initialValues,
     Dictionary<TV, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     BigInteger convergeTime,
-    SymbolicValue<TS>[] symbolics) : base(topology,
-    topology.MapEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(Bgp.Min),
-    initialValues, annotations, topology.MapNodes(_ => Lang.Finally<Option<Bgp>>(convergeTime, Option.IsSome)),
-    topology.MapNodes(_ => Lang.IsSome<Bgp>()), symbolics)
+    SymbolicValue<TS>[] symbolics) : base(digraph,
+    digraph.MapEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(Bgp.Min),
+    initialValues, annotations, digraph.MapNodes(_ => Lang.Finally<Option<Bgp>>(convergeTime, Option.IsSome)),
+    digraph.MapNodes(_ => Lang.IsSome<Bgp>()), symbolics)
   {
   }
 

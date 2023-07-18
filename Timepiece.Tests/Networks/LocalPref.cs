@@ -10,11 +10,11 @@ using LpRoute = Pair<BigInteger, BigInteger>;
 
 public class LocalPref<TV, TS> : Network<Pair<BigInteger, BigInteger>, TV, TS> where TV : notnull
 {
-  public LocalPref(Topology<TV> topology,
+  public LocalPref(Digraph<TV> digraph,
     Dictionary<TV, Zen<LpRoute>> initialValues,
     SymbolicValue<TS>[] symbolics)
-    : base(topology,
-      topology.MapEdges(_ => Lang.Product(Lang.Identity<BigInteger>(), Lang.Incr(new BigInteger(1)))),
+    : base(digraph,
+      digraph.MapEdges(_ => Lang.Product(Lang.Identity<BigInteger>(), Lang.Incr(new BigInteger(1)))),
       Merge,
       initialValues,
       symbolics)
