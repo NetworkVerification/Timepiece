@@ -44,7 +44,7 @@ public static class InferTests
   /// <param name="fatTree"></param>
   /// <param name="destination"></param>
   /// <returns></returns>
-  private static Dictionary<string, uint> FatTreeDistances(LabelledDigraph<string, int> fatTree, string destination)
+  private static Dictionary<string, uint> FatTreeDistances(NodeLabelledDigraph<string, int> fatTree, string destination)
   {
     return fatTree.MapNodes(n =>
     {

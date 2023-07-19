@@ -5,7 +5,7 @@ namespace Timepiece.Benchmarks;
 
 public class SymbolicDestination : SymbolicValue<Pair<string, int>>
 {
-  public SymbolicDestination(LabelledDigraph<string, int> digraph) : base("dest",
+  public SymbolicDestination(NodeLabelledDigraph<string, int> digraph) : base("dest",
     p => digraph.ExistsNode(n => Zen.And(n.IsEdge(), DestEquals(p, digraph, n))))
   {
     Node = Value.Item1();
@@ -46,12 +46,12 @@ public class SymbolicDestination : SymbolicValue<Pair<string, int>>
   /// <param name="digraph"></param>
   /// <param name="node"></param>
   /// <returns></returns>
-  public Zen<bool> Equals(LabelledDigraph<string, int> digraph, string node)
+  public Zen<bool> Equals(NodeLabelledDigraph<string, int> digraph, string node)
   {
     return DestEquals(Value, digraph, node);
   }
 
-  private static Zen<bool> DestEquals(Zen<Pair<string, int>> p, LabelledDigraph<string, int> digraph, string node)
+  private static Zen<bool> DestEquals(Zen<Pair<string, int>> p, NodeLabelledDigraph<string, int> digraph, string node)
   {
     return Zen.And(p.Item1() == node, p.Item2() == digraph.L(node));
   }

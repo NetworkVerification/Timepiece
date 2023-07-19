@@ -73,7 +73,7 @@ public class AnnotatedHijack<TV, TS> : AnnotatedNetwork<TaggedRoute, TV, TS> whe
   }
 }
 
-public class InferHijack<TV> : Infer<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> where TV : notnull
+public class InferHijack<TV> : Infer<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> where TV : IEquatable<TV>
 {
   public InferHijack(Network<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> hijack,
     IReadOnlyDictionary<TV, Func<Zen<TaggedRoute>, Zen<bool>>> beforeInvariants,
@@ -202,14 +202,14 @@ public static class Hijack
   /// <param name="digraph"></param>
   /// <param name="hijackerLabel"></param>
   /// <returns></returns>
-  private static LabelledDigraph<string, T> HijackTopology<T>(string hijacker, LabelledDigraph<string, T> digraph,
+  private static NodeLabelledDigraph<string, T> HijackTopology<T>(string hijacker, NodeLabelledDigraph<string, T> digraph,
     T hijackerLabel)
   {
     var withHijacker = HijackAdjList(hijacker, digraph);
     var labels = digraph.Labels;
     labels[hijacker] = hijackerLabel;
 
-    return new LabelledDigraph<string, T>(withHijacker, labels);
+    return new NodeLabelledDigraph<string, T>(withHijacker, labels);
   }
 
   private static Digraph<string> HijackTopology(string hijacker, Digraph<string> digraph)

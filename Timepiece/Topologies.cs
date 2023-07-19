@@ -85,7 +85,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numPods">Number of pods in the fat-tree.</param>
   /// <returns>A fat-tree topology with pod labels.</returns>
-  public static LabelledDigraph<string, int> LabelledFatTree(uint numPods)
+  public static NodeLabelledDigraph<string, int> LabelledFatTree(uint numPods)
   {
     var podNumbers = new Dictionary<string, int>();
     var neighbors = new Dictionary<string, ImmutableSortedSet<string>>();
@@ -147,6 +147,6 @@ public static class Topologies
       }
     }
 
-    return new LabelledDigraph<string, int>(neighbors, podNumbers);
+    return new NodeLabelledDigraph<string, int>(neighbors, podNumbers);
   }
 }

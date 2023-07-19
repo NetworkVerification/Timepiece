@@ -220,9 +220,9 @@ public class Digraph<TV> where TV : notnull
 /// <summary>
 ///   Represents the digraph of an NV network with node labels.
 /// </summary>
-public class LabelledDigraph<TV, T> : Digraph<TV>
+public class NodeLabelledDigraph<TV, T> : Digraph<TV>
 {
-  public LabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<TV, T> labels) : base(neighbors)
+  public NodeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<TV, T> labels) : base(neighbors)
   {
     Labels = labels;
   }
@@ -243,11 +243,30 @@ public class LabelledDigraph<TV, T> : Digraph<TV>
   }
 
   /// <summary>
-  ///   Convert the LabelledDigraph to an unlabelled one.
+  ///   Convert the NodeLabelledDigraph to an unlabelled one.
   /// </summary>
   /// <returns>An equivalent Digraph.</returns>
   public Digraph<TV> ToUnlabelled()
   {
     return new Digraph<TV>(Neighbors);
+  }
+}
+
+public class EdgeLabelledDigraph<TV, T> : Digraph<TV>
+{
+  public EdgeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<(TV, TV), T> labels) : base(neighbors)
+  {
+    Labels = labels;
+  }
+
+  /// <summary>
+  /// Labels for the edges in the digraph.
+  /// </summary>
+  public Dictionary<(TV, TV),T> Labels { get; set; }
+
+  public void AddEdge(TV node, TV neighbor, T label)
+  {
+    Labels[(neighbor, node)] = label;
+    AddEdge(node, neighbor);
   }
 }
