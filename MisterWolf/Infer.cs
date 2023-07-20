@@ -458,7 +458,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
         // based on the value of before, we want to check if the complement graph of the edges in t2[(node, bv)]
         // is a clique? visits every vertex?
         // possible dumb way: try every "edge" in succession
-        // TODO: is this like a DFS?
+        // is this like a DFS?
+        var reached = ArrangementReachable(b.Count, (node, before), t2, ImmutableSortedSet<TV>.Empty);
         for (var i = 0; i < b.Count - 1; i++)
         {
           if (t2[(node, before)].Contains((Digraph[node][i], b[i], Digraph[node][i + 1], b[i + 1])))
@@ -469,6 +470,26 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
         }
       });
     return (beforeInductiveChecks, afterInductiveChecks);
+  }
+
+  /// <summary>
+  /// Return the nodes reached from the given starting invariant.
+  /// </summary>
+  /// <param name="fuel"></param>
+  /// <param name="start"></param>
+  /// <param name="t2"></param>
+  /// <param name="reached"></param>
+  /// <returns></returns>
+  private static ImmutableSortedSet<TV> ArrangementReachable(int fuel, (TV, bool) start,
+    IReadOnlyDictionary<(TV, bool), HashSet<(TV, bool, TV, bool)>> t2, ImmutableSortedSet<TV> reached)
+  {
+    reached = reached.Add(start.Item1);
+    // if we run out of fuel, abort with an empty set
+    return fuel <= 0
+      ? ImmutableSortedSet<TV>.Empty
+      : t2[start].Where(m => m.Item1.Equals(start.Item1) && m.Item2 == start.Item2 && !reached.Contains(m.Item3))
+        .Aggregate(reached,
+          (current, m) => current.Union(ArrangementReachable(fuel - 1, (m.Item3, m.Item4), t2, current)));
   }
 
   /// <summary>
