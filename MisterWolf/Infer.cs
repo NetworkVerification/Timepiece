@@ -316,20 +316,24 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
     var afterInductiveChecks = new Dictionary<TV, List<IReadOnlyList<bool>>>();
 
     var routes = Digraph.MapNodes(_ => Zen.Symbolic<T>());
-    // generate the "T1" table
+    // Construct the "T1" table
     // for succinctness, we use a hashset to contain all the cases that pass
     var t1 = new Dictionary<(TV, bool), HashSet<(TV, bool)>>();
+    // There are four combinations of before/after for each neighbor-node pair in the T1 table.
     var t1Combinations = new[] {(true, true), (true, false), (false, true), (false, false)};
     foreach (var (node, neighbors) in Digraph.Neighbors)
     {
+      // Add the two new rows
       t1[(node, true)] = new HashSet<(TV, bool)>();
       t1[(node, false)] = new HashSet<(TV, bool)>();
+      // Populate the rows for each neighbor ("column")
       for (var i = 0; i < neighbors.Count; i++)
       {
         var neighbor = neighbors[i];
         foreach (var (bu, bv) in t1Combinations)
         {
           var b = Enumerable.Range(0, neighbors.Count).Select(j => i == j ? Zen.Constant(bu) : null).ToList();
+          // Check that the node's invariant holds given its initial route and the routes from only this neighbor.
           var check = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node],
             b, routes);
           // if the check passed, add the neighbor to the set
@@ -339,9 +343,10 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
       }
     }
 
-    // generate the "T2" table
-    // again, we use a hashset to represent which cases pass or fail
+    // Construct the "T2" table
+    // again, we use a hashset to represent which cases pass (included) or fail (excluded)
     var t2 = new Dictionary<(TV, bool), HashSet<(TV, bool, TV, bool)>>();
+    // There are eight combinations of before/after for each neighbor-neighbor-node pair in the T1 table.
     var t2Combinations = new[]
     {
       (true, true, true), (true, false, true), (false, true, true), (false, false, true),
@@ -395,6 +400,7 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
             // set neighbors i1 and i2, and leave everything else null (skipped)
             var b = Enumerable.Range(0, neighbors.Count).Select(j => i1 == j ? Zen.Constant(b1) :
               i2 == j ? Zen.Constant(b2) : null).ToList();
+            // Check that the node's invariant holds given its initial route and the routes from only these two neighbors.
             var check = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node], b, routes);
             if (check is null)
             {
@@ -423,19 +429,19 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
       // reconstruct the result for every arrangement
       // foreach (var (neighbor, inv) in failArrangementGraph.Nodes)
       // {
-        // var (beforeComponent, afterComponent) = ReachableNodes(failArrangementGraph, neighbor, inv);
-        // add the arrangements to the appropriate dictionaries
-        // if (beforeComponent.Count == Digraph[node].Count)
-        // {
-          // if (!beforeInductiveChecks.ContainsKey(node)) beforeInductiveChecks[node] = new List<IReadOnlyList<bool>>();
-          // beforeInductiveChecks[node].Add(Digraph[node].Select(n => beforeComponent[n]).ToList());
-        // }
+      // var (beforeComponent, afterComponent) = ReachableNodes(failArrangementGraph, neighbor, inv);
+      // add the arrangements to the appropriate dictionaries
+      // if (beforeComponent.Count == Digraph[node].Count)
+      // {
+      // if (!beforeInductiveChecks.ContainsKey(node)) beforeInductiveChecks[node] = new List<IReadOnlyList<bool>>();
+      // beforeInductiveChecks[node].Add(Digraph[node].Select(n => beforeComponent[n]).ToList());
+      // }
 
-        // if (afterComponent.Count == Digraph[node].Count)
-        // {
-          // if (!afterInductiveChecks.ContainsKey(node)) afterInductiveChecks[node] = new List<IReadOnlyList<bool>>();
-          // afterInductiveChecks[node].Add(Digraph[node].Select(n => afterComponent[n]).ToList());
-        // }
+      // if (afterComponent.Count == Digraph[node].Count)
+      // {
+      // if (!afterInductiveChecks.ContainsKey(node)) afterInductiveChecks[node] = new List<IReadOnlyList<bool>>();
+      // afterInductiveChecks[node].Add(Digraph[node].Select(n => afterComponent[n]).ToList());
+      // }
       // }
     }
 
@@ -445,11 +451,22 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
       .AsParallel()
       .ForAll(tuple =>
       {
+        var (node, b) = tuple;
         // reconstruct this arrangement's pass/fail
         // for the nodes in this arrangement, see if the relevant clique connects all the components
-        var before = tuple.b[^1];
+        var before = b[^1];
         // based on the value of before, we want to check if the complement graph of the edges in t2[(node, bv)]
         // is a clique? visits every vertex?
+        // possible dumb way: try every "edge" in succession
+        // TODO: is this like a DFS?
+        for (var i = 0; i < b.Count - 1; i++)
+        {
+          if (t2[(node, before)].Contains((Digraph[node][i], b[i], Digraph[node][i + 1], b[i + 1])))
+          {
+            // there is an edge from i to i+1
+            // TODO: do something lol
+          }
+        }
       });
     return (beforeInductiveChecks, afterInductiveChecks);
   }
