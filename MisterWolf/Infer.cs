@@ -479,18 +479,8 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
       // but would be set to be less than itself
       // (arrangement is false and the symbolic time is equal to the predecessor's time)
       // .Where((j, i) => arrangement[i] || !time.Equals(times[j]))
-      .Select((j, i) =>
-        arrangement[i] is null ? Zen.False() : (bool) arrangement[i]! ? time >= times[j] : time < times[j]).ToArray();
-    return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : false;
-  }
-
-  private static Zen<bool> TimeInterval(IEnumerable<TV> earlierNeighbors,
-    IEnumerable<TV> laterNeighbors,
-    Zen<BigInteger> time,
-    IReadOnlyDictionary<TV, Zen<BigInteger>> times)
-  {
-    var neighborBounds = earlierNeighbors.Select(en => time >= times[en])
-      .Concat(laterNeighbors.Select(ln => time < times[ln])).ToArray();
+      .Where((_, i) => arrangement[i] is not null)
+      .Select((j, i) => (bool) arrangement[i]! ? time >= times[j] : time < times[j]).ToArray();
     return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : false;
   }
 
@@ -504,7 +494,6 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
   /// <param name="node">The node for which the arrangement is being considered.</param>
   /// <param name="times">The witness times of the node and its predecessors.</param>
   /// <param name="arrangement">A List{bool} representing the neighbors and node, in order (neighbors then node).</param>
-  /// <param name="before">True if the bound is for the given node's before invariant, and false for its after invariant.</param>
   /// <returns>An enumerable of constraints.</returns>
   private IEnumerable<Zen<bool>> BoundArrangement(TV node,
     IReadOnlyDictionary<TV, Zen<BigInteger>> times, IReadOnlyList<bool?> arrangement)
@@ -524,26 +513,6 @@ public class Infer<T, TV, TS> : Network<T, TV, TS> where TV : IEquatable<TV>
         (bool) arrangement[^1]! ? lowerBound + BigInteger.One >= times[node] :
         lowerBound + BigInteger.One < times[node],
         TimeInterval(Digraph[node], lowerBound, times, arrangement));
-  }
-
-  private (List<TV>, List<TV>) PartitionNeighborsByArrangement(TV node, IReadOnlyList<bool?> arrangement)
-  {
-    var earlierNeighbors = new List<TV>();
-    var laterNeighbors = new List<TV>();
-    for (var i = 0; i < Digraph[node].Count; i++)
-    {
-      if (arrangement[i] is null) continue;
-      if ((bool) arrangement[i]!)
-      {
-        earlierNeighbors.Add(Digraph[node][i]);
-      }
-      else
-      {
-        laterNeighbors.Add(Digraph[node][i]);
-      }
-    }
-
-    return (earlierNeighbors, laterNeighbors);
   }
 
   /// <summary>

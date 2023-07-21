@@ -85,7 +85,8 @@ public static class InferTests
       topology.MapNodes(_ => Lang.Identity<bool>()));
     var times = infer.InferTimes(strategy);
     Assert.True(times.Count > 0, "Failed to infer times.");
-    foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
+    foreach (var (node, time) in times)
+      Assert.True(time >= int.Parse(node), $"Time {time} did not match expected time {int.Parse(node)}");
   }
 
   public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>, InferenceStrategy> cartesianFatTreeData =
@@ -104,7 +105,8 @@ public static class InferTests
       topology.MapNodes(_ => Lang.Identity<bool>()));
     var times = infer.InferTimes(strategy);
     Assert.True(times.Count > 0, "Failed to infer times.");
-    foreach (var (node, time) in times) Assert.True(time >= distances[node]);
+    foreach (var (node, time) in times)
+      Assert.True(time >= distances[node], $"Time {time} did not match expected time {distances[node]}");
   }
 
   [Theory]
