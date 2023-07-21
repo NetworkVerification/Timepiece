@@ -14,6 +14,32 @@ public static class ShortestPathsTests
   private static readonly ShortestPath<string, Unit> Concrete = new(Topologies.Path(3), "A",
     System.Array.Empty<SymbolicValue<Unit>>());
 
+  public static TheoryData<string, string[], Zen<Option<BigInteger>>> ExpectedRoutes => new()
+  {
+    {"A", new string[] { }, Option.Create<BigInteger>(BigInteger.Zero)},
+    {"A", new[] {"B"}, Option.Create<BigInteger>(BigInteger.Zero)},
+    {"B", new string[] { }, Option.Null<BigInteger>()},
+    {"B", new[] {"A"}, Option.Create<BigInteger>(BigInteger.One)},
+    {"B", new[] {"C"}, Option.Null<BigInteger>()},
+    {"B", new[] {"A", "C"}, Option.Create<BigInteger>(BigInteger.One)}
+  };
+
+  [Theory]
+  [MemberData(nameof(ExpectedRoutes))]
+  public static void UpdateNodeRouteComputesExpectedValue(string node, string[] neighbors,
+    Zen<Option<BigInteger>> expected)
+  {
+    var routes = new Dictionary<string, Zen<Option<BigInteger>>>
+    {
+      {"A", Option.Create<BigInteger>(BigInteger.Zero)},
+      {"B", Option.Null<BigInteger>()},
+      {"C", Option.Null<BigInteger>()},
+    };
+    var actual = Concrete.UpdateNodeRoute(node, routes, neighbors);
+    var query = Zen.Not(Zen.Eq(actual, expected)).Solve();
+    Assert.False(query.IsSatisfiable());
+  }
+
   private static readonly ShortestPath<string, BigInteger> SymbolicRoute = new(Topologies.Complete(3),
     new Dictionary<string, Zen<Option<BigInteger>>>
     {
@@ -30,16 +56,18 @@ public static class ShortestPathsTests
         Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>())), new[] {dest});
   }
 
-  private static readonly Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> ConcreteWeakSafetyProperties =
-    Concrete.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>());
-
-  private static readonly Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> ConcreteStrongSafetyProperties =
-    new()
+  public static TheoryData<Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>> ConcreteProperties => new()
+  {
+    // weaker reachability property
+    Concrete.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()),
+    // stronger path length property
+    new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
     {
       {"A", Lang.IfSome<BigInteger>(r => r == BigInteger.Zero)},
       {"B", Lang.IfSome<BigInteger>(r => r == BigInteger.One)},
       {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))}
-    };
+    }
+  };
 
   private static AnnotatedNetwork<Option<BigInteger>, string, Unit> AnnotatedConcrete(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -57,8 +85,9 @@ public static class ShortestPathsTests
       SymbolicRoute.Digraph.MapNodes(_ => Lang.True<Option<BigInteger>>()), 2);
   }
 
-  [Fact]
-  public static void SoundAnnotationsPassChecks()
+  [Theory]
+  [MemberData(nameof(ConcreteProperties))]
+  public static void SoundAnnotationsPassChecks(Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> properties)
   {
     var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
     {
@@ -72,27 +101,8 @@ public static class ShortestPathsTests
         Lang.Until(new BigInteger(2), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r == new BigInteger(2)))
       }
     };
-    var net = AnnotatedConcrete(annotations, ConcreteWeakSafetyProperties);
+    var net = AnnotatedConcrete(annotations, properties);
 
-    NetworkAssert.CheckSound(net);
-  }
-
-  [Fact]
-  public static void SoundPathLengthAnnotationsPassChecks()
-  {
-    var annotations = new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
-    {
-      {"A", Lang.Equals<Option<BigInteger>>(Option.Some(new BigInteger(0)))},
-      {
-        "B",
-        Lang.Until(new BigInteger(1), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r == new BigInteger(1)))
-      },
-      {
-        "C",
-        Lang.Until(new BigInteger(2), Lang.IsNone<BigInteger>(), Lang.IfSome<BigInteger>(r => r == new BigInteger(2)))
-      }
-    };
-    var net = AnnotatedConcrete(annotations, ConcreteStrongSafetyProperties);
     NetworkAssert.CheckSound(net);
   }
 
@@ -105,7 +115,12 @@ public static class ShortestPathsTests
       {"B", Lang.Never(Lang.IsSome<BigInteger>())},
       {"C", Lang.Never(Lang.IsSome<BigInteger>())}
     };
-    var net = AnnotatedConcrete(annotations, ConcreteStrongSafetyProperties);
+    var net = AnnotatedConcrete(annotations, new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>()
+    {
+      {"A", Lang.IfSome<BigInteger>(r => r == BigInteger.Zero)},
+      {"B", Lang.IfSome<BigInteger>(r => r == BigInteger.One)},
+      {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))}
+    });
 
     NetworkAssert.CheckUnsound(net);
   }

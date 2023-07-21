@@ -40,7 +40,6 @@ public static class BooleanTests
     var net = Net(annotations);
 
     NetworkAssert.CheckSound(net);
-    // Assert.False(net.CheckAnnotations().HasValue, "Sound boolean annotations should pass checks.");
   }
 
   [Fact]
@@ -54,7 +53,6 @@ public static class BooleanTests
     var net = Net(annotations);
 
     NetworkAssert.CheckUnsound(net);
-    // Assert.True(net.CheckAnnotations().HasValue, "Unsound boolean annotations should fail checks.");
   }
 
   [Fact]

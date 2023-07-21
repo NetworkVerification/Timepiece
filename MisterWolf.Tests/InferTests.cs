@@ -9,6 +9,13 @@ namespace MisterWolf.Tests;
 
 public static class InferTests
 {
+  private static IEnumerable<InferenceStrategy> Strategies => new[]
+  {
+    InferenceStrategy.ExplicitEnumeration,
+    InferenceStrategy.SymbolicEnumeration,
+    InferenceStrategy.SelectiveEnumeration
+  };
+
   // a boolean network where one node has a route initially and others do not
   private static Network<bool, TV, Unit> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV> =>
     new BooleanNetwork<TV, Unit>(digraph,
@@ -64,28 +71,30 @@ public static class InferTests
     Lang.True<bool>()
   };
 
-  public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>> cartesianData =
-    new(PathSizes, BooleanBeforeInvariantPredicates);
+  public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>, InferenceStrategy> cartesianData =
+    new(PathSizes, BooleanBeforeInvariantPredicates, Strategies);
 
   [Theory]
   [MemberData(nameof(cartesianData))]
-  public static void CheckBoolPathInferSucceeds(uint numNodes, Func<Zen<bool>, Zen<bool>> beforePredicate)
+  public static void CheckBoolPathInferSucceeds(uint numNodes, Func<Zen<bool>, Zen<bool>> beforePredicate,
+    InferenceStrategy strategy)
   {
     var topology = Topologies.Path(numNodes, false);
     var infer = new Infer<bool, string, Unit>(BoolNet(topology, "0"),
       topology.MapNodes(_ => beforePredicate),
       topology.MapNodes(_ => Lang.Identity<bool>()));
-    var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
+    var times = infer.InferTimes(strategy);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
   }
 
-  public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>> cartesianFatTreeData =
-    new(new[] {4}, BooleanBeforeInvariantPredicates);
+  public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>, InferenceStrategy> cartesianFatTreeData =
+    new(new[] {4}, BooleanBeforeInvariantPredicates, Strategies);
 
   [Theory]
   [MemberData(nameof(cartesianFatTreeData))]
-  public static void CheckBoolFatTreeInferSucceeds(uint numPods, Func<Zen<bool>, Zen<bool>> beforePredicate)
+  public static void CheckBoolFatTreeInferSucceeds(uint numPods, Func<Zen<bool>, Zen<bool>> beforePredicate,
+    InferenceStrategy strategy)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var destination = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(numPods, 2) * 1.25 - 1));
@@ -93,7 +102,7 @@ public static class InferTests
     var infer = new Infer<bool, string, Unit>(BoolNet(topology, destination),
       topology.MapNodes(_ => beforePredicate),
       topology.MapNodes(_ => Lang.Identity<bool>()));
-    var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
+    var times = infer.InferTimes(strategy);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= distances[node]);
   }

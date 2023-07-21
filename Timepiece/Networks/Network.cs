@@ -59,17 +59,29 @@ public class Network<T, TV, TS>
 
   /// <summary>
   ///   Return a route corresponding to the application of one step of the network semantics:
-  ///   starting from the initial route at a node, merge in each transferred route from the node's neighbor.
+  ///   starting from the initial route at a node, merge in each transferred route from the node's neighbors.
   /// </summary>
   /// <param name="node">The focal node.</param>
   /// <param name="routes">The routes of all nodes in the network.</param>
   /// <returns>A route.</returns>
-  protected Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes)
+  public Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes)
   {
     return Digraph[node].Aggregate(InitialValues[node],
       (current, predecessor) =>
         MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
+
+  /// <inheritdoc cref="UpdateNodeRoute(TV,System.Collections.Generic.IReadOnlyDictionary{TV,ZenLib.Zen{T}})"/>
+  /// <param name="neighbors">The specific neighbors to transfer from: must be a subset (or equal to) the actual
+  /// set of neighbors, otherwise an exception will be raised.</param>
+  /// <returns>A route.</returns>
+  public Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes, IEnumerable<TV> neighbors)
+  {
+    return neighbors.Aggregate(InitialValues[node],
+      (current, predecessor) =>
+        MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
+  }
+
 
   /// <summary>
   ///   Return the conjunction of all constraints over symbolic values given to the network.
