@@ -14,19 +14,19 @@ public static class ShortestPathsTests
   private static readonly ShortestPath<string, Unit> Concrete = new(Topologies.Path(3), "A",
     System.Array.Empty<SymbolicValue<Unit>>());
 
-  public static TheoryData<string, string[], Zen<Option<BigInteger>>> ExpectedRoutes => new()
+  public static TheoryData<string, Zen<CSet<string>>, Zen<Option<BigInteger>>> ExpectedRoutes => new()
   {
-    {"A", new string[] { }, Option.Create<BigInteger>(BigInteger.Zero)},
-    {"A", new[] {"B"}, Option.Create<BigInteger>(BigInteger.Zero)},
-    {"B", new string[] { }, Option.Null<BigInteger>()},
-    {"B", new[] {"A"}, Option.Create<BigInteger>(BigInteger.One)},
-    {"B", new[] {"C"}, Option.Null<BigInteger>()},
-    {"B", new[] {"A", "C"}, Option.Create<BigInteger>(BigInteger.One)}
+    {"A", CSet.Empty<string>(), Option.Create<BigInteger>(BigInteger.Zero)},
+    {"A", CSet.Empty<string>().Add("B"), Option.Create<BigInteger>(BigInteger.Zero)},
+    {"B", CSet.Empty<string>(), Option.Null<BigInteger>()},
+    {"B", CSet.Empty<string>().Add("A"), Option.Create<BigInteger>(BigInteger.One)},
+    {"B", CSet.Empty<string>().Add("C"), Option.Null<BigInteger>()},
+    {"B", CSet.Empty<string>().Add("A").Add("C"), Option.Create<BigInteger>(BigInteger.One)}
   };
 
   [Theory]
   [MemberData(nameof(ExpectedRoutes))]
-  public static void UpdateNodeRouteComputesExpectedValue(string node, string[] neighbors,
+  public static void UpdateNodeRouteComputesExpectedValue(string node, Zen<CSet<string>> neighbors,
     Zen<Option<BigInteger>> expected)
   {
     var routes = new Dictionary<string, Zen<Option<BigInteger>>>
