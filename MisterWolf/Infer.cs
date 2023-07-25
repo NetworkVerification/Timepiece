@@ -249,14 +249,8 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
     // keep track of the arrangements that fail
     var foundArrangements = new List<IReadOnlyList<bool>>();
     // generate an array of symbolic booleans of length equal to the node's predecessors + 1
-    // each arrangement is a three-valued bitvector over the predecessors and the node
-    // var b = Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")).ToList();
-    // var b = ArrangementExtensions.Symbolic(node);
-    // var b = Zen.Create<CMapList<Option<bool>>>(("Invariant", Zen.Symbolic<Option<bool>>()),
-    // ("Neighbors",
-    // Digraph[node].Aggregate(CMap.Empty<TNode, Option<bool>>(),
-    // (map, neighbor) => map.Set(neighbor, Zen.Symbolic<Option<bool>>()))));
-    var b = Enumerable.Repeat(Zen.Symbolic<bool>(), Digraph[node].Count + 1).ToList();
+    // each arrangement is a bitvector over the predecessors and the node
+    var b = Enumerable.Range(0, Digraph[node].Count + 1).Select(i => Zen.Symbolic<bool>($"b{i}")).ToList();
     var blockingClauses = new List<Zen<bool>>();
     var routes = Digraph[node].ToDictionary(neighbor => neighbor, _ => Zen.Symbolic<TRoute>());
     var bSol = CheckInductive(node, Digraph[node],
@@ -267,8 +261,7 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
       var concreteArrangement = bSol;
       PrintFailure(node, Digraph[node], concreteArrangement[^1], concreteArrangement);
       // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
-      // skip any b's that are null
-      var blockingClause = Zen.Or(Digraph[node].Select((_, i) => Zen.Not(b[i])));
+      var blockingClause = Zen.Or(bSol.Select((bb, i) => bb ? Zen.Not(b[i]) : b[i]));
       blockingClauses.Add(blockingClause);
       // save this case as one to generate constraints for
       foundArrangements.Add(concreteArrangement);

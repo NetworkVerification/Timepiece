@@ -71,13 +71,13 @@ public static class InferTests
     Lang.True<bool>()
   };
 
-  public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>, InferenceStrategy> cartesianData =
-    new(PathSizes, BooleanBeforeInvariantPredicates, Strategies);
+  public static CartesianTheoryData<InferenceStrategy, int, Func<Zen<bool>, Zen<bool>>> cartesianData =
+    new(Strategies, PathSizes, BooleanBeforeInvariantPredicates);
 
   [Theory]
   [MemberData(nameof(cartesianData))]
-  public static void CheckBoolPathInferSucceeds(uint numNodes, Func<Zen<bool>, Zen<bool>> beforePredicate,
-    InferenceStrategy strategy)
+  public static void CheckBoolPathInferSucceeds(InferenceStrategy strategy, uint numNodes,
+    Func<Zen<bool>, Zen<bool>> beforePredicate)
   {
     var topology = Topologies.Path(numNodes, false);
     var infer = new Infer<bool, string, Unit>(BoolNet(topology, "0"),
