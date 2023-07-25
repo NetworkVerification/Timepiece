@@ -69,11 +69,27 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// </summary>
   public bool PrintTimes { get; set; } = false;
 
-  public BigInteger? MaxTime { get; set; }
+  public BigInteger? MaxTime { get; init; }
   private IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> BeforeInvariants { get; }
   private IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> AfterInvariants { get; }
 
-  private static string BoolToInvariantType(bool? b) => b is null ? "either" : (bool) b ? "before" : "after";
+  private static string BoolToInvariantType(bool b) => b ? "before" : "after";
+
+  private static string ArrangementToString(IEnumerable<bool> b, IEnumerable<TNode> neighbors)
+  {
+    var builder = new StringBuilder();
+    foreach (var (neighbor, bb) in neighbors.Zip(b))
+    {
+      if (builder.Length > 0)
+      {
+        builder.Append("/");
+      }
+
+      builder.Append($"{neighbor}:{BoolToInvariantType(bb)}");
+    }
+
+    return builder.ToString();
+  }
 
   /// <summary>
   ///   Return a string describing a failed check.
@@ -81,20 +97,21 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   ///   otherwise, assume the failure is due to the initial check.
   /// </summary>
   /// <param name="node">A node in the topology.</param>
+  /// <param name="neighbors">The neighbors of the node.</param>
   /// <param name="bv">A nullable boolean representing the node's invariant.</param>
   /// <param name="b">An arrangement representing the neighbors' invariants.</param>
   /// <returns>A string describing a failed check.</returns>
-  private static string ReportFailure(TNode node, bool? bv, Arrangement<TNode>? b)
+  private static string ReportFailure(TNode node, IEnumerable<TNode>? neighbors, bool bv, List<bool>? b)
   {
-    return b is not null
-      ? $"Arrangement [{b}] does NOT imply node {node}'s {BoolToInvariantType(bv)} invariant."
+    return b is not null && neighbors is not null
+      ? $"Arrangement [{ArrangementToString(b, neighbors)}:{node}] failed."
       : $"Node {node}'s {BoolToInvariantType(bv)} invariant does not hold for its initial route.";
   }
 
-  private void PrintFailure(TNode node, bool? bv, Arrangement<TNode>? b)
+  private void PrintFailure(TNode node, IEnumerable<TNode>? neighbors, bool bv, List<bool>? b)
   {
     if (ReportFailures)
-      Console.WriteLine(ReportFailure(node, bv, b));
+      Console.WriteLine(ReportFailure(node, neighbors, bv, b));
   }
 
   /// <summary>
@@ -119,27 +136,28 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   ///   (b[i] is true) or after condition (b[i] is false)
   /// </summary>
   /// <param name="node">A node in the topology.</param>
+  /// <param name="neighbors">The specific neighbors to consider of the node.</param>
   /// <param name="invariant">A predicate to check on the node.</param>
   /// <param name="b">A bit array over the node's neighbors.</param>
   /// <param name="routes">The routes of the network for the neighboring nodes.</param>
   /// <param name="blockingClauses">An additional enumerable of clauses over b variables
   ///   to block when checking the invariant.</param>
   /// <returns>An arrangement b which causes the invariant to *not* always be satisfied if one exists, and null otherwise.</returns>
-  private Arrangement<TNode>? CheckInductive(TNode node, Func<Zen<TRoute>, Zen<bool>> invariant,
-    Zen<Arrangement<TNode>> b, IReadOnlyDictionary<TNode, Zen<TRoute>> routes,
+  private List<bool>? CheckInductive(TNode node, IEnumerable<TNode> neighbors, Func<Zen<TRoute>, Zen<bool>> invariant,
+    IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<TNode, Zen<TRoute>> routes,
     IEnumerable<Zen<bool>>? blockingClauses = null)
   {
     return LogFunctionTime(node, InferInductiveTimes, () =>
     {
-      var newNodeRoute = UpdateNodeRoute(node, routes, b.SomeNeighbors(Digraph[node]));
+      var nbrs = neighbors.ToArray();
+      var newNodeRoute = UpdateNodeRoute(node, routes, nbrs);
 
       // check predecessor invariants according to whether or not the predecessor was given in b
       // we check the before invariant of a predecessor when b[i] is true, and the after invariant when b[i] is false
-      var assume = Digraph[node]
-        .Select(predecessor =>
-          Zen.If(b.GetNeighbor(predecessor).IsNone(), Zen.False(),
-            Zen.If(b.GetNeighbor(predecessor).Value(), BeforeInvariants[predecessor](routes[predecessor]),
-              AfterInvariants[predecessor](routes[predecessor]))));
+      var assume = nbrs
+        .Select((predecessor, i) =>
+          Zen.If(b[i], BeforeInvariants[predecessor](routes[predecessor]),
+            AfterInvariants[predecessor](routes[predecessor])));
       var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
       var query = Zen.And(GetSymbolicConstraints(), blockingClauses is null
@@ -147,14 +165,13 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
         : Zen.And(Zen.And(blockingClauses), Zen.Not(check)));
       var model = query.Solve();
 
-      return model.IsSatisfiable() ? model.Get(b) : null;
+      return model.IsSatisfiable() ? b.Select(model.Get).ToList() : null;
     });
   }
 
   public Dictionary<TNode, BigInteger> InferTimes(InferenceStrategy strategy)
   {
-    var (beforeInitialChecks, afterInitialChecks) =
-      FailingInitialChecks();
+    var initialChecks = FailingInitialChecks();
     // for each node, for each subset of its predecessors, run CheckInductive in parallel
     // construct a dictionary of the results of which b fail to imply the two invariants
     var inductiveChecks = strategy switch
@@ -165,7 +182,7 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
       _ => throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null)
     };
 
-    return InferTimesFromChecks(beforeInitialChecks, afterInitialChecks, inductiveChecks);
+    return InferTimesFromChecks(initialChecks, inductiveChecks);
   }
 
   /// <summary>
@@ -173,50 +190,52 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// </summary>
   /// <returns>Two collections collecting all nodes that failed the before invariant (the first collection),
   /// or the second invariant (the second collection).</returns>
-  private (IReadOnlyCollection<TNode>, IReadOnlyCollection<TNode>) FailingInitialChecks()
+  private IEnumerable<(TNode, bool)> FailingInitialChecks()
   {
-    var afterInitialChecks = new ConcurrentBag<TNode>();
-    var beforeInitialChecks = new ConcurrentBag<TNode>();
-    Digraph.Nodes
-      // check all nodes' invariants in parallel
+    return Digraph.Nodes
       .SelectMany(_ => new[] {true, false}, (n, b) => (n, b))
-      .AsParallel().ForAll(tuple =>
+      // check all nodes' invariants in parallel
+      .AsParallel().Aggregate(new ConcurrentBag<(TNode, bool)>(), (initialChecks, tuple) =>
       {
         var (node, b) = tuple;
-        if (!CheckInitial(node, b ? BeforeInvariants[node] : AfterInvariants[node])) return;
-        PrintFailure(node, b, null);
-        (b ? beforeInitialChecks : afterInitialChecks).Add(node);
+        if (CheckInitial(node, b ? BeforeInvariants[node] : AfterInvariants[node]))
+        {
+          PrintFailure(node, null, b, null);
+          initialChecks.Add(tuple);
+        }
+
+        return initialChecks;
       });
-    return (beforeInitialChecks, afterInitialChecks);
   }
 
   /// <summary>
   ///   Explicitly enumerates the arrangements of before/after conditions of neighbors' routes.
   /// </summary>
   /// <returns>Two dictionaries mapping nodes to arrangements that fail the checks.</returns>
-  private IReadOnlyDictionary<TNode, List<Arrangement<TNode>>> EnumerateArrangementsExplicit()
+  private IReadOnlyDictionary<TNode, List<IReadOnlyList<bool>>> EnumerateArrangementsExplicit()
   {
-    var inductiveChecks =
-      new ConcurrentDictionary<TNode, List<Arrangement<TNode>>>(_processes * 2, Digraph.Nodes.Count);
-    Digraph.Nodes
+    return Digraph.Nodes
       // generate 2^{m+1} arrangements for each node
       .SelectMany(n => PowerSet.BitPSet(Digraph[n].Count + 1),
-        (n, b) => new Arrangement<TNode>(n, Option.Some(b[^1]), Digraph[n].Zip(b)))
+        (n, b) => (n, b))
       .AsParallel()
-      .ForAll(arrangement =>
-      {
-        var n = arrangement.Node;
-        var routes = Digraph[n].ToDictionary(predecessor => predecessor, _ => Zen.Symbolic<TRoute>());
-        var check = CheckInductive(n, arrangement.Invariant.Value ? BeforeInvariants[n] : AfterInvariants[n],
-          arrangement, routes);
-        if (check is null) return;
-        NumInductiveFailures[n]++;
-        PrintFailure(n, arrangement.Invariant.Value, check);
-        var arrangements = inductiveChecks.GetOrAdd(n, new List<Arrangement<TNode>>());
-        arrangements.Add(check);
-      });
+      .Aggregate(new ConcurrentDictionary<TNode, List<IReadOnlyList<bool>>>(_processes * 2, Digraph.Nodes.Count),
+        (inductiveChecks, tuple) =>
+        {
+          var (n, arrangement) = tuple;
+          var routes = Digraph[n].ToDictionary(predecessor => predecessor, _ => Zen.Symbolic<TRoute>());
+          var check = CheckInductive(n, Digraph[n], arrangement[^1] ? BeforeInvariants[n] : AfterInvariants[n],
+            arrangement.Select(Zen.Constant).ToList(), routes);
+          if (check is not null)
+          {
+            NumInductiveFailures[n]++;
+            PrintFailure(n, Digraph[n], arrangement[^1], check);
+            var arrangements = inductiveChecks.GetOrAdd(n, new List<IReadOnlyList<bool>>());
+            arrangements.Add(check);
+          }
 
-    return inductiveChecks;
+          return inductiveChecks;
+        });
   }
 
   /// <summary>
@@ -225,36 +244,36 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// </summary>
   /// <param name="node"></param>
   /// <returns></returns>
-  private IEnumerable<Arrangement<TNode>> FindAllArrangements(TNode node)
+  private IEnumerable<IReadOnlyList<bool>> FindAllArrangements(TNode node)
   {
     // keep track of the arrangements that fail
-    var foundArrangements = new List<Arrangement<TNode>>();
+    var foundArrangements = new List<IReadOnlyList<bool>>();
     // generate an array of symbolic booleans of length equal to the node's predecessors + 1
     // each arrangement is a three-valued bitvector over the predecessors and the node
     // var b = Enumerable.Range(0, neighbors + 1).Select(i => Zen.Symbolic<bool>($"b{i}")).ToList();
     // var b = ArrangementExtensions.Symbolic(node);
-    var b = Zen.Create<Arrangement<TNode>>(("Node", Zen.Constant(node)), ("Invariant", Zen.Symbolic<Option<bool>>()),
-      ("Neighbors",
-        Digraph[node].Aggregate(CMap.Empty<TNode, Option<bool>>(),
-          (map, neighbor) => map.Set(neighbor, Zen.Symbolic<Option<bool>>()))));
+    // var b = Zen.Create<CMapList<Option<bool>>>(("Invariant", Zen.Symbolic<Option<bool>>()),
+    // ("Neighbors",
+    // Digraph[node].Aggregate(CMap.Empty<TNode, Option<bool>>(),
+    // (map, neighbor) => map.Set(neighbor, Zen.Symbolic<Option<bool>>()))));
+    var b = Enumerable.Repeat(Zen.Symbolic<bool>(), Digraph[node].Count + 1).ToList();
     var blockingClauses = new List<Zen<bool>>();
     var routes = Digraph[node].ToDictionary(neighbor => neighbor, _ => Zen.Symbolic<TRoute>());
-    var bSol = CheckInductive(node,
-      r => Zen.If(b.GetInvariant().Value(), BeforeInvariants[node](r), AfterInvariants[node](r)), b, routes);
+    var bSol = CheckInductive(node, Digraph[node],
+      r => Zen.If(b[^1], BeforeInvariants[node](r), AfterInvariants[node](r)), b, routes);
     while (bSol is not null)
     {
       // get the model and block it
       var concreteArrangement = bSol;
-      PrintFailure(node, concreteArrangement.Invariant.Value, concreteArrangement);
+      PrintFailure(node, Digraph[node], concreteArrangement[^1], concreteArrangement);
       // construct a blocking clause: a negation of the case where all the B variables are as found by the solver
       // skip any b's that are null
-      var blockingClause =
-        Zen.Or(Digraph[node].Select(neighbor => b.GetNeighbor(neighbor) != concreteArrangement[neighbor]));
+      var blockingClause = Zen.Or(Digraph[node].Select((_, i) => Zen.Not(b[i])));
       blockingClauses.Add(blockingClause);
       // save this case as one to generate constraints for
       foundArrangements.Add(concreteArrangement);
       bSol =
-        CheckInductive(node, r => Zen.If(b.GetInvariant().Value(), BeforeInvariants[node](r), AfterInvariants[node](r)),
+        CheckInductive(node, Digraph[node], r => Zen.If(b[^1], BeforeInvariants[node](r), AfterInvariants[node](r)),
           b, routes,
           blockingClauses: blockingClauses);
     }
@@ -262,10 +281,10 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
     return foundArrangements;
   }
 
-  private IReadOnlyDictionary<TNode, List<Arrangement<TNode>>> EnumerateArrangementsSymbolic()
+  private IReadOnlyDictionary<TNode, List<IReadOnlyList<bool>>> EnumerateArrangementsSymbolic()
   {
     var inductiveChecks =
-      new ConcurrentDictionary<TNode, List<Arrangement<TNode>>>(_processes * 2, Digraph.Nodes.Count);
+      new ConcurrentDictionary<TNode, List<IReadOnlyList<bool>>>(_processes * 2, Digraph.Nodes.Count);
     Digraph.Nodes
       .AsParallel()
       .ForAll(node =>
@@ -273,7 +292,7 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
         var arrangements = FindAllArrangements(node);
         foreach (var arr in arrangements)
         {
-          var failed = inductiveChecks.GetOrAdd(node, new List<Arrangement<TNode>>());
+          var failed = inductiveChecks.GetOrAdd(node, new List<IReadOnlyList<bool>>());
           failed.Add(arr);
           NumInductiveFailures[node]++;
         }
@@ -281,9 +300,9 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
     return inductiveChecks;
   }
 
-  private IReadOnlyDictionary<TNode, List<Arrangement<TNode>>> EnumerateArrangementsSelective()
+  private IReadOnlyDictionary<TNode, List<IReadOnlyList<bool>>> EnumerateArrangementsSelective()
   {
-    var inductiveChecks = new ConcurrentDictionary<TNode, List<Arrangement<TNode>>>();
+    var inductiveChecks = new ConcurrentDictionary<TNode, List<IReadOnlyList<bool>>>();
 
     var routes = Digraph.MapNodes(_ => Zen.Symbolic<TRoute>());
     // Construct the "T1" table
@@ -298,16 +317,13 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
       t1[(node, true)] = new HashSet<(TNode, bool)>();
       t1[(node, false)] = new HashSet<(TNode, bool)>();
       // Populate the rows for each neighbor ("column")
-      for (var i = 0; i < neighbors.Count; i++)
+      foreach (var neighbor in neighbors)
       {
-        var neighbor = neighbors[i];
         foreach (var (bu, bv) in t1Combinations)
         {
-          var b = new Arrangement<TNode>(node, Option.Some(bv),
-            new CMap<TNode, Option<bool>>().Set(neighbor, Option.Some(bu)));
           // Check that the node's invariant holds given its initial route and the routes from only this neighbor.
-          var check = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node],
-            b, routes);
+          var check = CheckInductive(node, new[] {neighbor}, bv ? BeforeInvariants[node] : AfterInvariants[node],
+            new[] {Zen.Constant(bu)}, routes);
           // if the check passed, add the neighbor to the set
           if (check is null)
             t1[(node, bv)].Add((neighbor, bu));
@@ -348,11 +364,9 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
           }
           else
           {
-            // set neighbors i1 and i2, and leave everything else null (skipped)
-            var b = new Arrangement<TNode>(node, Option.Some(bv),
-              new CMap<TNode, Option<bool>>().Set(neighbor1, Option.Some(b1)).Set(neighbor2, Option.Some(b2)));
             // Check that the node's invariant holds given its initial route and the routes from only these two neighbors.
-            var check = CheckInductive(node, bv ? BeforeInvariants[node] : AfterInvariants[node], b, routes);
+            var check = CheckInductive(node, new[] {neighbor1, neighbor2},
+              bv ? BeforeInvariants[node] : AfterInvariants[node], new[] {Zen.Constant(b1), Zen.Constant(b2)}, routes);
             if (check is null)
             {
               // pair passed, add to t2
@@ -366,13 +380,13 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
     // TODO: perhaps we could filter out any arrangements that we already know will pass?
     Digraph.Nodes
       .SelectMany(n => PowerSet.BitPSet(Digraph[n].Count + 1),
-        (n, b) => new Arrangement<TNode>(n, Option.Some(b[^1]), Digraph[n].Zip(b)))
+        (n, b) => (n, b))
       .AsParallel()
-      .ForAll(arrangement =>
+      .ForAll(tuple =>
       {
         // reconstruct this arrangement's pass/fail
-        var node = arrangement.Node;
-        var before = arrangement.Invariant.Value;
+        var (node, arrangement) = tuple;
+        var before = arrangement[^1];
         // check if the arrangement is connected
         // (every node in the arrangement is connected to some other node in the arrangement)
         var connected = true;
@@ -381,14 +395,13 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
         for (var j = i + 1; j < Digraph[node].Count; j++)
         {
           connected &= t2[(node, before)]
-            .Contains((Digraph[node][i], arrangement[Digraph[node][i]].Value, Digraph[node][j],
-              arrangement[Digraph[node][j]].Value));
+            .Contains((Digraph[node][i], arrangement[i], Digraph[node][j], arrangement[j]));
         }
 
         // if the arrangement is connected then the check must pass
         if (connected) return;
         // otherwise, we add it to the appropriate list
-        var arrangements = inductiveChecks.GetOrAdd(node, new List<Arrangement<TNode>>());
+        var arrangements = inductiveChecks.GetOrAdd(node, new List<IReadOnlyList<bool>>());
         arrangements.Add(arrangement);
       });
     return inductiveChecks;
@@ -398,12 +411,11 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// Return a dictionary from nodes to witness times, such that the returned witness times
   /// ensure that all the given arrangements are blocked, or an empty dictionary if no such witness times exist.
   /// </summary>
-  /// <param name="beforeInitialChecks">Nodes where the before invariant failed to hold on the initial value.</param>
-  /// <param name="afterInitialChecks">Nodes where the after invariant failed to hold on the initial value.</param>
-  /// <param name="beforeInductiveChecks">Node arrangements where the inductive check failed with the before invariant.</param>
+  /// <param name="initialChecks">Nodes where the invariant failed to hold on the initial value.</param>
+  /// <param name="inductiveChecks">Node arrangements where the inductive check failed with the before invariant.</param>
   /// <returns></returns>
-  private Dictionary<TNode, BigInteger> InferTimesFromChecks(IEnumerable<TNode> beforeInitialChecks,
-    IEnumerable<TNode> afterInitialChecks, IReadOnlyDictionary<TNode, List<Arrangement<TNode>>> beforeInductiveChecks)
+  private Dictionary<TNode, BigInteger> InferTimesFromChecks(IEnumerable<(TNode, bool)> initialChecks,
+    IReadOnlyDictionary<TNode, List<IReadOnlyList<bool>>> inductiveChecks)
   {
     // TODO: if we have check failures when predecessor u is both in b and not in b,
     // TODO: then we should exclude it from the generated bounds (since its value won't matter)
@@ -415,27 +427,26 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
 
     // add initial check bounds
     bounds = bounds.Union(
-      beforeInitialChecks.Select<TNode, Zen<bool>>(node => times[node] == BigInteger.Zero)
-        .Concat(afterInitialChecks.Select<TNode, Zen<bool>>(node => times[node] > BigInteger.Zero)));
+      initialChecks.Select<(TNode, bool), Zen<bool>>(tuple =>
+        tuple.Item2 ? times[tuple.Item1] == BigInteger.Zero : times[tuple.Item1] > BigInteger.Zero));
 
     // for each failed inductive check, we add the following bounds:
     // (1) if the before check failed for node n and b anc, add bounds for all b m in anc
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 >= t_n
-    foreach (var (node, arrangements) in beforeInductiveChecks)
+    foreach (var (node, arrangements) in inductiveChecks)
     {
       bounds = (from arrangement in arrangements select BoundArrangement(node, times, arrangement))
-        .Aggregate(
-          bounds, (current, beforeBounds) => current.Union(beforeBounds));
+        .Aggregate(bounds, (current, beforeBounds) => current.Union(beforeBounds));
     }
 
     // (2) if the after check failed for node n and b anc, add bounds for all predecessors m of n
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 < t_n,
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
-    foreach (var (node, arrangements) in beforeInductiveChecks)
+    foreach (var (node, arrangements) in inductiveChecks)
     {
-      bounds = arrangements.Where(a => a.Invariant is {HasValue: true, Value: false})
+      bounds = arrangements.Where(a => !a[^1])
         .Select(arrangement => TimeInterval(Digraph[node], times[node] - BigInteger.One, times, arrangement))
         .Aggregate(bounds, (current, nextBound) => current.Add(nextBound));
     }
@@ -466,15 +477,14 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// and otherwise less than (when arrangement[i] is false).</param>
   /// <returns>A disjunction over comparisons between time and the witness times.</returns>
   private static Zen<bool> TimeInterval(IEnumerable<TNode> predecessors, Zen<BigInteger> time,
-    IReadOnlyDictionary<TNode, Zen<BigInteger>> times, Arrangement<TNode> arrangement)
+    IReadOnlyDictionary<TNode, Zen<BigInteger>> times, IEnumerable<bool> arrangement)
   {
-    var neighborBounds = predecessors
+    var neighborBounds = predecessors.Zip(arrangement)
       // skip cases where the symbolic time is for the given predecessor,
       // but would be set to be less than itself
       // (arrangement is false and the symbolic time is equal to the predecessor's time)
       // .Where(j => arrangement[j].Value || !time.Equals(times[j]))
-      .Where(m => arrangement[m].HasValue)
-      .Select(j => arrangement[j].Value ? time >= times[j] : time < times[j]).ToArray();
+      .Select(t => t.Second ? time >= times[t.First] : time < times[t.First]).ToArray();
     return neighborBounds.Length > 0 ? Zen.Or(neighborBounds) : false;
   }
 
@@ -490,19 +500,17 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// <param name="arrangement">A List{bool} representing the neighbors and node, in order (neighbors then node).</param>
   /// <returns>An enumerable of constraints.</returns>
   private IEnumerable<Zen<bool>> BoundArrangement(TNode node,
-    IReadOnlyDictionary<TNode, Zen<BigInteger>> times, Arrangement<TNode> arrangement)
+    IReadOnlyDictionary<TNode, Zen<BigInteger>> times, IReadOnlyList<bool> arrangement)
   {
     // the instantiated bounds are 0 and all neighbors that have already converged (the arrangement is false at the neighbor)
     var lowerBounds = Enumerable.Repeat(Zen.Constant(BigInteger.Zero), 1)
       .Concat(Digraph[node]
-        .Where(j => arrangement[j] is {HasValue: true, Value: false})
+        .Where((_, j) => !arrangement[j])
         .Select(neighbor => times[neighbor]));
     // for each lower bound, add a disjunction that rules out the case
     return from lowerBound in lowerBounds
       select Zen.Or(
-        !arrangement.Invariant.HasValue ? false :
-        arrangement.Invariant.Value ? lowerBound + BigInteger.One >= times[node] :
-        lowerBound + BigInteger.One < times[node],
+        arrangement[^1] ? lowerBound + BigInteger.One >= times[node] : lowerBound + BigInteger.One < times[node],
         TimeInterval(Digraph[node], lowerBound, times, arrangement));
   }
 

@@ -4,64 +4,69 @@ using ZenLib;
 namespace MisterWolf;
 
 [ZenObject]
-public class Arrangement<TV> where TV : notnull
+public class Arrangement
 {
-  public Arrangement(TV node, Option<bool> invariant, CMap<TV, Option<bool>> neighbors)
+  public Arrangement()
   {
-    Node = node;
+    Invariant = Option.None<bool>();
+    Neighbors = new FSeq<Option<bool>>();
+  }
+
+  public Arrangement(Option<bool> invariant, FSeq<Option<bool>> neighbors)
+  {
     Invariant = invariant;
     Neighbors = neighbors;
   }
 
-  public Arrangement(TV node, Option<bool> invariant, IEnumerable<(TV, bool)> neighbors) : this(node, invariant,
-    neighbors.Aggregate(new CMap<TV, Option<bool>>(),
-      (map, neighbor) => map.Set(neighbor.Item1, Option.Some(neighbor.Item2))))
+  public Arrangement(Option<bool> invariant, IEnumerable<Option<bool>> neighbors) : this(invariant,
+    new FSeq<Option<bool>>(neighbors))
   {
   }
 
   /// <summary>
   /// Invariant at the node.
   /// </summary>
-  public TV Node { get; set; }
-
   public Option<bool> Invariant { get; set; }
 
   /// <summary>
   /// Invariant at the node's neighbors.
   /// </summary>
-  public CMap<TV, Option<bool>> Neighbors { get; set; }
+  public FSeq<Option<bool>> Neighbors { get; set; }
 
-  public Option<bool> this[TV index] => Neighbors.Get(index);
+  public Option<bool> this[int index] => Neighbors.Values[index].Value;
 
   private static string BoolToInvariantType(Option<bool> b) => !b.HasValue ? "either" : b.Value ? "before" : "after";
 
   public override string ToString()
   {
     var builder = new StringBuilder();
-    foreach (var (m, b) in Neighbors.Values)
+    foreach (var b in Neighbors.Values.Where(b => b.HasValue))
     {
-      builder.Append($"{BoolToInvariantType(b)}:{m}/");
+      builder.Append($"{BoolToInvariantType(b.Value)}/");
     }
 
-    builder.Append($"{BoolToInvariantType(Invariant)}:{Node}");
+    builder.Append($"{BoolToInvariantType(Invariant)}");
     return builder.ToString();
   }
 }
 
 public static class ArrangementExtensions
 {
-  public static Zen<Arrangement<TNode>> Symbolic<TNode>(TNode node) where TNode : notnull
+  public static Zen<Arrangement> Symbolic(int numNeighbors)
   {
-    return Zen.Create<Arrangement<TNode>>(("Node", node), ("Invariant", Zen.Symbolic<Option<bool>>()),
-      ("Neighbors", Zen.Symbolic<CMap<TNode, Option<bool>>>()));
+    var invariant = Zen.Symbolic<Option<bool>>();
+    var neighbors = FSeq.Empty<Option<bool>>();
+    for (var i = 0; i < numNeighbors; i++)
+    {
+      neighbors = neighbors.AddFront(Zen.Symbolic<Option<bool>>());
+    }
+
+    return Create(invariant, neighbors);
   }
 
-  public static Zen<Option<bool>> GetNeighbor<TNode>(this Zen<Arrangement<TNode>> arrangement, TNode neighbor)
-    where TNode : notnull =>
-    arrangement.GetNeighbors().Get(neighbor);
+  public static Zen<Arrangement> Create(Zen<Option<bool>> invariant, Zen<FSeq<Option<bool>>> neighbors) =>
+    Zen.Constant(new Arrangement()).WithInvariant(invariant).WithNeighbors(neighbors);
 
-  public static Zen<CSet<TNode>> SomeNeighbors<TNode>(this Zen<Arrangement<TNode>> arrangement,
-    IEnumerable<TNode> neighbors) where TNode : notnull =>
-    neighbors.Aggregate(CSet.Empty<TNode>(), (set, m) =>
-      Zen.If(arrangement.GetNeighbor(m).IsSome(), set.Add(m), set));
+  public static Zen<Option<bool>> GetNeighbor(this Zen<Arrangement> arrangement, int neighbor) =>
+    arrangement.GetNeighbors().At(neighbor).Value();
 }

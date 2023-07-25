@@ -75,13 +75,11 @@ public class Network<T, TV, TS>
   /// <param name="neighbors">The specific neighbors to transfer from: must be a subset (or equal to) the actual
   /// set of neighbors, otherwise an exception will be raised.</param>
   /// <returns>A route.</returns>
-  public Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes, Zen<CSet<TV>> neighbors)
+  public Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes, IEnumerable<TV> neighbors)
   {
-    return Digraph[node].Aggregate(InitialValues[node],
+    return neighbors.Aggregate(InitialValues[node],
       (current, predecessor) =>
-        Zen.If(neighbors.Contains(predecessor),
-          MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])),
-          current));
+        MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
 
 
