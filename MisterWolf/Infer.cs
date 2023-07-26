@@ -143,21 +143,20 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
   /// <param name="blockingClauses">An additional enumerable of clauses over b variables
   ///   to block when checking the invariant.</param>
   /// <returns>An arrangement b which causes the invariant to *not* always be satisfied if one exists, and null otherwise.</returns>
-  private List<bool>? CheckInductive(TNode node, IEnumerable<TNode> neighbors, Func<Zen<TRoute>, Zen<bool>> invariant,
+  private List<bool>? CheckInductive(TNode node, IReadOnlyList<TNode> neighbors, Func<Zen<TRoute>, Zen<bool>> invariant,
     IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<TNode, Zen<TRoute>> routes,
     IEnumerable<Zen<bool>>? blockingClauses = null)
   {
     return LogFunctionTime(node, InferInductiveTimes, () =>
     {
-      var nbrs = neighbors.ToArray();
-      var newNodeRoute = UpdateNodeRoute(node, routes, nbrs);
+      var newNodeRoute = UpdateNodeRoute(node, routes, neighbors);
 
       // check predecessor invariants according to whether or not the predecessor was given in b
       // we check the before invariant of a predecessor when b[i] is true, and the after invariant when b[i] is false
-      var assume = nbrs
-        .Select((predecessor, i) =>
-          Zen.If(b[i], BeforeInvariants[predecessor](routes[predecessor]),
-            AfterInvariants[predecessor](routes[predecessor])));
+      var assume = neighbors.Zip(b)
+        .Select<(TNode m, Zen<bool> bi), Zen<bool>>(predecessor =>
+          Zen.If(predecessor.bi, BeforeInvariants[predecessor.m](routes[predecessor.m]),
+            AfterInvariants[predecessor.m](routes[predecessor.m])));
       var check = Zen.Implies(Zen.And(assume.ToArray()), invariant(newNodeRoute));
 
       var query = Zen.And(GetSymbolicConstraints(), blockingClauses is null

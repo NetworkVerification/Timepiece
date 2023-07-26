@@ -89,13 +89,13 @@ public static class InferTests
       Assert.True(time >= int.Parse(node), $"Time {time} did not match expected time {int.Parse(node)}");
   }
 
-  public static CartesianTheoryData<int, Func<Zen<bool>, Zen<bool>>, InferenceStrategy> cartesianFatTreeData =
-    new(new[] {4}, BooleanBeforeInvariantPredicates, Strategies);
+  public static CartesianTheoryData<InferenceStrategy, int, Func<Zen<bool>, Zen<bool>>> cartesianFatTreeData =
+    new(Strategies, new[] {4}, BooleanBeforeInvariantPredicates);
 
   [Theory]
   [MemberData(nameof(cartesianFatTreeData))]
-  public static void CheckBoolFatTreeInferSucceeds(uint numPods, Func<Zen<bool>, Zen<bool>> beforePredicate,
-    InferenceStrategy strategy)
+  public static void CheckBoolFatTreeInferSucceeds(InferenceStrategy strategy, uint numPods,
+    Func<Zen<bool>, Zen<bool>> beforePredicate)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var destination = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(numPods, 2) * 1.25 - 1));
