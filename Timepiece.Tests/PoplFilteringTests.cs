@@ -11,9 +11,9 @@ namespace Timepiece.Tests;
 
 /// <summary>
 /// Tests based on the examples presented in "Modular Control Plane Verification via Temporal Invariants"
-/// by Alberdingk Thijm et al. at from POPL 2023.
+/// by Alberdingk Thijm et al. from POPL 2023.
 /// </summary>
-public static class FilteringTests
+public static class PoplFilteringTests
 {
   private const string Tag = "t";
 
