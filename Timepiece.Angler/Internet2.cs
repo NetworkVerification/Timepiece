@@ -1,6 +1,6 @@
 using System.Numerics;
-using Timepiece.Angler.UntypedAst;
-using Timepiece.Angler.UntypedAst.AstFunction;
+using Timepiece.Angler.Ast;
+using Timepiece.Angler.Ast.AstFunction;
 using Timepiece.Datatypes;
 using Timepiece.Networks;
 using ZenLib;

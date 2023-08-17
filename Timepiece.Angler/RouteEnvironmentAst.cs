@@ -1,15 +1,15 @@
 using System.Numerics;
 using Newtonsoft.Json.Serialization;
-using Timepiece.Angler.UntypedAst;
-using Timepiece.Angler.UntypedAst.AstExpr;
-using Timepiece.Angler.UntypedAst.AstFunction;
-using Timepiece.Angler.UntypedAst.AstStmt;
+using Timepiece.Angler.Ast;
+using Timepiece.Angler.Ast.AstExpr;
+using Timepiece.Angler.Ast.AstFunction;
+using Timepiece.Angler.Ast.AstStmt;
 using Timepiece.Datatypes;
 using Timepiece.Networks;
 
 namespace Timepiece.Angler;
 
-public class RouteEnvironmentAst : Ast
+public class RouteEnvironmentAst : Ast.Ast
 {
   /// <summary>
   ///   Default predicates to test for this AST.

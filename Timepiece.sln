@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MisterWolf.Tests", "MisterWolf.Tests\MisterWolf.Tests.csproj", "{D8AA48BC-24A6-4FA8-AF0B-07280EB23514}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timepiece.Angler.Tests", "Timepiece.Angler.Tests\Timepiece.Angler.Tests.csproj", "{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,14 @@ Global
 		{D8AA48BC-24A6-4FA8-AF0B-07280EB23514}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8AA48BC-24A6-4FA8-AF0B-07280EB23514}.Release|x64.ActiveCfg = Release|Any CPU
 		{D8AA48BC-24A6-4FA8-AF0B-07280EB23514}.Release|x64.Build.0 = Release|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Debug|x64.Build.0 = Debug|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Release|x64.ActiveCfg = Release|Any CPU
+		{6BB841CF-5A7D-41E8-BA4F-F8B2C5E47111}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

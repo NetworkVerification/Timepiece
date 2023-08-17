@@ -31,7 +31,7 @@ public struct Ipv4Prefix
 
   internal IPAddressRange AsAddressRange()
   {
-    return new(new IPAddress(Prefix), (int) PrefixLength.ToLong());
+    return new IPAddressRange(new IPAddress(Prefix), (int) PrefixLength.ToLong());
   }
 
   /// <summary>
