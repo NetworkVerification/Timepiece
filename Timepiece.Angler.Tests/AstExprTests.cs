@@ -1,5 +1,3 @@
-using Timepiece.Angler.Ast.AstExpr;
-
 namespace Timepiece.Angler.Tests;
 
 public static class AstExprTests

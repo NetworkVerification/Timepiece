@@ -24,11 +24,19 @@ public static class TypeParsing
     return ParseTypeAlias(types, 0).Item1;
   }
 
+  /// <summary>
+  /// Parse an array of strings into a TypeAlias, starting from the given index.
+  /// </summary>
+  /// <param name="alias">an array of strings representing the type name</param>
+  /// <param name="index">the first string to look at in the array</param>
+  /// <returns>a TypeAlias and the number of arguments consumed from the array</returns>
+  /// <exception cref="ArgumentException">if a string in the array does not match a valid type alias</exception>
   private static (TypeAlias, int) ParseTypeAlias(string[] alias, int index)
   {
     if (!TryParse(alias[index], out var t) || !t.HasValue)
       throw new ArgumentException($"{alias} not a valid type alias.", nameof(alias));
     var step = 1;
+    // if the type is non-generic, return it
     if (!t.Value.Type.IsGenericTypeDefinition) return (t.Value, step);
     // recursively search for each argument
     var args = t.Value.Args;
@@ -36,6 +44,7 @@ public static class TypeParsing
     while (argsUsed < args.Length)
     {
       if (args[argsUsed] is not null || argsUsed + 1 >= alias.Length) continue;
+      // FIXME: this appears to both jump ahead in the array, AND change the starting point by returning argsUsed
       (args[argsUsed], step) = ParseTypeAlias(alias[(index + step)..], argsUsed);
       index += step;
       argsUsed++;
