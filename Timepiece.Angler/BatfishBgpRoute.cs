@@ -1,6 +1,6 @@
 using System.Numerics;
 using System.Text.Json.Serialization;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler;

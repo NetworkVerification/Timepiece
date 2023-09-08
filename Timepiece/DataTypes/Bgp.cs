@@ -2,7 +2,7 @@ using System.Numerics;
 using ZenLib;
 using static ZenLib.Zen;
 
-namespace Timepiece.Datatypes;
+namespace Timepiece.DataTypes;
 
 [ZenObject]
 public struct Bgp

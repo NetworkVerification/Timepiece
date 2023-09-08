@@ -1,10 +1,11 @@
+using System;
 using System.Linq;
 using System.Net;
 using NetTools;
 using Newtonsoft.Json;
 using ZenLib;
 
-namespace Timepiece.Datatypes;
+namespace Timepiece.DataTypes;
 
 /// <summary>
 ///   A Zen-friendly representation of an IPv4 prefix.
@@ -72,5 +73,11 @@ public static class Ipv4PrefixExtensions
   public static bool Contains(this IPAddressRange range, Ipv4Prefix d)
   {
     return range.Contains(d.AsAddressRange());
+  }
+
+  public static Zen<bool> Contains(this Zen<Ipv4Prefix> prefix, Zen<Ipv4Prefix> other)
+  {
+    // TODO: check that the given prefix contains the other
+    throw new NotImplementedException();
   }
 }

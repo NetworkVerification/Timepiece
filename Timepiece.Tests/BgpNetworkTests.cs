@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using Timepiece.Tests.Networks;
 using Xunit;
 using ZenLib;

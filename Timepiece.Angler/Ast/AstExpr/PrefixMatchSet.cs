@@ -2,14 +2,14 @@ namespace Timepiece.Angler.Ast.AstExpr;
 
 public class PrefixMatchSet : Expr
 {
-  public PrefixMatchSet(dynamic deny, dynamic permit)
+  public PrefixMatchSet(dynamic prefix, dynamic list)
   {
-    Deny = deny;
-    Permit = permit;
+    Prefix = prefix;
+    FilterList = list;
   }
 
-  public dynamic Deny { get; set; }
-  public dynamic Permit { get; set; }
+  public Expr Prefix { get; set; }
+  public RouteFilterList FilterList { get; set; }
 
   public override void Rename(string oldVar, string newVar)
   {

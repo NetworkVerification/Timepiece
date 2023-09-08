@@ -1,7 +1,7 @@
 using System.Numerics;
 using Timepiece.Angler.Ast.AstExpr;
 using Timepiece.Angler.Ast.AstStmt;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler.Ast;
@@ -123,8 +123,9 @@ public static class TypeParsing
       "TRoute" => typeof(BatfishBgpRoute),
       "TResult" => typeof(RouteResult),
       "TIpAddress" => typeof(uint),
-      "TIpPrefix" => typeof(Ipv4Prefix),
-      "TPrefixSet" => typeof(CSet<Ipv4Prefix>),
+      "TIpPrefix" => typeof(Ipv4Wildcard),
+      "TRouteFilterList" => typeof(RouteFilterList),
+      "TPrefixSet" => typeof(CSet<Ipv4Wildcard>), // TODO: is this ever used?
       "TPair" => new TypeAlias(typeof(Pair<,>), null, null),
       "TOption" => new TypeAlias(typeof(Option<>), (TypeAlias?) null),
       "TBool" => typeof(bool),

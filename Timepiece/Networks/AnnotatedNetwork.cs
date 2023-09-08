@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using ZenLib;
 using static ZenLib.Zen;
 

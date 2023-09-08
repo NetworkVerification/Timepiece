@@ -1,5 +1,5 @@
 using NetTools;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using Xunit;
 
 namespace Timepiece.Tests;

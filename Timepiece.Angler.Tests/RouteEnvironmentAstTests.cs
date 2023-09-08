@@ -1,7 +1,7 @@
 using System.Numerics;
 using NetTools;
 using Timepiece.Angler.Ast;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 
 namespace Timepiece.Angler.Tests;
 

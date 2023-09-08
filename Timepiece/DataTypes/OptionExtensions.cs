@@ -1,7 +1,7 @@
 using System;
 using ZenLib;
 
-namespace Timepiece.Datatypes;
+namespace Timepiece.DataTypes;
 
 /// <summary>
 ///   Extensions to Zen's Option type.

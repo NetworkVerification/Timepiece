@@ -130,6 +130,9 @@ public class AstEnvironment
           .Invoke(null, new object?[] {ignoreRoute(g.Record), g.FieldName})!);
       case Var v:
         return env.WithValue(this[v.Name]);
+      case PrefixMatchSet pms:
+        var prefixEnv = EvaluateExpr(env, pms.Prefix);
+        return prefixEnv.WithValue(pms.FilterList.Permits(prefixEnv.returnValue));
       case Havoc:
         return env.WithValue(Zen.Symbolic<bool>());
       case None n:

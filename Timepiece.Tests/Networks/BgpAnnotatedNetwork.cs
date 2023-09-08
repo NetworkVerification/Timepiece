@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using Timepiece.Networks;
 using ZenLib;
 using static ZenLib.Zen;

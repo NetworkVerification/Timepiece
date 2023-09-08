@@ -1,7 +1,7 @@
 using System.Numerics;
 using Newtonsoft.Json;
 using Timepiece.Angler.Ast.AstFunction;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using Timepiece.Networks;
 using ZenLib;
 

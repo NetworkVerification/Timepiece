@@ -4,7 +4,7 @@ using Timepiece.Angler.Ast;
 using Timepiece.Angler.Ast.AstExpr;
 using Timepiece.Angler.Ast.AstFunction;
 using Timepiece.Angler.Ast.AstStmt;
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using Timepiece.Networks;
 
 namespace Timepiece.Angler;

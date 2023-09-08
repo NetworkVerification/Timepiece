@@ -1,4 +1,4 @@
-using Timepiece.Datatypes;
+using Timepiece.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
