@@ -74,10 +74,4 @@ public static class Ipv4PrefixExtensions
   {
     return range.Contains(d.AsAddressRange());
   }
-
-  public static Zen<bool> Contains(this Zen<Ipv4Prefix> prefix, Zen<Ipv4Prefix> other)
-  {
-    // TODO: check that the given prefix contains the other
-    throw new NotImplementedException();
-  }
 }

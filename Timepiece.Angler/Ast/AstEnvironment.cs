@@ -131,8 +131,7 @@ public class AstEnvironment
       case Var v:
         return env.WithValue(this[v.Name]);
       case PrefixMatchSet pms:
-        var prefixEnv = EvaluateExpr(env, pms.Prefix);
-        return prefixEnv.WithValue(pms.FilterList.Permits(prefixEnv.returnValue));
+        return env.WithValue(pms.FilterList.Permits(ignoreRoute(pms.Prefix)));
       case Havoc:
         return env.WithValue(Zen.Symbolic<bool>());
       case None n:
