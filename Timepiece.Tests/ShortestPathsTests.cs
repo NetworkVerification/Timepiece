@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Timepiece.Networks;
 using Xunit;
@@ -13,6 +14,17 @@ public static class ShortestPathsTests
 
   private static readonly ShortestPath<string, Unit> Concrete = new(Topologies.Path(3), "A",
     System.Array.Empty<SymbolicValue<Unit>>());
+
+  private static SymbolicValue<BigInteger>[] SymbolicWitnessTimes()
+  {
+    var aTime = new SymbolicValue<BigInteger>("tau-A", x => x >= BigInteger.Zero);
+    var bTime = new SymbolicValue<BigInteger>("tau-B", x => Zen.And(x >= BigInteger.Zero, x > aTime.Value));
+    var cTime = new SymbolicValue<BigInteger>("tau-C", x => Zen.And(x >= BigInteger.Zero, x > bTime.Value));
+    return new[] {aTime, bTime, cTime};
+  }
+
+  private static readonly ShortestPath<string, BigInteger> SymbolicTimes = new(Topologies.Path(3), "A",
+    SymbolicWitnessTimes());
 
   public static TheoryData<string, string[], Zen<Option<BigInteger>>> ExpectedRoutes => new()
   {
@@ -208,5 +220,18 @@ public static class ShortestPathsTests
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
     NetworkAssert.CheckUnsoundCheck(annotated, SmtCheck.Inductive);
+  }
+
+  [Fact]
+  public static void CorrectlyOrderedAnnotationsPassChecks()
+  {
+    var net = SymbolicTimes;
+    var annotations = net.Digraph.MapNodes(n =>
+      Lang.Finally<Option<BigInteger>>(net.Symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(net, annotations,
+      net.Digraph.MapNodes(_ => Lang.Finally(net.Symbolics.Last().Value, Lang.IsSome<BigInteger>())),
+      net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
+
+    NetworkAssert.CheckSound(annotated);
   }
 }
