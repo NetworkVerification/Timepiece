@@ -234,4 +234,24 @@ public static class ShortestPathsTests
 
     NetworkAssert.CheckSound(annotated);
   }
+
+  [Fact]
+  public static void UnconstrainedSymbolicTimesFailChecks()
+  {
+    var net = SymbolicTimes;
+
+    // weaken the symbolic constraints
+    foreach (var symbolic in net.Symbolics)
+    {
+      symbolic.Constraint = x => x >= BigInteger.Zero;
+    }
+
+    var annotations = net.Digraph.MapNodes(n =>
+      Lang.Finally<Option<BigInteger>>(net.Symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(net, annotations,
+      net.Digraph.MapNodes(_ => Lang.Finally(net.Symbolics.Last().Value, Lang.IsSome<BigInteger>())),
+      net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
+
+    NetworkAssert.CheckUnsoundCheck(annotated, SmtCheck.Inductive);
+  }
 }
