@@ -151,11 +151,12 @@ public static class Sp
     var modularProperties = sp.Digraph.MapNodes(n => Lang.Finally(sp.Symbolics.Last().Value, monolithicProperties[n]));
     var annotations = sp.Digraph.MapNodes(n =>
     {
-      var time = Zen.If(destination == n, sp.Symbolics[0].Value,
-        Zen.If(Zen.And(n.IsAggregation(), destinationPod == g.L(n)), sp.Symbolics[1].Value,
-          Zen.If(Zen.And(n.IsAggregation(), destinationPod != g.L(n)), sp.Symbolics[3].Value,
-            Zen.If(Zen.And(n.IsEdge(), destinationPod != g.L(n)), sp.Symbolics[4].Value,
-              sp.Symbolics[2].Value))));
+      // the appropriate witness time variable depends on the node's role/position
+      var time = destination == n ? sp.Symbolics[0].Value
+        : n.IsAggregation() && destinationPod == g.L(n) ? sp.Symbolics[1].Value
+        : n.IsAggregation() && destinationPod != g.L(n) ? sp.Symbolics[3].Value
+        : n.IsEdge() && destinationPod != g.L(n) ? sp.Symbolics[4].Value
+        : sp.Symbolics[2].Value;
       return Lang.Finally(time, Lang.IsSome<BgpRoute>());
     });
     return new AnnotatedSp<string, BigInteger>(sp, annotations, modularProperties, monolithicProperties);
