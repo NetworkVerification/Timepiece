@@ -48,11 +48,17 @@ public class Benchmark
       case BenchmarkType.SpReachable:
         RunProfiler(Sp.Reachability(N, Destination, InferTimes));
         break;
+      case BenchmarkType.SpReachableSymbolic:
+        RunProfiler(Sp.ReachabilitySymbolicTimes(N, Destination));
+        break;
       case BenchmarkType.SpPathLength:
         RunProfiler(Sp.PathLength(N, Destination));
         break;
       case BenchmarkType.SpPathLengthWeak:
         RunProfiler(Sp.PathLengthNoSafety(N, Destination, InferTimes));
+        break;
+      case BenchmarkType.SpPathLengthWeakSymbolic:
+        RunProfiler(Sp.PathLengthNoSafetySymbolicTimes(N, Destination));
         break;
       case BenchmarkType.ApReachable:
         RunProfiler(Sp.AllPairsReachability(N));
@@ -96,8 +102,10 @@ public class Benchmark
 public enum BenchmarkType
 {
   SpReachable,
+  SpReachableSymbolic,
   SpPathLength,
   SpPathLengthWeak,
+  SpPathLengthWeakSymbolic,
   ApReachable,
   ApPathLength,
   ApPathLengthWeak,
@@ -115,8 +123,10 @@ public static class BenchmarkTypeExtensions
     return s switch
     {
       "r" or "reach" or "SpReachable" => BenchmarkType.SpReachable,
+      "rs" or "reachSymbolic" or "SpReachableSymbolic" => BenchmarkType.SpReachableSymbolic,
       "l" or "length" or "SpPathLength" => BenchmarkType.SpPathLength,
       "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
+      "lws" or "lengthWeakSymbolic" or "SpPathLengthWeakSymbolic" => BenchmarkType.SpPathLengthWeakSymbolic,
       "ar" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
       "al" or "allLength" or "ApPathLength" => BenchmarkType.ApPathLength,
       "alw" or "allLengthWeak" or "ApPathLengthWeak" => BenchmarkType.ApPathLengthWeak,
@@ -127,8 +137,10 @@ public static class BenchmarkTypeExtensions
       "ah" or "allHijack" or "ApFatTreeHijack" => BenchmarkType.ApFatTreeHijack,
       _ => throw new ArgumentException($"{s} does not correspond to a valid BenchmarkType. Acceptable values:\n" +
                                        "- 'r'/'reach'/'SpReachable' for SpReachable\n" +
+                                       "- 'rs'/'reachSymbolic'/'SpReachableSymbolic' for SpReachableSymbolic\n" +
                                        "- 'l'/'length'/'SpPathLength' for SpPathLength\n" +
                                        "- 'lw'/'lengthWeak'/'SpPathLengthWeak' for SpPathLengthWeak\n" +
+                                       "- 'lws'/'lengthWeakSymbolic'/'SpPathLengthWeakSymbolic' for SpPathLengthWeakSymbolic\n" +
                                        "- 'ar'/'allReach'/'ApReachable' for ApReachable\n" +
                                        "- 'al'/'allLength'/'ApPathLength' for ApPathLength\n" +
                                        "- 'alw'/'allLengthWeak'/'ApPathLengthWeak' for ApPathLengthWeak\n" +
@@ -145,8 +157,10 @@ public static class BenchmarkTypeExtensions
     return t switch
     {
       BenchmarkType.SpReachable => false,
+      BenchmarkType.SpReachableSymbolic => false,
       BenchmarkType.SpPathLength => false,
       BenchmarkType.SpPathLengthWeak => false,
+      BenchmarkType.SpPathLengthWeakSymbolic => false,
       BenchmarkType.ValleyFree => false,
       BenchmarkType.ValleyFreeLength => false,
       BenchmarkType.FatTreeHijack => false,
@@ -155,7 +169,8 @@ public static class BenchmarkTypeExtensions
       BenchmarkType.ApPathLengthWeak => true,
       BenchmarkType.ApValleyFree => true,
       BenchmarkType.ApFatTreeHijack => true,
-      _ => throw new ArgumentOutOfRangeException(nameof(t), t, null)
+      _ => throw new ArgumentOutOfRangeException(nameof(t), t,
+        "Unable to determine if BenchmarkType is for a symbolic destination.")
     };
   }
 }

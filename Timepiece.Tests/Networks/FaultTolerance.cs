@@ -11,7 +11,7 @@ namespace Timepiece.Tests.Networks;
 public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> where TV : notnull
 {
   public FaultTolerance(Digraph<TV> digraph,
-    Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
+    IReadOnlyDictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
     Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
     Dictionary<TV, Zen<Option<T>>> initialValues,
     Func<SymbolicValue<(TV, TV)>[], Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>>
@@ -76,7 +76,7 @@ public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> w
   }
 
   private static Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>> Transfer(
-    Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> inner, SymbolicValue<(TV, TV)>[] failedEdges)
+    IReadOnlyDictionary<(TV, TV), Func<Zen<T>, Zen<T>>> inner, SymbolicValue<(TV, TV)>[] failedEdges)
   {
     var lifted = new Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>>();
     foreach (var (edge, f) in inner)

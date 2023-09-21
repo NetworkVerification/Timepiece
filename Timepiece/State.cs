@@ -13,8 +13,8 @@ public class State<T, TV, TS>
 {
   private readonly Option<(TV, T)> _focusedNode = Option.None<(TV, T)>();
   public readonly SmtCheck check;
-  public readonly Dictionary<TV, T> nodeStates;
-  public readonly Dictionary<string, TS> symbolicStates;
+  public readonly IReadOnlyDictionary<TV, T> nodeStates;
+  public readonly IReadOnlyDictionary<string, TS> symbolicStates;
   public readonly Option<BigInteger> time;
 
   /// <summary>
