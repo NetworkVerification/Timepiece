@@ -380,23 +380,48 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
         var (node, arrangement) = tuple;
         var before = arrangement[^1];
         // check if the arrangement is connected
-        // (every node in the arrangement is connected to some other node in the arrangement)
-        var connected = true;
-        // since the neighbors are added to T2 in ascending order, we can check them again in ascending order
-        for (var i = 0; i < Digraph[node].Count; i++)
-        for (var j = i + 1; j < Digraph[node].Count; j++)
-        {
-          connected &= t2[(node, before)]
-            .Contains((Digraph[node][i], arrangement[i], Digraph[node][j], arrangement[j]));
-        }
-
-        // if the arrangement is connected then the check must pass
-        if (connected) return;
+        if (IsConnected(t2[(node, before)], Digraph[node].Zip(arrangement).ToArray())) return;
         // otherwise, we add it to the appropriate list
         var arrangements = inductiveChecks.GetOrAdd(node, new List<IReadOnlyList<bool>>());
         arrangements.Add(arrangement);
       });
     return inductiveChecks;
+  }
+
+  /// <summary>
+  /// Return if a hashset of edges represents a connected directed graph.
+  /// </summary>
+  /// <param name="edges">A collection of edges with type (A, B, A, B).</param>
+  /// <param name="nodes">A collection of nodes with type (A, B).</param>
+  /// <typeparam name="A">The first component of the edge.</typeparam>
+  /// <typeparam name="B">The second component of the edge.</typeparam>
+  /// <returns></returns>
+  private static bool IsConnected<A, B>(IReadOnlyCollection<(A, B, A, B)> edges, IReadOnlyCollection<(A, B)> nodes)
+    where A : notnull where B : notnull
+  {
+    foreach (var start in nodes)
+    {
+      var queue = new Queue<(A, B)>();
+      var visited = new List<(A, B)> {start};
+      queue.Enqueue(start);
+      while (queue.Any())
+      {
+        var u = queue.Dequeue();
+        foreach (var (_, _, va, vb) in edges.Where(e => e.Item1.Equals(u.Item1) && e.Item2.Equals(u.Item2)))
+        {
+          if (visited.Contains((va, vb))) continue;
+          visited.Add((va, vb));
+          queue.Enqueue((va, vb));
+        }
+      }
+
+      if (visited.Count == nodes.Count)
+      {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /// <summary>
