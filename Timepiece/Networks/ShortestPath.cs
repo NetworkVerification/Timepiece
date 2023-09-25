@@ -5,15 +5,17 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
-public class ShortestPath<TV, TS> : Network<Option<BigInteger>, TV, TS>
+public class ShortestPath<NodeType, SymbolicType> : Network<Option<BigInteger>, NodeType, SymbolicType>
 {
-  public ShortestPath(Digraph<TV> digraph, Dictionary<TV, Zen<Option<BigInteger>>> initialValues,
-    SymbolicValue<TS>[] symbolics) : base(digraph, digraph.MapEdges(_ => Lang.Omap(Lang.Incr(BigInteger.One))),
+  public ShortestPath(Digraph<NodeType> digraph, Dictionary<NodeType, Zen<Option<BigInteger>>> initialValues,
+    SymbolicValue<SymbolicType>[] symbolics) : base(digraph,
+    digraph.MapEdges(_ => Lang.Omap(Lang.Incr(BigInteger.One))),
     Lang.Omap2<BigInteger>(Min), initialValues, symbolics)
   {
   }
 
-  public ShortestPath(Digraph<TV> digraph, TV destination, SymbolicValue<TS>[] symbolics) : this(digraph,
+  public ShortestPath(Digraph<NodeType> digraph, NodeType destination, SymbolicValue<SymbolicType>[] symbolics) : this(
+    digraph,
     digraph.MapNodes(n =>
       n.Equals(destination) ? Option.Create<BigInteger>(BigInteger.Zero) : Option.Null<BigInteger>()), symbolics)
   {

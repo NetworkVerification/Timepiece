@@ -17,10 +17,10 @@ public static class ShortestPathsTests
 
   private static SymbolicValue<BigInteger>[] SymbolicWitnessTimes()
   {
-    var aTime = new SymbolicValue<BigInteger>("tau-A", x => x >= BigInteger.Zero);
-    var bTime = new SymbolicValue<BigInteger>("tau-B", x => Zen.And(x >= BigInteger.Zero, x > aTime.Value));
-    var cTime = new SymbolicValue<BigInteger>("tau-C", x => Zen.And(x >= BigInteger.Zero, x > bTime.Value));
-    return new[] {aTime, bTime, cTime};
+    var aTime = new SymbolicTime("tau-A");
+    var bTime = new SymbolicTime("tau-B", aTime);
+    var cTime = new SymbolicTime("tau-C", bTime);
+    return new SymbolicValue<BigInteger>[] {aTime, bTime, cTime};
   }
 
   private static readonly ShortestPath<string, BigInteger> SymbolicTimes = new(Topologies.Path(3), "A",

@@ -8,35 +8,39 @@ namespace Timepiece.Networks;
 /// <summary>
 ///   Represents a network.
 /// </summary>
-/// <typeparam name="T">The type of the routes.</typeparam>
-/// <typeparam name="TV">The type of nodes.</typeparam>
-/// <typeparam name="TS">The type of symbolic values associated with the network.</typeparam>
-public class Network<T, TV, TS>
+/// <typeparam name="RouteType">The type of the routes.</typeparam>
+/// <typeparam name="NodeType">The type of nodes.</typeparam>
+/// <typeparam name="SymbolicType">The type of symbolic values associated with the network.</typeparam>
+public class Network<RouteType, NodeType, SymbolicType>
 {
   /// <summary>
   ///   The topology of the network.
   /// </summary>
-  public Digraph<TV> Digraph { get; }
+  public Digraph<NodeType> Digraph { get; }
 
   /// <summary>
   ///   The transfer function for each edge.
   /// </summary>
-  public Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> TransferFunction { get; protected init; }
+  public Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> TransferFunction
+  {
+    get;
+    protected init;
+  }
 
   /// <summary>
   ///   The merge function for routes.
   /// </summary>
-  public Func<Zen<T>, Zen<T>, Zen<T>> MergeFunction { get; }
+  public Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> MergeFunction { get; }
 
   /// <summary>
   ///   The initial values for each node.
   /// </summary>
-  public Dictionary<TV, Zen<T>> InitialValues { get; protected init; }
+  public Dictionary<NodeType, Zen<RouteType>> InitialValues { get; protected init; }
 
   /// <summary>
   ///   Any symbolics on the network's components.
   /// </summary>
-  public SymbolicValue<TS>[] Symbolics { get; set; }
+  public SymbolicValue<SymbolicType>[] Symbolics { get; set; }
 
   /// <summary>
   /// Construct a new <c>Network</c>.
@@ -46,9 +50,11 @@ public class Network<T, TV, TS>
   /// <param name="mergeFunction">a function for merging two routes</param>
   /// <param name="initialValues">a dictionary from nodes to initial routes</param>
   /// <param name="symbolics">an array of symbolic values</param>
-  public Network(Digraph<TV> digraph, Dictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
-    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction, Dictionary<TV, Zen<T>> initialValues,
-    SymbolicValue<TS>[] symbolics)
+  public Network(Digraph<NodeType> digraph,
+    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
+    Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
+    Dictionary<NodeType, Zen<RouteType>> initialValues,
+    SymbolicValue<SymbolicType>[] symbolics)
   {
     Digraph = digraph;
     TransferFunction = transferFunction;
@@ -64,18 +70,19 @@ public class Network<T, TV, TS>
   /// <param name="node">The focal node.</param>
   /// <param name="routes">The routes of all nodes in the network.</param>
   /// <returns>A route.</returns>
-  public Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes)
+  public Zen<RouteType> UpdateNodeRoute(NodeType node, IReadOnlyDictionary<NodeType, Zen<RouteType>> routes)
   {
     return Digraph[node].Aggregate(InitialValues[node],
       (current, predecessor) =>
         MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
 
-  /// <inheritdoc cref="UpdateNodeRoute(TV,System.Collections.Generic.IReadOnlyDictionary{TV,ZenLib.Zen{T}})"/>
+  /// <inheritdoc cref="UpdateNodeRoute(NodeType,System.Collections.Generic.IReadOnlyDictionary{NodeType,ZenLib.Zen{RouteType}})"/>
   /// <param name="neighbors">The specific neighbors to transfer from: must be a subset (or equal to) the actual
   /// set of neighbors, otherwise an exception will be raised.</param>
   /// <returns>A route.</returns>
-  public Zen<T> UpdateNodeRoute(TV node, IReadOnlyDictionary<TV, Zen<T>> routes, IEnumerable<TV> neighbors)
+  public Zen<RouteType> UpdateNodeRoute(NodeType node, IReadOnlyDictionary<NodeType, Zen<RouteType>> routes,
+    IEnumerable<NodeType> neighbors)
   {
     return neighbors.Aggregate(InitialValues[node],
       (current, predecessor) =>
