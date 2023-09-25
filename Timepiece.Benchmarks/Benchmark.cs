@@ -75,6 +75,9 @@ public class Benchmark
       case BenchmarkType.ValleyFreeLength:
         RunProfiler(Vf.ValleyFreePathLength(N, Destination));
         break;
+      case BenchmarkType.ValleyFreeSymbolic:
+        RunProfiler(Vf.ValleyFreeReachableSymbolicTimes(N, Destination));
+        break;
       case BenchmarkType.ApValleyFree:
         RunProfiler(Vf.AllPairsValleyFreeReachable(N));
         break;
@@ -111,6 +114,7 @@ public enum BenchmarkType
   ApPathLengthWeak,
   ValleyFree,
   ValleyFreeLength,
+  ValleyFreeSymbolic,
   ApValleyFree,
   FatTreeHijack,
   ApFatTreeHijack
@@ -132,6 +136,7 @@ public static class BenchmarkTypeExtensions
       "alw" or "allLengthWeak" or "ApPathLengthWeak" => BenchmarkType.ApPathLengthWeak,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
       "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
+      "vs" or "valleySymbolic" or "ValleyFreeSymbolic" => BenchmarkType.ValleyFreeSymbolic,
       "av" or "allValley" or "ApValleyFree" => BenchmarkType.ApValleyFree,
       "h" or "hijack" or "FatTreeHijack" => BenchmarkType.FatTreeHijack,
       "ah" or "allHijack" or "ApFatTreeHijack" => BenchmarkType.ApFatTreeHijack,
@@ -146,6 +151,7 @@ public static class BenchmarkTypeExtensions
                                        "- 'alw'/'allLengthWeak'/'ApPathLengthWeak' for ApPathLengthWeak\n" +
                                        "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
                                        "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
+                                       "- 'vs'/'valleySymbolic'/'ValleyFreeSymbolic' for ValleyFreeSymbolic\n" +
                                        "- 'av'/'allValley'/'ApValleyFree' for ApValleyFree\n" +
                                        "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack" +
                                        "- 'ah'/'allHijack'/'ApFatTreeHijack' for ApFatTreeHijack\n")
@@ -163,6 +169,7 @@ public static class BenchmarkTypeExtensions
       BenchmarkType.SpPathLengthWeakSymbolic => false,
       BenchmarkType.ValleyFree => false,
       BenchmarkType.ValleyFreeLength => false,
+      BenchmarkType.ValleyFreeSymbolic => false,
       BenchmarkType.FatTreeHijack => false,
       BenchmarkType.ApReachable => true,
       BenchmarkType.ApPathLength => true,

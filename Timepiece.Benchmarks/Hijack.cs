@@ -9,19 +9,20 @@ namespace Timepiece.Benchmarks;
 // a route which is tagged as internal (false) or external (true)
 using TaggedRoute = Pair<Option<BgpRoute>, bool>;
 
-public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV : IEquatable<TV>
+public class Hijack<NodeType, SymbolicType> : Network<TaggedRoute, NodeType, SymbolicType>
+  where NodeType : IEquatable<NodeType>
 {
-  public Hijack(Digraph<TV> digraph, Dictionary<TV, Zen<TaggedRoute>> initialValues, TV hijacker,
-    Zen<uint> destinationPrefix, SymbolicValue<TS>[] symbolics)
+  public Hijack(Digraph<NodeType> digraph, Dictionary<NodeType, Zen<TaggedRoute>> initialValues, NodeType hijacker,
+    Zen<uint> destinationPrefix, SymbolicValue<SymbolicType>[] symbolics)
     : base(digraph, Transfer(digraph, hijacker, destinationPrefix), Merge(destinationPrefix), initialValues,
       symbolics)
   {
   }
 
-  public Hijack(Digraph<TV> digraph, TV destination, TV hijacker,
+  public Hijack(Digraph<NodeType> digraph, NodeType destination, NodeType hijacker,
     Zen<Option<BgpRoute>> hijackRoute,
     Zen<uint> destinationPrefix,
-    SymbolicValue<TS>[] symbolics)
+    SymbolicValue<SymbolicType>[] symbolics)
     : this(digraph,
       digraph.MapNodes(n => n.Equals(destination)
         ? Pair.Create(
@@ -49,8 +50,9 @@ public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV : IEquatable
   /// <param name="hijacker"></param>
   /// <param name="destinationPrefix"></param>
   /// <returns></returns>
-  private static Dictionary<(TV, TV), Func<Zen<TaggedRoute>, Zen<TaggedRoute>>> Transfer(Digraph<TV> digraph,
-    TV hijacker, Zen<uint> destinationPrefix)
+  private static Dictionary<(NodeType, NodeType), Func<Zen<TaggedRoute>, Zen<TaggedRoute>>> Transfer(
+    Digraph<NodeType> digraph,
+    NodeType hijacker, Zen<uint> destinationPrefix)
   {
     return digraph.MapEdges(e =>
       Lang.Product(
@@ -62,22 +64,24 @@ public class Hijack<TV, TS> : Network<TaggedRoute, TV, TS> where TV : IEquatable
   }
 }
 
-public class AnnotatedHijack<TV, TS> : AnnotatedNetwork<TaggedRoute, TV, TS> where TV : IEquatable<TV>
+public class AnnotatedHijack<NodeType, SymbolicType> : AnnotatedNetwork<TaggedRoute, NodeType, SymbolicType>
+  where NodeType : IEquatable<NodeType>
 {
-  public AnnotatedHijack(Network<TaggedRoute, TV, TS> net,
-    Dictionary<TV, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
-    IReadOnlyDictionary<TV, Func<Zen<TaggedRoute>, Zen<bool>>> stableProperties,
-    IReadOnlyDictionary<TV, Func<Zen<TaggedRoute>, Zen<bool>>> safetyProperties)
+  public AnnotatedHijack(Network<TaggedRoute, NodeType, SymbolicType> net,
+    Dictionary<NodeType, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> safetyProperties)
     : base(net, annotations, stableProperties, safetyProperties, new BigInteger(4))
   {
   }
 }
 
-public class InferHijack<TV> : Infer<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> where TV : IEquatable<TV>
+public class InferHijack<NodeType> : Infer<TaggedRoute, NodeType, Pair<Option<BgpRoute>, uint>>
+  where NodeType : IEquatable<NodeType>
 {
-  public InferHijack(Network<TaggedRoute, TV, Pair<Option<BgpRoute>, uint>> hijack,
-    IReadOnlyDictionary<TV, Func<Zen<TaggedRoute>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<TV, Func<Zen<TaggedRoute>, Zen<bool>>> afterInvariants) : base(hijack, beforeInvariants,
+  public InferHijack(Network<TaggedRoute, NodeType, Pair<Option<BgpRoute>, uint>> hijack,
+    IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> afterInvariants) : base(hijack, beforeInvariants,
     afterInvariants)
   {
   }
@@ -202,7 +206,8 @@ public static class Hijack
   /// <param name="digraph"></param>
   /// <param name="hijackerLabel"></param>
   /// <returns></returns>
-  private static NodeLabelledDigraph<string, T> HijackTopology<T>(string hijacker, NodeLabelledDigraph<string, T> digraph,
+  private static NodeLabelledDigraph<string, T> HijackTopology<T>(string hijacker,
+    NodeLabelledDigraph<string, T> digraph,
     T hijackerLabel)
   {
     var withHijacker = HijackAdjList(hijacker, digraph);

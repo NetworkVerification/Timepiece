@@ -6,16 +6,16 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Vf<TS> : Network<Option<BgpRoute>, string, TS>
+public class Vf<Symbolic> : Network<Option<BgpRoute>, string, Symbolic>
 {
   public Vf(Digraph<string> digraph, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
-    SymbolicValue<TS>[] symbolics) :
+    SymbolicValue<Symbolic>[] symbolics) :
     base(digraph, Transfer(digraph, tag), Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
       initialValues, symbolics)
   {
   }
 
-  public Vf(Digraph<string> digraph, string destination, string tag, SymbolicValue<TS>[] symbolics) :
+  public Vf(Digraph<string> digraph, string destination, string tag, SymbolicValue<Symbolic>[] symbolics) :
     this(digraph,
       digraph.MapNodes(n => n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
       tag, symbolics)
@@ -45,13 +45,21 @@ public class Vf<TS> : Network<Option<BgpRoute>, string, TS>
   }
 }
 
-public class AnnotatedVf<TS> : AnnotatedNetwork<Option<BgpRoute>, string, TS>
+public class AnnotatedVf<Symbolic> : AnnotatedNetwork<Option<BgpRoute>, string, Symbolic>
 {
-  public AnnotatedVf(Vf<TS> vf,
+  public AnnotatedVf(Vf<Symbolic> vf,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) :
     base(vf, annotations, stableProperties, safetyProperties, new BigInteger(4))
+  {
+  }
+
+  public AnnotatedVf(Vf<Symbolic> vf,
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> monolithicProperties) : base(vf, annotations,
+    modularProperties, monolithicProperties)
   {
   }
 }
@@ -106,6 +114,43 @@ public static class Vf
     var stableProperties =
       vf.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
     return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
+  }
+
+  public static AnnotatedVf<BigInteger> ValleyFreeReachableSymbolicTimes(uint numPods, string destination)
+  {
+    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var g = Topologies.LabelledFatTree(numPods);
+    var vf = new Vf<BigInteger>(g, destination, DownTag, times.ToArray());
+    var monolithicProperties = vf.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    var modularProperties = vf.Digraph.MapNodes(n => Lang.Finally(times[^1].Value, monolithicProperties[n]));
+    var annotations = vf.Digraph.MapNodes(n =>
+    {
+      var dist = n.DistanceFromDestinationEdge(g.L(n), destination, g.L(destination));
+      var time = times[dist].Value;
+      var maxPathLength = new BigInteger(dist);
+      // at all times, either a node has no route, or it has a route equal to the initial route modulo path length
+      var safety =
+        Lang.Globally(Lang.OrSome(n.IsCore()
+          ? Lang.Intersect<BgpRoute>(EqualsInitialRouteModLength, b => Zen.Not(b.HasCommunity(DownTag)))
+          : EqualsInitialRouteModLength));
+      var eventually =
+        Lang.Finally(time,
+          Lang.IfSome(n == destination || (n.IsAggregation() && g.L(n) == g.L(destination))
+            // require that the LP equals the default, and the path length equals the distance
+            ? b => Zen.And(Zen.Not(b.HasCommunity(DownTag)), BgpRouteExtensions.MaxLengthDefaultLp(maxPathLength)(b))
+            : BgpRouteExtensions.MaxLengthDefaultLp(maxPathLength)));
+      return Lang.Intersect(safety, eventually);
+    });
+    return new AnnotatedVf<BigInteger>(vf, annotations, modularProperties, monolithicProperties);
+  }
+
+  private static Zen<bool> EqualsInitialRouteModLength(Zen<BgpRoute> r)
+  {
+    var initialRoute = new BgpRoute();
+    return Zen.And(r.LpEquals(initialRoute.Lp),
+      r.GetAsPathLength() >= BigInteger.Zero,
+      r.GetOriginType() == initialRoute.OriginType,
+      r.GetMed() == initialRoute.Med);
   }
 
   public static AnnotatedVf<Unit> ValleyFreePathLength(uint numPods, string destination)

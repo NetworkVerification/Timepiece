@@ -1,5 +1,4 @@
 using System;
-using ZenLib;
 
 namespace Timepiece;
 
@@ -66,18 +65,12 @@ public static class FatTree
     return s.StartsWith(FatTreeLayer.Edge.ToLowerCaseString());
   }
 
-  public static Zen<bool> IsCore(this Zen<string> s)
+  public static int DistanceFromDestinationEdge(this string s, int pod, string destination, int destinationPod)
   {
-    return s.StartsWith(FatTreeLayer.Core.ToLowerCaseString());
-  }
-
-  public static Zen<bool> IsAggregation(this Zen<string> s)
-  {
-    return s.StartsWith(FatTreeLayer.Aggregation.ToLowerCaseString());
-  }
-
-  public static Zen<bool> IsEdge(this Zen<string> s)
-  {
-    return s.StartsWith(FatTreeLayer.Edge.ToLowerCaseString());
+    return s == destination ? 0
+      : s.IsAggregation() && pod == destinationPod ? 1
+      : s.IsAggregation() && pod != destinationPod ? 3
+      : s.IsEdge() && pod != destinationPod ? 4
+      : 2;
   }
 }

@@ -6,7 +6,8 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatable<TV>
+public class Sp<NodeType, SymbolicType> : Network<Option<BgpRoute>, NodeType, SymbolicType>
+  where NodeType : IEquatable<NodeType>
 {
   /// <summary>
   ///   Construct a network performing shortest-path routing to a single given destination.
@@ -14,7 +15,7 @@ public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatabl
   /// <param name="digraph"></param>
   /// <param name="destination"></param>
   /// <param name="symbolics"></param>
-  public Sp(Digraph<TV> digraph, TV destination, SymbolicValue<TS>[] symbolics) :
+  public Sp(Digraph<NodeType> digraph, NodeType destination, SymbolicValue<SymbolicType>[] symbolics) :
     this(digraph,
       digraph.MapNodes(n =>
         n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()), symbolics)
@@ -28,9 +29,9 @@ public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatabl
   /// <param name="digraph"></param>
   /// <param name="initialValues"></param>
   /// <param name="symbolics"></param>
-  public Sp(Digraph<TV> digraph,
-    Dictionary<TV, Zen<Option<BgpRoute>>> initialValues,
-    SymbolicValue<TS>[] symbolics) : base(digraph,
+  public Sp(Digraph<NodeType> digraph,
+    Dictionary<NodeType, Zen<Option<BgpRoute>>> initialValues,
+    SymbolicValue<SymbolicType>[] symbolics) : base(digraph,
     digraph.MapEdges(_ => Lang.Omap<BgpRoute, BgpRoute>(BgpRouteExtensions.IncrementAsPath)),
     Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
     initialValues,
@@ -39,28 +40,33 @@ public class Sp<TV, TS> : Network<Option<BgpRoute>, TV, TS> where TV : IEquatabl
   }
 }
 
-public class AnnotatedSp<TV, TS> : AnnotatedNetwork<Option<BgpRoute>, TV, TS> where TV : IEquatable<TV>
+public class AnnotatedSp<NodeType, SymbolicType> : AnnotatedNetwork<Option<BgpRoute>, NodeType, SymbolicType>
+  where NodeType : IEquatable<NodeType>
 {
   /// <inheritdoc cref="AnnotatedNetwork{T,TV,TS}(Timepiece.Networks.Network{T,TV,TS},System.Collections.Generic.Dictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{System.Numerics.BigInteger},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Numerics.BigInteger)"/>
-  public AnnotatedSp(Sp<TV, TS> sp, Dictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
-    IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) : base(sp, annotations,
+  public AnnotatedSp(Sp<NodeType, SymbolicType> sp,
+    Dictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    IReadOnlyDictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
+    IReadOnlyDictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) : base(sp, annotations,
     stableProperties, safetyProperties, new BigInteger(4))
   {
   }
 
-  public AnnotatedSp(Sp<TV, TS> sp, Dictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    Dictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
-    Dictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> monolithicProperties) : base(sp, annotations,
+  public AnnotatedSp(Sp<NodeType, SymbolicType> sp,
+    Dictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<bool>>> monolithicProperties) : base(sp, annotations,
     modularProperties, monolithicProperties)
   {
   }
 }
 
-public class InferSp<TV, TS> : Infer<Option<BgpRoute>, TV, TS> where TV : IEquatable<TV>
+public class InferSp<NodeType, SymbolicType> : Infer<Option<BgpRoute>, NodeType, SymbolicType>
+  where NodeType : IEquatable<NodeType>
 {
-  public InferSp(Sp<TV, TS> sp, IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<TV, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) :
+  public InferSp(Sp<NodeType, SymbolicType> sp,
+    IReadOnlyDictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
+    IReadOnlyDictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) :
     base(sp, beforeInvariants, afterInvariants)
   {
   }
@@ -80,30 +86,6 @@ public static class Sp
   private static Sp<string, Unit> ConcreteFatTreeSp(uint numPods, string destination)
   {
     return new Sp<string, Unit>(Topologies.FatTree(numPods), destination, Array.Empty<SymbolicValue<Unit>>());
-  }
-
-  /// <summary>
-  /// Return a new <c>Sp{BigInteger}</c> for a fat-tree topology routing to a concrete destination,
-  /// with symbolic values representing the witness times.
-  /// Each symbolic value is constrained to be the larger than the previous one in the symbolics array.
-  /// </summary>
-  /// <param name="g"></param>
-  /// <param name="destination"></param>
-  /// <returns></returns>
-  private static Sp<string, BigInteger> SymbolicTimesFatTreeSp(Digraph<string> g, string destination)
-  {
-    var startTime = new SymbolicValue<BigInteger>($"tau-0", x => x >= BigInteger.Zero);
-    var times = new List<SymbolicValue<BigInteger>> {startTime};
-    // we need symbolic times equal to the graph's diameter
-    for (var i = 1; i <= g.BreadthFirstSearch(destination).Values.Max(); i++)
-    {
-      // each time needs to be bigger than the last
-      var nextTime =
-        new SymbolicValue<BigInteger>($"tau-{i}", x => Zen.And(x >= BigInteger.Zero, x > times.Last().Value));
-      times.Add(nextTime);
-    }
-
-    return new Sp<string, BigInteger>(g, destination, times.ToArray());
   }
 
   /// <summary>
@@ -143,23 +125,14 @@ public static class Sp
 
   public static AnnotatedSp<string, BigInteger> ReachabilitySymbolicTimes(uint numPods, string destination)
   {
+    var symbolics = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
     var g = Topologies.LabelledFatTree(numPods);
-    var destinationPod = g.L(destination);
-    var sp = SymbolicTimesFatTreeSp(g, destination);
-    var monolithicProperties = sp.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    var monolithicProperties = g.MapNodes(_ => Lang.IsSome<BgpRoute>());
     // use the last (largest) symbolic time as the safety property to check
-    var modularProperties = sp.Digraph.MapNodes(n => Lang.Finally(sp.Symbolics.Last().Value, monolithicProperties[n]));
-    var annotations = sp.Digraph.MapNodes(n =>
-    {
-      // the appropriate witness time variable depends on the node's role/position
-      var time = destination == n ? sp.Symbolics[0].Value
-        : n.IsAggregation() && destinationPod == g.L(n) ? sp.Symbolics[1].Value
-        : n.IsAggregation() && destinationPod != g.L(n) ? sp.Symbolics[3].Value
-        : n.IsEdge() && destinationPod != g.L(n) ? sp.Symbolics[4].Value
-        : sp.Symbolics[2].Value;
-      return Lang.Finally(time, Lang.IsSome<BgpRoute>());
-    });
-    return new AnnotatedSp<string, BigInteger>(sp, annotations, modularProperties, monolithicProperties);
+    var modularProperties = g.MapNodes(n => Lang.Finally(symbolics[^1].Value, monolithicProperties[n]));
+    var annotations = FatTreeSymbolicTimes.FinallyAnnotations(g, destination, Lang.IsSome<BgpRoute>(), symbolics);
+    return new AnnotatedSp<string, BigInteger>(new Sp<string, BigInteger>(g, destination, symbolics.ToArray()),
+      annotations, modularProperties, monolithicProperties);
   }
 
   // slightly weaker path length property with simpler annotations
@@ -202,43 +175,26 @@ public static class Sp
 
   public static AnnotatedSp<string, BigInteger> PathLengthNoSafetySymbolicTimes(uint numPods, string destination)
   {
+    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
     var g = Topologies.LabelledFatTree(numPods);
     var destinationPod = g.L(destination);
-    var sp = SymbolicTimesFatTreeSp(g, destination);
-    var monolithicProperties = sp.Digraph.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
+    // var sp = SymbolicTimesFatTreeSp(g, destination);
+    var monolithicProperties = g.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
     // use the last (largest) symbolic time as the safety property to check
-    var modularProperties = sp.Digraph.MapNodes(n => Lang.Finally(sp.Symbolics.Last().Value, monolithicProperties[n]));
-    var annotations = sp.Digraph.MapNodes(n =>
+    var modularProperties = g.MapNodes(n => Lang.Finally(times[^1].Value, monolithicProperties[n]));
+    var annotations = g.MapNodes(n =>
     {
-      Zen<BigInteger> time;
-      BigInteger maxPathLength;
-      if (destination == n)
-      {
-        time = sp.Symbolics[0].Value;
-        maxPathLength = BigInteger.Zero;
-      } else if (n.IsAggregation() && destinationPod == g.L(n))
-      {
-        time = sp.Symbolics[1].Value;
-        maxPathLength = 1;
-      } else if (n.IsAggregation() && destinationPod != g.L(n))
-      {
-        time = sp.Symbolics[3].Value;
-        maxPathLength = 3;
-      } else if (n.IsEdge() && destinationPod != g.L(n))
-      {
-        time = sp.Symbolics[4].Value;
-        maxPathLength = 4;
-      }
-      else
-      {
-        time = sp.Symbolics[2].Value;
-        maxPathLength = 2;
-      }
+      var dist = n.DistanceFromDestinationEdge(g.L(n), destination, g.L(destination));
+      var time = times[dist].Value;
+      var maxPathLength = new BigInteger(dist);
+
       var safety =
         Lang.Globally(Lang.OrSome<BgpRoute>(b => Zen.And(b.LpEquals(100U), b.GetAsPathLength() > BigInteger.Zero)));
-      return Lang.Intersect(safety, Lang.Finally(time, Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(maxPathLength))));
+      return Lang.Intersect(safety,
+        Lang.Finally(time, Lang.IfSome(BgpRouteExtensions.MaxLengthDefaultLp(maxPathLength))));
     });
-    return new AnnotatedSp<string, BigInteger>(sp, annotations, modularProperties, monolithicProperties);
+    return new AnnotatedSp<string, BigInteger>(new Sp<string, BigInteger>(g, destination, times.ToArray()), annotations,
+      modularProperties, monolithicProperties);
   }
 
   /// <summary>
