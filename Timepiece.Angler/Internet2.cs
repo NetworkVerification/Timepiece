@@ -1,15 +1,9 @@
-using System.Numerics;
-using Timepiece.Angler.Ast;
-using Timepiece.Angler.Ast.AstFunction;
 using Timepiece.DataTypes;
-using Timepiece.Networks;
 using ZenLib;
 
 namespace Timepiece.Angler;
 
-using EnvNet = AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment>;
-
-public class Internet2 : RouteEnvironmentAst
+public static class Internet2
 {
   /// <summary>
   ///   The block to external tag used by Internet2.
@@ -36,12 +30,6 @@ public class Internet2 : RouteEnvironmentAst
   /// </summary>
   public static readonly Ipv4Prefix InternalPrefix = new("64.57.28.0", "64.57.28.255");
 
-  public Internet2(Dictionary<string, NodeProperties> nodes, Ipv4Prefix? destination,
-    Dictionary<string, AstPredicate> predicates, Dictionary<string, string?> symbolics, BigInteger? convergeTime) :
-    base(nodes, destination, predicates, symbolics, convergeTime)
-  {
-  }
-
   /// <summary>
   ///   Predicate that the route is for the internal prefix.
   /// </summary>
@@ -58,16 +46,5 @@ public class Internet2 : RouteEnvironmentAst
   public static Zen<bool> BteTagAbsent(Zen<RouteEnvironment> env)
   {
     return Zen.Implies(env.GetResultValue(), Zen.Not(env.GetCommunities().Contains(Bte)));
-  }
-
-  /// <summary>
-  ///   Extract the network from the BlockToExternal class.
-  /// </summary>
-  /// <param name="f">A function that may arbitrarily modify the constructed network.</param>
-  /// <returns></returns>
-  public EnvNet ToNetwork(Func<EnvNet, EnvNet> f)
-  {
-    var net = base.ToNetwork();
-    return f(net);
   }
 }

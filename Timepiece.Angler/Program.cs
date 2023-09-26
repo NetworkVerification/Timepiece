@@ -14,7 +14,7 @@ JsonSerializer Serializer()
   {
     // use $type for type names, and the given binder
     TypeNameHandling = TypeNameHandling.All,
-    SerializationBinder = RouteEnvironmentAst.Binder()
+    SerializationBinder = AnglerNetwork.Binder()
     // throw an error when members are missing from the object instead of ignoring them
     // MissingMemberHandling = MissingMemberHandling.Error
   };
@@ -24,33 +24,24 @@ var rootCommand = new RootCommand("Timepiece benchmark runner");
 var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically simulating Minesweeper");
-var validateOption = new System.CommandLine.Option<bool>(
-  new[] {"--validate", "-V"},
-  "If given, validate the benchmark before running."
-);
 var fileArgument = new Argument<string>(
   "file",
   "The .angler.json file to use");
 rootCommand.Add(fileArgument);
 rootCommand.Add(monoOption);
-rootCommand.Add(validateOption);
 rootCommand.SetHandler(
-  (file, mono, validate) =>
+  (file, mono) =>
   {
     var json = new JsonTextReader(new StreamReader(file));
-    RouteEnvironmentAst? ast;
     var isInternet2 = false;
     if (file.Contains("INTERNET2") || file.Contains("internet2") || file.Contains("BAGPIPE") ||
         file.Contains("bagpipe"))
     {
       Console.WriteLine("Internet2 benchmark identified...");
-      ast = Serializer().Deserialize<Internet2>(json);
       isInternet2 = true;
     }
-    else
-    {
-      ast = Serializer().Deserialize<RouteEnvironmentAst>(json);
-    }
+
+    var ast = Serializer().Deserialize<AnglerNetwork>(json);
 
     Console.WriteLine($"Successfully deserialized JSON file {file}");
     Debug.WriteLine("Running in debug mode...");
@@ -58,20 +49,20 @@ rootCommand.SetHandler(
     json.Close();
     if (ast != null)
     {
-      if (validate) ast.Validate();
+      var (topology, transfer) = ast.TopologyAndTransfer();
+      var query = isInternet2
+        ? BlockToExternal.StrongInitialConstraints(topology, ast.Externals.Select(i => $"{i.ip}"))
+        : throw new NotImplementedException("Non-Internet2 networks not supported");
+      var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
       if (mono)
-        Profile.RunMonoWithStats(isInternet2
-          ? ((Internet2) ast).ToNetwork(BlockToExternal.StrongInitialConstraints)
-          : ast.ToNetwork());
+        Profile.RunMonoWithStats(net);
       else
-        Profile.RunAnnotatedWithStats(isInternet2
-          ? ((Internet2) ast).ToNetwork(BlockToExternal.StrongInitialConstraints)
-          : ast.ToNetwork());
+        Profile.RunAnnotatedWithStats(net);
     }
     else
     {
       Console.WriteLine("Failed to deserialize contents of {file} (received null).");
     }
-  }, fileArgument, monoOption, validateOption);
+  }, fileArgument, monoOption);
 
 await rootCommand.InvokeAsync(args);

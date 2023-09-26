@@ -1,18 +1,13 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class PrefixMatchSet : Expr
+/// <summary>
+/// An expression that returns true if the second operand (the set)
+/// contains the first operand (the prefix).
+/// </summary>
+public class PrefixMatchSet : BinaryOpExpr
 {
-  public PrefixMatchSet(dynamic prefix, dynamic list)
+  public PrefixMatchSet(Expr prefix, Expr prefixSet) : base(prefix, prefixSet,
+    (p, pSet) => pSet.Contains(p))
   {
-    Prefix = prefix;
-    FilterList = list;
-  }
-
-  public Expr Prefix { get; set; }
-  public RouteFilterList FilterList { get; set; }
-
-  public override void Rename(string oldVar, string newVar)
-  {
-    ;
   }
 }

@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Newtonsoft.Json;
-using Timepiece.Angler.Ast.AstExpr;
 using Timepiece.Angler.Ast.AstFunction;
+using Timepiece.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler.Ast;
@@ -13,37 +13,31 @@ namespace Timepiece.Angler.Ast;
 public class NodeProperties
 {
   public NodeProperties(int? asn, Dictionary<string, RoutingPolicies> policies,
-    string? stable, AstTemporalOperator? temporal, Dictionary<string, AstFunction<RouteEnvironment>> declarations,
-    Expr initial)
+    Dictionary<string, AstFunction<RouteEnvironment>> declarations,
+    List<Ipv4Prefix> prefixes)
   {
     Asn = asn;
     Policies = policies;
-    Stable = stable;
-    Temporal = temporal;
-    Initial = initial;
+    Prefixes = prefixes;
     Declarations = declarations;
     // DisambiguateVariableNames();
   }
+
+  public List<Ipv4Prefix> Prefixes { get; set; }
 
   /// <summary>
   ///   AS number for the given node.
   /// </summary>
   public int? Asn { get; set; }
 
-  private Expr Initial { get; }
 
   /// <summary>
   ///   Additional function declarations.
   /// </summary>
-  [JsonProperty("Declarations")]
+  [JsonProperty(nameof(Declarations))]
   public Dictionary<string, AstFunction<RouteEnvironment>> Declarations { get; set; }
 
-  public AstTemporalOperator? Temporal { get; set; }
-
-  [JsonProperty("Policies")] public Dictionary<string, RoutingPolicies> Policies { get; }
-
-  //[JsonProperty(Required = Required.DisallowNull)]
-  public string? Stable { get; }
+  [JsonProperty(nameof(Policies))] public Dictionary<string, RoutingPolicies> Policies { get; }
 
   /// <summary>
   ///   Make the arguments to all AstFunctions unique.
@@ -70,32 +64,14 @@ public class NodeProperties
   /// <summary>
   ///   Construct a node storing all the relevant information for creating a network.
   /// </summary>
-  /// <param name="predicateLookupFunction">A function that returns a predicate given its string name.</param>
   /// <param name="defaultExport">A default export function.</param>
   /// <param name="defaultImport">A default import function.</param>
-  /// <param name="symbolicValues">A sequence of symbolic values.</param>
   /// <returns></returns>
-  public NetworkNode<RouteEnvironment> CreateNode(
-    Func<string, AstPredicate> predicateLookupFunction, AstFunction<RouteEnvironment> defaultExport,
-    AstFunction<RouteEnvironment> defaultImport, IEnumerable<SymbolicValue<RouteEnvironment>> symbolicValues)
+  public NetworkNode<RouteEnvironment> CreateNode(AstFunction<RouteEnvironment> defaultExport,
+    AstFunction<RouteEnvironment> defaultImport)
   {
     var env = new AstEnvironment(Declarations);
     // add the symbolic values to the environment
-    env = symbolicValues.Aggregate(env,
-      (current, symbolicValue) => current.Update(symbolicValue.Name, symbolicValue.Value));
-
-    var init = env
-      .EvaluateExpr(
-        new Environment<RouteEnvironment>(Zen.Symbolic<RouteEnvironment>()),
-        Initial).returnValue;
-
-    var safetyProperty = Stable is null
-      ? _ => true
-      : predicateLookupFunction(Stable).Evaluate(env);
-
-    var invariant = Temporal is null
-      ? (_, _) => true
-      : Temporal.Evaluate(predicateLookupFunction, Declarations);
 
     var imports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var exports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
@@ -112,7 +88,6 @@ public class NodeProperties
         imports[neighbor] = env.EvaluateFunction(Declarations[policies.Import]);
     }
 
-    return new NetworkNode<RouteEnvironment>(init, safetyProperty, invariant, imports.ToImmutableDictionary(),
-      exports.ToImmutableDictionary());
+    return new NetworkNode<RouteEnvironment>(imports.ToImmutableDictionary(), exports.ToImmutableDictionary());
   }
 }

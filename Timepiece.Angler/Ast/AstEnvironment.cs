@@ -33,6 +33,7 @@ public class AstEnvironment
   public readonly bool callExprContext;
   public readonly string? defaultPolicy;
 
+
   public AstEnvironment(ImmutableDictionary<string, dynamic> env,
     IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
     string? defaultPolicy, bool callExprContext)
@@ -130,8 +131,6 @@ public class AstEnvironment
           .Invoke(null, new object?[] {ignoreRoute(g.Record), g.FieldName})!);
       case Var v:
         return env.WithValue(this[v.Name]);
-      case PrefixMatchSet pms:
-        return env.WithValue(pms.FilterList.Permits(ignoreRoute(pms.Prefix)));
       case Havoc:
         return env.WithValue(Zen.Symbolic<bool>());
       case None n:

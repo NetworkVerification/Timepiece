@@ -118,13 +118,13 @@ public static class TypeParsing
       "PrefixSet" => typeof(LiteralSet),
       "PrefixMatches" => typeof(PrefixMatches),
       "PrefixMatchSet" => typeof(PrefixMatchSet),
+      "RouteFilterList" => typeof(RouteFilterList),
       // types
       "TEnvironment" => typeof(RouteEnvironment),
       "TRoute" => typeof(BatfishBgpRoute),
       "TResult" => typeof(RouteResult),
       "TIpAddress" => typeof(uint),
       "TIpPrefix" => typeof(Ipv4Wildcard),
-      "RouteFilterList" => typeof(RouteFilterList),
       "TPrefixSet" => typeof(CSet<Ipv4Wildcard>), // TODO: is this ever used?
       "TPair" => new TypeAlias(typeof(Pair<,>), null, null),
       "TOption" => new TypeAlias(typeof(Option<>), (TypeAlias?) null),
