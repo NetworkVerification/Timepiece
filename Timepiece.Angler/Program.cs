@@ -50,6 +50,7 @@ rootCommand.SetHandler(
     if (ast != null)
     {
       var (topology, transfer) = ast.TopologyAndTransfer();
+      Console.WriteLine(topology);
       var query = isInternet2
         ? BlockToExternal.StrongInitialConstraints(topology, ast.Externals.Select(i => $"{i.ip}"))
         : throw new NotImplementedException("Non-Internet2 networks not supported");

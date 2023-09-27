@@ -73,11 +73,10 @@ public static class AstTests
   [Fact]
   public static void TestSpAstBadAnnotations()
   {
-    // FIXME
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();
     var query = IsValidQuery(topology, DestinationNode);
     query.Annotations[FatTree.FatTreeLayer.Edge.Node(18)] =
-      Lang.Finally<RouteEnvironment>(new BigInteger(1), env => env.GetResultValue());
+      Lang.Finally<RouteEnvironment>(new BigInteger(1), _ => Zen.False());
     Assert.True(query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckInductive().HasValue);
   }
 

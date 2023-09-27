@@ -118,8 +118,9 @@ public static class TypeParsing
       "PrefixSet" => typeof(LiteralSet),
       "PrefixMatches" => typeof(PrefixMatches),
       "PrefixMatchSet" => typeof(PrefixMatchSet),
-      "RouteFilterList" => typeof(RouteFilterList),
+      "RouteFilterListExpr" => typeof(RouteFilterListExpr),
       // types
+      "RouteFilterList" => typeof(RouteFilterList),
       "TEnvironment" => typeof(RouteEnvironment),
       "TRoute" => typeof(BatfishBgpRoute),
       "TResult" => typeof(RouteResult),

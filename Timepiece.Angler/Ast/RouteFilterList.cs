@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Timepiece.DataTypes;
 using ZenLib;
 
@@ -16,6 +17,7 @@ public class RouteFilterList
     Lines = System.Array.Empty<RouteFilterLine>();
   }
 
+  [JsonConstructor]
   public RouteFilterList(RouteFilterLine[] lines)
   {
     Lines = lines;

@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Timepiece.DataTypes;
 using ZenLib;
 
@@ -15,6 +16,13 @@ public class RouteFilterLine
     MinLength = minLength;
     MaxLength = maxLength;
   }
+
+  [JsonConstructor]
+  public RouteFilterLine(bool action, Ipv4Wildcard wildcard, uint minLength, uint maxLength) : this(action, wildcard,
+    new UInt<_6>(minLength), new UInt<_6>(maxLength))
+  {
+  }
+
 
   /// <summary>
   /// The action to take. If true, permits the route; if false, denies it.

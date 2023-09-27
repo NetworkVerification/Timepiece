@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Numerics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -82,9 +83,14 @@ public class AnglerNetwork
     TopologyAndTransfer()
   {
     // construct all the mappings we'll need
-    var edges = new Dictionary<string, List<string>>();
+    var edges = new Dictionary<string, ImmutableSortedSet<string>>();
     var exportFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var importFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
+
+    foreach (var nbr in Externals)
+    {
+      edges[nbr.Name] = ImmutableSortedSet<string>.Empty;
+    }
 
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
     // we hence want to try and do as much of this as possible up front
@@ -92,7 +98,15 @@ public class AnglerNetwork
     foreach (var (node, props) in Nodes)
     {
       var details = props.CreateNode(DefaultExport, DefaultImport);
-      edges[node] = details.imports.Keys.Union(details.exports.Keys).ToList();
+      // add a bidirectional edge between each node and its neighbor
+      foreach (var nbr in details.imports.Keys.Union(details.exports.Keys))
+      {
+        edges.TryAdd(node, ImmutableSortedSet<string>.Empty);
+        edges[node] = edges[node].Add(nbr);
+        edges.TryAdd(nbr, ImmutableSortedSet<string>.Empty);
+        edges[nbr] = edges[nbr].Add(node);
+      }
+      edges[node] = details.imports.Keys.Union(details.exports.Keys).ToImmutableSortedSet();
       foreach (var (nbr, fn) in details.exports) exportFunctions[(node, nbr)] = fn;
 
       foreach (var (nbr, fn) in details.imports) importFunctions[(nbr, node)] = fn;
