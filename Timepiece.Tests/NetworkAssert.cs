@@ -14,34 +14,31 @@ public static class NetworkAssert
   /// Assert that the modular invariants hold (base, inductive, safety checks).
   /// </summary>
   /// <param name="net"></param>
-  /// <typeparam name="T"></typeparam>
-  /// <typeparam name="TV"></typeparam>
-  /// <typeparam name="TS"></typeparam>
-  public static void CheckSound<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
+  /// <typeparam name="RouteType"></typeparam>
+  /// <typeparam name="NodeType"></typeparam>
+  public static void CheckSound<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
   {
-    Assert.Equal(Option.None<State<T, TV, TS>>(), net.CheckAnnotations());
+    Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckAnnotations());
   }
 
   /// <summary>
   /// Assert that the monolithic properties holds.
   /// </summary>
   /// <param name="net"></param>
-  /// <typeparam name="T"></typeparam>
-  /// <typeparam name="TV"></typeparam>
-  /// <typeparam name="TS"></typeparam>
-  public static void CheckSoundMonolithic<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
+  /// <typeparam name="RouteType"></typeparam>
+  /// <typeparam name="NodeType"></typeparam>
+  public static void CheckSoundMonolithic<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
   {
-    Assert.Equal(Option.None<State<T, TV, TS>>(), net.CheckMonolithic());
+    Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckMonolithic());
   }
 
   /// <summary>
   /// Assert that the modular invariants do NOT hold.
   /// </summary>
   /// <param name="net"></param>
-  /// <typeparam name="T"></typeparam>
-  /// <typeparam name="TV"></typeparam>
-  /// <typeparam name="TS"></typeparam>
-  public static void CheckUnsound<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
+  /// <typeparam name="RouteType"></typeparam>
+  /// <typeparam name="NodeType"></typeparam>
+  public static void CheckUnsound<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
   {
     Assert.True(net.CheckAnnotations().HasValue);
   }
@@ -51,11 +48,10 @@ public static class NetworkAssert
   /// </summary>
   /// <param name="net"></param>
   /// <param name="check"></param>
-  /// <typeparam name="T"></typeparam>
-  /// <typeparam name="TV"></typeparam>
-  /// <typeparam name="TS"></typeparam>
+  /// <typeparam name="RouteType"></typeparam>
+  /// <typeparam name="NodeType"></typeparam>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
-  public static void CheckUnsoundCheck<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net, SmtCheck check)
+  public static void CheckUnsoundCheck<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net, SmtCheck check)
   {
     Assert.True(check switch
     {

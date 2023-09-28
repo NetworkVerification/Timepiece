@@ -12,6 +12,7 @@ namespace Timepiece.Angler.Ast;
 /// </summary>
 public class NodeProperties
 {
+  [JsonConstructor]
   public NodeProperties(int? asn, Dictionary<string, RoutingPolicies> policies,
     Dictionary<string, AstFunction<RouteEnvironment>> declarations,
     List<Ipv4Prefix> prefixes)
@@ -23,11 +24,23 @@ public class NodeProperties
     // DisambiguateVariableNames();
   }
 
+  /// <summary>
+  /// Construct a new <c>NodeProperties</c> instance with the given neighbors
+  /// and no policy or ASN information.
+  /// </summary>
+  /// <param name="neighbors"></param>
+  public NodeProperties(IEnumerable<string> neighbors) : this(null,
+    neighbors.ToDictionary(n => n, _ => new RoutingPolicies()),
+    new Dictionary<string, AstFunction<RouteEnvironment>>(), new List<Ipv4Prefix>())
+  {
+  }
+
   public List<Ipv4Prefix> Prefixes { get; set; }
 
   /// <summary>
   ///   AS number for the given node.
   /// </summary>
+  [JsonProperty("ASNumber")]
   public int? Asn { get; set; }
 
 

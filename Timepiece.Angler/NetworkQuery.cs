@@ -28,11 +28,11 @@ public class NetworkQuery<RouteType, NodeType, SymbolicType> where NodeType : no
 
   public Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> Annotations { get; set; }
 
-  public AnnotatedNetwork<RouteType, NodeType, SymbolicType> ToNetwork(Digraph<NodeType> graph,
+  public AnnotatedNetwork<RouteType, NodeType> ToNetwork(Digraph<NodeType> graph,
     Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunctions,
     Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction)
   {
-    return new AnnotatedNetwork<RouteType, NodeType, SymbolicType>(graph, transferFunctions, mergeFunction,
+    return new AnnotatedNetwork<RouteType, NodeType>(graph, transferFunctions, mergeFunction,
       InitialRoutes, Annotations, ModularProperties, MonolithicProperties, Symbolics);
   }
 }

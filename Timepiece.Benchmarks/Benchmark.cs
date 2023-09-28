@@ -52,22 +52,22 @@ public class Benchmark
         RunProfiler(Sp.ReachabilitySymbolicTimes(N, Destination));
         break;
       case BenchmarkType.SpPathLength:
-        RunProfiler(Sp.PathLength(N, Destination));
+        RunProfiler(Sp.PathLength(N, Destination, InferTimes));
         break;
-      case BenchmarkType.SpPathLengthWeak:
-        RunProfiler(Sp.PathLengthNoSafety(N, Destination, InferTimes));
-        break;
-      case BenchmarkType.SpPathLengthWeakSymbolic:
-        RunProfiler(Sp.PathLengthNoSafetySymbolicTimes(N, Destination));
+      case BenchmarkType.SpPathLengthSymbolic:
+        RunProfiler(Sp.PathLengthSymbolicTimes(N, Destination));
         break;
       case BenchmarkType.ApReachable:
         RunProfiler(Sp.AllPairsReachability(N));
         break;
+      case BenchmarkType.ApReachableSymbolic:
+        RunProfiler(Sp.AllPairsReachabilitySymbolicTimes(N));
+        break;
       case BenchmarkType.ApPathLength:
         RunProfiler(Sp.AllPairsPathLength(N));
         break;
-      case BenchmarkType.ApPathLengthWeak:
-        RunProfiler(Sp.AllPairsPathLengthNoSafety(N));
+      case BenchmarkType.ApPathLengthSymbolic:
+        RunProfiler(Sp.AllPairsPathLengthSymbolicTimes(N));
         break;
       case BenchmarkType.ValleyFree:
         RunProfiler(Vf.ValleyFreeReachable(N, Destination, InferTimes));
@@ -84,6 +84,9 @@ public class Benchmark
       case BenchmarkType.FatTreeHijack:
         RunProfiler(Hijack.HijackFiltered(N, Destination, InferTimes));
         break;
+      case BenchmarkType.FatTreeHijackSymbolic:
+        RunProfiler(Hijack.HijackFilteredSymbolicTimes(N, Destination));
+        break;
       case BenchmarkType.ApFatTreeHijack:
         RunProfiler(Hijack.AllPairsHijackFiltered(N));
         break;
@@ -92,7 +95,7 @@ public class Benchmark
     }
   }
 
-  private void RunProfiler<T, TV, TS>(AnnotatedNetwork<T, TV, TS> net)
+  private void RunProfiler<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
   {
     net.PrintFormulas = Verbose;
     if (RunMonolithic)
@@ -107,17 +110,20 @@ public enum BenchmarkType
   SpReachable,
   SpReachableSymbolic,
   SpPathLength,
-  SpPathLengthWeak,
-  SpPathLengthWeakSymbolic,
+  SpPathLengthSymbolic,
   ApReachable,
+  ApReachableSymbolic,
   ApPathLength,
-  ApPathLengthWeak,
+  ApPathLengthSymbolic,
   ValleyFree,
-  ValleyFreeLength,
   ValleyFreeSymbolic,
+  ValleyFreeLength,
   ApValleyFree,
+  ApValleyFreeSymbolic,
   FatTreeHijack,
-  ApFatTreeHijack
+  FatTreeHijackSymbolic,
+  ApFatTreeHijack,
+  ApFatTreeHijackSymbolic,
 }
 
 public static class BenchmarkTypeExtensions
@@ -129,32 +135,38 @@ public static class BenchmarkTypeExtensions
       "r" or "reach" or "SpReachable" => BenchmarkType.SpReachable,
       "rs" or "reachSymbolic" or "SpReachableSymbolic" => BenchmarkType.SpReachableSymbolic,
       "l" or "length" or "SpPathLength" => BenchmarkType.SpPathLength,
-      "lw" or "lengthWeak" or "SpPathLengthWeak" => BenchmarkType.SpPathLengthWeak,
-      "lws" or "lengthWeakSymbolic" or "SpPathLengthWeakSymbolic" => BenchmarkType.SpPathLengthWeakSymbolic,
+      "ls" or "lengthSymbolic" or "SpPathLengthSymbolic" => BenchmarkType.SpPathLengthSymbolic,
       "ar" or "allReach" or "ApReachable" => BenchmarkType.ApReachable,
+      "ars" or "allReachSymbolic" or "ApReachableSymbolic" => BenchmarkType.ApReachableSymbolic,
       "al" or "allLength" or "ApPathLength" => BenchmarkType.ApPathLength,
-      "alw" or "allLengthWeak" or "ApPathLengthWeak" => BenchmarkType.ApPathLengthWeak,
+      "als" or "allLengthSymbolic" or "ApPathLengthSymbolic" => BenchmarkType.ApPathLengthSymbolic,
       "v" or "valley" or "ValleyFree" => BenchmarkType.ValleyFree,
-      "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
       "vs" or "valleySymbolic" or "ValleyFreeSymbolic" => BenchmarkType.ValleyFreeSymbolic,
+      "vl" or "valleyLength" or "ValleyFreeLength" => BenchmarkType.ValleyFreeLength,
       "av" or "allValley" or "ApValleyFree" => BenchmarkType.ApValleyFree,
+      "avs" or "allValleySymbolic" or "ApValleyFreeSymbolic" => BenchmarkType.ApValleyFreeSymbolic,
       "h" or "hijack" or "FatTreeHijack" => BenchmarkType.FatTreeHijack,
+      "hs" or "hijackSymbolic" or "FatTreeHijackSymbolic" => BenchmarkType.FatTreeHijackSymbolic,
       "ah" or "allHijack" or "ApFatTreeHijack" => BenchmarkType.ApFatTreeHijack,
+      "ahs" or "allHijackSymbolic" or "ApFatTreeHijackSymbolic" => BenchmarkType.ApFatTreeHijackSymbolic,
       _ => throw new ArgumentException($"{s} does not correspond to a valid BenchmarkType. Acceptable values:\n" +
                                        "- 'r'/'reach'/'SpReachable' for SpReachable\n" +
                                        "- 'rs'/'reachSymbolic'/'SpReachableSymbolic' for SpReachableSymbolic\n" +
                                        "- 'l'/'length'/'SpPathLength' for SpPathLength\n" +
-                                       "- 'lw'/'lengthWeak'/'SpPathLengthWeak' for SpPathLengthWeak\n" +
-                                       "- 'lws'/'lengthWeakSymbolic'/'SpPathLengthWeakSymbolic' for SpPathLengthWeakSymbolic\n" +
+                                       "- 'lws'/'lengthSymbolic'/'SpPathLengthSymbolic' for SpPathLengthSymbolic\n" +
                                        "- 'ar'/'allReach'/'ApReachable' for ApReachable\n" +
+                                       "- 'ars'/'allReachSymbolic'/'ApReachableSymbolic' for ApReachableSymbolic\n" +
                                        "- 'al'/'allLength'/'ApPathLength' for ApPathLength\n" +
-                                       "- 'alw'/'allLengthWeak'/'ApPathLengthWeak' for ApPathLengthWeak\n" +
+                                       "- 'als'/'allLengthSymbolic'/'ApPathLengthSymbolic' for ApPathLengthSymbolic\n" +
                                        "- 'v'/'valley'/'ValleyFree' for ValleyFree\n" +
-                                       "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
                                        "- 'vs'/'valleySymbolic'/'ValleyFreeSymbolic' for ValleyFreeSymbolic\n" +
+                                       "- 'vl'/'valleyLength'/'ValleyFreeLength' for ValleyFreeLength\n" +
                                        "- 'av'/'allValley'/'ApValleyFree' for ApValleyFree\n" +
+                                       "- 'avs'/'allValleySymbolic'/'ApValleyFreeSymbolic' for ApValleyFreeSymbolic\n" +
                                        "- 'h'/'hijack'/'FatTreeHijack' for FatTreeHijack" +
-                                       "- 'ah'/'allHijack'/'ApFatTreeHijack' for ApFatTreeHijack\n")
+                                       "- 'hs'/'hijackSymbolic'/'FatTreeHijackSymbolic' for FatTreeHijackSymbolic" +
+                                       "- 'ah'/'allHijack'/'ApFatTreeHijack' for ApFatTreeHijack\n" +
+                                       "- 'ahs'/'allHijackSymbolic'/'ApFatTreeHijackSymbolic' for ApFatTreeHijackSymbolic\n")
     };
   }
 
@@ -165,17 +177,20 @@ public static class BenchmarkTypeExtensions
       BenchmarkType.SpReachable => false,
       BenchmarkType.SpReachableSymbolic => false,
       BenchmarkType.SpPathLength => false,
-      BenchmarkType.SpPathLengthWeak => false,
-      BenchmarkType.SpPathLengthWeakSymbolic => false,
+      BenchmarkType.SpPathLengthSymbolic => false,
       BenchmarkType.ValleyFree => false,
       BenchmarkType.ValleyFreeLength => false,
       BenchmarkType.ValleyFreeSymbolic => false,
       BenchmarkType.FatTreeHijack => false,
+      BenchmarkType.FatTreeHijackSymbolic => false,
       BenchmarkType.ApReachable => true,
+      BenchmarkType.ApReachableSymbolic => true,
       BenchmarkType.ApPathLength => true,
-      BenchmarkType.ApPathLengthWeak => true,
+      BenchmarkType.ApPathLengthSymbolic => true,
       BenchmarkType.ApValleyFree => true,
+      BenchmarkType.ApValleyFreeSymbolic => true,
       BenchmarkType.ApFatTreeHijack => true,
+      BenchmarkType.ApFatTreeHijackSymbolic => true,
       _ => throw new ArgumentOutOfRangeException(nameof(t), t,
         "Unable to determine if BenchmarkType is for a symbolic destination.")
     };

@@ -10,6 +10,7 @@ namespace Timepiece.Tests;
 
 public static class FaultToleranceTests
 {
+
   private static FaultTolerance<Unit, string> UnitFtNet(
     Func<SymbolicValue<(string, string)>[], Dictionary<string, Func<Zen<Option<Unit>>, Zen<BigInteger>, Zen<bool>>>>
       annotations)
@@ -26,11 +27,9 @@ public static class FaultToleranceTests
     var modularProperties = topology.MapNodes(_ => Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>()));
     var monolithicProperties = topology.MapNodes(_ => Lang.IsSome<Unit>());
 
-    var failedEdges = Zen.Symbolic<FSeq<(string, string)>>(depth: topology.NEdges);
-
     var unitNetwork = new UnitNetwork<string, Unit>(topology, System.Array.Empty<SymbolicValue<Unit>>());
-    return new FaultTolerance<Unit, string>(unitNetwork, initialValues, annotations, modularProperties, monolithicProperties,
-      failedEdges, 1);
+    return new FaultTolerance<Unit, string>(unitNetwork, initialValues, annotations, modularProperties,
+      monolithicProperties, 1);
   }
 
   [Fact]

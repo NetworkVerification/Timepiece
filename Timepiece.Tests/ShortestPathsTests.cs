@@ -60,9 +60,16 @@ public static class ShortestPathsTests
       {"C", Option.None<BigInteger>()}
     }, new[] {DRoute});
 
-  private static ShortestPath<string, string> SymbolicDestination(Digraph<string> digraph)
+  private static Zen<bool> IsInDigraph<NodeType>(Digraph<NodeType> digraph, Zen<NodeType> node)
+    where NodeType : notnull =>
+    digraph.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, n == node));
+
+  private static SymbolicValue<string> SymbolicDestination(Digraph<string> digraph) =>
+    new("dest", n => IsInDigraph(digraph, n));
+
+  private static ShortestPath<string, string> SymbolicDestinationShortestPath(Digraph<string> digraph,
+    SymbolicValue<string> dest)
   {
-    var dest = new SymbolicValue<string>("dest", s => digraph.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, s == n)));
     return new ShortestPath<string, string>(digraph,
       digraph.MapNodes(n => Zen.If(dest.EqualsValue(n),
         Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>())), new[] {dest});
@@ -81,19 +88,19 @@ public static class ShortestPathsTests
     }
   };
 
-  private static AnnotatedNetwork<Option<BigInteger>, string, Unit> AnnotatedConcrete(
+  private static AnnotatedNetwork<Option<BigInteger>, string> AnnotatedConcrete(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> stableProperties)
   {
-    return new AnnotatedNetwork<Option<BigInteger>, string, Unit>(Concrete, annotations,
+    return new AnnotatedNetwork<Option<BigInteger>, string>(Concrete, annotations,
       stableProperties, Concrete.Digraph.MapNodes(_ => Lang.True<Option<BigInteger>>()), 4);
   }
 
-  private static AnnotatedNetwork<Option<BigInteger>, string, BigInteger> AnnotatedSymbolicRoute(
+  private static AnnotatedNetwork<Option<BigInteger>, string> AnnotatedSymbolicRoute(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>> stableProperties)
   {
-    return new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(SymbolicRoute, annotations, stableProperties,
+    return new AnnotatedNetwork<Option<BigInteger>, string>(SymbolicRoute, annotations, stableProperties,
       SymbolicRoute.Digraph.MapNodes(_ => Lang.True<Option<BigInteger>>()), 2);
   }
 
@@ -169,8 +176,8 @@ public static class ShortestPathsTests
   public static void SoundSymbolicDestAnnotationsPassChecks()
   {
     var topology = Topologies.Path(3);
-    var net = SymbolicDestination(topology);
-    var dest = net.Symbolics[0];
+    var dest = SymbolicDestination(topology);
+    var net = SymbolicDestinationShortestPath(topology, dest);
     var convergeTime = new BigInteger(3);
     var annotations =
       new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
@@ -196,7 +203,7 @@ public static class ShortestPathsTests
             Option.IsNone, Option.IsSome)
         }
       };
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, string>(net, annotations,
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
       topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.IsSome<BigInteger>())),
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
@@ -207,7 +214,7 @@ public static class ShortestPathsTests
   public static void UnsoundSymbolicDestAnnotationsFailChecks()
   {
     var topology = Topologies.Path(3);
-    var net = SymbolicDestination(topology);
+    var net = SymbolicDestinationShortestPath(topology, SymbolicDestination(topology));
     var annotations =
       new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>>
       {
@@ -215,7 +222,7 @@ public static class ShortestPathsTests
         {"B", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)},
         {"C", Lang.Finally<Option<BigInteger>>(new BigInteger(1), Option.IsSome)}
       };
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, string>(net, annotations,
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
       topology.MapNodes(_ => Lang.Finally(new BigInteger(3), Lang.IsSome<BigInteger>())),
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
@@ -225,11 +232,12 @@ public static class ShortestPathsTests
   [Fact]
   public static void CorrectlyOrderedAnnotationsPassChecks()
   {
-    var net = SymbolicTimes;
+    var symbolics = SymbolicWitnessTimes();
+    var net = new ShortestPath<string, BigInteger>(Topologies.Path(3), "A", symbolics);
     var annotations = net.Digraph.MapNodes(n =>
-      Lang.Finally<Option<BigInteger>>(net.Symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(net, annotations,
-      net.Digraph.MapNodes(_ => Lang.Finally(net.Symbolics.Last().Value, Lang.IsSome<BigInteger>())),
+      Lang.Finally<Option<BigInteger>>(symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
+      net.Digraph.MapNodes(_ => Lang.Finally(symbolics.Last().Value, Lang.IsSome<BigInteger>())),
       net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
     NetworkAssert.CheckSound(annotated);
@@ -238,18 +246,20 @@ public static class ShortestPathsTests
   [Fact]
   public static void UnconstrainedSymbolicTimesFailChecks()
   {
-    var net = SymbolicTimes;
+    var symbolics = SymbolicWitnessTimes();
+    var lastTime = symbolics.Last().Value;
+    var net = new ShortestPath<string, BigInteger>(Topologies.Path(3), "A", symbolics);
 
     // weaken the symbolic constraints
-    foreach (var symbolic in net.Symbolics)
+    foreach (var symbolic in symbolics)
     {
       symbolic.Constraint = x => x >= BigInteger.Zero;
     }
 
     var annotations = net.Digraph.MapNodes(n =>
-      Lang.Finally<Option<BigInteger>>(net.Symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, BigInteger>(net, annotations,
-      net.Digraph.MapNodes(_ => Lang.Finally(net.Symbolics.Last().Value, Lang.IsSome<BigInteger>())),
+      Lang.Finally<Option<BigInteger>>(symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
+      net.Digraph.MapNodes(_ => Lang.Finally(lastTime, Lang.IsSome<BigInteger>())),
       net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
     NetworkAssert.CheckUnsoundCheck(annotated, SmtCheck.Inductive);

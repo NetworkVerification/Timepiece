@@ -15,7 +15,7 @@ using SetAdd = Func<Zen<Set<string>>, Zen<string>, Zen<Set<string>>>;
 
 public static class TagTests
 {
-  private static AnnotatedNetwork<CSetRoute, string, Unit> CSetNet(
+  private static AnnotatedNetwork<CSetRoute, string> CSetNet(
     Func<(string, string), Func<Zen<CSetRoute>, Zen<CSetRoute>>> transfer,
     Dictionary<string, Func<Zen<CSetRoute>, Zen<bool>>> monolithicProperties,
     Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
@@ -35,12 +35,12 @@ public static class TagTests
       {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
     };
 
-    return new AnnotatedNetwork<CSetRoute, string, Unit>(topology, topology.MapEdges(transfer), Merge, initial,
+    return new AnnotatedNetwork<CSetRoute, string>(topology, topology.MapEdges(transfer), Merge, initial,
       annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static AnnotatedNetwork<SetRoute, string, Unit> SetNet(
+  private static AnnotatedNetwork<SetRoute, string> SetNet(
     Dictionary<string, Func<Zen<SetRoute>, Zen<bool>>> monolithicProperties,
     Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
@@ -59,7 +59,7 @@ public static class TagTests
       {"C", Lang.Finally(new BigInteger(2), monolithicProperties["C"])}
     };
 
-    return new AnnotatedNetwork<SetRoute, string, Unit>(topology, topology.MapEdges(SetTransfer), Merge, initial,
+    return new AnnotatedNetwork<SetRoute, string>(topology, topology.MapEdges(SetTransfer), Merge, initial,
       annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }

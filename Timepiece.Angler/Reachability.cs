@@ -6,8 +6,8 @@ namespace Timepiece.Angler;
 
 public static class Reachability
 {
-  public static AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment> AddReachConstraints(
-    AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment> net)
+  public static AnnotatedNetwork<RouteEnvironment, string> AddReachConstraints(
+    AnnotatedNetwork<RouteEnvironment, string> net)
   {
     // change initial values such that internal nodes may have a route
     var newSymbolics = new List<SymbolicValue<RouteEnvironment>>();

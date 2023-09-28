@@ -9,7 +9,7 @@ using ZenLib;
 
 namespace MisterWolf;
 
-public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic> where TNode : IEquatable<TNode>
+public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquatable<TNode>
 {
   private readonly int _processes = Environment.ProcessorCount;
   private ConcurrentDictionary<TNode, long> InferInitialTimes { get; set; }
@@ -23,7 +23,7 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
     Dictionary<TNode, Zen<TRoute>> initialValues,
     IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> afterInvariants,
-    SymbolicValue<TSymbolic>[] symbolics) : base(digraph, transferFunction, mergeFunction,
+    ISymbolic[] symbolics) : base(digraph, transferFunction, mergeFunction,
     initialValues, symbolics)
   {
     BeforeInvariants = beforeInvariants;
@@ -37,7 +37,7 @@ public class Infer<TRoute, TNode, TSymbolic> : Network<TRoute, TNode, TSymbolic>
     InferAfterInductiveTimes = new ConcurrentDictionary<(TNode, IReadOnlyList<bool>), long>(_processes * 2, numNodes);
   }
 
-  public Infer(Network<TRoute, TNode, TSymbolic> net,
+  public Infer(Network<TRoute, TNode> net,
     IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> afterInvariants) : this(net.Digraph, net.TransferFunction,
     net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants, net.Symbolics)

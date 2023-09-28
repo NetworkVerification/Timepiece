@@ -30,11 +30,11 @@ public static class LocalPrefTests
 
   private static Zen<bool> IsReachable(Zen<LpRoute> r) => r.Item2() < new BigInteger(10);
 
-  private static AnnotatedNetwork<LpRoute, string, Unit> AnnotatedNetwork(
+  private static AnnotatedNetwork<LpRoute, string> AnnotatedNetwork(
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var convergeTime = new BigInteger(10);
-    return new AnnotatedNetwork<LpRoute, string, Unit>(Net, annotations,
+    return new AnnotatedNetwork<LpRoute, string>(Net, annotations,
       Net.Digraph.MapNodes<Func<Zen<LpRoute>, Zen<bool>>>(_ => IsReachable),
       Net.Digraph.MapNodes(_ => Lang.True<LpRoute>()),
       convergeTime);

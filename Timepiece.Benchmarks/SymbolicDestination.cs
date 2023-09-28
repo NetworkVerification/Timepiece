@@ -1,8 +1,12 @@
+using System.Diagnostics.Contracts;
 using System.Numerics;
 using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
+/// <summary>
+/// Representation of a symbolically-chosen destination top-of-rack node in a particular fat-tree pod.
+/// </summary>
 public class SymbolicDestination : SymbolicValue<Pair<string, int>>
 {
   public SymbolicDestination(NodeLabelledDigraph<string, int> digraph) : base("dest",
@@ -23,8 +27,8 @@ public class SymbolicDestination : SymbolicValue<Pair<string, int>>
   public Zen<string> Node { get; set; }
 
   /// <summary>
-  ///   Return an integer representing the (possibly-symbolic) distance between a node and a destination edge-layer node
-  ///   in a fattree topology.
+  ///   Return a concrete integer representing the (possibly-symbolic) distance between a node and a destination edge-layer node
+  ///   in a fat-tree topology.
   /// </summary>
   /// <param name="node">The given node.</param>
   /// <param name="nodePod">The given node's pod.</param>
@@ -37,6 +41,29 @@ public class SymbolicDestination : SymbolicValue<Pair<string, int>>
         Zen.If(Zen.And(node.IsAggregation(), Pod != nodePod), new BigInteger(3),
           Zen.If<BigInteger>(Zen.And(node.IsEdge(), Pod != nodePod), new BigInteger(4),
             new BigInteger(2)))));
+  }
+
+  /// <summary>
+  /// Return a <i>symbolic</i> integer representing the distance between a node and a destination edge-layer node
+  /// in a fat-tree topology.
+  /// The integer is chosen according to its position in the given <c>symbolicTimes</c> list,
+  /// which must have exactly 5 elements.
+  /// </summary>
+  /// <param name="node"></param>
+  /// <param name="nodePod"></param>
+  /// <param name="symbolicTimes"></param>
+  /// <returns></returns>
+  public Zen<BigInteger> SymbolicDistanceCases(string node, int nodePod, IReadOnlyList<Zen<BigInteger>> symbolicTimes)
+  {
+    if (symbolicTimes.Count != 5)
+      throw new ArgumentOutOfRangeException(nameof(symbolicTimes),
+        $"Received symbolic times {symbolicTimes}, expecting 5 elements!");
+    // cases for when the destination is an edge node
+    return Zen.If(Node == node, symbolicTimes[0],
+      Zen.If(Zen.And(node.IsAggregation(), Pod == nodePod), symbolicTimes[1],
+        Zen.If(Zen.And(node.IsAggregation(), Pod != nodePod), symbolicTimes[3],
+          Zen.If(Zen.And(node.IsEdge(), Pod != nodePod), symbolicTimes[4],
+            symbolicTimes[2]))));
   }
 
   /// <summary>

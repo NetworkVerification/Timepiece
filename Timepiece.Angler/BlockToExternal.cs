@@ -1,5 +1,3 @@
-using Timepiece.Networks;
-
 namespace Timepiece.Angler;
 
 public static class BlockToExternal
@@ -26,46 +24,5 @@ public static class BlockToExternal
     var symbolics = externalRoutes.Values.ToArray();
     return new NetworkQuery<RouteEnvironment, string, RouteEnvironment>(initialRoutes, symbolics, monolithicProperties,
       modularProperties, modularProperties);
-  }
-
-  public static AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment> WeakerInitialConstraints(
-    AnnotatedNetwork<RouteEnvironment, string, RouteEnvironment> net)
-  {
-    foreach (var s in net.Symbolics.Where(s => s.Name.StartsWith("external")))
-      s.Constraint =
-        Internet2.BteTagAbsent;
-    // Lang.Intersect<RouteEnvironment>(Internet2.BteTagAbsent,
-    // r => r.GetOriginType() != RouteEnvironment.InternalOrigin);
-    // change initial values such that internal nodes may have a route
-    var newSymbolics = new List<SymbolicValue<RouteEnvironment>>();
-    foreach (var node in Internet2.InternalNodes)
-    {
-      var internalRoute = new SymbolicValue<RouteEnvironment>($"internal-route-{node}");
-      // r =>
-      // Zen.Implies(r.GetResultValue(), r.GetOriginType() == RouteEnvironment.InternalOrigin));
-      newSymbolics.Add(internalRoute);
-      // update the initial route of the node
-      net.InitialValues[node] = internalRoute.Value;
-    }
-
-    // extend the list of symbolics
-    net.Symbolics = net.Symbolics.Concat(newSymbolics).ToArray();
-
-    var modularProperties = net.ModularProperties.Select(p =>
-        Internet2.InternalNodes.Contains(p.Key)
-          ? (p.Key, Lang.Globally(Lang.True<RouteEnvironment>()))
-          : (p.Key, Lang.Globally<RouteEnvironment>(Internet2.BteTagAbsent)))
-      .ToDictionary(p => p.Item1, p => p.Item2);
-    var monolithicProperties =
-      net.MonolithicProperties.Select(p =>
-          Internet2.InternalNodes.Contains(p.Key)
-            ? (p.Key, Lang.True<RouteEnvironment>())
-            : (p.Key, Internet2.BteTagAbsent))
-        .ToDictionary(p => p.Item1, p => p.Item2);
-    net.Annotations = modularProperties;
-    net.ModularProperties = modularProperties;
-    net.MonolithicProperties = monolithicProperties;
-
-    return net;
   }
 }

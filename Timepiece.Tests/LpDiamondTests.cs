@@ -23,7 +23,7 @@ public static class LpDiamondTests
     {"d", new List<string> {"b", "c"}},
   });
 
-  public static AnnotatedNetwork<Option<Route>, string, Unit> Net(
+  public static AnnotatedNetwork<Option<Route>, string> Net(
     Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<Route>>, Zen<bool>>> monolithicProperties)
@@ -35,7 +35,7 @@ public static class LpDiamondTests
       {"c", Option.Null<Route>()},
       {"d", Option.Null<Route>()},
     };
-    return new AnnotatedNetwork<Option<Route>, string, Unit>(Digraph, Transfer, Lang.Omap2<Route>(Merge),
+    return new AnnotatedNetwork<Option<Route>, string>(Digraph, Transfer, Lang.Omap2<Route>(Merge),
       initialValues, annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
   }
 

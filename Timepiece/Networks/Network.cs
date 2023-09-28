@@ -10,8 +10,7 @@ namespace Timepiece.Networks;
 /// </summary>
 /// <typeparam name="RouteType">The type of the routes.</typeparam>
 /// <typeparam name="NodeType">The type of nodes.</typeparam>
-/// <typeparam name="SymbolicType">The type of symbolic values associated with the network.</typeparam>
-public class Network<RouteType, NodeType, SymbolicType>
+public class Network<RouteType, NodeType>
 {
   /// <summary>
   ///   The topology of the network.
@@ -40,7 +39,7 @@ public class Network<RouteType, NodeType, SymbolicType>
   /// <summary>
   ///   Any symbolics on the network's components.
   /// </summary>
-  public SymbolicValue<SymbolicType>[] Symbolics { get; set; }
+  public ISymbolic[] Symbolics { get; set; }
 
   /// <summary>
   /// Construct a new <c>Network</c>.
@@ -54,7 +53,7 @@ public class Network<RouteType, NodeType, SymbolicType>
     Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
     Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
     Dictionary<NodeType, Zen<RouteType>> initialValues,
-    SymbolicValue<SymbolicType>[] symbolics)
+    ISymbolic[] symbolics)
   {
     Digraph = digraph;
     TransferFunction = transferFunction;

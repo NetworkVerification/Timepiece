@@ -8,7 +8,7 @@ namespace Timepiece.Tests.Networks;
 
 using LpRoute = Pair<BigInteger, BigInteger>;
 
-public class LocalPref<TV, TS> : Network<Pair<BigInteger, BigInteger>, TV, TS> where TV : notnull
+public class LocalPref<TV, TS> : Network<LpRoute, TV> where TV : notnull
 {
   public LocalPref(Digraph<TV> digraph,
     Dictionary<TV, Zen<LpRoute>> initialValues,

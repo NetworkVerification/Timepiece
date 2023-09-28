@@ -27,12 +27,15 @@ public static class FatTreeSymbolicTimes
 
   public static Dictionary<string, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>>
     FinallyAnnotations<RouteType>(NodeLabelledDigraph<string, int> g, string destination,
-      Func<Zen<RouteType>, Zen<bool>> afterPredicate, IReadOnlyList<SymbolicValue<BigInteger>> symbolicTimes)
-  {
-    return g.MapNodes(n =>
+      Func<Zen<RouteType>, Zen<bool>> afterPredicate, IReadOnlyList<Zen<BigInteger>> symbolicTimes) =>
+    g.MapNodes(n =>
     {
       var dist = n.DistanceFromDestinationEdge(g.L(n), destination, g.L(destination));
-      return Lang.Finally(symbolicTimes[dist].Value, afterPredicate);
+      return Lang.Finally(symbolicTimes[dist], afterPredicate);
     });
-  }
+
+  public static Dictionary<string, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>>
+    FinallyAnnotations<RouteType>(NodeLabelledDigraph<string, int> g, SymbolicDestination destination,
+      Func<Zen<RouteType>, Zen<bool>> afterPredicate, IReadOnlyList<Zen<BigInteger>> symbolicTimes) =>
+    g.MapNodes(n => Lang.Finally(destination.SymbolicDistanceCases(n, g.L(n), symbolicTimes), afterPredicate));
 }

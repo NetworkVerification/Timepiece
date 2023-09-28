@@ -13,7 +13,7 @@ public static class DisagreeTests
 {
   private static readonly Zen<BigInteger> NullRoute = new BigInteger(20);
 
-  private static AnnotatedNetwork<BigInteger, string, Unit> Net(
+  private static AnnotatedNetwork<BigInteger, string> Net(
     Dictionary<string, Func<Zen<BigInteger>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Complete(3);
@@ -26,7 +26,7 @@ public static class DisagreeTests
     };
 
 
-    return new AnnotatedNetwork<BigInteger, string, Unit>(topology, topology.MapEdges(_ => Lang.Incr(1)), Merge,
+    return new AnnotatedNetwork<BigInteger, string>(topology, topology.MapEdges(_ => Lang.Incr(1)), Merge,
       initialValues,
       annotations, topology.MapNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
       topology.MapNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),

@@ -1,5 +1,6 @@
 using System;
 using ZenLib;
+using ZenLib.ModelChecking;
 using static ZenLib.Zen;
 
 namespace Timepiece;
@@ -8,7 +9,7 @@ namespace Timepiece;
 ///   A symbolic value with an associated name, for ease of reference.
 /// </summary>
 /// <typeparam name="T">The symbolic type associated with the value.</typeparam>
-public class SymbolicValue<T>
+public class SymbolicValue<T> : ISymbolic
 {
   public SymbolicValue(string name)
   {
@@ -64,4 +65,8 @@ public class SymbolicValue<T>
   {
     return HasConstraint() ? Constraint(Value) : True();
   }
+
+  public object GetSolution(ZenSolution model) => model.Get(Value);
+
+  public string SolutionToString(ZenSolution model) => $"symbolic {Name} := {model.Get(Value)}";
 }

@@ -115,6 +115,9 @@ public class AstEnvironment
         return cc.Evaluate(this, env);
       case FirstMatchChain fmc:
         return fmc.Evaluate(this, env);
+      case RouteFilterListExpr rfl:
+        // TODO: just return as an RFL to use?
+        return env.WithValue(rfl);
       case ConstantExpr c:
         return env.WithValue(c.constructor(c.value));
       case LiteralSet s:

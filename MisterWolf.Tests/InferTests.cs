@@ -17,12 +17,12 @@ public static class InferTests
   };
 
   // a boolean network where one node has a route initially and others do not
-  private static Network<bool, TV, Unit> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV> =>
+  private static Network<bool, TV> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV> =>
     new BooleanNetwork<TV, Unit>(digraph,
       digraph.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<SymbolicValue<Unit>>());
 
   // a boolean network where one symbolically-chosen node has a route initially and others do not
-  private static Network<bool, TV, TV> BoolNetMultiDest<TV>(Digraph<TV> digraph) where TV : notnull
+  private static Network<bool, TV> BoolNetMultiDest<TV>(Digraph<TV> digraph) where TV : notnull
   {
     var dest = new SymbolicValue<TV>("dest",
       x => digraph.Nodes.Aggregate(Zen.False(), (b, n) => Zen.Or(b, x == n)));
@@ -31,7 +31,7 @@ public static class InferTests
   }
 
   // a triangular integer network where the path A-B-C is cheaper than the path A-C
-  private static Network<Option<BigInteger>, string, Unit> TriangleNet()
+  private static Network<Option<BigInteger>, string> TriangleNet()
   {
     var topology = Topologies.Complete(3, alphaNames: true);
     var transfer =
@@ -39,7 +39,7 @@ public static class InferTests
         e.Item1 == "B" || e.Item2 == "B"
           ? Lang.Omap<BigInteger, BigInteger>(x => x + BigInteger.One)
           : Lang.Omap<BigInteger, BigInteger>(x => x + new BigInteger(3)));
-    return new Network<Option<BigInteger>, string, Unit>(topology, transfer, Lang.Omap2<BigInteger>(Zen.Min),
+    return new Network<Option<BigInteger>, string>(topology, transfer, Lang.Omap2<BigInteger>(Zen.Min),
       topology.MapNodes<Zen<Option<BigInteger>>>(n =>
         n == "A" ? Option.Create<BigInteger>(BigInteger.Zero) : Option.Null<BigInteger>()),
       Array.Empty<SymbolicValue<Unit>>());
@@ -80,7 +80,7 @@ public static class InferTests
     Func<Zen<bool>, Zen<bool>> beforePredicate)
   {
     var topology = Topologies.Path(numNodes, false);
-    var infer = new Infer<bool, string, Unit>(BoolNet(topology, "0"),
+    var infer = new Infer<bool, string>(BoolNet(topology, "0"),
       topology.MapNodes(_ => beforePredicate),
       topology.MapNodes(_ => Lang.Identity<bool>()));
     var times = infer.InferTimes(strategy);
@@ -100,7 +100,7 @@ public static class InferTests
     var topology = Topologies.LabelledFatTree(numPods);
     var destination = FatTree.FatTreeLayer.Edge.Node((uint) (Math.Pow(numPods, 2) * 1.25 - 1));
     var distances = FatTreeDistances(topology, destination);
-    var infer = new Infer<bool, string, Unit>(BoolNet(topology, destination),
+    var infer = new Infer<bool, string>(BoolNet(topology, destination),
       topology.MapNodes(_ => beforePredicate),
       topology.MapNodes(_ => Lang.Identity<bool>()));
     var times = infer.InferTimes(strategy);
@@ -114,7 +114,7 @@ public static class InferTests
   public static void CheckBoolPathMultiDestInferFails(uint numNodes)
   {
     var topology = Topologies.Path(numNodes, false);
-    var infer = new Infer<bool, string, string>(BoolNetMultiDest(topology),
+    var infer = new Infer<bool, string>(BoolNetMultiDest(topology),
       topology.MapNodes(_ => Lang.Const(true)), topology.MapNodes(_ => Lang.Identity<bool>()));
     var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count == 0, "Time inference should fail for multi-destination.");
@@ -139,7 +139,7 @@ public static class InferTests
     var beforeInvariants = topology.MapNodes(_ => beforePredicate);
     // eventually, the route must be less than the specified max
     var afterInvariants = topology.MapNodes(n => Lang.IfSome<BigInteger>(x => x <= BigInteger.Parse(n)));
-    var infer = new Infer<Option<BigInteger>, string, Unit>(net, beforeInvariants, afterInvariants);
+    var infer = new Infer<Option<BigInteger>, string>(net, beforeInvariants, afterInvariants);
     var times = infer.InferTimes(InferenceStrategy.SymbolicEnumeration);
     Assert.True(times.Count > 0, "Failed to infer times.");
     foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
@@ -177,7 +177,7 @@ public static class InferTests
       {"B", s => s == Option.Some(new BigInteger(1))},
       {"C", s => s == Option.Some(new BigInteger(2))}
     };
-    var infer = new Infer<Option<BigInteger>, string, Unit>(net, beforeInvariants, afterInvariants)
+    var infer = new Infer<Option<BigInteger>, string>(net, beforeInvariants, afterInvariants)
     {
       // fix the maximum time at 2
       MaxTime = 2,
@@ -189,9 +189,9 @@ public static class InferTests
     Assert.Equal(2, times["C"]);
     // confirm that all checks pass
     var annotations = net.Digraph.MapNodes(n => Lang.Until(times[n], beforeInvariants[n], afterInvariants[n]));
-    var annotated = new AnnotatedNetwork<Option<BigInteger>, string, Unit>(net, annotations,
+    var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
       net.Digraph.MapNodes(n => Lang.Finally(new BigInteger(2), Lang.IsSome<BigInteger>())),
       net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
-    Assert.Equal(Option.None<State<Option<BigInteger>, string, Unit>>(), annotated.CheckAnnotations());
+    Assert.Equal(Option.None<State<Option<BigInteger>, string>>(), annotated.CheckAnnotations());
   }
 }

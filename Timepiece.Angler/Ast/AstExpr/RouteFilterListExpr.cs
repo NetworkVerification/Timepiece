@@ -1,3 +1,6 @@
+using Timepiece.DataTypes;
+using ZenLib;
+
 namespace Timepiece.Angler.Ast.AstExpr;
 
 /// <summary>
@@ -16,4 +19,6 @@ public class RouteFilterListExpr : Expr
   {
     ;
   }
+
+  public Zen<bool> Contains(Zen<Ipv4Prefix> prefix) => FilterList.Permits(prefix);
 }

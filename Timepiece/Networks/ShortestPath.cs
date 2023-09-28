@@ -5,7 +5,7 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Networks;
 
-public class ShortestPath<NodeType, SymbolicType> : Network<Option<BigInteger>, NodeType, SymbolicType>
+public class ShortestPath<NodeType, SymbolicType> : Network<Option<BigInteger>, NodeType>
 {
   public ShortestPath(Digraph<NodeType> digraph, Dictionary<NodeType, Zen<Option<BigInteger>>> initialValues,
     SymbolicValue<SymbolicType>[] symbolics) : base(digraph,

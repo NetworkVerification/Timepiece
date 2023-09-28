@@ -11,13 +11,13 @@ namespace Timepiece;
 
 public static class Profile
 {
-  public static void RunCmpPerNode<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
+  public static void RunCmpPerNode<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> annotatedNetwork)
   {
     RunAnnotatedWithStats(annotatedNetwork);
     RunMonoWithStats(annotatedNetwork);
   }
 
-  public static void RunMonoWithStats<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
+  public static void RunMonoWithStats<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> annotatedNetwork)
   {
     const string headers = "n\ttotal";
     var monoTime = Time(RunMono, annotatedNetwork);
@@ -27,7 +27,7 @@ public static class Profile
     Console.WriteLine(data);
   }
 
-  public static void RunMono<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
+  public static void RunMono<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> annotatedNetwork)
   {
     try
     {
@@ -44,12 +44,12 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotatedWithStats<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
+  public static void RunAnnotatedWithStats<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> annotatedNetwork)
   {
     var processes = Environment.ProcessorCount;
     Console.WriteLine($"Environment.ProcessorCount: {processes}");
     var numNodes = annotatedNetwork.Digraph.Nodes.Count;
-    var nodeTimes = new ConcurrentDictionary<TV, long>(processes * 2, numNodes);
+    var nodeTimes = new ConcurrentDictionary<NodeType, long>(processes * 2, numNodes);
     long? t = null;
     try
     {
@@ -57,7 +57,7 @@ public static class Profile
       {
         var s = net.CheckAnnotationsWith(nodeTimes, LogCheckTime);
         var passed = true;
-        var failedNodes = new List<TV>();
+        var failedNodes = new List<NodeType>();
         foreach (var (node, counterexample) in s)
         {
           if (!counterexample.HasValue) continue;
@@ -96,7 +96,7 @@ public static class Profile
     }
   }
 
-  public static void RunAnnotated<T, TV, TS>(AnnotatedNetwork<T, TV, TS> annotatedNetwork)
+  public static void RunAnnotated<T, NodeType>(AnnotatedNetwork<T, NodeType> annotatedNetwork)
   {
     var s = annotatedNetwork.CheckAnnotations();
     if (!s.HasValue)
@@ -123,7 +123,7 @@ public static class Profile
     return timer.ElapsedMilliseconds;
   }
 
-  public static T LogCheckTime<T, TV>(TV node, IDictionary<TV, long> times, Func<T> checkFunction)
+  public static T LogCheckTime<T, NodeType>(NodeType node, IDictionary<NodeType, long> times, Func<T> checkFunction)
   {
     var timer = Stopwatch.StartNew();
     var s = checkFunction();

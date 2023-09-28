@@ -125,8 +125,8 @@ public static class TypeParsing
       "TRoute" => typeof(BatfishBgpRoute),
       "TResult" => typeof(RouteResult),
       "TIpAddress" => typeof(uint),
-      "TIpPrefix" => typeof(Ipv4Wildcard),
-      "TPrefixSet" => typeof(CSet<Ipv4Wildcard>), // TODO: is this ever used?
+      "TIpPrefix" => typeof(Ipv4Prefix),
+      "TPrefixSet" => typeof(CSet<Ipv4Prefix>), // TODO: is this ever used?
       "TPair" => new TypeAlias(typeof(Pair<,>), null, null),
       "TOption" => new TypeAlias(typeof(Option<>), (TypeAlias?) null),
       "TBool" => typeof(bool),

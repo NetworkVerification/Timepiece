@@ -8,7 +8,7 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Tests.Networks;
 
-public class BgpAnnotatedNetwork<TV, TS> : AnnotatedNetwork<Option<Bgp>, TV, TS> where TV : notnull
+public class BgpAnnotatedNetwork<TV, TS> : AnnotatedNetwork<Option<Bgp>, TV> where TV : notnull
 {
   public BgpAnnotatedNetwork(Digraph<TV> digraph,
     Dictionary<TV, Zen<Option<Bgp>>> initialValues,

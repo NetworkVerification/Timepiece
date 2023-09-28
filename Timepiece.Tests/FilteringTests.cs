@@ -26,7 +26,7 @@ public static class FilteringTests
     {"e", new List<string> {"d"}}
   });
 
-  public static AnnotatedNetwork<Option<Bgp>, string, Unit> Net(
+  public static AnnotatedNetwork<Option<Bgp>, string> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>> monolithicProperties)
@@ -39,12 +39,12 @@ public static class FilteringTests
       {"d", Option.None<Bgp>()},
       {"e", Option.None<Bgp>()}
     };
-    return new AnnotatedNetwork<Option<Bgp>, string, Unit>(Digraph, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
+    return new AnnotatedNetwork<Option<Bgp>, string>(Digraph, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
       initialValues,
       annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 
-  private static AnnotatedNetwork<Pair<Option<Bgp>, bool>, string, Unit> NetGhostState(
+  private static AnnotatedNetwork<Pair<Option<Bgp>, bool>, string> NetGhostState(
     Dictionary<string, Func<Zen<Pair<Option<Bgp>, bool>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Pair<Option<Bgp>, bool>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Pair<Option<Bgp>, bool>>, Zen<bool>>> monolithicProperties)
@@ -58,7 +58,7 @@ public static class FilteringTests
       {"e", Pair.Create<Option<Bgp>, bool>(Option.None<Bgp>(), Zen.False())}
     };
     var transfer = Transfer();
-    return new AnnotatedNetwork<Pair<Option<Bgp>, bool>, string, Unit>(Digraph,
+    return new AnnotatedNetwork<Pair<Option<Bgp>, bool>, string>(Digraph,
       Digraph.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
       Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(Bgp.Min), p => p.Item1()),
       initialValues,

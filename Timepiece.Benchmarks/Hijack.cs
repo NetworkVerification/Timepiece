@@ -9,11 +9,11 @@ namespace Timepiece.Benchmarks;
 // a route which is tagged as internal (false) or external (true)
 using TaggedRoute = Pair<Option<BgpRoute>, bool>;
 
-public class Hijack<NodeType, SymbolicType> : Network<TaggedRoute, NodeType, SymbolicType>
+public class Hijack<NodeType> : Network<TaggedRoute, NodeType>
   where NodeType : IEquatable<NodeType>
 {
   public Hijack(Digraph<NodeType> digraph, Dictionary<NodeType, Zen<TaggedRoute>> initialValues, NodeType hijacker,
-    Zen<uint> destinationPrefix, SymbolicValue<SymbolicType>[] symbolics)
+    Zen<uint> destinationPrefix, ISymbolic[] symbolics)
     : base(digraph, Transfer(digraph, hijacker, destinationPrefix), Merge(destinationPrefix), initialValues,
       symbolics)
   {
@@ -22,7 +22,7 @@ public class Hijack<NodeType, SymbolicType> : Network<TaggedRoute, NodeType, Sym
   public Hijack(Digraph<NodeType> digraph, NodeType destination, NodeType hijacker,
     Zen<Option<BgpRoute>> hijackRoute,
     Zen<uint> destinationPrefix,
-    SymbolicValue<SymbolicType>[] symbolics)
+    ISymbolic[] symbolics)
     : this(digraph,
       digraph.MapNodes(n => n.Equals(destination)
         ? Pair.Create(
@@ -64,22 +64,30 @@ public class Hijack<NodeType, SymbolicType> : Network<TaggedRoute, NodeType, Sym
   }
 }
 
-public class AnnotatedHijack<NodeType, SymbolicType> : AnnotatedNetwork<TaggedRoute, NodeType, SymbolicType>
+public class AnnotatedHijack<NodeType> : AnnotatedNetwork<TaggedRoute, NodeType>
   where NodeType : IEquatable<NodeType>
 {
-  public AnnotatedHijack(Network<TaggedRoute, NodeType, SymbolicType> net,
+  public AnnotatedHijack(Network<TaggedRoute, NodeType> net,
     Dictionary<NodeType, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> safetyProperties)
     : base(net, annotations, stableProperties, safetyProperties, new BigInteger(4))
   {
   }
+
+  public AnnotatedHijack(Network<TaggedRoute, NodeType> net,
+    Dictionary<NodeType, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<NodeType, Func<Zen<TaggedRoute>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> monolithicProperties) :
+    base(net, annotations, modularProperties, monolithicProperties)
+  {
+  }
 }
 
-public class InferHijack<NodeType> : Infer<TaggedRoute, NodeType, Pair<Option<BgpRoute>, uint>>
+public class InferHijack<NodeType> : Infer<TaggedRoute, NodeType>
   where NodeType : IEquatable<NodeType>
 {
-  public InferHijack(Network<TaggedRoute, NodeType, Pair<Option<BgpRoute>, uint>> hijack,
+  public InferHijack(Network<TaggedRoute, NodeType> hijack,
     IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<NodeType, Func<Zen<TaggedRoute>, Zen<bool>>> afterInvariants) : base(hijack, beforeInvariants,
     afterInvariants)
@@ -91,15 +99,15 @@ public static class Hijack
 {
   private const string HijackNode = "hijacker";
 
-  public static AnnotatedHijack<string, Pair<Option<BgpRoute>, uint>> HijackFiltered(uint numPods, string destination,
+  public static AnnotatedHijack<string> HijackFiltered(uint numPods, string destination,
     bool inferTimes)
   {
     var topology = HijackTopology(HijackNode, Topologies.FatTree(numPods));
     var hijackAndPrefix = HijackRouteAndPrefix();
     var hijackRoute = hijackAndPrefix.Value.Item1();
     var destinationPrefix = hijackAndPrefix.Value.Item2();
-    var hijack = new Hijack<string, Pair<Option<BgpRoute>, uint>>(topology, destination, HijackNode, hijackRoute,
-      destinationPrefix, new[] {hijackAndPrefix});
+    var hijack = new Hijack<string>(topology, destination, HijackNode, hijackRoute,
+      destinationPrefix, new ISymbolic[] {hijackAndPrefix});
     var stableProperties =
       topology.MapNodes(n =>
         n == HijackNode ? Lang.True<TaggedRoute>() : MapInternal(r => HasDestinationRoute(destinationPrefix, r)));
@@ -137,8 +145,38 @@ public static class Hijack
           .ToDictionary(p => p.Item1, p => p.Item2);
     }
 
-    return new AnnotatedHijack<string, Pair<Option<BgpRoute>, uint>>(hijack, annotations, stableProperties,
+    return new AnnotatedHijack<string>(hijack, annotations, stableProperties,
       safetyProperties);
+  }
+
+  public static AnnotatedHijack<string> HijackFilteredSymbolicTimes(uint numPods, string destination)
+  {
+    var topology = HijackTopology(HijackNode, Topologies.LabelledFatTree(numPods), -1);
+    var hijackAndPrefix = HijackRouteAndPrefix();
+    var hijackRoute = hijackAndPrefix.Value.Item1();
+    var destinationPrefix = hijackAndPrefix.Value.Item2();
+    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var lastTime = times[^1].Value;
+    var hijack = new Hijack<string>(topology, destination, HijackNode, hijackRoute,
+      destinationPrefix, new ISymbolic[] {hijackAndPrefix}.Concat(times).ToArray());
+    var afterPredicateInternal = MapInternal(r => HasDestinationRoute(destinationPrefix, r));
+    var monolithicProperties = topology.MapNodes(n =>
+      n == HijackNode ? Lang.True<TaggedRoute>() : afterPredicateInternal);
+    var modularProperties = topology.MapNodes(n =>
+      n == HijackNode ? Lang.Globally(Lang.True<TaggedRoute>()) : Lang.Finally(lastTime, monolithicProperties[n]));
+    var eventuallyAnnotations = FatTreeSymbolicTimes.FinallyAnnotations(topology, destination, afterPredicateInternal,
+      times.Select(t => t.Value).ToList());
+    Dictionary<string, Func<Zen<Pair<Option<BgpRoute>, bool>>, Zen<BigInteger>, Zen<bool>>> annotations =
+      topology.MapNodes(n =>
+      {
+        if (n == HijackNode)
+          return Lang.Globally(Lang.True<TaggedRoute>());
+
+        var safety = Lang.Globally<TaggedRoute>(r => DestinationRouteIsInternal(destinationPrefix, r));
+        return Lang.Intersect(safety, eventuallyAnnotations[n]);
+      });
+
+    return new AnnotatedHijack<string>(hijack, annotations, modularProperties, monolithicProperties);
   }
 
   private static Func<Zen<TaggedRoute>, Zen<bool>> MapInternal(Func<Zen<Option<BgpRoute>>, Zen<bool>> f)
@@ -156,7 +194,7 @@ public static class Hijack
     return Zen.Implies(HasDestinationRoute(prefix, r.Item1()), Zen.Not(r.Item2()));
   }
 
-  public static AnnotatedHijack<string, Pair<Option<BgpRoute>, uint, string, int>> AllPairsHijackFiltered(uint numPods)
+  public static AnnotatedHijack<string> AllPairsHijackFiltered(uint numPods)
   {
     var topology = HijackTopology(HijackNode, Topologies.LabelledFatTree(numPods), -1);
     var symbolicData = new SymbolicValue<Pair<Option<BgpRoute>, uint, string, int>>(
@@ -173,8 +211,8 @@ public static class Hijack
           ? hijackRoute
           : Option.Create(BgpRouteExtensions.ToDestination(destinationPrefix)).Where(_ => n == destination),
         n == HijackNode));
-    var hijack = new Hijack<string, Pair<Option<BgpRoute>, uint, string, int>>(topology, initialValues, HijackNode,
-      destinationPrefix, new[] {symbolicData});
+    var hijack = new Hijack<string>(topology, initialValues, HijackNode,
+      destinationPrefix, new ISymbolic[] {symbolicData});
     var annotations =
       topology.MapNodes(n =>
         // hijacker annotation is just true
@@ -193,7 +231,7 @@ public static class Hijack
       topology.MapNodes(n =>
         n == HijackNode ? Lang.True<TaggedRoute>() : MapInternal(r => HasDestinationRoute(destinationPrefix, r)));
     var safetyProperties = topology.MapNodes(_ => Lang.True<TaggedRoute>());
-    return new AnnotatedHijack<string, Pair<Option<BgpRoute>, uint, string, int>>(hijack, annotations, stableProperties,
+    return new AnnotatedHijack<string>(hijack, annotations, stableProperties,
       safetyProperties);
   }
 

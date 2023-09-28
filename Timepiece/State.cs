@@ -9,12 +9,17 @@ using ZenLib.ModelChecking;
 
 namespace Timepiece;
 
-public class State<T, TV, TS>
+/// <summary>
+/// A counterexample state of the network.
+/// </summary>
+/// <typeparam name="RouteType"></typeparam>
+/// <typeparam name="NodeType"></typeparam>
+public class State<RouteType, NodeType>
 {
-  private readonly Option<(TV, T)> _focusedNode = Option.None<(TV, T)>();
+  private readonly Option<(NodeType, RouteType)> _focusedNode = Option.None<(NodeType, RouteType)>();
   public readonly SmtCheck check;
-  public readonly IReadOnlyDictionary<TV, T> nodeStates;
-  public readonly IReadOnlyDictionary<string, TS> symbolicStates;
+  public readonly IReadOnlyDictionary<NodeType, RouteType> nodeStates;
+  public readonly IReadOnlyDictionary<string, object> symbolicStates;
   public readonly Option<BigInteger> time;
 
   /// <summary>
@@ -26,13 +31,13 @@ public class State<T, TV, TS>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
   /// <param name="check">Which check led to the generation of this state.</param>
-  public State(ZenSolution model, TV node, Zen<T> route, Option<Zen<BigInteger>> time,
-    IEnumerable<SymbolicValue<TS>> symbolics, SmtCheck check)
+  public State(ZenSolution model, NodeType node, Zen<RouteType> route, Option<Zen<BigInteger>> time,
+    IEnumerable<ISymbolic> symbolics, SmtCheck check)
   {
     this.check = check;
     this.time = time.Select(model.Get);
-    nodeStates = new Dictionary<TV, T> {{node, model.Get(route)}};
-    symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
+    nodeStates = new Dictionary<NodeType, RouteType> {{node, model.Get(route)}};
+    symbolicStates = GetAllSymbolics(model, symbolics);
   }
 
   /// <summary>
@@ -44,15 +49,15 @@ public class State<T, TV, TS>
   /// <param name="neighborStates">The Zen variables referring to this node's neighbors' routes.</param>
   /// <param name="time">A specific time this solution pertains to, or None if the time is irrelevant.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  public State(ZenSolution model, TV node, Zen<T> nodeRoute,
-    IEnumerable<KeyValuePair<TV, Zen<T>>> neighborStates,
-    Zen<BigInteger> time, IEnumerable<SymbolicValue<TS>> symbolics)
+  public State(ZenSolution model, NodeType node, Zen<RouteType> nodeRoute,
+    IEnumerable<KeyValuePair<NodeType, Zen<RouteType>>> neighborStates,
+    Zen<BigInteger> time, IEnumerable<ISymbolic> symbolics)
   {
     check = SmtCheck.Inductive;
     this.time = Option.Some(model.Get(time));
     _focusedNode = Option.Some((node, model.Get(nodeRoute)));
     nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
-    symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
+    symbolicStates = GetAllSymbolics(model, symbolics);
   }
 
   /// <summary>
@@ -61,12 +66,17 @@ public class State<T, TV, TS>
   /// <param name="model">The ZenSolution returned by the solver.</param>
   /// <param name="nodeStates">The Zen variables referring to each node and its route.</param>
   /// <param name="symbolics">The symbolic values bound in the solution.</param>
-  public State(ZenSolution model, IEnumerable<KeyValuePair<TV, Zen<T>>> nodeStates,
-    IEnumerable<SymbolicValue<TS>> symbolics)
+  public State(ZenSolution model, IEnumerable<KeyValuePair<NodeType, Zen<RouteType>>> nodeStates,
+    IEnumerable<ISymbolic> symbolics)
   {
     check = SmtCheck.Monolithic;
     this.nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
-    symbolicStates = symbolics.ToDictionary(symbol => symbol.Name, symbol => model.Get(symbol.Value));
+    symbolicStates = GetAllSymbolics(model, symbolics);
+  }
+
+  private static Dictionary<string, object> GetAllSymbolics(ZenSolution model, IEnumerable<ISymbolic> symbolics)
+  {
+    return symbolics.ToDictionary(symbolic => symbolic.Name, symbolic => symbolic.GetSolution(model));
   }
 
   public override string ToString()

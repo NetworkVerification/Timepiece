@@ -8,41 +8,34 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Tests.Networks;
 
-public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> where TV : notnull
+/// <summary>
+/// Network "functor" lifting a network to a network where links may fail.
+/// </summary>
+/// <typeparam name="RouteType"></typeparam>
+/// <typeparam name="NodeType"></typeparam>
+public class FaultTolerance<RouteType, NodeType> : AnnotatedNetwork<Option<RouteType>, NodeType>
+  where NodeType : notnull
 {
-  public FaultTolerance(Digraph<TV> digraph,
-    IReadOnlyDictionary<(TV, TV), Func<Zen<T>, Zen<T>>> transferFunction,
-    Func<Zen<T>, Zen<T>, Zen<T>> mergeFunction,
-    Dictionary<TV, Zen<Option<T>>> initialValues,
-    Func<SymbolicValue<(TV, TV)>[], Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>>
+  public FaultTolerance(Network<RouteType, NodeType> net,
+    Dictionary<NodeType, Zen<Option<RouteType>>> initialValues,
+    Func<SymbolicValue<(NodeType, NodeType)>[],
+        Dictionary<NodeType, Func<Zen<Option<RouteType>>, Zen<BigInteger>, Zen<bool>>>>
       annotations,
-    Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
-    Dictionary<TV, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
-    Zen<FSeq<(TV, TV)>> failedEdges, uint numFailed) : base(digraph,
-    new Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>>(),
-    Lang.Omap2(mergeFunction), initialValues,
-    new Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(),
-    modularProperties, monolithicProperties,
-    CreateSymbolics(digraph, failedEdges, numFailed))
-  {
-    Annotations = annotations(Symbolics);
-    TransferFunction = Transfer(transferFunction, Symbolics);
-  }
-
-  public FaultTolerance(Network<T, TV, Unit> net,
-    Dictionary<TV, Zen<Option<T>>> initialValues,
-    Func<SymbolicValue<(TV, TV)>[], Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>>
-      annotations,
-    Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
-    Dictionary<TV, Func<Zen<Option<T>>, Zen<bool>>> monolithicProperties,
-    Zen<FSeq<(TV, TV)>> failedEdges, uint numFailed) : base(net.Digraph,
-    new Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>>(), Lang.Omap2(net.MergeFunction),
+    Dictionary<NodeType, Func<Zen<Option<RouteType>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<NodeType, Func<Zen<Option<RouteType>>, Zen<bool>>> monolithicProperties, uint numFailed) : base(
+    net.Digraph,
+    new Dictionary<(NodeType, NodeType), Func<Zen<Option<RouteType>>, Zen<Option<RouteType>>>>(),
+    Lang.Omap2(net.MergeFunction),
     initialValues,
-    new Dictionary<TV, Func<Zen<Option<T>>, Zen<BigInteger>, Zen<bool>>>(), modularProperties, monolithicProperties,
-    CreateSymbolics(net.Digraph, failedEdges, numFailed))
+    new Dictionary<NodeType, Func<Zen<Option<RouteType>>, Zen<BigInteger>, Zen<bool>>>(), modularProperties,
+    monolithicProperties,
+    net.Symbolics)
   {
-    Annotations = annotations(Symbolics);
-    TransferFunction = Transfer(net.TransferFunction, Symbolics);
+    var failureSymbolics = CreateSymbolics(net.Digraph, numFailed);
+    Annotations = annotations(failureSymbolics);
+    TransferFunction = Transfer(net.TransferFunction, failureSymbolics);
+    // add the failure symbolics on
+    Symbolics = Symbolics.Concat(failureSymbolics).ToArray();
   }
 
   /// <summary>
@@ -51,37 +44,32 @@ public class FaultTolerance<T, TV> : AnnotatedNetwork<Option<T>, TV, (TV, TV)> w
   /// <param name="failedEdges"></param>
   /// <param name="edge"></param>
   /// <returns></returns>
-  public static Zen<bool> IsFailed(IEnumerable<SymbolicValue<(TV, TV)>> failedEdges, (TV, TV) edge)
+  public static Zen<bool> IsFailed(IEnumerable<SymbolicValue<(NodeType, NodeType)>> failedEdges,
+    (NodeType, NodeType) edge)
   {
     return failedEdges.Aggregate(False(), (current, e) => Or(current, e.EqualsValue(edge)));
   }
 
-  private static SymbolicValue<(TV, TV)>[] CreateSymbolics(
-    Digraph<TV> digraph,
-    Zen<FSeq<(TV, TV)>> failedEdges,
-    uint numFailed)
+  private static Zen<bool> EdgeInNetwork(Digraph<NodeType> digraph, Zen<(NodeType, NodeType)> edge)
+    => digraph.FoldEdges(False(), (b, e) => Or(b, Constant(e) == edge));
+
+  private static SymbolicValue<(NodeType, NodeType)>[] CreateSymbolics(Digraph<NodeType> digraph, uint numFailed)
   {
-    var symbolics = new SymbolicValue<(TV, TV)>[numFailed];
+    var symbolics = new SymbolicValue<(NodeType, NodeType)>[numFailed];
     for (var i = 0; i < numFailed; i++)
-    {
-      var e = new SymbolicValue<(TV, TV)>($"e{i}")
-      {
-        Constraint = p =>
-          And(digraph.FoldEdges(False(), (b, edge) => Or(b, Constant(edge) == p)), failedEdges.Contains(p))
-      };
-      symbolics[i] = e;
-    }
+      symbolics[i] = new SymbolicValue<(NodeType, NodeType)>($"e{i}", e => EdgeInNetwork(digraph, e));
 
     return symbolics;
   }
 
-  private static Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>> Transfer(
-    IReadOnlyDictionary<(TV, TV), Func<Zen<T>, Zen<T>>> inner, SymbolicValue<(TV, TV)>[] failedEdges)
+  private static Dictionary<(NodeType, NodeType), Func<Zen<Option<RouteType>>, Zen<Option<RouteType>>>> Transfer(
+    IReadOnlyDictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> inner,
+    SymbolicValue<(NodeType, NodeType)>[] failedEdges)
   {
-    var lifted = new Dictionary<(TV, TV), Func<Zen<Option<T>>, Zen<Option<T>>>>();
+    var lifted = new Dictionary<(NodeType, NodeType), Func<Zen<Option<RouteType>>, Zen<Option<RouteType>>>>();
     foreach (var (edge, f) in inner)
       lifted[edge] =
-        Lang.Test(_ => IsFailed(failedEdges, edge), Lang.Const(Option.None<T>()), Lang.Omap(f));
+        Lang.Test(_ => IsFailed(failedEdges, edge), Lang.Const(Option.None<RouteType>()), Lang.Omap(f));
 
     return lifted;
   }

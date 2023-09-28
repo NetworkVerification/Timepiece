@@ -6,16 +6,16 @@ using Array = System.Array;
 
 namespace Timepiece.Benchmarks;
 
-public class Vf<Symbolic> : Network<Option<BgpRoute>, string, Symbolic>
+public partial class Vf : Network<Option<BgpRoute>, string>
 {
   public Vf(Digraph<string> digraph, Dictionary<string, Zen<Option<BgpRoute>>> initialValues, string tag,
-    SymbolicValue<Symbolic>[] symbolics) :
+    ISymbolic[] symbolics) :
     base(digraph, Transfer(digraph, tag), Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
       initialValues, symbolics)
   {
   }
 
-  public Vf(Digraph<string> digraph, string destination, string tag, SymbolicValue<Symbolic>[] symbolics) :
+  public Vf(Digraph<string> digraph, string destination, string tag, ISymbolic[] symbolics) :
     this(digraph,
       digraph.MapNodes(n => n.Equals(destination) ? Option.Create<BgpRoute>(new BgpRoute()) : Option.Null<BgpRoute>()),
       tag, symbolics)
@@ -45,9 +45,9 @@ public class Vf<Symbolic> : Network<Option<BgpRoute>, string, Symbolic>
   }
 }
 
-public class AnnotatedVf<Symbolic> : AnnotatedNetwork<Option<BgpRoute>, string, Symbolic>
+public class AnnotatedVf : AnnotatedNetwork<Option<BgpRoute>, string>
 {
-  public AnnotatedVf(Vf<Symbolic> vf,
+  public AnnotatedVf(Vf vf,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties) :
@@ -55,7 +55,7 @@ public class AnnotatedVf<Symbolic> : AnnotatedNetwork<Option<BgpRoute>, string, 
   {
   }
 
-  public AnnotatedVf(Vf<Symbolic> vf,
+  public AnnotatedVf(Vf vf,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> monolithicProperties) : base(vf, annotations,
@@ -64,25 +64,25 @@ public class AnnotatedVf<Symbolic> : AnnotatedNetwork<Option<BgpRoute>, string, 
   }
 }
 
-public class InferVf : Infer<Option<BgpRoute>, string, Unit>
+public class InferVf : Infer<Option<BgpRoute>, string>
 {
-  public InferVf(Vf<Unit> vf, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
+  public InferVf(Vf vf, IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> beforeInvariants,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> afterInvariants) : base(vf, beforeInvariants,
     afterInvariants)
   {
   }
 }
 
-public static class Vf
+public partial class Vf
 {
   private const string DownTag = "down";
 
-  private static Vf<Unit> ConcreteFatTreeVf(uint numPods, string destination)
+  private static Vf ConcreteFatTreeVf(uint numPods, string destination)
   {
-    return new Vf<Unit>(Topologies.FatTree(numPods), destination, DownTag, Array.Empty<SymbolicValue<Unit>>());
+    return new Vf(Topologies.FatTree(numPods), destination, DownTag, Array.Empty<ISymbolic>());
   }
 
-  public static AnnotatedVf<Unit> ValleyFreeReachable(uint numPods, string destination, bool inferTimes)
+  public static AnnotatedVf ValleyFreeReachable(uint numPods, string destination, bool inferTimes)
   {
     var vf = ConcreteFatTreeVf(numPods, destination);
     var distances = vf.Digraph.BreadthFirstSearch(destination);
@@ -113,17 +113,17 @@ public static class Vf
       vf.Digraph.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties =
       vf.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
-    return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
+    return new AnnotatedVf(vf, annotations, stableProperties, safetyProperties);
   }
 
-  public static AnnotatedVf<BigInteger> ValleyFreeReachableSymbolicTimes(uint numPods, string destination)
+  public static AnnotatedVf ValleyFreeReachableSymbolicTimes(uint numPods, string destination)
   {
-    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5).ToArray();
+    var lastTime = times[^1].Value;
     var g = Topologies.LabelledFatTree(numPods);
-    var vf = new Vf<BigInteger>(g, destination, DownTag, times.ToArray());
-    var monolithicProperties = vf.Digraph.MapNodes(_ => Lang.IsSome<BgpRoute>());
-    var modularProperties = vf.Digraph.MapNodes(n => Lang.Finally(times[^1].Value, monolithicProperties[n]));
-    var annotations = vf.Digraph.MapNodes(n =>
+    var monolithicProperties = g.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    var modularProperties = g.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
+    var annotations = g.MapNodes(n =>
     {
       var dist = n.DistanceFromDestinationEdge(g.L(n), destination, g.L(destination));
       var time = times[dist].Value;
@@ -141,7 +141,8 @@ public static class Vf
             : BgpRouteExtensions.MaxLengthDefaultLp(maxPathLength)));
       return Lang.Intersect(safety, eventually);
     });
-    return new AnnotatedVf<BigInteger>(vf, annotations, modularProperties, monolithicProperties);
+    var vf = new Vf(g, destination, DownTag, times.Cast<ISymbolic>().ToArray());
+    return new AnnotatedVf(vf, annotations, modularProperties, monolithicProperties);
   }
 
   private static Zen<bool> EqualsInitialRouteModLength(Zen<BgpRoute> r)
@@ -153,7 +154,7 @@ public static class Vf
       r.GetMed() == initialRoute.Med);
   }
 
-  public static AnnotatedVf<Unit> ValleyFreePathLength(uint numPods, string destination)
+  public static AnnotatedVf ValleyFreePathLength(uint numPods, string destination)
   {
     var vf = ConcreteFatTreeVf(numPods, destination);
     var distances = vf.Digraph.BreadthFirstSearch(destination);
@@ -169,19 +170,19 @@ public static class Vf
       vf.Digraph.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties =
       vf.Digraph.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
-    return new AnnotatedVf<Unit>(vf, annotations, stableProperties, safetyProperties);
+    return new AnnotatedVf(vf, annotations, stableProperties, safetyProperties);
   }
 
 
-  public static AnnotatedVf<Pair<string, int>> AllPairsValleyFreeReachable(uint numPods)
+  public static AnnotatedVf AllPairsValleyFreeReachable(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(topology);
     var initialValues =
       topology.MapNodes(n => Option.Create<BgpRoute>(new BgpRoute())
         .Where(_ => dest.Equals(topology, n)));
-    var symbolics = new SymbolicValue<Pair<string, int>>[] {dest};
-    var vf = new Vf<Pair<string, int>>(topology, initialValues, DownTag, symbolics);
+    ISymbolic[] symbolics = {dest};
+    var vf = new Vf(topology, initialValues, DownTag, symbolics);
     var annotations =
       topology.MapNodes(n =>
       {
@@ -197,6 +198,6 @@ public static class Vf
       });
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var stableProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
-    return new AnnotatedVf<Pair<string, int>>(vf, annotations, stableProperties, safetyProperties);
+    return new AnnotatedVf(vf, annotations, stableProperties, safetyProperties);
   }
 }

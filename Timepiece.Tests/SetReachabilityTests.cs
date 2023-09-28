@@ -14,7 +14,7 @@ namespace Timepiece.Tests;
 /// </summary>
 public static class SetReachabilityTests
 {
-  private static AnnotatedNetwork<CSet<TV>, TV, Unit> Net<TV>(Digraph<TV> digraph, BigInteger convergeTime,
+  private static AnnotatedNetwork<CSet<TV>, TV> Net<TV>(Digraph<TV> digraph, BigInteger convergeTime,
     Dictionary<TV, Func<Zen<CSet<TV>>, Zen<BigInteger>, Zen<bool>>> annotations) where TV : notnull
   {
     var transferFunctions = digraph.MapEdges<Func<Zen<CSet<TV>>, Zen<CSet<TV>>>>(_ => r => r);
@@ -23,7 +23,7 @@ public static class SetReachabilityTests
     var property = ContainsAll(digraph);
     var monolithicProperties = digraph.MapNodes(_ => property);
     var modularProperties = digraph.MapNodes(_ => Lang.Finally(convergeTime, property));
-    return new AnnotatedNetwork<CSet<TV>, TV, Unit>(digraph, transferFunctions, CSet.Union, initialValues, annotations,
+    return new AnnotatedNetwork<CSet<TV>, TV>(digraph, transferFunctions, CSet.Union, initialValues, annotations,
       modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
   }
 

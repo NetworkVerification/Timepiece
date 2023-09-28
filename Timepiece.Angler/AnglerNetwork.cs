@@ -89,7 +89,14 @@ public class AnglerNetwork
 
     foreach (var nbr in Externals)
     {
-      edges[nbr.Name] = ImmutableSortedSet<string>.Empty;
+      edges[nbr.Name] = nbr.peers.ToImmutableSortedSet();
+      foreach (var peer in nbr.peers)
+      {
+        // set import and export as the identity for external peers
+        // (we assume they could do anything)
+        importFunctions[(peer, nbr.Name)] = e => e;
+        exportFunctions[(nbr.Name, peer)] = e => e;
+      }
     }
 
     // using Evaluate() to convert AST elements into functions over Zen values is likely to be a bit slow
@@ -98,13 +105,11 @@ public class AnglerNetwork
     foreach (var (node, props) in Nodes)
     {
       var details = props.CreateNode(DefaultExport, DefaultImport);
-      // add a bidirectional edge between each node and its neighbor
+      // add an edge between each node and its neighbor
       foreach (var nbr in details.imports.Keys.Union(details.exports.Keys))
       {
         edges.TryAdd(node, ImmutableSortedSet<string>.Empty);
         edges[node] = edges[node].Add(nbr);
-        edges.TryAdd(nbr, ImmutableSortedSet<string>.Empty);
-        edges[nbr] = edges[nbr].Add(node);
       }
       edges[node] = details.imports.Keys.Union(details.exports.Keys).ToImmutableSortedSet();
       foreach (var (nbr, fn) in details.exports) exportFunctions[(node, nbr)] = fn;
