@@ -214,22 +214,31 @@ public partial class Vf
     var modularProperties = g.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
     var symbolics = new[] {dest}.Concat<ISymbolic>(times).ToArray();
     var vf = new Vf(g, initialValues, DownTag, symbolics);
-    // the time at which the core nodes converge
-    var coreTime = times[2].Value;
     var annotations = g.MapNodes(n =>
     {
-      var dist = dest.SymbolicDistanceCases(n, g.L(n), times.Select(t => t.Value).ToList());
-      // at all times, either a node has no route, or it has a route equal to the initial route modulo path length
+      var witnessTime = dest.SymbolicDistanceCases(n, g.L(n), times.Select(t => t.Value).ToList());
+      // (1) We need the precise best path length here as dist can be arbitrarily larger than the path length,
+      //     and we need to ensure that nodes never have routes with path length larger than their best.
+      var bestPathLength = dest.SymbolicDistance(n, g.L(n));
+      // (2) At all times, either a node has no route, or it has a route with the default LP
+      //     and that has path length no *better* than the best path length.
       var safety =
-        Lang.Globally(Lang.OrSome<BgpRoute>(Lang.Intersect<BgpRoute>(EqualsInitialRouteModLength)));
+        Lang.Globally(Lang.OrSome<BgpRoute>(b => Zen.And(b.GetLp() == 100,
+          // (2a) If we drop this constraint, then a node "further" along the path may send a better route that violates
+          //      the eventually constraint that the path length be equal.
+          b.GetAsPathLength() >= bestPathLength)));
+      // (3) Eventually, nodes close to the destination must not be tagged down.
+      //     All nodes eventually have routes equal to their best path length.
       var eventually =
-        Lang.Finally(dist,
+        Lang.Finally(witnessTime,
           Lang.IfSome<BgpRoute>(b =>
             Zen.And(
               // core and close-to-destination nodes should not be tagged down
-              Zen.Implies(Zen.Or(n.IsCore(), dist < coreTime), Zen.Not(b.HasCommunity(DownTag))),
-              // require that the LP equals the default, and the path length equals the distance
-              BgpRouteExtensions.MaxLengthDefaultLp(dist)(b))));
+              Zen.Implies(Zen.Or(bestPathLength < new BigInteger(2)), Zen.Not(b.HasCommunity(DownTag))),
+              // (3a) If we let the eventual path length be any better than the best, then we can have an inductive condition
+              //      violation at the aggregation nodes. A "further" core node (above) can send a better route than a
+              //      "closer" edge node below, causing DownTag to be set and violating the inductive condition.
+              b.GetAsPathLength() == bestPathLength)));
       return Lang.Intersect(safety, eventually);
     });
     return new AnnotatedVf(vf, annotations, modularProperties, monolithicProperties);
