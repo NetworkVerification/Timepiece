@@ -93,6 +93,9 @@ public class Benchmark
       case BenchmarkType.ApFatTreeHijack:
         RunProfiler(Hijack.AllPairsHijackFiltered(N));
         break;
+      case BenchmarkType.ApFatTreeHijackSymbolic:
+        RunProfiler(Hijack.AllPairsHijackFilteredSymbolicTimes(N));
+        break;
       default:
         throw new ArgumentOutOfRangeException(null, Bench, "Invalid argument is not a benchmark type");
     }
