@@ -81,6 +81,9 @@ public class Benchmark
       case BenchmarkType.ApValleyFree:
         RunProfiler(Vf.AllPairsValleyFreeReachable(N));
         break;
+      case BenchmarkType.ApValleyFreeSymbolic:
+        RunProfiler(Vf.AllPairsValleyFreeReachableSymbolicTimes(N));
+        break;
       case BenchmarkType.FatTreeHijack:
         RunProfiler(Hijack.HijackFiltered(N, Destination, InferTimes));
         break;

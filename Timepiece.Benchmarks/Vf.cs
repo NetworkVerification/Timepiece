@@ -200,4 +200,38 @@ public partial class Vf
     var stableProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
     return new AnnotatedVf(vf, annotations, stableProperties, safetyProperties);
   }
+
+  public static AnnotatedVf AllPairsValleyFreeReachableSymbolicTimes(uint numPods)
+  {
+    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var g = Topologies.LabelledFatTree(numPods);
+    var lastTime = times[^1].Value;
+    var dest = new SymbolicDestination(g);
+    var initialValues =
+      g.MapNodes(n => Option.Create<BgpRoute>(new BgpRoute())
+        .Where(_ => dest.Equals(g, n)));
+    var monolithicProperties = g.MapNodes(_ => Lang.IsSome<BgpRoute>());
+    var modularProperties = g.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
+    var symbolics = new[] {dest}.Concat<ISymbolic>(times).ToArray();
+    var vf = new Vf(g, initialValues, DownTag, symbolics);
+    // the time at which the core nodes converge
+    var coreTime = times[2].Value;
+    var annotations = g.MapNodes(n =>
+    {
+      var dist = dest.SymbolicDistanceCases(n, g.L(n), times.Select(t => t.Value).ToList());
+      // at all times, either a node has no route, or it has a route equal to the initial route modulo path length
+      var safety =
+        Lang.Globally(Lang.OrSome<BgpRoute>(Lang.Intersect<BgpRoute>(EqualsInitialRouteModLength)));
+      var eventually =
+        Lang.Finally(dist,
+          Lang.IfSome<BgpRoute>(b =>
+            Zen.And(
+              // core and close-to-destination nodes should not be tagged down
+              Zen.Implies(Zen.Or(n.IsCore(), dist < coreTime), Zen.Not(b.HasCommunity(DownTag))),
+              // require that the LP equals the default, and the path length equals the distance
+              BgpRouteExtensions.MaxLengthDefaultLp(dist)(b))));
+      return Lang.Intersect(safety, eventually);
+    });
+    return new AnnotatedVf(vf, annotations, modularProperties, monolithicProperties);
+  }
 }
