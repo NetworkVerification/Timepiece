@@ -23,7 +23,7 @@ public static class AstTests
       new List<Ipv4Prefix>());
   }
 
-  private static NetworkQuery<RouteEnvironment, string, RouteEnvironment> IsValidQuery(Digraph<string> graph,
+  private static NetworkQuery<RouteEnvironment, string> IsValidQuery(Digraph<string> graph,
     string destNode)
   {
     var distances = graph.BreadthFirstSearch(destNode);
@@ -34,8 +34,8 @@ public static class AstTests
       graph.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(env => env.GetResult().GetValue()));
     var annotations = graph.MapNodes(n => Lang.Finally(distances[n], monolithicProperties[n]));
     var modularProperties = graph.MapNodes(n => Lang.Finally(new BigInteger(4), monolithicProperties[n]));
-    return new NetworkQuery<RouteEnvironment, string, RouteEnvironment>(initialRoutes,
-      System.Array.Empty<SymbolicValue<RouteEnvironment>>(), monolithicProperties, modularProperties, annotations);
+    return new NetworkQuery<RouteEnvironment, string>(initialRoutes,
+      System.Array.Empty<ISymbolic>(), monolithicProperties, modularProperties, annotations);
   }
 
   private static IPAddressRange GetAddressRange(string node)

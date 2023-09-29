@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Net;
 using NetTools;
@@ -65,6 +64,7 @@ public struct Ipv4Prefix
   public override string ToString()
   {
     return AsAddressRange().ToCidrString();
+    // return $"{Prefix}/{PrefixLength}";
   }
 }
 

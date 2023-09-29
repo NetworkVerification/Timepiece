@@ -36,15 +36,7 @@ public class RouteFilterList
       .Reverse() // we build up the successive cases by going in reverse order
       .Aggregate(
         Zen.False(), // the implicit default if no line matches is Zen.False() (deny)
-        (cases, line) =>
-        {
-          // if the line matches the given prefix's address,
-          var wildcardMatch = Zen.Constant(line.Wildcard).ContainsIp(prefix.GetPrefix());
-          // and the prefix length is within the allowed range
-          var lengthMatch = Zen.And(line.MinLength <= prefix.GetPrefixLength(),
-            prefix.GetPrefixLength() <= line.MaxLength);
-          // then we perform the desired action
-          return Zen.If(Zen.And(wildcardMatch, lengthMatch), line.Action, cases);
-        });
+        (cases, line) => Zen.If(Zen.Constant(line.Wildcard).MatchesPrefix(prefix, line.MinLength, line.MaxLength),
+          line.Action, cases));
   }
 }

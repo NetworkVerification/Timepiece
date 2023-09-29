@@ -27,19 +27,17 @@ var monoOption = new System.CommandLine.Option<bool>(
 var fileArgument = new Argument<string>(
   "file",
   "The .angler.json file to use");
+var queryArgument =
+  new Argument<NetworkQueryType>("query",
+    description: "The type of query to check",
+    parse: result => NetworkQueryTypeExtensions.Parse(result.Tokens.Single().Value));
 rootCommand.Add(fileArgument);
+rootCommand.Add(queryArgument);
 rootCommand.Add(monoOption);
 rootCommand.SetHandler(
-  (file, mono) =>
+  (file, queryType, mono) =>
   {
     var json = new JsonTextReader(new StreamReader(file));
-    var isInternet2 = false;
-    if (file.Contains("INTERNET2") || file.Contains("internet2") || file.Contains("BAGPIPE") ||
-        file.Contains("bagpipe"))
-    {
-      Console.WriteLine("Internet2 benchmark identified...");
-      isInternet2 = true;
-    }
 
     var ast = Serializer().Deserialize<AnglerNetwork>(json);
 
@@ -50,10 +48,13 @@ rootCommand.SetHandler(
     if (ast != null)
     {
       var (topology, transfer) = ast.TopologyAndTransfer();
-      Console.WriteLine(topology);
-      var query = isInternet2
-        ? BlockToExternal.StrongInitialConstraints(topology, ast.Externals.Select(i => $"{i.ip}"))
-        : throw new NotImplementedException("Non-Internet2 networks not supported");
+      var externalNodes = ast.Externals.Select(i => i.Name);
+      var query = queryType switch
+      {
+        NetworkQueryType.Internet2BlockToExternal => Internet2.BlockToExternal(topology, externalNodes),
+        NetworkQueryType.Internet2NoMartians => Internet2.NoMartians(topology, externalNodes),
+        _ => throw new ArgumentOutOfRangeException(nameof(queryType), queryType, "Query type not supported!")
+      };
       var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
       if (mono)
         Profile.RunMonoWithStats(net);
@@ -64,6 +65,6 @@ rootCommand.SetHandler(
     {
       Console.WriteLine("Failed to deserialize contents of {file} (received null).");
     }
-  }, fileArgument, monoOption);
+  }, fileArgument, queryArgument, monoOption);
 
 await rootCommand.InvokeAsync(args);

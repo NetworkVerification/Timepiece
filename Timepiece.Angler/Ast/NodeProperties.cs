@@ -35,6 +35,9 @@ public class NodeProperties
   {
   }
 
+  /// <summary>
+  /// The prefixes associated with the node. Not currently used.
+  /// </summary>
   public List<Ipv4Prefix> Prefixes { get; set; }
 
   /// <summary>
@@ -53,29 +56,9 @@ public class NodeProperties
   [JsonProperty(nameof(Policies))] public Dictionary<string, RoutingPolicies> Policies { get; }
 
   /// <summary>
-  ///   Make the arguments to all AstFunctions unique.
-  /// </summary>
-  private void DisambiguateVariableNames()
-  {
-    foreach (var function in Declarations.Values)
-    {
-      function.Rename(function.Arg, $"${function.Arg}~{VarCounter.Request()}");
-      Console.WriteLine($"New function arg: {function.Arg}");
-    }
-  }
-
-  /// <summary>
-  ///   Return true if the given neighbor is considered to not be in the same AS as this node.
-  /// </summary>
-  /// <param name="neighbor"></param>
-  /// <returns></returns>
-  public bool IsExternalNeighbor(string neighbor)
-  {
-    return Asn is null || Asn != Policies[neighbor].Asn;
-  }
-
-  /// <summary>
-  ///   Construct a node storing all the relevant information for creating a network.
+  /// Construct a <c>NetworkNode{RouteEnvironment}</c> instance that stores the
+  /// transfer functions used for each incoming and outgoing peer.
+  /// If a peer has no associated behavior, use the given default export and import functions.
   /// </summary>
   /// <param name="defaultExport">A default export function.</param>
   /// <param name="defaultImport">A default import function.</param>
@@ -84,7 +67,6 @@ public class NodeProperties
     AstFunction<RouteEnvironment> defaultImport)
   {
     var env = new AstEnvironment(Declarations);
-    // add the symbolic values to the environment
 
     var imports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var exports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();

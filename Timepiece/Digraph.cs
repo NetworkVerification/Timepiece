@@ -79,6 +79,16 @@ public class Digraph<TV> where TV : notnull
   }
 
   /// <summary>
+  /// Return true if the digraph contains the given edge.
+  /// </summary>
+  /// <param name="edge">An edge.</param>
+  /// <returns>True if the edge is present, false otherwise.</returns>
+  public bool HasEdge((TV, TV) edge)
+  {
+    return Neighbors.TryGetValue(edge.Item2, out var neighbors) && neighbors.Contains(edge.Item1);
+  }
+
+  /// <summary>
   /// Add a new edge from a neighbor to the node.
   /// If either the neighbor or the node are not already in the digraph, add them.
   /// </summary>
@@ -222,7 +232,8 @@ public class Digraph<TV> where TV : notnull
 /// </summary>
 public class NodeLabelledDigraph<TV, T> : Digraph<TV>
 {
-  public NodeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<TV, T> labels) : base(neighbors)
+  public NodeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<TV, T> labels) :
+    base(neighbors)
   {
     Labels = labels;
   }
@@ -254,7 +265,8 @@ public class NodeLabelledDigraph<TV, T> : Digraph<TV>
 
 public class EdgeLabelledDigraph<TV, T> : Digraph<TV>
 {
-  public EdgeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<(TV, TV), T> labels) : base(neighbors)
+  public EdgeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<(TV, TV), T> labels) :
+    base(neighbors)
   {
     Labels = labels;
   }
@@ -262,7 +274,7 @@ public class EdgeLabelledDigraph<TV, T> : Digraph<TV>
   /// <summary>
   /// Labels for the edges in the digraph.
   /// </summary>
-  public Dictionary<(TV, TV),T> Labels { get; set; }
+  public Dictionary<(TV, TV), T> Labels { get; set; }
 
   public void AddEdge(TV node, TV neighbor, T label)
   {

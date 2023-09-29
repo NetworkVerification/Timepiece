@@ -4,9 +4,9 @@ using ZenLib;
 
 namespace Timepiece.Angler;
 
-public class NetworkQuery<RouteType, NodeType, SymbolicType> where NodeType : notnull
+public class NetworkQuery<RouteType, NodeType> where NodeType : notnull
 {
-  public NetworkQuery(Dictionary<NodeType, Zen<RouteType>> initialRoutes, SymbolicValue<SymbolicType>[] symbolics,
+  public NetworkQuery(Dictionary<NodeType, Zen<RouteType>> initialRoutes, ISymbolic[] symbolics,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> monolithicProperties,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> annotations)
@@ -20,7 +20,7 @@ public class NetworkQuery<RouteType, NodeType, SymbolicType> where NodeType : no
 
   public Dictionary<NodeType, Zen<RouteType>> InitialRoutes { get; set; }
 
-  public SymbolicValue<SymbolicType>[] Symbolics { get; set; }
+  public ISymbolic[] Symbolics { get; set; }
 
   public Dictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> MonolithicProperties { get; set; }
 

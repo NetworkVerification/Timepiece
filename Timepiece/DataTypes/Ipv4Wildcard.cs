@@ -82,4 +82,12 @@ public static class Ipv4WildcardExtensions
     var maskedAddress = address | prefix.GetWildcardMask();
     return thisMasked == maskedAddress;
   }
+
+  public static Zen<bool> MatchesPrefix(this Zen<Ipv4Wildcard> wildcard, Zen<Ipv4Prefix> prefix, UInt<_6> minLength,
+    UInt<_6> maxLength)
+  {
+    // the line matches the given prefix's address and the prefix length is within the allowed range
+    return Zen.And(wildcard.ContainsIp(prefix.GetPrefix()), Zen.And(minLength <= prefix.GetPrefixLength(),
+      prefix.GetPrefixLength() <= maxLength));
+  }
 }

@@ -152,8 +152,8 @@ public static class RouteEnvironmentExtensions
 
   public static Zen<RouteEnvironment> MinOptional(this Zen<RouteEnvironment> b1, Zen<RouteEnvironment> b2)
   {
-    return Zen.If(Zen.Not(b1.GetResult().GetValue()), b2,
-      Zen.If(Zen.Not(b2.GetResult().GetValue()), b1, Min(b1, b2)));
+    return Zen.If(Zen.Not(b1.GetResultValue()), b2,
+      Zen.If(Zen.Not(b2.GetResultValue()), b1, Min(b1, b2)));
   }
 
   public static Zen<RouteEnvironment> IncrementAsPathLength(this Zen<RouteEnvironment> b, Zen<BigInteger> x)
