@@ -11,22 +11,22 @@ namespace Timepiece.Tests;
 
 public static class BooleanTests
 {
-  private static AnnotatedNetwork<bool, TV> BooleanAnnotatedNetwork<TV, TS>(Network<bool, TV> net,
-    Dictionary<TV, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
-    BigInteger convergeTime) where TV : notnull => new(net, annotations,
+  private static AnnotatedNetwork<bool, NodeType> BooleanAnnotatedNetwork<NodeType>(Network<bool, NodeType> net,
+    Dictionary<NodeType, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
+    BigInteger convergeTime) where NodeType : notnull => new(net, annotations,
     net.Digraph.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
     net.Digraph.MapNodes(_ => Lang.Identity<bool>()));
 
   private static AnnotatedNetwork<bool, string> Net(
-    Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations)
+    Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
+    BigInteger convergeTime)
   {
     var topology = Topologies.Path(2);
 
     var initialValues = topology.MapNodes(n => Eq<string>(n, "A"));
     var net = new BooleanNetwork<string, Unit>(topology, initialValues, Array.Empty<SymbolicValue<Unit>>());
 
-    var convergeTime = new BigInteger(2);
-    return BooleanAnnotatedNetwork<string, Unit>(net, annotations, convergeTime);
+    return BooleanAnnotatedNetwork(net, annotations, convergeTime);
   }
 
   [Fact]
@@ -37,9 +37,28 @@ public static class BooleanTests
       {"A", Lang.Globally(Lang.Identity<bool>())},
       {"B", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())}
     };
-    var net = Net(annotations);
+    var net = Net(annotations, new BigInteger(2));
 
     NetworkAssert.CheckSound(net);
+  }
+
+  // technically, we could generalize this even more and change MaxDelay to take a symbolic BigInteger
+  [Theory]
+  [InlineData(1)]
+  [InlineData(2)]
+  [InlineData(3)]
+  public static void SoundAnnotationsPassChecksDelayedMaxDelay(int max)
+  {
+    var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
+    {
+      {"A", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())},
+      {"B", Lang.Finally(new BigInteger(1 + max), Lang.Identity<bool>())}
+    };
+    // need the converge time to be the largest witness time, i.e. B's
+    var net = Net(annotations, new BigInteger(1 + max));
+    net.MaxDelay = max;
+
+    NetworkAssert.CheckSoundDelayed(net);
   }
 
   [Fact]
@@ -50,7 +69,7 @@ public static class BooleanTests
       {"A", Lang.Globally(Lang.Identity<bool>())},
       {"B", Lang.Globally(Lang.Identity<bool>())}
     };
-    var net = Net(annotations);
+    var net = Net(annotations, new BigInteger(2));
 
     NetworkAssert.CheckUnsound(net);
   }
@@ -63,7 +82,7 @@ public static class BooleanTests
       topology.MapNodes(n => Constant(n == FatTree.FatTreeLayer.Edge.Node(19)));
     var net = new BooleanNetwork<string, Unit>(topology, initialValues, Array.Empty<SymbolicValue<Unit>>());
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>();
-    var annotatedNetwork = BooleanAnnotatedNetwork<string, Unit>(net, annotations, new BigInteger(4));
+    var annotatedNetwork = BooleanAnnotatedNetwork(net, annotations, new BigInteger(4));
     // change edge-7's annotation to a bad property
     annotatedNetwork.MonolithicProperties[FatTree.FatTreeLayer.Edge.Node(7)] = _ => False();
     NetworkAssert.CheckUnsoundCheck(annotatedNetwork, SmtCheck.Monolithic);

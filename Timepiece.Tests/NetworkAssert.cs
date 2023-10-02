@@ -11,7 +11,7 @@ namespace Timepiece.Tests;
 public static class NetworkAssert
 {
   /// <summary>
-  /// Assert that the modular invariants hold (base, inductive, safety checks).
+  /// Assert that the modular invariants hold (initial, inductive, safety checks).
   /// </summary>
   /// <param name="net"></param>
   /// <typeparam name="RouteType"></typeparam>
@@ -19,6 +19,11 @@ public static class NetworkAssert
   public static void CheckSound<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
   {
     Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckAnnotations());
+  }
+
+  public static void CheckSoundDelayed<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
+  {
+    Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckAnnotationsDelayed());
   }
 
   /// <summary>
@@ -43,6 +48,20 @@ public static class NetworkAssert
     Assert.True(net.CheckAnnotations().HasValue);
   }
 
+  public static void CheckSoundCheck<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net, SmtCheck check)
+  {
+    Assert.Equal(Option.None<State<RouteType, NodeType>>(),
+      check switch
+      {
+        SmtCheck.Monolithic => net.CheckMonolithic(),
+        SmtCheck.Initial => net.CheckInitial(),
+        SmtCheck.Inductive => net.CheckInductive(),
+        SmtCheck.InductiveDelayed => net.CheckInductiveDelayed(),
+        SmtCheck.Safety => net.CheckAssertions(),
+        _ => throw new ArgumentOutOfRangeException(nameof(check), check, null)
+      });
+  }
+
   /// <summary>
   /// Assert that a particular modular or monolithic check fails to hold.
   /// </summary>
@@ -56,9 +75,10 @@ public static class NetworkAssert
     Assert.True(check switch
     {
       SmtCheck.Monolithic => net.CheckMonolithic().HasValue,
-      SmtCheck.Base => net.CheckBaseCase().HasValue,
+      SmtCheck.Initial => net.CheckInitial().HasValue,
       SmtCheck.Inductive => net.CheckInductive().HasValue,
       SmtCheck.Safety => net.CheckAssertions().HasValue,
+      SmtCheck.InductiveDelayed => net.CheckInductiveDelayed().HasValue,
       _ => throw new ArgumentOutOfRangeException(nameof(check), check, null)
     });
   }

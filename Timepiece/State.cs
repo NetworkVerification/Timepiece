@@ -17,10 +17,11 @@ namespace Timepiece;
 public class State<RouteType, NodeType>
 {
   private readonly Option<(NodeType, RouteType)> _focusedNode = Option.None<(NodeType, RouteType)>();
-  public readonly SmtCheck check;
-  public readonly IReadOnlyDictionary<NodeType, RouteType> nodeStates;
-  public readonly IReadOnlyDictionary<string, object> symbolicStates;
-  public readonly Option<BigInteger> time;
+  private readonly SmtCheck _check;
+  private readonly IReadOnlyDictionary<NodeType, RouteType> _nodeStates;
+  private readonly IReadOnlyDictionary<string, object> _symbolicStates;
+  private readonly Option<BigInteger> _time;
+  private readonly IReadOnlyDictionary<NodeType, BigInteger> _nodeTimes;
 
   /// <summary>
   ///   Reconstruct the network state from the given model, focused on the given node.
@@ -34,10 +35,10 @@ public class State<RouteType, NodeType>
   public State(ZenSolution model, NodeType node, Zen<RouteType> route, Option<Zen<BigInteger>> time,
     IEnumerable<ISymbolic> symbolics, SmtCheck check)
   {
-    this.check = check;
-    this.time = time.Select(model.Get);
-    nodeStates = new Dictionary<NodeType, RouteType> {{node, model.Get(route)}};
-    symbolicStates = GetAllSymbolics(model, symbolics);
+    _check = check;
+    _time = time.Select(model.Get);
+    _nodeStates = new Dictionary<NodeType, RouteType> {{node, model.Get(route)}};
+    _symbolicStates = GetAllSymbolics(model, symbolics);
   }
 
   /// <summary>
@@ -53,11 +54,25 @@ public class State<RouteType, NodeType>
     IEnumerable<KeyValuePair<NodeType, Zen<RouteType>>> neighborStates,
     Zen<BigInteger> time, IEnumerable<ISymbolic> symbolics)
   {
-    check = SmtCheck.Inductive;
-    this.time = Option.Some(model.Get(time));
+    _check = SmtCheck.Inductive;
+    _time = Option.Some(model.Get(time));
     _focusedNode = Option.Some((node, model.Get(nodeRoute)));
-    nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
-    symbolicStates = GetAllSymbolics(model, symbolics);
+    _nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
+    _symbolicStates = GetAllSymbolics(model, symbolics);
+  }
+
+  public State(ZenSolution model, NodeType node, Zen<RouteType> nodeRoute,
+    IEnumerable<KeyValuePair<NodeType, Zen<RouteType>>> neighborStates,
+    Zen<BigInteger> nodeTime,
+    IEnumerable<KeyValuePair<NodeType, Zen<BigInteger>>> neighborTimes,
+    IEnumerable<ISymbolic> symbolics)
+  {
+    _check = SmtCheck.InductiveDelayed;
+    _time = Option.Some(model.Get(nodeTime));
+    _focusedNode = Option.Some((node, model.Get(nodeRoute)));
+    _nodeStates = neighborStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
+    _symbolicStates = GetAllSymbolics(model, symbolics);
+    _nodeTimes = neighborTimes.ToDictionary(p => p.Key, p => model.Get(p.Value));
   }
 
   /// <summary>
@@ -69,9 +84,9 @@ public class State<RouteType, NodeType>
   public State(ZenSolution model, IEnumerable<KeyValuePair<NodeType, Zen<RouteType>>> nodeStates,
     IEnumerable<ISymbolic> symbolics)
   {
-    check = SmtCheck.Monolithic;
-    this.nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
-    symbolicStates = GetAllSymbolics(model, symbolics);
+    _check = SmtCheck.Monolithic;
+    this._nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
+    _symbolicStates = GetAllSymbolics(model, symbolics);
   }
 
   private static Dictionary<string, object> GetAllSymbolics(ZenSolution model, IEnumerable<ISymbolic> symbolics)
@@ -82,9 +97,9 @@ public class State<RouteType, NodeType>
   public override string ToString()
   {
     var sb = new StringBuilder();
-    foreach (var (name, value) in symbolicStates) sb.AppendLine($"symbolic {name} := {value}");
+    foreach (var (name, value) in _symbolicStates) sb.AppendLine($"symbolic {name} := {value}");
 
-    time.May(t => sb.Append($"at time = {t}").AppendLine());
+    _time.May(t => sb.Append($"at time = {t}").AppendLine());
 
     if (_focusedNode.HasValue)
     {
@@ -92,10 +107,17 @@ public class State<RouteType, NodeType>
       sb.AppendLine($"node {focus} had route := {focusRoute}");
     }
 
-    foreach (var (node, route) in nodeStates)
+    foreach (var (node, route) in _nodeStates)
     {
       var specifier = _focusedNode.HasValue ? $"neighbor {node} of {_focusedNode.Value.Item1}" : $"node {node}";
-      sb.AppendLine($"{specifier} had route := {route}");
+      if (_check is SmtCheck.InductiveDelayed)
+      {
+        sb.AppendLine($"{specifier} had route := {route} at time {_nodeTimes[node]}");
+      }
+      else
+      {
+        sb.AppendLine($"{specifier} had route := {route}");
+      }
     }
 
     return sb.ToString();
@@ -107,12 +129,13 @@ public class State<RouteType, NodeType>
   public void ReportCheckFailure()
   {
     Console.ForegroundColor = ConsoleColor.Red;
-    var whichCheck = check switch
+    var whichCheck = _check switch
     {
-      SmtCheck.Base => "Base",
+      SmtCheck.Initial => "Initial",
       SmtCheck.Monolithic => "Monolithic",
       SmtCheck.Inductive => "Inductive",
       SmtCheck.Safety => "Safety",
+      SmtCheck.InductiveDelayed => "Inductive (delayed)",
       _ => throw new ArgumentOutOfRangeException()
     };
     Console.WriteLine($"{whichCheck} check failed!");

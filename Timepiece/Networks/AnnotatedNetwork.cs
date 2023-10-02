@@ -131,6 +131,11 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   public bool PrintFormulas { get; set; }
 
   /// <summary>
+  /// The maximum number of logical time steps of delay to consider.
+  /// </summary>
+  public BigInteger? MaxDelay { get; set; }
+
+  /// <summary>
   ///   Check that the annotations are sound, calling the given function f on each node's check.
   /// </summary>
   /// <param name="collector"></param>
@@ -151,11 +156,11 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     return s;
   }
 
-  public Option<State<RouteType, NodeType>> CheckAnnotations(NodeType node,
+  private Option<State<RouteType, NodeType>> CheckAnnotations(NodeType node,
     IReadOnlyDictionary<NodeType, Zen<RouteType>> routes,
     Zen<BigInteger> time)
   {
-    return CheckBaseCase(node).OrElse(() => CheckInductive(node, routes, time)).OrElse(() => CheckAssertions(node));
+    return CheckInitial(node).OrElse(() => CheckInductive(node, routes, time)).OrElse(() => CheckAssertions(node));
   }
 
   /// <summary>
@@ -164,10 +169,15 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   /// <returns>True if the annotations pass, false otherwise.</returns>
   public Option<State<RouteType, NodeType>> CheckAnnotations()
   {
-    return CheckBaseCase().OrElse(CheckInductive).OrElse(CheckAssertions);
+    return CheckInitial().OrElse(CheckInductive).OrElse(CheckAssertions);
   }
 
-  public Option<State<RouteType, NodeType>> CheckBaseCase(NodeType node)
+  public Option<State<RouteType, NodeType>> CheckAnnotationsDelayed()
+  {
+    return CheckInitial().OrElse(CheckInductiveDelayed).OrElse(CheckAssertions);
+  }
+
+  public Option<State<RouteType, NodeType>> CheckInitial(NodeType node)
   {
     var route = Symbolic<RouteType>($"{node}-route");
 
@@ -187,18 +197,18 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
 
     if (!model.IsSatisfiable()) return Option.None<State<RouteType, NodeType>>();
     var state = new State<RouteType, NodeType>(model, node, route, Option.None<Zen<BigInteger>>(),
-      Symbolics, SmtCheck.Base);
+      Symbolics, SmtCheck.Initial);
     return Option.Some(state);
   }
 
   /// <summary>
-  ///   Ensure that all the base check pass for all nodes.
+  ///   Ensure that all the initial check pass for all nodes.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
-  public Option<State<RouteType, NodeType>> CheckBaseCase()
+  public Option<State<RouteType, NodeType>> CheckInitial()
   {
     return Digraph.Nodes.AsParallel().Aggregate(Option.None<State<RouteType, NodeType>>(),
-      (current, node) => current.OrElse(() => CheckBaseCase(node)));
+      (current, node) => current.OrElse(() => CheckInitial(node)));
   }
 
   /// <summary>
@@ -292,6 +302,58 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     if (!model.IsSatisfiable()) return Option.None<State<RouteType, NodeType>>();
     var neighborRoutes = routes.Where(pair => Digraph[node].Contains(pair.Key));
     var state = new State<RouteType, NodeType>(model, node, newNodeRoute, neighborRoutes, time,
+      Symbolics);
+    return Option.Some(state);
+  }
+
+  public Option<State<RouteType, NodeType>> CheckInductiveDelayed()
+  {
+    // create symbolic values for each node.
+    var routes = Digraph.MapNodes(node => Symbolic<RouteType>($"{node}-route"));
+
+    // create symbolic time variables for each node.
+    var times = Digraph.MapNodes(node => Symbolic<BigInteger>($"{node}-time"));
+
+    // check the inductive invariant for each node.
+    // Parallel.ForEach(Topology.Nodes, node => CheckInductive(node, routes, time))
+    return Digraph.Nodes.AsParallel().Select(
+        node => CheckInductiveDelayed(node, routes, times))
+      .Aggregate(Option.None<State<RouteType, NodeType>>(), (current, s) => current.OrElse(() => s));
+  }
+
+  public Option<State<RouteType, NodeType>> CheckInductiveDelayed(NodeType node,
+    IReadOnlyDictionary<NodeType, Zen<RouteType>> routes, IReadOnlyDictionary<NodeType, Zen<BigInteger>> times)
+  {
+    var newNodeRoute = UpdateNodeRoute(node, routes);
+
+    var assume = new List<Zen<bool>> {times[node] > BigInteger.Zero};
+    // constrain all neighbor times to be earlier than the node's time
+    assume.AddRange(Digraph[node]
+      .Select(neighbor => And(
+        // neighbor times are non-negative
+        BigInteger.Zero <= times[neighbor],
+        // neighbor times are earlier than the node's
+        times[neighbor] < times[node],
+        // if a max delay k is given, the neighbor times are at most k units smaller than the node's time
+        MaxDelay is not null ? times[node] <= times[neighbor] + MaxDelay : True())));
+    // constrain all neighbor routes to satisfy their annotations at those earlier times
+    assume.AddRange(Digraph[node].Select(neighbor =>
+      Annotations[neighbor](routes[neighbor], times[neighbor])));
+    var check = Implies(And(assume.ToArray()), Annotations[node](newNodeRoute, times[node]));
+
+    var query = And(GetSymbolicConstraints(), Not(check));
+    if (PrintFormulas)
+    {
+      Console.Write($"Inductive check at {node}: ");
+      Console.WriteLine(query);
+    }
+
+    var model = query.Solve();
+
+    if (!model.IsSatisfiable()) return Option.None<State<RouteType, NodeType>>();
+    var neighborRoutes = routes.Where(pair => Digraph[node].Contains(pair.Key));
+    var neighborTimes = times.Where(pair => Digraph[node].Contains(pair.Key));
+    var state = new State<RouteType, NodeType>(model, node, newNodeRoute, neighborRoutes, times[node], neighborTimes,
       Symbolics);
     return Option.Some(state);
   }

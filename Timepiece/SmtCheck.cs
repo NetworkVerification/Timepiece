@@ -3,7 +3,8 @@ namespace Timepiece;
 public enum SmtCheck
 {
   Monolithic,
-  Base,
+  Initial,
   Inductive,
+  InductiveDelayed,
   Safety
 }
