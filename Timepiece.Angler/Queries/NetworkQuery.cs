@@ -2,7 +2,7 @@ using System.Numerics;
 using Timepiece.Networks;
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.Queries;
 
 public class NetworkQuery<RouteType, NodeType> where NodeType : notnull
 {

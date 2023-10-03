@@ -169,8 +169,8 @@ public class AnglerNetwork
           importedRoute = importedRoute.IncrementAsPathLength(BigInteger.One);
         // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)
         // and again reset the result
-        return Zen.If(exported.GetResultValue(),
-          importFunctions[edge](importedRoute), exported);
+        return Zen.If(r.GetResultValue(), Zen.If(exported.GetResultValue(),
+          importFunctions[edge](importedRoute), exported), new RouteEnvironment());
       });
 
     var topology = new Digraph<string>(edges);

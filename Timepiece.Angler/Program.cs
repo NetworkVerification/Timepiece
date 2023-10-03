@@ -3,27 +3,25 @@ using System.Diagnostics;
 using Newtonsoft.Json;
 using Timepiece;
 using Timepiece.Angler;
+using Timepiece.Angler.Queries;
 using ZenLib;
 
 ZenSettings.UseLargeStack = true;
 ZenSettings.LargeStackSize = 30_000_000;
 
-JsonSerializer Serializer()
+JsonSerializer serializer = new()
 {
-  return new JsonSerializer
-  {
-    // use $type for type names, and the given binder
-    TypeNameHandling = TypeNameHandling.All,
-    SerializationBinder = AnglerNetwork.Binder()
-    // throw an error when members are missing from the object instead of ignoring them
-    // MissingMemberHandling = MissingMemberHandling.Error
-  };
-}
+  // use $type for type names, and the given binder
+  TypeNameHandling = TypeNameHandling.All,
+  SerializationBinder = AnglerNetwork.Binder()
+  // throw an error when members are missing from the object instead of ignoring them
+  // MissingMemberHandling = MissingMemberHandling.Error
+};
 
 var rootCommand = new RootCommand("Timepiece benchmark runner");
 var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
-  "If given, run the benchmark monolithically simulating Minesweeper");
+  "If given, run the benchmark monolithically (simulating Minesweeper)");
 var fileArgument = new Argument<string>(
   "file",
   "The .angler.json file to use");
@@ -39,7 +37,7 @@ rootCommand.SetHandler(
   {
     var json = new JsonTextReader(new StreamReader(file));
 
-    var ast = Serializer().Deserialize<AnglerNetwork>(json);
+    var ast = serializer.Deserialize<AnglerNetwork>(json);
 
     Console.WriteLine($"Successfully deserialized JSON file {file}");
     Debug.WriteLine("Running in debug mode...");

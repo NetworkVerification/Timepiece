@@ -1,4 +1,4 @@
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.Queries;
 
 public enum NetworkQueryType
 {

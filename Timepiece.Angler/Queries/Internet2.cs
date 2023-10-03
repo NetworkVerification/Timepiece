@@ -1,7 +1,7 @@
 using Timepiece.DataTypes;
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.Queries;
 
 public static class Internet2
 {
