@@ -4,16 +4,18 @@ TIMEOUT := 60
 MINSIZE := 4
 MAXSIZE := 40
 RUNALLCMD := python3.9 ./run_all.py -d /timepiece/publish -n $(NTRIALS) -t $(TIMEOUT) -k $(MINSIZE) $(MAXSIZE) --dat
-LOGDIR := logs
-RESULTDIR := results
+LOGDIR := /scratch/gpfs/tthijm/timepiece/logs
+RESULTDIR := /scratch/gpfs/tthijm/timepiece/results
 ANGLERDIR := angler
 # set to 1 if you want to force the repo to clone angler when INTERNET2.angler.json is present
-FORCE_CLONE := 1
+FORCE_CLONE := 0
 POLICIES := reachSymbolic lengthSymbolic valleySymbolic hijackSymbolic allReachSymbolic allLengthSymbolic allValleySymbolic allHijackSymbolic
 INTERNET2 := INTERNET2.angler.json
 
 .PHONY: all
-all: plots
+all: bench
+
+image: $(IMAGE)
 
 # run the monolithic benchmark
 $(RESULTDIR)/%-m.dat: | image $(RESULTDIR)
