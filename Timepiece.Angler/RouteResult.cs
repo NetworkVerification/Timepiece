@@ -2,6 +2,15 @@ using ZenLib;
 
 namespace Timepiece.Angler;
 
+/// <summary>
+/// A representation of the result of evaluating a routing policy.
+/// See Batfish's
+/// <a href="https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/routing_policy/Result.java">Result</a>
+/// and Minesweeper's
+/// <a href="https://github.com/batfish/batfish/blob/master/projects/minesweeper/src/main/java/org/batfish/minesweeper/bdd/TransferResult.java">TransferResult</a>
+/// classes for reference.
+///
+/// </summary>
 [ZenObject]
 public class RouteResult
 {

@@ -6,6 +6,10 @@ using ZenLib;
 
 namespace Timepiece.Angler;
 
+/// <summary>
+/// A representation of a route and the current routing environment:
+/// the results of executing the policy, and the current local default action.
+/// </summary>
 [ZenObject]
 public class RouteEnvironment
 {
@@ -21,7 +25,7 @@ public class RouteEnvironment
     AsPathLength = 0;
     Metric = 0;
     Tag = 0;
-    OriginType = new UInt<_2>(0);
+    OriginType = IncompleteOrigin;
     Communities = new CSet<string>();
     Result = new RouteResult();
     LocalDefaultAction = false;

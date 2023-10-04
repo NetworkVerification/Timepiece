@@ -3,6 +3,10 @@ using ZenLib;
 
 namespace Timepiece.Angler.Queries;
 
+/// <summary>
+/// Queries performed by Bagpipe related to the Internet2 network.
+/// See the Bagpipe paper for more information.
+/// </summary>
 public static class Internet2
 {
   /// <summary>
@@ -43,7 +47,7 @@ public static class Internet2
     return Zen.And(env.GetResultValue(), env.GetPrefix() == InternalPrefix);
   }
 
-  public static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env) =>
+  private static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env) =>
     env.GetPrefix().GetPrefixLength() <= new UInt<_6>(32);
 
   /// <summary>
@@ -66,13 +70,20 @@ public static class Internet2
   /// </summary>
   /// <param name="env"></param>
   /// <returns></returns>
-  public static Zen<bool> NonMartianRoute(Zen<RouteEnvironment> env)
+  private static Zen<bool> NonMartianRoute(Zen<RouteEnvironment> env)
   {
     var matchesAnyMartian = MartianPrefixes.Aggregate(Zen.False(), (b, martian) =>
       Zen.Or(b, Zen.Constant(martian.Item1).MatchesPrefix(env.GetPrefix(), martian.Item2, new UInt<_6>(32))));
     return Zen.Implies(env.GetResultValue(), Zen.Not(matchesAnyMartian));
   }
 
+  /// <summary>
+  /// Assign a fresh symbolic variable as an external route from each of the given nodes.
+  /// If a constraint is given, apply it to every symbolic variable.
+  /// </summary>
+  /// <param name="externalPeers"></param>
+  /// <param name="constraint"></param>
+  /// <returns></returns>
   private static Dictionary<string, SymbolicValue<RouteEnvironment>>
     ExternalRoutes(IEnumerable<string> externalPeers, Func<Zen<RouteEnvironment>, Zen<bool>>? constraint = null) =>
     externalPeers.ToDictionary(e => e, e => constraint is null
@@ -121,5 +132,15 @@ public static class Internet2
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties,
       modularProperties, modularProperties);
+  }
+
+  public static NetworkQuery<RouteEnvironment, string> NoTransit(Digraph<string> digraph,
+    IEnumerable<string> externalPeers)
+  {
+    // Bagpipe verifies this with a lot of handcrafted analysis:
+    // finding the neighbors and then determining which are which
+    // could we reuse their findings?
+    // see https://github.com/konne88/bagpipe/blob/master/src/bagpipe/racket/test/resources/internet2-properties.rkt
+    throw new NotImplementedException();
   }
 }
