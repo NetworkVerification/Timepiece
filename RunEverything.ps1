@@ -9,20 +9,20 @@
 #      "--" is required to ensure that the "-m" isn't parsed by python3.9
 
 # single destination versions
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- r -I
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- lw
-python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- v -I
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- h -I
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- r -m
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- lw -m
-python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- v -m
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- h -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- rs -I
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ls
+python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- vs -I
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- hs -I
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- rs -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ls -m
+python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- vs -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- hs -m
 # all pairs versions
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ar
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- alw
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- av
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ah
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ar -m
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- alw -m
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- av -m
-# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ah -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ars
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- als
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- avs
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ahs
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ars -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- als -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- avs -m
+# python3.9 ./run_all.py -d Timepiece.Benchmarks/bin/Release/net7.0/ -n 1 -t 7200 -k 4 40 -- ahs -m

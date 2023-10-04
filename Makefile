@@ -10,7 +10,7 @@ RESULTDIR := results
 ANGLERDIR := angler
 # set to 1 if you want to force the repo to clone angler when INTERNET2.angler.json is present
 FORCE_CLONE := 1
-POLICIES := reach lengthWeak valley hijack allReach allLengthWeak allValley allHijack
+POLICIES := reachSymbolic lengthSymbolic valleySymbolic hijackSymbolic allReachSymbolic allLengthSymbolic allValleySymbolic allHijackSymbolic
 INTERNET2 := INTERNET2.angler.json
 
 .PHONY: all
