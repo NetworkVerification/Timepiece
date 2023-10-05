@@ -179,4 +179,12 @@ public static class RouteEnvironmentExtensions
   {
     return b.WithResult(b.GetResult().WithReturned(returned));
   }
+
+  /// <summary>
+  /// Return the route with returned and value both set to true.
+  /// </summary>
+  /// <param name="r"></param>
+  /// <returns></returns>
+  public static Zen<RouteEnvironment> ReturnAccept(Zen<RouteEnvironment> r) =>
+    r.WithResultReturned(true).WithResultValue(true);
 }

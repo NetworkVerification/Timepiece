@@ -81,12 +81,13 @@ public static class AstTests
     Assert.True(query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckInductive().HasValue);
   }
 
+  // warning: this may not complete and need to be aborted (takes a long time to run)
   [Fact]
   public static void TestSpAstBadMonolithic()
   {
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();
     var query = IsValidQuery(topology, DestinationNode);
-    query.MonolithicProperties[FatTree.FatTreeLayer.Edge.Node(19)] = _ => Zen.False();
+    query.MonolithicProperties = topology.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(_ => Zen.False()));
     Assert.True(query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckMonolithic().HasValue);
   }
 }

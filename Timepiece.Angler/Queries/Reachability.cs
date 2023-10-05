@@ -1,10 +1,12 @@
 using System.Numerics;
-using Timepiece.Angler.Queries;
 using Timepiece.Networks;
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.Queries;
 
+/// <summary>
+/// Internet2 reachability benchmark.
+/// </summary>
 public static class Reachability
 {
   public static AnnotatedNetwork<RouteEnvironment, string> AddReachConstraints(

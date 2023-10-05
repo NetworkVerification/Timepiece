@@ -5,6 +5,7 @@ public enum NetworkQueryType
   Internet2BlockToExternal,
   Internet2NoMartians,
   Internet2NoTransit,
+  FatReachable,
 }
 
 public static class NetworkQueryTypeExtensions
@@ -16,11 +17,13 @@ public static class NetworkQueryTypeExtensions
       "bte" or "Internet2BlockToExternal" => NetworkQueryType.Internet2BlockToExternal,
       "mars" or "Internet2NoMartians" => NetworkQueryType.Internet2NoMartians,
       "transit" or "Internet2NoTransit" => NetworkQueryType.Internet2NoTransit,
+      "fatReach" or "FatReachable" => NetworkQueryType.FatReachable,
       _ => throw new ArgumentOutOfRangeException(nameof(s), s, "Invalid network query type name! "
                                                                + "Acceptable values:\n"
                                                                + "- 'bte' or 'Internet2BlockToExternal' for 'Internet2BlockToExternal'"
                                                                + "- 'mars' or 'Internet2NoMartians' for 'Internet2NoMartians'"
-                                                               + "- 'transit' or 'Internet2NoTransit' for 'Internet2NoTransit'")
+                                                               + "- 'transit' or 'Internet2NoTransit' for 'Internet2NoTransit'"
+                                                               + "- 'fatReach' or 'FatReachable' for 'FatReachable'")
     };
   }
 }

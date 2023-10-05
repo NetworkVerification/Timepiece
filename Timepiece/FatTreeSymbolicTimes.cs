@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using ZenLib;
 
-namespace Timepiece.Benchmarks;
+namespace Timepiece;
 
 public static class FatTreeSymbolicTimes
 {
@@ -25,6 +28,17 @@ public static class FatTreeSymbolicTimes
     return times;
   }
 
+  /// <summary>
+  /// Return a mapping over the nodes in <paramref name="g"/> where each node has a Finally annotation
+  /// with a witness time chosen from <paramref name="symbolicTimes"/> according to the node's distance
+  /// from the <paramref name="destination"/> node, and with the predicate <paramref name="afterPredicate"/>.
+  /// </summary>
+  /// <param name="g"></param>
+  /// <param name="destination"></param>
+  /// <param name="afterPredicate"></param>
+  /// <param name="symbolicTimes"></param>
+  /// <typeparam name="RouteType"></typeparam>
+  /// <returns></returns>
   public static Dictionary<string, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>>
     FinallyAnnotations<RouteType>(NodeLabelledDigraph<string, int> g, string destination,
       Func<Zen<RouteType>, Zen<bool>> afterPredicate, IReadOnlyList<Zen<BigInteger>> symbolicTimes) =>

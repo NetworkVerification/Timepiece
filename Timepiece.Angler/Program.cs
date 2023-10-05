@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Newtonsoft.Json;
 using Timepiece;
 using Timepiece.Angler;
+using Timepiece.Angler.Ast;
 using Timepiece.Angler.Queries;
 using ZenLib;
 
@@ -13,7 +14,7 @@ JsonSerializer serializer = new()
 {
   // use $type for type names, and the given binder
   TypeNameHandling = TypeNameHandling.All,
-  SerializationBinder = AnglerNetwork.Binder()
+  SerializationBinder = new AstSerializationBinder(),
   // throw an error when members are missing from the object instead of ignoring them
   // MissingMemberHandling = MissingMemberHandling.Error
 };
@@ -47,10 +48,12 @@ rootCommand.SetHandler(
     {
       var (topology, transfer) = ast.TopologyAndTransfer();
       var externalNodes = ast.Externals.Select(i => i.Name);
+      // TODO: add support for other queries
       var query = queryType switch
       {
         NetworkQueryType.Internet2BlockToExternal => Internet2.BlockToExternal(topology, externalNodes),
         NetworkQueryType.Internet2NoMartians => Internet2.NoMartians(topology, externalNodes),
+        // NetworkQueryType.FatReachable => Timepiece.Angler.Queries.FatTree.Reachable(topology, destination)
         _ => throw new ArgumentOutOfRangeException(nameof(queryType), queryType, "Query type not supported!")
       };
       var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);

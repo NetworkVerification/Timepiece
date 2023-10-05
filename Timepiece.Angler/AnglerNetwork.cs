@@ -1,11 +1,7 @@
 using System.Collections.Immutable;
 using System.Numerics;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Timepiece.Angler.Ast;
-using Timepiece.Angler.Ast.AstExpr;
-using Timepiece.Angler.Ast.AstFunction;
-using Timepiece.Angler.Ast.AstStmt;
 using ZenLib;
 
 namespace Timepiece.Angler;
@@ -15,36 +11,6 @@ namespace Timepiece.Angler;
 /// </summary>
 public class AnglerNetwork
 {
-  /// <summary>
-  ///   Default import behavior for a route.
-  ///   Set the route as accepted and returned.
-  /// </summary>
-  protected static readonly AstFunction<RouteEnvironment> DefaultImport = new("env", new[]
-  {
-    new Assign("env", new WithField(
-      new Var("env"), "Result", AstEnvironment.ResultToRecord(new RouteResult
-      {
-        Returned = true,
-        Value = true
-      })))
-  });
-
-  /// <summary>
-  ///   Default export behavior for a route.
-  ///   Set the route as accepted and returned.
-  /// </summary>
-  protected static readonly AstFunction<RouteEnvironment> DefaultExport = new("env", new Statement[]
-  {
-    new Assign("env",
-      new WithField(new Var("env"),
-        // update the result to have returned true
-        "Result", AstEnvironment.ResultToRecord(new RouteResult
-        {
-          Returned = true,
-          Value = true
-        })))
-  });
-
   [JsonConstructor]
   public AnglerNetwork(Dictionary<string, NodeProperties> nodes,
     List<ExternalPeer> externals)
@@ -117,6 +83,44 @@ public class AnglerNetwork
     Console.ResetColor();
   }
 
+  /// <summary>
+  /// Return a function composing the export and import policies to transfer a route.
+  /// The routing behavior is as follows:
+  /// <list type="number">
+  ///   <item>If the route's result does not have a value, send it as-is (skip the policies -- it will be dropped).</item>
+  ///   <item>Otherwise, apply the export policy with a fresh result to produce an exported route.</item>
+  ///   <item>If the exported route was rejected (i.e. its result does not have a value), send it as-is
+  ///       (skip the import policy -- it will be dropped).
+  ///   </item>
+  ///   <item>Otherwise, if the exported route was external (per the <paramref name="external"/> parameter),
+  ///    increment the path length (if internal, leave the path length as-is). In either case, apply the import
+  ///    policy with a fresh result.
+  ///   </item>
+  /// </list>
+  /// </summary>
+  /// <param name="export">The export routing policy as a function over a <c>Zen{RouteEnvironment}</c>.</param>
+  /// <param name="import">The import routing policy as a function over a <c>Zen{RouteEnvironment}</c>.</param>
+  /// <param name="external">Whether or not the transfer is for an inter-AS edge.</param>
+  /// <returns>A transfer function over a <c>Zen{RouteEnvironment}</c>.</returns>
+  private static Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> Transfer(
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> export,
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> import,
+    bool external)
+  {
+    return r =>
+    {
+      // always reset the result when first calling the export
+      var exported = export(r.WithResult(new RouteResult()));
+      var importedRoute = exported.WithResult(new RouteResult());
+      // if the edge is external, increment the AS path length
+      if (external) importedRoute = importedRoute.IncrementAsPathLength(BigInteger.One);
+      // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)
+      // and again reset the result
+      return Zen.If(r.GetResultValue(),
+        Zen.If(exported.GetResultValue(), import(importedRoute), exported), r);
+    };
+  }
+
   public (Digraph<string>, Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>)
     TopologyAndTransfer()
   {
@@ -139,7 +143,7 @@ public class AnglerNetwork
 
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(DefaultExport, DefaultImport);
+      var details = props.CreateNode(RouteEnvironmentExtensions.ReturnAccept, RouteEnvironmentExtensions.ReturnAccept);
       // add an edge between each node and its neighbor
       foreach (var nbr in details.imports.Keys.Union(details.exports.Keys))
       {
@@ -155,31 +159,17 @@ public class AnglerNetwork
 
     var transferFunction = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     foreach (var (edge, export) in exportFunctions)
+    {
       // compose the export and import and evaluate on a fresh state
-      // NOTE: assumes that every export edge has a corresponding import edge (i.e. the graph is undirected)
-      transferFunction.Add(edge, r =>
-      {
-        // always reset the result when first calling the export
-        // TODO: seems like maybe we want to pay attention to what r.GetResultValue() was previously before exporting:
-        // if it's false then the node has "no" route so we shouldn't do anything
-        var exported = export(r.WithResult(new RouteResult()));
-        var importedRoute = exported.WithResult(new RouteResult());
-        // if the edge is external, increment the AS path length
-        if (Externals.Select(e => e.Name).Contains(edge.Item1))
-          importedRoute = importedRoute.IncrementAsPathLength(BigInteger.One);
-        // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)
-        // and again reset the result
-        return Zen.If(r.GetResultValue(), Zen.If(exported.GetResultValue(),
-          importFunctions[edge](importedRoute), exported), new RouteEnvironment());
-      });
+      if (!importFunctions.TryGetValue(edge, out var import))
+        throw new ArgumentException($"Corresponding import function absent for edge {edge}!");
+      // identify an edge as inter-AS/external if the source is an external neighbor
+      var external = Externals.Any(e => e.Name == edge.Item1);
+      transferFunction.Add(edge, Transfer(export, import, external));
+    }
 
     var topology = new Digraph<string>(edges);
 
     return (topology, transferFunction);
-  }
-
-  public static ISerializationBinder Binder()
-  {
-    return new AstSerializationBinder();
   }
 }

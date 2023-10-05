@@ -63,8 +63,8 @@ public class NodeProperties
   /// <param name="defaultExport">A default export function.</param>
   /// <param name="defaultImport">A default import function.</param>
   /// <returns></returns>
-  public NetworkNode<RouteEnvironment> CreateNode(AstFunction<RouteEnvironment> defaultExport,
-    AstFunction<RouteEnvironment> defaultImport)
+  public NetworkNode<RouteEnvironment> CreateNode(Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultExport,
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultImport)
   {
     var env = new AstEnvironment(Declarations);
 
@@ -73,12 +73,12 @@ public class NodeProperties
     foreach (var (neighbor, policies) in Policies)
     {
       if (policies.Export is null)
-        exports[neighbor] = env.EvaluateFunction(defaultExport);
+        exports[neighbor] = defaultExport;
       else
         exports[neighbor] = env.EvaluateFunction(Declarations[policies.Export]);
 
       if (policies.Import is null)
-        imports[neighbor] = env.EvaluateFunction(defaultImport);
+        imports[neighbor] = defaultImport;
       else
         imports[neighbor] = env.EvaluateFunction(Declarations[policies.Import]);
     }
