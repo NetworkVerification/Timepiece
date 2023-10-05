@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Timepiece.Networks;
 /// </summary>
 /// <typeparam name="RouteType">The type of the routes.</typeparam>
 /// <typeparam name="NodeType">The type of nodes.</typeparam>
-public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType>
+public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType> where NodeType : notnull
 {
   /// <summary>
   ///   Construct a new <c>AnnotatedNetwork{T,TV,TS}</c>.
@@ -133,7 +134,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   /// <summary>
   /// The maximum number of logical time steps of delay to consider.
   /// </summary>
-  public BigInteger? MaxDelay { get; set; }
+  public Zen<BigInteger>? MaxDelay { get; set; }
 
   /// <summary>
   ///   Check that the annotations are sound, calling the given function f on each node's check.

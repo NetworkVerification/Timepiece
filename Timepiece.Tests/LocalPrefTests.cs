@@ -13,7 +13,7 @@ using LpRoute = Pair<BigInteger, BigInteger>;
 
 public static class LocalPrefTests
 {
-  private static LocalPref<string, Unit> Net
+  private static LocalPref<string> Net
   {
     get
     {
@@ -24,7 +24,7 @@ public static class LocalPrefTests
         {"A", Pair.Create(Constant(BigInteger.One), Constant(BigInteger.Zero))},
         {"B", Pair.Create(Constant(BigInteger.One), Constant(new BigInteger(10)))}
       };
-      return new LocalPref<string, Unit>(topology, initialValues, System.Array.Empty<SymbolicValue<Unit>>());
+      return new LocalPref<string>(topology, initialValues, System.Array.Empty<ISymbolic>());
     }
   }
 

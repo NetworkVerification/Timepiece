@@ -206,8 +206,8 @@ public static class Sp
     var initialValues =
       topology.MapNodes(n =>
         Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
-    var symbolicValues = new SymbolicValue<Pair<string, int>>[] {dest};
-    var sp = new Sp<string>(topology, initialValues, symbolicValues.Cast<ISymbolic>().ToArray());
+    var symbolicValues = new ISymbolic[] {dest};
+    var sp = new Sp<string>(topology, initialValues, symbolicValues);
     var stableProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
     var safetyProperties = topology.MapNodes(_ => Lang.True<Option<BgpRoute>>());
     var annotations = topology.MapNodes(n =>

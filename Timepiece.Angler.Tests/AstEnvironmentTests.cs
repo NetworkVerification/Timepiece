@@ -314,18 +314,10 @@ public static class AstEnvironmentTests
       })
     });
 
-    // the function above resets the result fields after returning true, so Returned should also be false
-    Zen<RouteEnvironment> ReturnTrue(Zen<RouteEnvironment> t)
-    {
-      return t.WithResult(new RouteResult
-      {
-        Value = true
-      });
-    }
-
     var inputRoute = Zen.Symbolic<RouteEnvironment>();
     var evaluatedFunction = Env.EvaluateFunction(function);
-    AssertEqValid(ReturnTrue(inputRoute), evaluatedFunction(inputRoute));
+    // the function above resets the result fields after returning true, so Returned should also be false
+    AssertEqValid(inputRoute.WithResult(new RouteResult {Value = true}), evaluatedFunction(inputRoute));
   }
 
   [Theory]
@@ -464,6 +456,6 @@ public static class AstEnvironmentTests
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
     var evaluated = Env.EvaluateFunction(fun)(inputRoute);
     AssertEqValid(evaluated,
-      inputRoute.WithResultValue(true).WithCommunities(CSet.Add(inputRoute.GetCommunities(), CommunityTag)));
+      inputRoute.WithResultValue(true).WithCommunities(inputRoute.GetCommunities().Add(CommunityTag)));
   }
 }

@@ -5,14 +5,14 @@ using ZenLib;
 
 namespace Timepiece.Benchmarks;
 
-public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string>
+public class AutonomousSystem : AnnotatedNetwork<Option<BgpRoute>, string>
 {
   public AutonomousSystem(Digraph<string> digraph, string externalSrc, string externalDest,
     Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> transferFunction,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties,
-    BigInteger convergeTime, SymbolicValue<TS>[] symbolics) : base(digraph, transferFunction,
+    BigInteger convergeTime, ISymbolic[] symbolics) : base(digraph, transferFunction,
     Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
     digraph.MapNodes(n =>
       n == externalSrc ? Option.Create<BgpRoute>(new BgpRoute()) : Option.None<BgpRoute>()),
@@ -54,7 +54,7 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string>
   // Lang.IfSome(Zen.Implies(n == "external-1", sent.Value.Where(b => Zen.Not(b.HasCommunity(BTE))).IsNone())));
   // }
 
-  public static AutonomousSystem<bool> NoTransitSound(uint nodes)
+  public static AutonomousSystem NoTransitSound(uint nodes)
   {
     var topology = Topologies.Complete(nodes);
     const string externalSrc = "externalSrc";
@@ -88,8 +88,8 @@ public class AutonomousSystem<TS> : AnnotatedNetwork<Option<BgpRoute>, string>
 
       return Lang.Globally(Lang.True<Option<BgpRoute>>());
     });
-    return new AutonomousSystem<bool>(topology, externalSrc, externalDest, transfer, annotations, stableProperties,
+    return new AutonomousSystem(topology, externalSrc, externalDest, transfer, annotations, stableProperties,
       safetyProperties,
-      convergeTime, externalRelationships);
+      convergeTime, externalRelationships.Cast<ISymbolic>().ToArray());
   }
 }

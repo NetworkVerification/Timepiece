@@ -30,7 +30,7 @@ public static class DisagreeTests
       initialValues,
       annotations, topology.MapNodes(_ => Lang.Finally<BigInteger>(new BigInteger(2), ReachablePredicate)),
       topology.MapNodes<Func<Zen<BigInteger>, Zen<bool>>>(_ => ReachablePredicate),
-      Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<ISymbolic>());
   }
 
   private static Zen<bool> ReachablePredicate(Zen<BigInteger> r)

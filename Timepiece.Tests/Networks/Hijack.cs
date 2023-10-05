@@ -13,7 +13,7 @@ using TaggedRoute = Pair<BigInteger, bool>;
 
 public class Hijack : AnnotatedNetwork<Option<TaggedRoute>, string>
 {
-  public static Zen<Option<TaggedRoute>> DestRoute =
+  public static readonly Zen<Option<TaggedRoute>> DestRoute =
     Option.Create(Pair.Create<BigInteger, bool>(BigInteger.Zero, false));
 
   /// <summary>
@@ -39,7 +39,7 @@ public class Hijack : AnnotatedNetwork<Option<TaggedRoute>, string>
       new Dictionary<string, Func<Zen<Option<TaggedRoute>>, Zen<BigInteger>, Zen<bool>>>(),
       digraph.MapNodes(n => Lang.Finally(convergeTime, Property(hijacker, n))),
       digraph.MapNodes(n => Property(hijacker, n)),
-      Array.Empty<SymbolicValue<Option<TaggedRoute>>>())
+      Array.Empty<ISymbolic>())
   {
     if (!digraph.HasNode(hijacker))
       throw new ArgumentOutOfRangeException($"Hijack network does not contain the given hijacker node {hijacker}.");
@@ -50,7 +50,7 @@ public class Hijack : AnnotatedNetwork<Option<TaggedRoute>, string>
     InitialValues = digraph.MapNodes(n =>
       n == hijacker ? HijackRoute.Value :
       n == dest ? DestRoute : Option.Null<TaggedRoute>());
-    Symbolics = new[] {HijackRoute};
+    Symbolics = new ISymbolic[] {HijackRoute};
     Annotations = annotations(HijackRoute);
     HijackRoute.Constraint = DeriveHijackConstraint();
   }

@@ -8,11 +8,11 @@ namespace Timepiece.Tests.Networks;
 
 using LpRoute = Pair<BigInteger, BigInteger>;
 
-public class LocalPref<TV, TS> : Network<LpRoute, TV> where TV : notnull
+public class LocalPref<NodeType> : Network<LpRoute, NodeType> where NodeType : notnull
 {
-  public LocalPref(Digraph<TV> digraph,
-    Dictionary<TV, Zen<LpRoute>> initialValues,
-    SymbolicValue<TS>[] symbolics)
+  public LocalPref(Digraph<NodeType> digraph,
+    Dictionary<NodeType, Zen<LpRoute>> initialValues,
+    ISymbolic[] symbolics)
     : base(digraph,
       digraph.MapEdges(_ => Lang.Product(Lang.Identity<BigInteger>(), Lang.Incr(new BigInteger(1)))),
       Merge,

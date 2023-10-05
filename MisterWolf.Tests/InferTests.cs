@@ -18,16 +18,16 @@ public static class InferTests
 
   // a boolean network where one node has a route initially and others do not
   private static Network<bool, TV> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV> =>
-    new BooleanNetwork<TV, Unit>(digraph,
-      digraph.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<SymbolicValue<Unit>>());
+    new BooleanNetwork<TV>(digraph,
+      digraph.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<ISymbolic>());
 
   // a boolean network where one symbolically-chosen node has a route initially and others do not
   private static Network<bool, TV> BoolNetMultiDest<TV>(Digraph<TV> digraph) where TV : notnull
   {
     var dest = new SymbolicValue<TV>("dest",
       x => digraph.Nodes.Aggregate(Zen.False(), (b, n) => Zen.Or(b, x == n)));
-    return new BooleanNetwork<TV, TV>(digraph,
-      digraph.MapNodes(n => dest.EqualsValue(n)), new[] {dest});
+    return new BooleanNetwork<TV>(digraph,
+      digraph.MapNodes(n => dest.EqualsValue(n)), new ISymbolic[] {dest});
   }
 
   // a triangular integer network where the path A-B-C is cheaper than the path A-C
@@ -42,7 +42,7 @@ public static class InferTests
     return new Network<Option<BigInteger>, string>(topology, transfer, Lang.Omap2<BigInteger>(Zen.Min),
       topology.MapNodes<Zen<Option<BigInteger>>>(n =>
         n == "A" ? Option.Create<BigInteger>(BigInteger.Zero) : Option.Null<BigInteger>()),
-      Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<ISymbolic>());
   }
 
   /// <summary>
@@ -135,7 +135,7 @@ public static class InferTests
     Func<Zen<Option<BigInteger>>, Zen<bool>> beforePredicate)
   {
     var topology = Topologies.Path(numNodes, false);
-    var net = new ShortestPath<string, Unit>(topology, "0", Array.Empty<SymbolicValue<Unit>>());
+    var net = new ShortestPath<string>(topology, "0", Array.Empty<ISymbolic>());
     var beforeInvariants = topology.MapNodes(_ => beforePredicate);
     // eventually, the route must be less than the specified max
     var afterInvariants = topology.MapNodes(n => Lang.IfSome<BigInteger>(x => x <= BigInteger.Parse(n)));

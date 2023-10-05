@@ -37,7 +37,7 @@ public static class TagTests
 
     return new AnnotatedNetwork<CSetRoute, string>(topology, topology.MapEdges(transfer), Merge, initial,
       annotations,
-      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
   }
 
   private static AnnotatedNetwork<SetRoute, string> SetNet(
@@ -61,7 +61,7 @@ public static class TagTests
 
     return new AnnotatedNetwork<SetRoute, string>(topology, topology.MapEdges(SetTransfer), Merge, initial,
       annotations,
-      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
   }
 
   private static Func<(string, string), Func<Zen<CSetRoute>, Zen<CSetRoute>>> CSetTransferWithBehavior(

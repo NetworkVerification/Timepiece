@@ -14,20 +14,23 @@ namespace Timepiece.Tests;
 /// </summary>
 public static class SetReachabilityTests
 {
-  private static AnnotatedNetwork<CSet<TV>, TV> Net<TV>(Digraph<TV> digraph, BigInteger convergeTime,
-    Dictionary<TV, Func<Zen<CSet<TV>>, Zen<BigInteger>, Zen<bool>>> annotations) where TV : notnull
+  private static AnnotatedNetwork<CSet<NodeType>, NodeType> Net<NodeType>(Digraph<NodeType> digraph,
+    BigInteger convergeTime,
+    Dictionary<NodeType, Func<Zen<CSet<NodeType>>, Zen<BigInteger>, Zen<bool>>> annotations) where NodeType : notnull
   {
-    var transferFunctions = digraph.MapEdges<Func<Zen<CSet<TV>>, Zen<CSet<TV>>>>(_ => r => r);
-    var initialValues = digraph.MapNodes(n => CSet.Empty<TV>().Add(n));
+    var transferFunctions = digraph.MapEdges<Func<Zen<CSet<NodeType>>, Zen<CSet<NodeType>>>>(_ => r => r);
+    var initialValues = digraph.MapNodes(n => CSet.Empty<NodeType>().Add(n));
 
     var property = ContainsAll(digraph);
     var monolithicProperties = digraph.MapNodes(_ => property);
     var modularProperties = digraph.MapNodes(_ => Lang.Finally(convergeTime, property));
-    return new AnnotatedNetwork<CSet<TV>, TV>(digraph, transferFunctions, CSet.Union, initialValues, annotations,
-      modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+    return new AnnotatedNetwork<CSet<NodeType>, NodeType>(digraph, transferFunctions, CSet.Union, initialValues,
+      annotations,
+      modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
   }
 
-  private static Func<Zen<CSet<TV>>, Zen<bool>> ContainsAll<TV>(Digraph<TV> digraph) where TV : notnull
+  private static Func<Zen<CSet<NodeType>>, Zen<bool>> ContainsAll<NodeType>(Digraph<NodeType> digraph)
+    where NodeType : notnull
   {
     return route =>
       digraph.FoldNodes(Zen.True(), (b, n) => Zen.And(b, route.Contains(n)));

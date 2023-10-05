@@ -26,7 +26,7 @@ public static class FilteringTests
     {"e", new List<string> {"d"}}
   });
 
-  public static AnnotatedNetwork<Option<Bgp>, string> Net(
+  private static AnnotatedNetwork<Option<Bgp>, string> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>> monolithicProperties)
@@ -41,7 +41,7 @@ public static class FilteringTests
     };
     return new AnnotatedNetwork<Option<Bgp>, string>(Digraph, Transfer(), Lang.Omap2<Bgp>(Bgp.Min),
       initialValues,
-      annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      annotations, modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
   }
 
   private static AnnotatedNetwork<Pair<Option<Bgp>, bool>, string> NetGhostState(
@@ -62,7 +62,7 @@ public static class FilteringTests
       Digraph.MapEdges(e => Lang.Product(transfer[e], Lang.Identity<bool>())),
       Lang.MergeBy<Pair<Option<Bgp>, bool>, Option<Bgp>>(Lang.Omap2<Bgp>(Bgp.Min), p => p.Item1()),
       initialValues,
-      annotations, modularProperties, monolithicProperties, Array.Empty<SymbolicValue<Unit>>());
+      annotations, modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
   }
 
   private static Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>> Transfer()

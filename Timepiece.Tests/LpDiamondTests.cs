@@ -36,7 +36,7 @@ public static class LpDiamondTests
       {"d", Option.Null<Route>()},
     };
     return new AnnotatedNetwork<Option<Route>, string>(Digraph, Transfer, Lang.Omap2<Route>(Merge),
-      initialValues, annotations, modularProperties, monolithicProperties, System.Array.Empty<SymbolicValue<Unit>>());
+      initialValues, annotations, modularProperties, monolithicProperties, System.Array.Empty<ISymbolic>());
   }
 
   private static Zen<Route> Merge(Zen<Route> r1, Zen<Route> r2) =>

@@ -8,14 +8,14 @@ using static ZenLib.Zen;
 
 namespace Timepiece.Tests.Networks;
 
-public class BgpAnnotatedNetwork<TV, TS> : AnnotatedNetwork<Option<Bgp>, TV> where TV : notnull
+public class BgpAnnotatedNetwork<TV> : AnnotatedNetwork<Option<Bgp>, TV> where TV : notnull
 {
   public BgpAnnotatedNetwork(Digraph<TV> digraph,
     Dictionary<TV, Zen<Option<Bgp>>> initialValues,
     Dictionary<TV, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<TV, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<TV, Func<Zen<Option<Bgp>>, Zen<bool>>> monolithicProperties,
-    SymbolicValue<TS>[] symbolics) : base(digraph,
+    ISymbolic[] symbolics) : base(digraph,
     digraph.MapEdges(e => Lang.Bind(Transfer(e))), Lang.Omap2<Bgp>(Bgp.Min),
     initialValues, annotations, modularProperties,
     monolithicProperties, symbolics)

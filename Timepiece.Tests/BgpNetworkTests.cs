@@ -23,7 +23,7 @@ public static class BgpNetworkTests
   private static Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>> Reachable(Digraph<string> digraph) =>
     digraph.MapNodes(_ => Lang.IsSome<Bgp>());
 
-  private static BgpAnnotatedNetwork<string, Unit> Net(
+  private static BgpAnnotatedNetwork<string> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
     var topology = Topologies.Path(3);
@@ -39,9 +39,9 @@ public static class BgpNetworkTests
     var monolithicProperties = Reachable(topology);
     var modularProperties = topology.MapNodes(n => Lang.Finally(convergeTime, monolithicProperties[n]));
 
-    return new BgpAnnotatedNetwork<string, Unit>(topology, initialValues, annotations, modularProperties,
+    return new BgpAnnotatedNetwork<string>(topology, initialValues, annotations, modularProperties,
       monolithicProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<ISymbolic>());
   }
 
   [Fact]
@@ -144,9 +144,9 @@ public static class BgpNetworkTests
     var modularProperties = topology.MapNodes(n => Lang.Finally(new BigInteger(4), monolithicProperties[n]));
     // skip constructing the annotations since we're just testing the monolithic check
     var annotations = new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>();
-    var net = new BgpAnnotatedNetwork<string, Unit>(topology, initialValues, annotations, modularProperties,
+    var net = new BgpAnnotatedNetwork<string>(topology, initialValues, annotations, modularProperties,
       monolithicProperties,
-      Array.Empty<SymbolicValue<Unit>>());
+      Array.Empty<ISymbolic>());
     NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
   }
 
