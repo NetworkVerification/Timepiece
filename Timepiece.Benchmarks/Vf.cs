@@ -118,7 +118,7 @@ public partial class Vf
 
   public static AnnotatedVf ValleyFreeReachableSymbolicTimes(uint numPods, string destination)
   {
-    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5).ToArray();
+    var times = SymbolicTime.AscendingSymbolicTimes(5).ToArray();
     var lastTime = times[^1].Value;
     var g = Topologies.LabelledFatTree(numPods);
     var monolithicProperties = g.MapNodes(_ => Lang.IsSome<BgpRoute>());
@@ -203,7 +203,7 @@ public partial class Vf
 
   public static AnnotatedVf AllPairsValleyFreeReachableSymbolicTimes(uint numPods)
   {
-    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var times = SymbolicTime.AscendingSymbolicTimes(5);
     var g = Topologies.LabelledFatTree(numPods);
     var lastTime = times[^1].Value;
     var dest = new SymbolicDestination(g);

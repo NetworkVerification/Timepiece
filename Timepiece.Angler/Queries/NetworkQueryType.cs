@@ -4,7 +4,8 @@ public enum NetworkQueryType
 {
   Internet2BlockToExternal,
   Internet2NoMartians,
-  Internet2NoTransit,
+  Internet2GaoRexford,
+  Internet2Reachable,
   FatReachable,
   FatPathLength,
   FatValleyFreedom,
@@ -19,7 +20,8 @@ public static class NetworkQueryTypeExtensions
     {
       "bte" or "Internet2BlockToExternal" => NetworkQueryType.Internet2BlockToExternal,
       "mars" or "Internet2NoMartians" => NetworkQueryType.Internet2NoMartians,
-      "transit" or "Internet2NoTransit" => NetworkQueryType.Internet2NoTransit,
+      "transit" or "Internet2GaoRexford" => NetworkQueryType.Internet2GaoRexford,
+      "reach" or "reachable" => NetworkQueryType.Internet2Reachable,
       "fatReach" or "FatReachable" => NetworkQueryType.FatReachable,
       "fatLength" or "FatPathLength" => NetworkQueryType.FatPathLength,
       "fatValley" or "FatValleyFreedom" => NetworkQueryType.FatValleyFreedom,
@@ -28,7 +30,8 @@ public static class NetworkQueryTypeExtensions
                                                                + "Acceptable values:\n"
                                                                + "- 'bte' or 'Internet2BlockToExternal' for 'Internet2BlockToExternal'"
                                                                + "- 'mars' or 'Internet2NoMartians' for 'Internet2NoMartians'"
-                                                               + "- 'transit' or 'Internet2NoTransit' for 'Internet2NoTransit'"
+                                                               + "- 'gaoRexford' or 'Internet2GaoRexford' for 'Internet2GaoRexford'"
+                                                               + "- 'reach' or 'Internet2Reachable' for 'Internet2Reachable'"
                                                                + "- 'fatReach' or 'FatReachable' for 'FatReachable'"
                                                                + "- 'fatLength' or 'FatPathLength' for 'FatPathLength'"
                                                                + "- 'fatValley' or 'FatValleyFreedom' for 'FatValleyFreedom'"

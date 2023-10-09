@@ -47,7 +47,7 @@ public static partial class FatTreeQuery
     var initialRoutes =
       digraph.MapNodes(n =>
         n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
-    var symbolicTimes = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties =
@@ -68,7 +68,7 @@ public static partial class FatTreeQuery
     var initialRoutes =
       digraph.MapNodes(n =>
         n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
-    var symbolicTimes = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties =
@@ -101,7 +101,7 @@ public static partial class FatTreeQuery
     var initialRoutes =
       digraph.MapNodes(n =>
         n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
-    var symbolicTimes = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties =

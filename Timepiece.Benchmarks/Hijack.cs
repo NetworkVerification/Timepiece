@@ -153,7 +153,7 @@ public static class Hijack
     var topology = HijackTopology(HijackNode, Topologies.LabelledFatTree(numPods), -1);
     var hijackRoute = new SymbolicValue<Option<BgpRoute>>("hijackRoute");
     var destinationPrefix = new SymbolicValue<uint>("destinationPrefix");
-    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var times = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = times[^1].Value;
     var hijack = new Hijack<string>(topology, destination, HijackNode, hijackRoute.Value,
       destinationPrefix.Value, new ISymbolic[] {hijackRoute, destinationPrefix}.Concat(times).ToArray());
@@ -238,7 +238,7 @@ public static class Hijack
           : Option.Create(BgpRouteExtensions.ToDestination(destinationPrefix.Value))
             .Where(_ => destination.Equals(topology, n)),
         n == HijackNode));
-    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var times = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = times[^1].Value;
     var hijack = new Hijack<string>(topology, initialRoutes, HijackNode,
       destinationPrefix.Value, new ISymbolic[] {hijackRoute, destinationPrefix, destination}.Concat(times).ToArray());

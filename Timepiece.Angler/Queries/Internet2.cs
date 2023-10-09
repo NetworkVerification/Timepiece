@@ -12,8 +12,41 @@ public static class Internet2
   /// <summary>
   ///   The block to external community tag used by Internet2.
   /// </summary>
-  private const string BteTag = "11537:888";
+  private const string BlockToExternalCommunity = "11537:888";
 
+  /// <summary>
+  /// Community tag for identifying low-value peer connections.
+  /// </summary>
+  private const string LowPeersCommunity = "11537:40";
+
+  /// <summary>
+  /// Community tag for identifying lower-than-peer connections.
+  /// </summary>
+  private const string LowerThanPeersCommunity = "11537:60";
+
+  /// <summary>
+  /// Community tag for identifying equal-to-peer-value connections.
+  /// </summary>
+  private const string EqualToPeersCommunity = "11537:100";
+
+  /// <summary>
+  /// Community tag for identifying low-value connections.
+  /// </summary>
+  private const string LowCommunity = "11537:140";
+
+  /// <summary>
+  /// Community tag for identifying high-value peer connections.
+  /// </summary>
+  private const string HighPeersCommunity = "11537:160";
+
+  /// <summary>
+  /// Community tag for identifying high-value connections.
+  /// </summary>
+  private const string HighCommunity = "11537:260";
+
+  /// <summary>
+  /// The nodes of Internet2's AS.
+  /// </summary>
   public static readonly string[] Internet2Nodes =
     {"atla-re1", "chic", "clev-re1", "hous", "kans-re1", "losa", "newy-re1", "salt-re1", "seat-re1", "wash"};
 
@@ -55,9 +88,13 @@ public static class Internet2
   /// </summary>
   public static Zen<bool> BteTagAbsent(Zen<RouteEnvironment> env)
   {
-    return Zen.Implies(env.GetResultValue(), Zen.Not(env.GetCommunities().Contains(BteTag)));
+    return Zen.Implies(env.GetResultValue(), Zen.Not(env.GetCommunities().Contains(BlockToExternalCommunity)));
   }
 
+  /// <summary>
+  /// Prefixes that are considered Martians.
+  /// Must not be advertised or accepted.
+  /// </summary>
   private static readonly (Ipv4Wildcard, UInt<_6>)[] MartianPrefixes =
   {
     (new Ipv4Wildcard("0.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // local network 0.0.0.0/8
@@ -134,13 +171,41 @@ public static class Internet2
       modularProperties, modularProperties);
   }
 
-  public static NetworkQuery<RouteEnvironment, string> NoTransit(Digraph<string> digraph,
+  public static NetworkQuery<RouteEnvironment, string> GaoRexford(Digraph<string> digraph,
     IEnumerable<string> externalPeers)
   {
     // Bagpipe verifies this with a lot of handcrafted analysis:
     // finding the neighbors and then determining which are which
     // could we reuse their findings?
     // see https://github.com/konne88/bagpipe/blob/master/src/bagpipe/racket/test/resources/internet2-properties.rkt
+    // var monolithicProperties = digraph.MapNodes(n => InternalNodes.Contains(n) ?
+    // Lang.Intersect<RouteEnvironment>(MaxPrefixLengthIs32) : Lang.True<RouteEnvironment>());
+    throw new NotImplementedException();
+  }
+
+  private static Zen<bool> ExternalValidRouteExists(IEnumerable<Zen<RouteEnvironment>> externalRoutes) =>
+    Zen.Or(externalRoutes.Select(e => Zen.And(e.GetResultValue(), NonMartianRoute(e))));
+
+  public static NetworkQuery<RouteEnvironment, string> Reachable(Digraph<string> digraph,
+    IEnumerable<string> externalPeers)
+  {
+    var externalRoutes = ExternalRoutes(externalPeers, MaxPrefixLengthIs32);
+    var initialRoutes = digraph.MapNodes(n =>
+      externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
+    var lastTime = symbolicTimes[^1].Value;
+
+    var monolithicProperties = digraph.MapNodes(n =>
+      InternalNodes.Contains(n)
+        ? Lang.Intersect<RouteEnvironment>(
+          // if an external route exists, then this node has a route
+          r => Zen.Implies(ExternalValidRouteExists(externalRoutes.Values.Select(s => s.Value)),
+            r.GetResultValue()),
+          MaxPrefixLengthIs32)
+        : Lang.True<RouteEnvironment>());
+    var modularProperties = digraph.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
+    // TODO: figure out the annotations
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
     throw new NotImplementedException();
   }
 }

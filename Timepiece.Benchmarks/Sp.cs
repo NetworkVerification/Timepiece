@@ -125,7 +125,7 @@ public static class Sp
 
   public static AnnotatedSp<string> ReachabilitySymbolicTimes(uint numPods, string destination)
   {
-    var symbolics = FatTreeSymbolicTimes.AscendingSymbolicTimes(5).ToArray();
+    var symbolics = SymbolicTime.AscendingSymbolicTimes(5).ToArray();
     var g = Topologies.LabelledFatTree(numPods);
     var monolithicProperties = g.MapNodes(_ => Lang.IsSome<BgpRoute>());
     // use the last (largest) symbolic time as the safety property to check
@@ -176,7 +176,7 @@ public static class Sp
 
   public static AnnotatedSp<string> PathLengthSymbolicTimes(uint numPods, string destination)
   {
-    var times = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var times = SymbolicTime.AscendingSymbolicTimes(5);
     var g = Topologies.LabelledFatTree(numPods);
     var destinationPod = g.L(destination);
     var monolithicProperties = g.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(new BigInteger(4))));
@@ -217,7 +217,7 @@ public static class Sp
 
   public static AnnotatedSp<string> AllPairsReachabilitySymbolicTimes(uint numPods)
   {
-    var symbolics = FatTreeSymbolicTimes.AscendingSymbolicTimes(5).ToArray();
+    var symbolics = SymbolicTime.AscendingSymbolicTimes(5).ToArray();
     var lastTime = symbolics[^1].Value;
     var g = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(g);
@@ -263,7 +263,7 @@ public static class Sp
   public static AnnotatedSp<string> AllPairsPathLengthSymbolicTimes(uint numPods)
   {
     var topology = Topologies.LabelledFatTree(numPods);
-    var symbolicTimes = FatTreeSymbolicTimes.AscendingSymbolicTimes(5);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = symbolicTimes[^1].Value;
     var dest = new SymbolicDestination(topology);
     // set a node to be the destination if it matches the symbolic
