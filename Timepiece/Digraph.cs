@@ -9,36 +9,38 @@ using System.Text.Json.Serialization;
 namespace Timepiece;
 
 /// <summary>
-///   An unweighted directed graph over a generic node type TV.
+///   An unweighted directed graph over a generic node type NodeType.
 ///   We represent the graph using an adjacency list with an associated set of predecessors
 ///   whose edges point to those nodes.
 ///   Using predecessors makes it efficient to represent our network semantics.
 /// </summary>
-public class Digraph<TV> where TV : notnull
+public class Digraph<NodeType> where NodeType : notnull
 {
   /// <summary>
   ///   Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
   [JsonConstructor]
-  public Digraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors)
+  public Digraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors)
   {
     Neighbors = neighbors;
     NEdges = Neighbors.Sum(p => p.Value.Count);
     Nodes = Neighbors.Keys.ToArray();
   }
 
-  public Digraph(IDictionary<TV, List<TV>> neighbors) : this(neighbors.Select(kvp =>
-    new KeyValuePair<TV, ImmutableSortedSet<TV>>(kvp.Key, kvp.Value.ToImmutableSortedSet())))
+  public Digraph(IDictionary<NodeType, List<NodeType>> neighbors) : this(neighbors.Select(kvp =>
+    new KeyValuePair<NodeType, ImmutableSortedSet<NodeType>>(kvp.Key, kvp.Value.ToImmutableSortedSet())))
   {
   }
 
-  public Digraph(IEnumerable<KeyValuePair<TV, ImmutableSortedSet<TV>>> neighbors) : this(neighbors.ToDictionary(
+  public Digraph(IEnumerable<KeyValuePair<NodeType, ImmutableSortedSet<NodeType>>> neighbors) : this(
+    neighbors.ToDictionary(
+      p => p.Key,
+      p => p.Value))
+  {
+  }
+
+  public Digraph(IEnumerable<KeyValuePair<NodeType, ICollection<NodeType>>> neighbors) : this(neighbors.ToDictionary(
     p => p.Key,
-    p => p.Value))
-  {
-  }
-
-  public Digraph(IEnumerable<KeyValuePair<TV, ICollection<TV>>> neighbors) : this(neighbors.ToDictionary(p => p.Key,
     p => p.Value.ToImmutableSortedSet()))
   {
   }
@@ -50,30 +52,36 @@ public class Digraph<TV> where TV : notnull
   public int NEdges { get; set; }
 
   /// <summary>
+  /// The number of nodes.
+  /// </summary>
+  [JsonIgnore]
+  public int NNodes => Nodes.Count;
+
+  /// <summary>
   ///   The edges for each node.
   /// </summary>
   [JsonPropertyName("edges")]
-  public IDictionary<TV, ImmutableSortedSet<TV>> Neighbors { get; set; }
+  public IDictionary<NodeType, ImmutableSortedSet<NodeType>> Neighbors { get; set; }
 
   /// <summary>
   ///   The nodes in the graph and their names.
   /// </summary>
   [JsonIgnore]
-  public IList<TV> Nodes { get; set; }
+  public IList<NodeType> Nodes { get; set; }
 
-  public TV this[int id] => Nodes[id];
+  public NodeType this[int id] => Nodes[id];
 
   /// <summary>
   ///   Return the predecessors of a given node.
   /// </summary>
-  public ImmutableSortedSet<TV> this[TV node] => Neighbors[node];
+  public ImmutableSortedSet<NodeType> this[NodeType node] => Neighbors[node];
 
   /// <summary>
   ///   Return true if the digraph contains the given node.
   /// </summary>
   /// <param name="node">A node.</param>
   /// <returns>True if the node is present, false otherwise.</returns>
-  public bool HasNode(TV node)
+  public bool HasNode(NodeType node)
   {
     return Neighbors.ContainsKey(node);
   }
@@ -83,7 +91,7 @@ public class Digraph<TV> where TV : notnull
   /// </summary>
   /// <param name="edge">An edge.</param>
   /// <returns>True if the edge is present, false otherwise.</returns>
-  public bool HasEdge((TV, TV) edge)
+  public bool HasEdge((NodeType, NodeType) edge)
   {
     return Neighbors.TryGetValue(edge.Item2, out var neighbors) && neighbors.Contains(edge.Item1);
   }
@@ -94,18 +102,18 @@ public class Digraph<TV> where TV : notnull
   /// </summary>
   /// <param name="node"></param>
   /// <param name="neighbor"></param>
-  public void AddEdge(TV node, TV neighbor)
+  public void AddEdge(NodeType node, NodeType neighbor)
   {
     if (!HasNode(node))
     {
       Nodes.Add(node);
-      Neighbors.Add(node, ImmutableSortedSet<TV>.Empty);
+      Neighbors.Add(node, ImmutableSortedSet<NodeType>.Empty);
     }
 
     if (!HasNode(neighbor))
     {
       Nodes.Add(neighbor);
-      Neighbors.Add(neighbor, ImmutableSortedSet<TV>.Empty);
+      Neighbors.Add(neighbor, ImmutableSortedSet<NodeType>.Empty);
     }
 
     // if the edge already exists, do nothing
@@ -120,7 +128,7 @@ public class Digraph<TV> where TV : notnull
   /// </summary>
   /// <param name="other"></param>
   /// <returns></returns>
-  public Digraph<TV> Union(Digraph<TV> other)
+  public Digraph<NodeType> Union(Digraph<NodeType> other)
   {
     var extended = Neighbors;
     foreach (var (node, neighbors) in other.Neighbors)
@@ -135,7 +143,7 @@ public class Digraph<TV> where TV : notnull
       }
     }
 
-    return new Digraph<TV>(extended);
+    return new Digraph<NodeType>(extended);
   }
 
   /// <summary>
@@ -144,12 +152,12 @@ public class Digraph<TV> where TV : notnull
   /// <param name="nodeFunc">The function over every node.</param>
   /// <typeparam name="T">The return type of the function.</typeparam>
   /// <returns>A dictionary representing the result of the function for every node.</returns>
-  public Dictionary<TV, T> MapNodes<T>(Func<TV, T> nodeFunc)
+  public Dictionary<NodeType, T> MapNodes<T>(Func<NodeType, T> nodeFunc)
   {
     return Nodes.ToDictionary(node => node, nodeFunc);
   }
 
-  public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, TV, TAcc> f)
+  public TAcc FoldNodes<TAcc>(TAcc initial, Func<TAcc, NodeType, TAcc> f)
   {
     return Nodes.Aggregate(initial, f);
   }
@@ -158,7 +166,7 @@ public class Digraph<TV> where TV : notnull
   ///   Return all the edges in the network.
   /// </summary>
   /// <returns>an enumerable over the edges of the network</returns>
-  private IEnumerable<(TV, TV)> AllEdges()
+  private IEnumerable<(NodeType, NodeType)> AllEdges()
   {
     return Neighbors
       .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (nbr, node.Key));
@@ -170,12 +178,12 @@ public class Digraph<TV> where TV : notnull
   /// <param name="edgeFunc">a function from an edge to a value T</param>
   /// <typeparam name="T">the type of the function output</typeparam>
   /// <returns></returns>
-  public Dictionary<(TV, TV), T> MapEdges<T>(Func<(TV, TV), T> edgeFunc)
+  public Dictionary<(NodeType, NodeType), T> MapEdges<T>(Func<(NodeType, NodeType), T> edgeFunc)
   {
     return AllEdges().ToDictionary(e => e, edgeFunc);
   }
 
-  public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (TV, TV), TAcc> f)
+  public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (NodeType, NodeType), TAcc> f)
   {
     return AllEdges().Aggregate(initial, f);
   }
@@ -203,10 +211,10 @@ public class Digraph<TV> where TV : notnull
   /// </summary>
   /// <param name="goal">The goal node.</param>
   /// <returns>A dictionary from nodes to their distance (number of edges) to the goal node.</returns>
-  public Dictionary<TV, BigInteger> BreadthFirstSearch(TV goal)
+  public Dictionary<NodeType, BigInteger> BreadthFirstSearch(NodeType goal)
   {
-    var q = new Queue<TV>();
-    var visited = new Dictionary<TV, BigInteger>
+    var q = new Queue<NodeType>();
+    var visited = new Dictionary<NodeType, BigInteger>
     {
       {goal, 0}
     };
@@ -230,25 +238,31 @@ public class Digraph<TV> where TV : notnull
 /// <summary>
 ///   Represents the digraph of an NV network with node labels.
 /// </summary>
-public class NodeLabelledDigraph<TV, T> : Digraph<TV>
+public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType>
 {
-  public NodeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<TV, T> labels) :
+  public NodeLabelledDigraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors,
+    Dictionary<NodeType, LabelType> labels) :
     base(neighbors)
   {
     Labels = labels;
   }
 
+  public NodeLabelledDigraph(Digraph<NodeType> digraph, Dictionary<NodeType, LabelType> labels) : this(
+    digraph.Neighbors, labels)
+  {
+  }
+
   /// <summary>
   ///   Labels for the nodes of the digraph.
   /// </summary>
-  public Dictionary<TV, T> Labels { get; }
+  public Dictionary<NodeType, LabelType> Labels { get; }
 
   /// <summary>
   ///   Return the given node's label.
   /// </summary>
   /// <param name="node">A node in the digraph.</param>
   /// <returns>The label for that node.</returns>
-  public T L(TV node)
+  public LabelType L(NodeType node)
   {
     return Labels[node];
   }
@@ -257,15 +271,16 @@ public class NodeLabelledDigraph<TV, T> : Digraph<TV>
   ///   Convert the NodeLabelledDigraph to an unlabelled one.
   /// </summary>
   /// <returns>An equivalent Digraph.</returns>
-  public Digraph<TV> ToUnlabelled()
+  public Digraph<NodeType> ToUnlabelled()
   {
-    return new Digraph<TV>(Neighbors);
+    return new Digraph<NodeType>(Neighbors);
   }
 }
 
-public class EdgeLabelledDigraph<TV, T> : Digraph<TV>
+public class EdgeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType>
 {
-  public EdgeLabelledDigraph(IDictionary<TV, ImmutableSortedSet<TV>> neighbors, Dictionary<(TV, TV), T> labels) :
+  public EdgeLabelledDigraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors,
+    Dictionary<(NodeType, NodeType), LabelType> labels) :
     base(neighbors)
   {
     Labels = labels;
@@ -274,9 +289,9 @@ public class EdgeLabelledDigraph<TV, T> : Digraph<TV>
   /// <summary>
   /// Labels for the edges in the digraph.
   /// </summary>
-  public Dictionary<(TV, TV), T> Labels { get; set; }
+  public Dictionary<(NodeType, NodeType), LabelType> Labels { get; set; }
 
-  public void AddEdge(TV node, TV neighbor, T label)
+  public void AddEdge(NodeType node, NodeType neighbor, LabelType label)
   {
     Labels[(neighbor, node)] = label;
     AddEdge(node, neighbor);

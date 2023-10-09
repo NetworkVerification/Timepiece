@@ -53,7 +53,9 @@ rootCommand.SetHandler(
       {
         NetworkQueryType.Internet2BlockToExternal => Internet2.BlockToExternal(topology, externalNodes),
         NetworkQueryType.Internet2NoMartians => Internet2.NoMartians(topology, externalNodes),
-        // NetworkQueryType.FatReachable => Timepiece.Angler.Queries.FatTree.Reachable(topology, destination)
+        NetworkQueryType.FatReachable => FatTreeQuery.Reachable(FatTreeQuery.LabelFatTree(topology)),
+        NetworkQueryType.FatPathLength => FatTreeQuery.MaxPathLength(FatTreeQuery.LabelFatTree(topology)),
+        NetworkQueryType.FatValleyFreedom => FatTreeQuery.ValleyFreedom(FatTreeQuery.LabelFatTree(topology)),
         _ => throw new ArgumentOutOfRangeException(nameof(queryType), queryType, "Query type not supported!")
       };
       var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);

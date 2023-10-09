@@ -17,13 +17,17 @@ public class RouteEnvironment
   public static readonly UInt<_2> ExternalOrigin = new(2);
   public static readonly UInt<_2> InternalOrigin = new(3);
 
+  public const uint DefaultLp = 100;
+  public const uint DefaultWeight = 32768;
+  public const uint DefaultMetric = 0;
+
   public RouteEnvironment()
   {
     Prefix = new Ipv4Prefix();
-    Weight = 32768;
-    Lp = 100;
+    Weight = DefaultWeight;
+    Lp = DefaultLp;
     AsPathLength = 0;
-    Metric = 0;
+    Metric = DefaultMetric;
     Tag = 0;
     OriginType = IncompleteOrigin;
     Communities = new CSet<string>();
@@ -163,6 +167,11 @@ public static class RouteEnvironmentExtensions
   public static Zen<RouteEnvironment> IncrementAsPathLength(this Zen<RouteEnvironment> b, Zen<BigInteger> x)
   {
     return b.WithAsPathLength(b.GetAsPathLength() + x);
+  }
+
+  public static Zen<bool> HasCommunity(this Zen<RouteEnvironment> b, string community)
+  {
+    return b.GetCommunities().Contains(community);
   }
 
   public static Zen<bool> GetResultValue(this Zen<RouteEnvironment> b)
