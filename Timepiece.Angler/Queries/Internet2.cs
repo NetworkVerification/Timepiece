@@ -190,7 +190,7 @@ public static class Internet2
   public static NetworkQuery<RouteEnvironment, string> Reachable(Digraph<string> digraph,
     IEnumerable<string> externalPeers)
   {
-    var externalRoutes = ExternalRoutes(externalPeers, MaxPrefixLengthIs32);
+    var externalRoutes = ExternalRoutes(externalPeers, r => Zen.And(NonMartianRoute(r), MaxPrefixLengthIs32(r)));
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
@@ -202,25 +202,37 @@ public static class Internet2
 
     var monolithicProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
-        ? Lang.Intersect<RouteEnvironment>(
-          // if an external route exists, then this node has a route
-          r => Zen.Implies(ExternalValidRouteExists(externalRoutes.Values.Select(s => s.Value)),
-            r.GetResultValue()),
-          MaxPrefixLengthIs32)
+        // internal nodes: if an external route exists, then we have a route
+        ? r => Zen.Implies(ExternalValidRouteExists(externalRoutes.Values.Select(s => s.Value)),
+          r.GetResultValue())
+        // no check on external nodes
         : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
+        // eventually, if an external route exists, internal nodes have a route
         ? Lang.Finally(lastTime, monolithicProperties[n])
-        : Lang.Globally(monolithicProperties[n]));
+        : Lang.Globally(Lang.True<RouteEnvironment>()));
     // FIXME: update acc. to TinyWanSoundAnnotationsPass in BooleanTests.cs
     var annotations = digraph.MapNodes(n =>
       Lang.Intersect(
         Internet2Nodes.Contains(n)
+          // internal nodes get routes at 2 different possible times
+          // case 1: an adjacent external peer has a route. we get a route once they send it to us
+          // case 2: no adjacent external peer has a route. we get a route once an internal neighbor sends it to us
           ? Lang.Finally(
             Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes), externalAdjacentTime, internalTime),
             monolithicProperties[n])
-          : Lang.Globally(monolithicProperties[n]),
-        Lang.Globally<RouteEnvironment>(MaxPrefixLengthIs32)));
+          // external nodes get routes at 2 different possible times also
+          // case 3: external peer starts with a route.
+          // case 4: external peer does not start with a route. it gets a route once it receives it from the network
+          : Lang.Globally<RouteEnvironment>(r =>
+            Zen.If(
+              externalRoutes.TryGetValue(n, out var externalRoute) ? externalRoute.Value.GetResultValue() : Zen.False(),
+              r.GetResultValue(), Zen.True())),
+        // routes should always have prefix lengths at most 32
+        Lang.Globally<RouteEnvironment>(MaxPrefixLengthIs32),
+        // routes should not be for a martian prefix
+        Lang.Globally<RouteEnvironment>(NonMartianRoute)));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
       annotations);
