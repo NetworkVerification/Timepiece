@@ -179,6 +179,11 @@ public static class RouteEnvironmentExtensions
     return b.GetResult().GetValue();
   }
 
+  public static Func<Zen<RouteEnvironment>, Zen<bool>> ResultValueImplies(Func<Zen<RouteEnvironment>, Zen<bool>> f)
+  {
+    return b => Zen.Implies(b.GetResultValue(), f(b));
+  }
+
   public static Zen<RouteEnvironment> WithResultValue(this Zen<RouteEnvironment> b, Zen<bool> value)
   {
     return b.WithResult(b.GetResult().WithValue(value));
