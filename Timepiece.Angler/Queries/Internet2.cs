@@ -1,3 +1,4 @@
+using System.Numerics;
 using Timepiece.DataTypes;
 using ZenLib;
 
@@ -193,19 +194,53 @@ public static class Internet2
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
+    // make the external adjacent time constraint strictly greater than 0
+    symbolicTimes[0].Constraint = t => t > BigInteger.Zero;
+    var externalAdjacentTime = symbolicTimes[0].Value;
+    var internalTime = symbolicTimes[1].Value;
     var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties = digraph.MapNodes(n =>
-      InternalNodes.Contains(n)
+      Internet2Nodes.Contains(n)
         ? Lang.Intersect<RouteEnvironment>(
           // if an external route exists, then this node has a route
           r => Zen.Implies(ExternalValidRouteExists(externalRoutes.Values.Select(s => s.Value)),
             r.GetResultValue()),
           MaxPrefixLengthIs32)
         : Lang.True<RouteEnvironment>());
-    var modularProperties = digraph.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
-    // TODO: figure out the annotations
+    var modularProperties = digraph.MapNodes(n =>
+      Internet2Nodes.Contains(n)
+        ? Lang.Finally(lastTime, monolithicProperties[n])
+        : Lang.Globally(monolithicProperties[n]));
+    // FIXME: update acc. to TinyWanSoundAnnotationsPass in BooleanTests.cs
+    var annotations = digraph.MapNodes(n =>
+      Lang.Intersect(
+        Internet2Nodes.Contains(n)
+          ? Lang.Finally(
+            Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes), externalAdjacentTime, internalTime),
+            monolithicProperties[n])
+          : Lang.Globally(monolithicProperties[n]),
+        Lang.Globally<RouteEnvironment>(MaxPrefixLengthIs32)));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
-    throw new NotImplementedException();
+    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
+      annotations);
+  }
+
+  /// <summary>
+  /// Return a constraint that one of the node's external neighbors has a route.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="node"></param>
+  /// <param name="externalRoutes"></param>
+  /// <returns></returns>
+  private static Zen<bool> ExternalNeighborHasRoute(Digraph<string> digraph, string node,
+    IReadOnlyDictionary<string, SymbolicValue<RouteEnvironment>> externalRoutes)
+  {
+    return digraph[node].Aggregate(Zen.False(),
+      (b, neighbor) => externalRoutes.TryGetValue(neighbor, out var externalRoute)
+        // if the neighbor is external, add a constraint that it can have a value
+        ? Zen.Or(b, externalRoute.Value.GetResultValue())
+        // otherwise, we can just skip it
+        : b);
   }
 }
