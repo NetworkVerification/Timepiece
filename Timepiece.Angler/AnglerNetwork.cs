@@ -164,7 +164,7 @@ public class AnglerNetwork
       if (!importFunctions.TryGetValue(edge, out var import))
         throw new ArgumentException($"Corresponding import function absent for edge {edge}!");
       // identify an edge as inter-AS/external if the source is an external neighbor
-      var external = Externals.Any(e => e.Name == edge.Item1);
+      var external = Externals.Any(e => e.Name == edge.Item1) || (Nodes[edge.Item1].Asn != Nodes[edge.Item2].Asn);
       transferFunction.Add(edge, Transfer(export, import, external));
     }
 

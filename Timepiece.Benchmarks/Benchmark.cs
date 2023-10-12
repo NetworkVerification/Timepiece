@@ -101,7 +101,7 @@ public class Benchmark
     }
   }
 
-  private void RunProfiler<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
+  private void RunProfiler<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net) where NodeType : notnull
   {
     net.PrintFormulas = Verbose;
     if (RunMonolithic)

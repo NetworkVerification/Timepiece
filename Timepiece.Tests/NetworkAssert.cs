@@ -16,12 +16,13 @@ public static class NetworkAssert
   /// <param name="net"></param>
   /// <typeparam name="RouteType"></typeparam>
   /// <typeparam name="NodeType"></typeparam>
-  public static void CheckSound<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
+  public static void CheckSound<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net) where NodeType : notnull
   {
     Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckAnnotations());
   }
 
   public static void CheckSoundDelayed<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
+    where NodeType : notnull
   {
     Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckAnnotationsDelayed());
   }
@@ -33,6 +34,7 @@ public static class NetworkAssert
   /// <typeparam name="RouteType"></typeparam>
   /// <typeparam name="NodeType"></typeparam>
   public static void CheckSoundMonolithic<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
+    where NodeType : notnull
   {
     Assert.Equal(Option.None<State<RouteType, NodeType>>(), net.CheckMonolithic());
   }
@@ -44,11 +46,13 @@ public static class NetworkAssert
   /// <typeparam name="RouteType"></typeparam>
   /// <typeparam name="NodeType"></typeparam>
   public static void CheckUnsound<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net)
+    where NodeType : notnull
   {
     Assert.True(net.CheckAnnotations().HasValue);
   }
 
   public static void CheckSoundCheck<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net, SmtCheck check)
+    where NodeType : notnull
   {
     Assert.Equal(Option.None<State<RouteType, NodeType>>(),
       check switch
@@ -71,6 +75,7 @@ public static class NetworkAssert
   /// <typeparam name="NodeType"></typeparam>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
   public static void CheckUnsoundCheck<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> net, SmtCheck check)
+    where NodeType : notnull
   {
     Assert.True(check switch
     {

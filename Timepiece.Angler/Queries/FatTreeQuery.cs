@@ -93,11 +93,35 @@ public static partial class FatTreeQuery
       monolithicProperties, modularProperties, annotations);
   }
 
+  /// <summary>
+  /// Return the second (dropping) community associated with the given node.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="node"></param>
+  /// <returns></returns>
+  private static string DropCommunity(NodeLabelledDigraph<string, int> digraph, string node)
+  {
+    return node.IsAggregation() ? $"4:{digraph.L(node)}" : node.IsEdge() ? $"5:{digraph.L(node)}" : "6:0";
+  }
+
+  private static IEnumerable<string> DropCommunities(int numberOfPods)
+  {
+    return Enumerable.Range(0, numberOfPods - 1)
+      .SelectMany(podNumber => new[] {$"4:{podNumber}", $"5:{podNumber}"})
+      .Concat(Enumerable.Repeat("6:0", 1));
+  }
+
+  private static Func<Zen<RouteEnvironment>, Zen<bool>> NoDropCommunities(int numberOfPods)
+  {
+    return r => Zen.And(DropCommunities(numberOfPods).Select(comm => Zen.Not(r.HasCommunity(comm))));
+  }
+
   public static NetworkQuery<RouteEnvironment, string> ValleyFreedom(NodeLabelledDigraph<string, int> digraph)
   {
     // infer the destination as the last edge node
     var destination = FatTree.FatTreeLayer.Edge.Node((uint) digraph.NNodes - 1);
     var destinationPod = digraph.L(destination);
+    Console.WriteLine($"Destination pod: {destinationPod}");
     var initialRoutes =
       digraph.MapNodes(n =>
         n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
@@ -122,16 +146,16 @@ public static partial class FatTreeQuery
             Zen.And(r.GetLp() == RouteEnvironment.DefaultLp, r.GetWeight() == RouteEnvironment.DefaultWeight,
               // (2a) If we drop this constraint, then a node "further" along the path may send a better route that violates
               //      the eventually constraint that the path length be equal.
-              r.GetAsPathLength() >= bestPathLength)));
+              r.GetAsPathLength() >= bestPathLength,
+              // no route should have any community indicating it has taken a valley and should be dropped
+              // TODO: figure out why this doesn't seem to get them all
+              NoDropCommunities(destinationPod + 1)(r))));
       // (3) Eventually, nodes close to the destination must not be tagged down.
       //     All nodes eventually have routes equal to their best path length.
       var eventually =
         Lang.Finally<RouteEnvironment>(witnessTime,
           r =>
             Zen.And(r.GetResultValue(),
-              // core and close-to-destination nodes should not be tagged down
-              // TODO: get the appropriate community tag
-              Zen.Implies(Zen.Or(bestPathLength < new BigInteger(2)), Zen.Not(r.HasCommunity("FOO"))),
               // (3a) If we let the eventual path length be any better than the best, then we can have an inductive condition
               //      violation at the aggregation nodes. A "further" core node (above) can send a better route than a
               //      "closer" edge node below, causing DownTag to be set and violating the inductive condition.
