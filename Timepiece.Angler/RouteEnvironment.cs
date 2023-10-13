@@ -117,14 +117,7 @@ public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
       switch (property.PropertyType.Name)
       {
         case "CSet":
-          var setString = string.Empty;
-          foreach (var s in Communities.Map.Values.Keys)
-            if (string.IsNullOrEmpty(setString))
-              setString += $"{s}";
-            else
-              setString += $", {s}";
-
-          propertiesBuilder.Append(setString);
+          propertiesBuilder.AppendJoin(", ", Communities.Map.Values.Keys);
           break;
         default:
           propertiesBuilder.Append($"{property.Name}={property.GetValue(this)}");

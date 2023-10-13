@@ -14,7 +14,7 @@ public static class AnglerNetworkTests
 
   private static readonly List<ExternalPeer> ExternalPeers = new()
   {
-    new ExternalPeer(null, "123.123.45.45", new []{"A"}),
+    new ExternalPeer("123.123.45.45", new[] {"A"}),
   };
 
   private static readonly AnglerNetwork SmallMeshNetwork = new(SmallMesh, ExternalPeers);

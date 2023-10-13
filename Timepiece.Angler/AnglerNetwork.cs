@@ -84,7 +84,7 @@ public class AnglerNetwork
   }
 
   /// <summary>
-  /// Return a function composing the export and import policies to transfer a route.
+  /// Return a function composing the export and import policies to transfer a route along an edge.
   /// The routing behavior is as follows:
   /// <list type="number">
   ///   <item>If the route's result does not have a value, send it as-is (skip the policies -- it will be dropped).</item>
@@ -163,8 +163,10 @@ public class AnglerNetwork
       // compose the export and import and evaluate on a fresh state
       if (!importFunctions.TryGetValue(edge, out var import))
         throw new ArgumentException($"Corresponding import function absent for edge {edge}!");
-      // identify an edge as inter-AS/external if the source is an external neighbor
-      var external = Externals.Any(e => e.Name == edge.Item1) || (Nodes[edge.Item1].Asn != Nodes[edge.Item2].Asn);
+      // identify an edge as inter-AS/external if the source or sink is an external peer, or if the AS numbers differ
+      var external = Externals.Any(e => e.Name == edge.Item1 || e.Name == edge.Item2) ||
+                     (Nodes.TryGetValue(edge.Item1, out var src) && Nodes.TryGetValue(edge.Item2, out var snk) &&
+                      src.Asn != snk.Asn);
       transferFunction.Add(edge, Transfer(export, import, external));
     }
 
