@@ -106,14 +106,10 @@ public static partial class FatTreeQuery
 
   private static IEnumerable<string> DropCommunities(int numberOfPods)
   {
-    return Enumerable.Range(0, numberOfPods - 1)
+    // Enumerable.Range takes a start and a *count*, not a max -- so we want the number of pods
+    return Enumerable.Range(0, numberOfPods)
       .SelectMany(podNumber => new[] {$"4:{podNumber}", $"5:{podNumber}"})
       .Concat(Enumerable.Repeat("6:0", 1));
-  }
-
-  private static Func<Zen<RouteEnvironment>, Zen<bool>> NoDropCommunities(int numberOfPods)
-  {
-    return r => Zen.And(DropCommunities(numberOfPods).Select(comm => Zen.Not(r.HasCommunity(comm))));
   }
 
   public static NetworkQuery<RouteEnvironment, string> ValleyFreedom(NodeLabelledDigraph<string, int> digraph)
@@ -121,7 +117,9 @@ public static partial class FatTreeQuery
     // infer the destination as the last edge node
     var destination = FatTree.FatTreeLayer.Edge.Node((uint) digraph.NNodes - 1);
     var destinationPod = digraph.L(destination);
-    Console.WriteLine($"Destination pod: {destinationPod}");
+    var numberOfPods = destinationPod + 1;
+    var dropCommunities = DropCommunities(numberOfPods).ToArray();
+
     var initialRoutes =
       digraph.MapNodes(n =>
         n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
@@ -138,28 +136,23 @@ public static partial class FatTreeQuery
       // (1) We need the precise best path length here as dist can be arbitrarily larger than the path length,
       //     and we need to ensure that nodes never have routes with path length larger than their best.
       var bestPathLength = new BigInteger(indexTime);
-      // (2) At all times, either a node has no route, or it has a route with the default LP
-      //     and that has path length no *better* than the best path length.
+      // (2) At all times, either a node has no route, or it has a route with the default LP and weight
+      //     and no drop communities
       var safety =
         Lang.Globally<RouteEnvironment>(
           r => Zen.Implies(r.GetResultValue(),
             Zen.And(r.GetLp() == RouteEnvironment.DefaultLp, r.GetWeight() == RouteEnvironment.DefaultWeight,
-              // (2a) If we drop this constraint, then a node "further" along the path may send a better route that violates
-              //      the eventually constraint that the path length be equal.
-              r.GetAsPathLength() >= bestPathLength,
+              // no negative path lengths
+              r.GetAsPathLength() >= BigInteger.Zero,
               // no route should have any community indicating it has taken a valley and should be dropped
-              // TODO: figure out why this doesn't seem to get them all
-              NoDropCommunities(destinationPod + 1)(r))));
+              Zen.And(dropCommunities.Select(c => Zen.Not(r.HasCommunity(c)))))));
       // (3) Eventually, nodes close to the destination must not be tagged down.
-      //     All nodes eventually have routes equal to their best path length.
+      //     All nodes eventually have routes no worse than their best path length.
       var eventually =
         Lang.Finally<RouteEnvironment>(witnessTime,
           r =>
             Zen.And(r.GetResultValue(),
-              // (3a) If we let the eventual path length be any better than the best, then we can have an inductive condition
-              //      violation at the aggregation nodes. A "further" core node (above) can send a better route than a
-              //      "closer" edge node below, causing DownTag to be set and violating the inductive condition.
-              r.GetAsPathLength() == bestPathLength));
+              r.GetAsPathLength() <= bestPathLength));
       return Lang.Intersect(safety, eventually);
     });
 
