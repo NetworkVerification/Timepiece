@@ -11,7 +11,7 @@ namespace Timepiece.Angler;
 /// the results of executing the policy, and the current local default action.
 /// </summary>
 [ZenObject]
-public class RouteEnvironment
+public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
 {
   public static readonly UInt<_2> IncompleteOrigin = new(0);
   public static readonly UInt<_2> ExternalOrigin = new(2);

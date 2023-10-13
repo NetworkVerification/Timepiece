@@ -12,8 +12,37 @@ namespace Timepiece.Angler;
 ///
 /// </summary>
 [ZenObject]
-public class RouteResult
+public class RouteResult : DifferentiatedString<RouteResult>, IEquatable<RouteResult>
 {
+  public bool Equals(RouteResult? other)
+  {
+    if (ReferenceEquals(null, other)) return false;
+    if (ReferenceEquals(this, other)) return true;
+    return Exit == other.Exit && Fallthrough == other.Fallthrough && Returned == other.Returned && Value == other.Value;
+  }
+
+  public override bool Equals(object? obj)
+  {
+    if (ReferenceEquals(null, obj)) return false;
+    if (ReferenceEquals(this, obj)) return true;
+    return obj.GetType() == GetType() && Equals((RouteResult) obj);
+  }
+
+  public override int GetHashCode()
+  {
+    return HashCode.Combine(Exit, Fallthrough, Returned, Value);
+  }
+
+  public static bool operator ==(RouteResult? left, RouteResult? right)
+  {
+    return Equals(left, right);
+  }
+
+  public static bool operator !=(RouteResult? left, RouteResult? right)
+  {
+    return !Equals(left, right);
+  }
+
   public RouteResult(bool exit, bool fallthrough, bool returned, bool value)
   {
     Exit = exit;

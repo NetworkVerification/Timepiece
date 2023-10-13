@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using NetTools;
@@ -10,7 +11,7 @@ namespace Timepiece.DataTypes;
 ///   A Zen-friendly representation of an IPv4 prefix.
 /// </summary>
 [ZenObject]
-public struct Ipv4Prefix
+public struct Ipv4Prefix : IEquatable<Ipv4Prefix>
 {
   public uint Prefix { get; set; }
 
@@ -65,6 +66,31 @@ public struct Ipv4Prefix
   {
     return AsAddressRange().ToCidrString();
     // return $"{Prefix}/{PrefixLength}";
+  }
+
+  public bool Equals(Ipv4Prefix other)
+  {
+    return Prefix == other.Prefix && Equals(PrefixLength, other.PrefixLength);
+  }
+
+  public override bool Equals(object obj)
+  {
+    return obj is Ipv4Prefix other && Equals(other);
+  }
+
+  public static bool operator ==(Ipv4Prefix left, Ipv4Prefix right)
+  {
+    return left.Equals(right);
+  }
+
+  public static bool operator !=(Ipv4Prefix left, Ipv4Prefix right)
+  {
+    return !left.Equals(right);
+  }
+
+  public override int GetHashCode()
+  {
+    return HashCode.Combine(Prefix, PrefixLength);
   }
 }
 
