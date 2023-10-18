@@ -11,7 +11,7 @@ namespace Timepiece.Angler;
 /// the results of executing the policy, and the current local default action.
 /// </summary>
 [ZenObject]
-public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
+public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
 {
   public static readonly UInt<_2> IncompleteOrigin = new(0);
   public static readonly UInt<_2> ExternalOrigin = new(2);
@@ -26,6 +26,7 @@ public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
     Prefix = new Ipv4Prefix();
     Weight = DefaultWeight;
     Lp = DefaultLp;
+    AsSet = new CSet<string>();
     AsPathLength = 0;
     Metric = DefaultMetric;
     Tag = 0;
@@ -37,13 +38,14 @@ public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
 
 
   [JsonConstructor]
-  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, BigInteger asPathLength, uint metric, uint tag,
+  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, CSet<string> asSet, BigInteger asPathLength, uint metric, uint tag,
     UInt<_2> originType, CSet<string> communities, RouteResult result,
     bool localDefaultAction)
   {
     Prefix = prefix;
     Weight = weight;
     Lp = lp;
+    AsSet = asSet;
     AsPathLength = asPathLength;
     Metric = metric;
     Tag = tag;
@@ -76,6 +78,11 @@ public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
   ///   Defaults to 100.
   /// </summary>
   public uint Lp { get; set; }
+
+  /// <summary>
+  /// Set representation of the ASes in the AS path.
+  /// </summary>
+  public CSet<string> AsSet { get; set; }
 
   /// <summary>
   ///   Integer representation of AS path length.
@@ -114,13 +121,22 @@ public class RouteEnvironment : DifferentiatedString<RouteEnvironment>
     {
       if (propertiesBuilder.Length > 0) propertiesBuilder.Append(", ");
 
+      propertiesBuilder.Append($"{property.Name}=");
       switch (property.PropertyType.Name)
       {
         case "CSet":
-          propertiesBuilder.AppendJoin(", ", Communities.Map.Values.Keys);
+          var value = (CSet<string>?) property.GetValue(this);
+          if (value is null)
+          {
+            propertiesBuilder.Append($"{value}");
+          }
+          else
+          {
+            propertiesBuilder.AppendJoin(", ", value.Map.Values.Keys);
+          }
           break;
         default:
-          propertiesBuilder.Append($"{property.Name}={property.GetValue(this)}");
+          propertiesBuilder.Append($"{property.GetValue(this)}");
           break;
       }
     }

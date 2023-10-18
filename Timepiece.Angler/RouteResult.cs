@@ -12,7 +12,7 @@ namespace Timepiece.Angler;
 ///
 /// </summary>
 [ZenObject]
-public class RouteResult : DifferentiatedString<RouteResult>, IEquatable<RouteResult>
+public class RouteResult : IDifferentiatedString<RouteResult>, IEquatable<RouteResult>
 {
   public bool Equals(RouteResult? other)
   {

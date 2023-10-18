@@ -7,7 +7,7 @@ namespace Timepiece.Angler;
 /// Properties which are not changed from the default value will be suppressed.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public abstract class DifferentiatedString<T> where T : new()
+public interface IDifferentiatedString<T> where T : new()
 {
   public string DiffString()
   {
