@@ -6,12 +6,12 @@ using ZenLib;
 namespace Timepiece.Tests;
 
 /// <summary>
-/// Helper assertions for checking annotated networks.
+///   Helper assertions for checking annotated networks.
 /// </summary>
 public static class NetworkAssert
 {
   /// <summary>
-  /// Assert that the modular invariants hold (initial, inductive, safety checks).
+  ///   Assert that the modular invariants hold (initial, inductive, safety checks).
   /// </summary>
   /// <param name="net"></param>
   /// <typeparam name="RouteType"></typeparam>
@@ -28,7 +28,7 @@ public static class NetworkAssert
   }
 
   /// <summary>
-  /// Assert that the monolithic properties holds.
+  ///   Assert that the monolithic properties holds.
   /// </summary>
   /// <param name="net"></param>
   /// <typeparam name="RouteType"></typeparam>
@@ -40,7 +40,7 @@ public static class NetworkAssert
   }
 
   /// <summary>
-  /// Assert that the modular invariants do NOT hold.
+  ///   Assert that the modular invariants do NOT hold.
   /// </summary>
   /// <param name="net"></param>
   /// <typeparam name="RouteType"></typeparam>
@@ -67,7 +67,7 @@ public static class NetworkAssert
   }
 
   /// <summary>
-  /// Assert that a particular modular or monolithic check fails to hold.
+  ///   Assert that a particular modular or monolithic check fails to hold.
   /// </summary>
   /// <param name="net"></param>
   /// <param name="check"></param>

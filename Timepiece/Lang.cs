@@ -9,7 +9,7 @@ namespace Timepiece;
 using Time = Zen<BigInteger>;
 
 /// <summary>
-/// Functions for describing predicates over routes and temporal invariants over routes.
+///   Functions for describing predicates over routes and temporal invariants over routes.
 /// </summary>
 public static class Lang
 {

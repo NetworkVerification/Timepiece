@@ -6,6 +6,7 @@ using Timepiece.Tests.Networks;
 using Xunit;
 using ZenLib;
 using static ZenLib.Zen;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -24,11 +25,14 @@ public static class LocalPrefTests
         {"A", Pair.Create(Constant(BigInteger.One), Constant(BigInteger.Zero))},
         {"B", Pair.Create(Constant(BigInteger.One), Constant(new BigInteger(10)))}
       };
-      return new LocalPref<string>(topology, initialValues, System.Array.Empty<ISymbolic>());
+      return new LocalPref<string>(topology, initialValues, Array.Empty<ISymbolic>());
     }
   }
 
-  private static Zen<bool> IsReachable(Zen<LpRoute> r) => r.Item2() < new BigInteger(10);
+  private static Zen<bool> IsReachable(Zen<LpRoute> r)
+  {
+    return r.Item2() < new BigInteger(10);
+  }
 
   private static AnnotatedNetwork<LpRoute, string> AnnotatedNetwork(
     Dictionary<string, Func<Zen<LpRoute>, Zen<BigInteger>, Zen<bool>>> annotations)

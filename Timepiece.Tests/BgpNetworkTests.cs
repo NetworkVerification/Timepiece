@@ -15,13 +15,15 @@ public static class BgpNetworkTests
   private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp());
 
   /// <summary>
-  /// Construct a map of nodes to predicates such that every node's predicate is that it is reachable
-  /// (has some route).
+  ///   Construct a map of nodes to predicates such that every node's predicate is that it is reachable
+  ///   (has some route).
   /// </summary>
   /// <param name="digraph"></param>
   /// <returns></returns>
-  private static Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>> Reachable(Digraph<string> digraph) =>
-    digraph.MapNodes(_ => Lang.IsSome<Bgp>());
+  private static Dictionary<string, Func<Zen<Option<Bgp>>, Zen<bool>>> Reachable(Digraph<string> digraph)
+  {
+    return digraph.MapNodes(_ => Lang.IsSome<Bgp>());
+  }
 
   private static BgpAnnotatedNetwork<string> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
@@ -151,28 +153,32 @@ public static class BgpNetworkTests
   }
 
   /// <summary>
-  /// A digraph representing Figure 1 of the Lightyear paper (see page 2).
+  ///   A digraph representing Figure 1 of the Lightyear paper (see page 2).
   /// </summary>
   /// <returns></returns>
-  private static Digraph<string> LightyearFigure1() =>
-    new(new Dictionary<string, List<string>>
+  private static Digraph<string> LightyearFigure1()
+  {
+    return new Digraph<string>(new Dictionary<string, List<string>>
     {
       {"R1", new List<string> {"R2", "R3", "ISP1"}},
       {"R2", new List<string> {"R1", "R3", "ISP2"}},
       {"R3", new List<string> {"R1", "R2", "Customer"}},
       {"ISP1", new List<string> {"R1"}},
       {"ISP2", new List<string> {"R2"}},
-      {"Customer", new List<string> {"R3"}},
+      {"Customer", new List<string> {"R3"}}
     });
+  }
 
-  private static Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>> LightyearTransfer() =>
-    new()
+  private static Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>> LightyearTransfer()
+  {
+    return new Dictionary<(string, string), Func<Zen<Option<Bgp>>, Zen<Option<Bgp>>>>
     {
       {("ISP1", "R1"), Lang.Omap<Bgp, Bgp>(r => r.IncrementAsLength().AddTag("100:1"))},
       {
         ("R2", "ISP2"),
         Lang.Bind<Bgp, Bgp>(r => If(r.HasTag("100:1"), Option.None<Bgp>(), Option.Create(r.IncrementAsLength())))
-      },
+      }
       // TODO: rest use defaults
     };
+  }
 }

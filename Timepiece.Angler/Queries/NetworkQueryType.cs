@@ -9,7 +9,7 @@ public enum NetworkQueryType
   FatReachable,
   FatPathLength,
   FatValleyFreedom,
-  FatHijackFiltering,
+  FatHijackFiltering
 }
 
 public static class NetworkQueryTypeExtensions

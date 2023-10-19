@@ -9,7 +9,7 @@ using static ZenLib.Zen;
 namespace Timepiece.Tests.Networks;
 
 /// <summary>
-/// Network "functor" lifting a network to a network where links may fail.
+///   Network "functor" lifting a network to a network where links may fail.
 /// </summary>
 /// <typeparam name="RouteType"></typeparam>
 /// <typeparam name="NodeType"></typeparam>
@@ -51,7 +51,9 @@ public class FaultTolerance<RouteType, NodeType> : AnnotatedNetwork<Option<Route
   }
 
   private static Zen<bool> EdgeInNetwork(Digraph<NodeType> digraph, Zen<(NodeType, NodeType)> edge)
-    => digraph.FoldEdges(False(), (b, e) => Or(b, Constant(e) == edge));
+  {
+    return digraph.FoldEdges(False(), (b, e) => Or(b, Constant(e) == edge));
+  }
 
   private static SymbolicValue<(NodeType, NodeType)>[] CreateSymbolics(Digraph<NodeType> digraph, uint numFailed)
   {

@@ -4,6 +4,7 @@ using System.Numerics;
 using Timepiece.Tests.Networks;
 using Xunit;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -25,7 +26,7 @@ public static class FaultToleranceTests
     var modularProperties = topology.MapNodes(_ => Lang.Finally(new BigInteger(2), Lang.IsSome<Unit>()));
     var monolithicProperties = topology.MapNodes(_ => Lang.IsSome<Unit>());
 
-    var unitNetwork = new UnitNetwork<string>(topology, System.Array.Empty<ISymbolic>());
+    var unitNetwork = new UnitNetwork<string>(topology, Array.Empty<ISymbolic>());
     return new FaultTolerance<Unit, string>(unitNetwork, initialValues, annotations, modularProperties,
       monolithicProperties, 1);
   }

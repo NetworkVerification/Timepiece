@@ -6,7 +6,7 @@ using System.Linq;
 namespace Timepiece;
 
 /// <summary>
-/// Useful predefined graph topologies.
+///   Useful predefined graph topologies.
 /// </summary>
 public static class Topologies
 {
@@ -26,7 +26,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <param name="alphaNames">
-  /// If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
+  ///   If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
   /// </param>
   /// <returns></returns>
   public static Digraph<string> Path(uint numNodes, bool alphaNames = true)
@@ -51,7 +51,7 @@ public static class Topologies
   /// </summary>
   /// <param name="numNodes">Number of nodes in topology.</param>
   /// <param name="alphaNames">
-  /// If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
+  ///   If true, use strings of letters to name nodes, starting from 'A'; otherwise use numbers, starting from '0'.
   /// </param>
   /// <returns></returns>
   public static Digraph<string> Complete(uint numNodes, bool alphaNames = true)

@@ -2,6 +2,11 @@ using ZenLib;
 
 namespace Timepiece.Angler;
 
+/// <summary>
+/// Representation of a return value and a route being manipulated
+/// in the current environment.
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class Environment<T>
 {
   public readonly dynamic returnValue;

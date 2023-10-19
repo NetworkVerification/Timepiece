@@ -4,6 +4,7 @@ using Timepiece.Angler.Ast;
 using Timepiece.Angler.Queries;
 using Timepiece.DataTypes;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Angler.Tests;
 
@@ -36,7 +37,7 @@ public static class AstTests
     var annotations = graph.MapNodes(n => Lang.Finally(distances[n], monolithicProperties[n]));
     var modularProperties = graph.MapNodes(n => Lang.Finally(new BigInteger(4), monolithicProperties[n]));
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes,
-      System.Array.Empty<ISymbolic>(), monolithicProperties, modularProperties, annotations);
+      Array.Empty<ISymbolic>(), monolithicProperties, modularProperties, annotations);
   }
 
   private static IPAddressRange GetAddressRange(string node)

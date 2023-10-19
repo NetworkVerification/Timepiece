@@ -25,8 +25,8 @@ public class NodeProperties
   }
 
   /// <summary>
-  /// Construct a new <c>NodeProperties</c> instance with the given neighbors
-  /// and no policy or ASN information.
+  ///   Construct a new <c>NodeProperties</c> instance with the given neighbors
+  ///   and no policy or ASN information.
   /// </summary>
   /// <param name="neighbors"></param>
   public NodeProperties(IEnumerable<string> neighbors) : this(null,
@@ -36,7 +36,7 @@ public class NodeProperties
   }
 
   /// <summary>
-  /// The prefixes associated with the node. Not currently used.
+  ///   The prefixes associated with the node. Not currently used.
   /// </summary>
   public List<Ipv4Prefix> Prefixes { get; set; }
 
@@ -56,9 +56,9 @@ public class NodeProperties
   [JsonProperty(nameof(Policies))] public Dictionary<string, RoutingPolicies> Policies { get; }
 
   /// <summary>
-  /// Construct a <c>NetworkNode{RouteEnvironment}</c> instance that stores the
-  /// transfer functions used for each incoming and outgoing peer.
-  /// If a peer has no associated behavior, use the given default export and import functions.
+  ///   Construct a <c>NetworkNode{RouteEnvironment}</c> instance that stores the
+  ///   transfer functions used for each incoming and outgoing peer.
+  ///   If a peer has no associated behavior, use the given default export and import functions.
   /// </summary>
   /// <param name="defaultExport">A default export function.</param>
   /// <param name="defaultImport">A default import function.</param>

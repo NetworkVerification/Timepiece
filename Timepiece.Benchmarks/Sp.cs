@@ -43,7 +43,8 @@ public class Sp<NodeType> : Network<Option<BgpRoute>, NodeType>
 public class AnnotatedSp<NodeType> : AnnotatedNetwork<Option<BgpRoute>, NodeType>
   where NodeType : IEquatable<NodeType>
 {
-  /// <inheritdoc cref="AnnotatedNetwork{T,TV}(Network{T,TV},System.Collections.Generic.Dictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{System.Numerics.BigInteger},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Numerics.BigInteger)"/>
+  /// <inheritdoc
+  ///   cref="AnnotatedNetwork{T,TV}(Network{T,TV},System.Collections.Generic.Dictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{System.Numerics.BigInteger},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Collections.Generic.IReadOnlyDictionary{TV,System.Func{ZenLib.Zen{T},ZenLib.Zen{bool}}},System.Numerics.BigInteger)" />
   public AnnotatedSp(Sp<NodeType> sp,
     Dictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<NodeType, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
@@ -78,7 +79,7 @@ public class InferSp<NodeType> : Infer<Option<BgpRoute>, NodeType>
 public static class Sp
 {
   /// <summary>
-  /// Return a new <c>Sp{Unit}</c> for a fat-tree topology routing to a concrete destination.
+  ///   Return a new <c>Sp{Unit}</c> for a fat-tree topology routing to a concrete destination.
   /// </summary>
   /// <param name="numPods"></param>
   /// <param name="destination"></param>

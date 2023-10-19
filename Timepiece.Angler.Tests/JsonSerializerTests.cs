@@ -66,7 +66,7 @@ public static class JsonSerializerTests
     var rfl = new RouteFilterList(new RouteFilterLine[]
     {
       new(true, new Ipv4Wildcard("64.57.23.32", "0.0.0.31"), new UInt<_6>(27), new UInt<_6>(32)),
-      new(true, new Ipv4Wildcard("64.57.31.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32)),
+      new(true, new Ipv4Wildcard("64.57.31.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32))
     });
     var deserialize = JsonConvert.DeserializeObject<RouteFilterList>(routeFilterListText);
     Assert.Equivalent(rfl, deserialize);

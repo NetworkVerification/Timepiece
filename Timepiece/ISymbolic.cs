@@ -5,11 +5,10 @@ namespace Timepiece;
 
 public interface ISymbolic
 {
+  public string Name { get; }
   public Zen<bool> Encode();
 
   public bool HasConstraint();
-
-  public string Name { get; }
 
   public object GetSolution(ZenSolution model);
 

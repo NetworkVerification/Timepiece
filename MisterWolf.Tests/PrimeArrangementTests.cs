@@ -8,7 +8,7 @@ public static class PrimeArrangementTests
   {
     new bool?[] {true, null, true},
     new bool?[] {null, false, true},
-    new bool?[] {false, false, null},
+    new bool?[] {false, false, null}
   };
 
   private static readonly List<bool?[]> ReducibleArrangements = new()
@@ -24,7 +24,7 @@ public static class PrimeArrangementTests
     new bool?[] {true, false, true},
     new bool?[] {true, true, true},
     new bool?[] {true, false, false},
-    new bool?[] {true, true, false},
+    new bool?[] {true, true, false}
   };
 
   private static void TestPrimeArrangementAlreadySimplest(List<bool?[]> arrangements)

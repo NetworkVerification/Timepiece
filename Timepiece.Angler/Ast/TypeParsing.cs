@@ -25,7 +25,7 @@ public static class TypeParsing
   }
 
   /// <summary>
-  /// Parse an array of strings into a TypeAlias, starting from the given index.
+  ///   Parse an array of strings into a TypeAlias, starting from the given index.
   /// </summary>
   /// <param name="alias">an array of strings representing the type name</param>
   /// <param name="index">the first string to look at in the array</param>

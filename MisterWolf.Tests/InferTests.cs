@@ -9,6 +9,29 @@ namespace MisterWolf.Tests;
 
 public static class InferTests
 {
+  private static readonly int[] PathSizes = {3, 4, 5, 20};
+
+  private static readonly Func<Zen<bool>, Zen<bool>>[] BooleanBeforeInvariantPredicates =
+  {
+    Lang.Not(Lang.Identity<bool>()),
+    Lang.True<bool>()
+  };
+
+  public static CartesianTheoryData<InferenceStrategy, int, Func<Zen<bool>, Zen<bool>>> cartesianData =
+    new(Strategies, PathSizes, BooleanBeforeInvariantPredicates);
+
+  public static CartesianTheoryData<InferenceStrategy, int, Func<Zen<bool>, Zen<bool>>> cartesianFatTreeData =
+    new(Strategies, new[] {4}, BooleanBeforeInvariantPredicates);
+
+  private static readonly Func<Zen<Option<BigInteger>>, Zen<bool>>[] OptionUintBeforeInvariantPredicates =
+  {
+    Lang.IsNone<BigInteger>(),
+    Lang.True<Option<BigInteger>>()
+  };
+
+  public static CartesianTheoryData<int, Func<Zen<Option<BigInteger>>, Zen<bool>>> optionIntCartesianData =
+    new(PathSizes, OptionUintBeforeInvariantPredicates);
+
   private static IEnumerable<InferenceStrategy> Strategies => new[]
   {
     InferenceStrategy.ExplicitEnumeration,
@@ -16,10 +39,32 @@ public static class InferTests
     InferenceStrategy.SelectiveEnumeration
   };
 
+  public static TheoryData<Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>> TriangleNetBeforeInvariants =>
+    new()
+    {
+      // allowing any route before convergence
+      new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
+      {
+        {"A", s => s == Option.Some(new BigInteger(0))},
+        // is a nonnegative integer or "infinity" (none)
+        {"B", s => s.Where(x => x < BigInteger.Zero).IsNone()},
+        {"C", s => s.Where(x => x < BigInteger.Zero).IsNone()}
+      },
+      // allowing exact routes before convergence
+      new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
+      {
+        {"A", s => s == Option.Some(new BigInteger(0))},
+        {"B", s => s == Option.None<BigInteger>()},
+        {"C", s => Zen.Or(s == Option.None<BigInteger>(), s == Option.Some(new BigInteger(3)))}
+      }
+    };
+
   // a boolean network where one node has a route initially and others do not
-  private static Network<bool, TV> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV> =>
-    new BooleanNetwork<TV>(digraph,
+  private static Network<bool, TV> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV>
+  {
+    return new BooleanNetwork<TV>(digraph,
       digraph.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<ISymbolic>());
+  }
 
   // a boolean network where one symbolically-chosen node has a route initially and others do not
   private static Network<bool, TV> BoolNetMultiDest<TV>(Digraph<TV> digraph) where TV : notnull
@@ -33,7 +78,7 @@ public static class InferTests
   // a triangular integer network where the path A-B-C is cheaper than the path A-C
   private static Network<Option<BigInteger>, string> TriangleNet()
   {
-    var topology = Topologies.Complete(3, alphaNames: true);
+    var topology = Topologies.Complete(3, true);
     var transfer =
       topology.MapEdges<Func<Zen<Option<BigInteger>>, Zen<Option<BigInteger>>>>(e =>
         e.Item1 == "B" || e.Item2 == "B"
@@ -46,7 +91,6 @@ public static class InferTests
   }
 
   /// <summary>
-  ///
   /// </summary>
   /// <param name="fatTree"></param>
   /// <param name="destination"></param>
@@ -63,17 +107,6 @@ public static class InferTests
     });
   }
 
-  private static readonly int[] PathSizes = {3, 4, 5, 20};
-
-  private static readonly Func<Zen<bool>, Zen<bool>>[] BooleanBeforeInvariantPredicates =
-  {
-    Lang.Not(Lang.Identity<bool>()),
-    Lang.True<bool>()
-  };
-
-  public static CartesianTheoryData<InferenceStrategy, int, Func<Zen<bool>, Zen<bool>>> cartesianData =
-    new(Strategies, PathSizes, BooleanBeforeInvariantPredicates);
-
   [Theory]
   [MemberData(nameof(cartesianData))]
   public static void CheckBoolPathInferSucceeds(InferenceStrategy strategy, uint numNodes,
@@ -88,9 +121,6 @@ public static class InferTests
     foreach (var (node, time) in times)
       Assert.True(time >= int.Parse(node), $"Time {time} did not match expected time {int.Parse(node)}");
   }
-
-  public static CartesianTheoryData<InferenceStrategy, int, Func<Zen<bool>, Zen<bool>>> cartesianFatTreeData =
-    new(Strategies, new[] {4}, BooleanBeforeInvariantPredicates);
 
   [Theory]
   [MemberData(nameof(cartesianFatTreeData))]
@@ -120,15 +150,6 @@ public static class InferTests
     Assert.True(times.Count == 0, "Time inference should fail for multi-destination.");
   }
 
-  private static readonly Func<Zen<Option<BigInteger>>, Zen<bool>>[] OptionUintBeforeInvariantPredicates =
-  {
-    Lang.IsNone<BigInteger>(),
-    Lang.True<Option<BigInteger>>()
-  };
-
-  public static CartesianTheoryData<int, Func<Zen<Option<BigInteger>>, Zen<bool>>> optionIntCartesianData =
-    new(PathSizes, OptionUintBeforeInvariantPredicates);
-
   [Theory]
   [MemberData(nameof(optionIntCartesianData))]
   public static void CheckOptionUintPathInferSucceeds(uint numNodes,
@@ -145,26 +166,6 @@ public static class InferTests
     foreach (var (node, time) in times) Assert.True(time >= int.Parse(node));
   }
 
-  public static TheoryData<Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>> TriangleNetBeforeInvariants =>
-    new()
-    {
-      // allowing any route before convergence
-      new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
-      {
-        {"A", s => s == Option.Some(new BigInteger(0))},
-        // is a nonnegative integer or "infinity" (none)
-        {"B", s => s.Where(x => x < BigInteger.Zero).IsNone()},
-        {"C", s => s.Where(x => x < BigInteger.Zero).IsNone()}
-      },
-      // allowing exact routes before convergence
-      new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
-      {
-        {"A", s => s == Option.Some(new BigInteger(0))},
-        {"B", s => s == Option.None<BigInteger>()},
-        {"C", s => Zen.Or(s == Option.None<BigInteger>(), s == Option.Some(new BigInteger(3)))}
-      }
-    };
-
   [Theory]
   [MemberData(nameof(TriangleNetBeforeInvariants))]
   public static void CheckTriangleNetInferSucceeds(
@@ -180,7 +181,7 @@ public static class InferTests
     var infer = new Infer<Option<BigInteger>, string>(net, beforeInvariants, afterInvariants)
     {
       // fix the maximum time at 2
-      MaxTime = 2,
+      MaxTime = 2
     };
     var times = infer.InferTimes(InferenceStrategy.ExplicitEnumeration);
     // check that all times are correct

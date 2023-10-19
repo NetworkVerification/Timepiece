@@ -7,7 +7,7 @@ using ZenLib;
 namespace Timepiece.Angler;
 
 /// <summary>
-/// Representation of the routing policies of all nodes in an Angler-produced network.
+///   Representation of the routing policies of all nodes in an Angler-produced network.
 /// </summary>
 public class AnglerNetwork
 {
@@ -32,8 +32,8 @@ public class AnglerNetwork
   public List<ExternalPeer> Externals { get; }
 
   /// <summary>
-  /// Check the network for possible topology errors.
-  /// The network must have an edge to and from every node.
+  ///   Check the network for possible topology errors.
+  ///   The network must have an edge to and from every node.
   /// </summary>
   /// <exception cref="Exception"></exception>
   public void Validate()
@@ -51,16 +51,14 @@ public class AnglerNetwork
     }
 
     foreach (var (node, properties) in Nodes)
+    foreach (var neighbor in properties.Policies.Keys)
     {
-      foreach (var neighbor in properties.Policies.Keys)
-      {
-        // check for directed edges with no corresponding back edge
-        // we have to check both external and internal edges
-        if ((Nodes.TryGetValue(neighbor, out var neighborProperties) && neighborProperties.Policies.ContainsKey(node))
-            || Externals.Exists(ext => ext.Name == neighbor && ext.peers.Contains(node))) continue;
-        WarnLine($"Found edge {(neighbor, node)} with no corresponding edge {(node, neighbor)}!");
-        errors = true;
-      }
+      // check for directed edges with no corresponding back edge
+      // we have to check both external and internal edges
+      if ((Nodes.TryGetValue(neighbor, out var neighborProperties) && neighborProperties.Policies.ContainsKey(node))
+          || Externals.Exists(ext => ext.Name == neighbor && ext.peers.Contains(node))) continue;
+      WarnLine($"Found edge {(neighbor, node)} with no corresponding edge {(node, neighbor)}!");
+      errors = true;
     }
 
     if (errors)
@@ -84,19 +82,21 @@ public class AnglerNetwork
   }
 
   /// <summary>
-  /// Return a function composing the export and import policies to transfer a route along an edge.
-  /// The routing behavior is as follows:
-  /// <list type="number">
-  ///   <item>If the route's result does not have a value, send it as-is (skip the policies -- it will be dropped).</item>
-  ///   <item>Otherwise, apply the export policy with a fresh result to produce an exported route.</item>
-  ///   <item>If the exported route was rejected (i.e. its result does not have a value), send it as-is
+  ///   Return a function composing the export and import policies to transfer a route along an edge.
+  ///   The routing behavior is as follows:
+  ///   <list type="number">
+  ///     <item>If the route's result does not have a value, send it as-is (skip the policies -- it will be dropped).</item>
+  ///     <item>Otherwise, apply the export policy with a fresh result to produce an exported route.</item>
+  ///     <item>
+  ///       If the exported route was rejected (i.e. its result does not have a value), send it as-is
   ///       (skip the import policy -- it will be dropped).
-  ///   </item>
-  ///   <item>Otherwise, if the exported route was external (per the <paramref name="external"/> parameter),
-  ///    increment the path length (if internal, leave the path length as-is). In either case, apply the import
-  ///    policy with a fresh result.
-  ///   </item>
-  /// </list>
+  ///     </item>
+  ///     <item>
+  ///       Otherwise, if the exported route was external (per the <paramref name="external" /> parameter),
+  ///       increment the path length (if internal, leave the path length as-is). In either case, apply the import
+  ///       policy with a fresh result.
+  ///     </item>
+  ///   </list>
   /// </summary>
   /// <param name="export">The export routing policy as a function over a <c>Zen{RouteEnvironment}</c>.</param>
   /// <param name="import">The import routing policy as a function over a <c>Zen{RouteEnvironment}</c>.</param>

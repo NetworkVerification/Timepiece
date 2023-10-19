@@ -25,6 +25,11 @@ public enum Statistics
 
 public static class StatisticsExtensions
 {
+  /// <summary>
+  ///   Table field header for wall clock time.
+  /// </summary>
+  private const string WallTimeHeader = "wall";
+
   public static string ShortHand(this Statistics stat)
   {
     return stat switch
@@ -42,12 +47,7 @@ public static class StatisticsExtensions
   }
 
   /// <summary>
-  ///   Table field header for wall clock time.
-  /// </summary>
-  private const string WallTimeHeader = "wall";
-
-  /// <summary>
-  /// Report time statistics for the given dictionary.
+  ///   Report time statistics for the given dictionary.
   /// </summary>
   /// <param name="times"></param>
   /// <param name="stats"></param>

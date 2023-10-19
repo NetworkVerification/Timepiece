@@ -14,9 +14,12 @@ public static class BooleanTests
 {
   private static AnnotatedNetwork<bool, NodeType> BooleanAnnotatedNetwork<NodeType>(Network<bool, NodeType> net,
     Dictionary<NodeType, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
-    Zen<BigInteger> convergeTime) where NodeType : notnull => new(net, annotations,
-    net.Digraph.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
-    net.Digraph.MapNodes(_ => Lang.Identity<bool>()));
+    Zen<BigInteger> convergeTime) where NodeType : notnull
+  {
+    return new AnnotatedNetwork<bool, NodeType>(net, annotations,
+      net.Digraph.MapNodes(_ => Lang.Finally(convergeTime, Lang.Identity<bool>())),
+      net.Digraph.MapNodes(_ => Lang.Identity<bool>()));
+  }
 
   private static AnnotatedNetwork<bool, string> K2Net(
     Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -88,7 +91,7 @@ public static class BooleanTests
   }
 
   /// <summary>
-  /// Test that the annotations pass for any symbolically-chosen maximum delay for a 3-node path network.
+  ///   Test that the annotations pass for any symbolically-chosen maximum delay for a 3-node path network.
   /// </summary>
   [Fact]
   public static void SoundAnnotationsPassChecksDelayedMaxDelaySymbolic()
@@ -102,7 +105,7 @@ public static class BooleanTests
     {
       {"A", Lang.Finally(new BigInteger(1), Lang.Identity<bool>())},
       {"B", Lang.Finally(new BigInteger(1) + delay.Value, Lang.Identity<bool>())},
-      {"C", Lang.Finally(new BigInteger(1) + new BigInteger(2) * delay.Value, Lang.Identity<bool>())},
+      {"C", Lang.Finally(new BigInteger(1) + new BigInteger(2) * delay.Value, Lang.Identity<bool>())}
     };
     // need the converge time to be the largest witness time, i.e. C's
     var annotated = BooleanAnnotatedNetwork(net, annotations, new BigInteger(2) * delay.Value + BigInteger.One);
@@ -156,7 +159,7 @@ public static class BooleanTests
     {
       {"D", new SymbolicValue<bool>("D-route")},
       {"E", new SymbolicValue<bool>("E-route")},
-      {"F", new SymbolicValue<bool>("F-route")},
+      {"F", new SymbolicValue<bool>("F-route")}
     };
     var annotations = new Dictionary<string, Func<Zen<bool>, Zen<BigInteger>, Zen<bool>>>
     {
@@ -188,7 +191,7 @@ public static class BooleanTests
       {
         "F", Lang.Finally<bool>(If<BigInteger>(externalRoutes["F"].Value, BigInteger.Zero, new BigInteger(3)),
           b => Implies(Or(externalRoutes.Values.Select(s => s.Value)), b))
-      },
+      }
     };
     var net = TinyWideAreaNet(topology, externalRoutes, annotations);
     NetworkAssert.CheckSound(net);

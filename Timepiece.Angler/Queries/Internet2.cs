@@ -5,8 +5,8 @@ using ZenLib;
 namespace Timepiece.Angler.Queries;
 
 /// <summary>
-/// Queries performed by Bagpipe related to the Internet2 network.
-/// See the Bagpipe paper for more information.
+///   Queries performed by Bagpipe related to the Internet2 network.
+///   See the Bagpipe paper for more information.
 /// </summary>
 public static class Internet2
 {
@@ -16,37 +16,37 @@ public static class Internet2
   private const string BlockToExternalCommunity = "11537:888";
 
   /// <summary>
-  /// Community tag for identifying low-value peer connections.
+  ///   Community tag for identifying low-value peer connections.
   /// </summary>
   private const string LowPeersCommunity = "11537:40";
 
   /// <summary>
-  /// Community tag for identifying lower-than-peer connections.
+  ///   Community tag for identifying lower-than-peer connections.
   /// </summary>
   private const string LowerThanPeersCommunity = "11537:60";
 
   /// <summary>
-  /// Community tag for identifying equal-to-peer-value connections.
+  ///   Community tag for identifying equal-to-peer-value connections.
   /// </summary>
   private const string EqualToPeersCommunity = "11537:100";
 
   /// <summary>
-  /// Community tag for identifying low-value connections.
+  ///   Community tag for identifying low-value connections.
   /// </summary>
   private const string LowCommunity = "11537:140";
 
   /// <summary>
-  /// Community tag for identifying high-value peer connections.
+  ///   Community tag for identifying high-value peer connections.
   /// </summary>
   private const string HighPeersCommunity = "11537:160";
 
   /// <summary>
-  /// Community tag for identifying high-value connections.
+  ///   Community tag for identifying high-value connections.
   /// </summary>
   private const string HighCommunity = "11537:260";
 
   /// <summary>
-  /// The nodes of Internet2's AS.
+  ///   The nodes of Internet2's AS.
   /// </summary>
   public static readonly string[] Internet2Nodes =
     {"atla-re1", "chic", "clev-re1", "hous", "kans-re1", "losa", "newy-re1", "salt-re1", "seat-re1", "wash"};
@@ -61,11 +61,11 @@ public static class Internet2
     "64.57.16.133", "64.57.16.196", "64.57.16.4", "64.57.16.68", "64.57.17.133", "64.57.17.194",
     "64.57.17.7", "64.57.17.71", "64.57.19.2",
     "64.57.28.251", // PAIX group (Palo Alto Internet eXchange)
-    "64.57.28.252", // WILC group
+    "64.57.28.252" // WILC group
   };
 
   /// <summary>
-  /// Addresses for the AL2S_MGMT peer group.
+  ///   Addresses for the AL2S_MGMT peer group.
   /// </summary>
   private static readonly string[] Al2sManagementNodes =
   {
@@ -80,37 +80,16 @@ public static class Internet2
   private static readonly Ipv4Prefix InternalPrefix = new("64.57.28.0", "64.57.28.255");
 
   /// <summary>
-  ///   Predicate that the route is for the internal prefix.
-  /// </summary>
-  /// <param name="env"></param>
-  /// <returns></returns>
-  public static Zen<bool> HasInternalRoute(Zen<RouteEnvironment> env)
-  {
-    return Zen.And(env.GetResultValue(), env.GetPrefix() == InternalPrefix);
-  }
-
-  private static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env) =>
-    env.GetPrefix().GetPrefixLength() <= new UInt<_6>(32);
-
-  /// <summary>
-  ///   Predicate that the BTE tag is not on the route if the route has a value.
-  /// </summary>
-  public static Zen<bool> BteTagAbsent(Zen<RouteEnvironment> env)
-  {
-    return Zen.Implies(env.GetResultValue(), Zen.Not(env.GetCommunities().Contains(BlockToExternalCommunity)));
-  }
-
-  /// <summary>
-  /// Prefixes that are considered Martians.
-  /// Must not be advertised or accepted.
-  /// Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
+  ///   Prefixes that are considered Martians.
+  ///   Must not be advertised or accepted.
+  ///   Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
   /// </summary>
   private static readonly (Ipv4Wildcard, UInt<_6>)[] MartianPrefixes =
   {
     (new Ipv4Wildcard("0.0.0.0", "0.0.0.0"), new UInt<_6>(0)), // default route 0.0.0.0/0
     (new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // local network 10.0.0.0/8
     (new Ipv4Wildcard("127.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // loopback 127.0.0.0/8
-    (new Ipv4Wildcard("255.255.255.255", "0.0.0.0"), new UInt<_6>(32)), // limited broadcast
+    (new Ipv4Wildcard("255.255.255.255", "0.0.0.0"), new UInt<_6>(32)) // limited broadcast
   };
 
   // List of prefixes which Abilene originates
@@ -128,11 +107,37 @@ public static class Internet2
     // MANLAN
     (new Ipv4Wildcard("198.32.154.0", "0.0.0.255"), new UInt<_6>(24)),
     (new Ipv4Wildcard("198.71.45.0", "0.0.0.255"), new UInt<_6>(24)),
-    (new Ipv4Wildcard("198.71.46.0", "0.0.0.255"), new UInt<_6>(24)),
+    (new Ipv4Wildcard("198.71.46.0", "0.0.0.255"), new UInt<_6>(24))
   };
 
+  // UMichigan: https://whois.domaintools.com/35.0.0.0
+  private static readonly Ipv4Prefix DestinationAddress = new("35.0.0.0", "35.255.255.255");
+
   /// <summary>
-  /// Check that if a given route exists, it does not match any of the given prefixes.
+  ///   Predicate that the route is for the internal prefix.
+  /// </summary>
+  /// <param name="env"></param>
+  /// <returns></returns>
+  public static Zen<bool> HasInternalRoute(Zen<RouteEnvironment> env)
+  {
+    return Zen.And(env.GetResultValue(), env.GetPrefix() == InternalPrefix);
+  }
+
+  private static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env)
+  {
+    return env.GetPrefix().GetPrefixLength() <= new UInt<_6>(32);
+  }
+
+  /// <summary>
+  ///   Predicate that the BTE tag is not on the route if the route has a value.
+  /// </summary>
+  public static Zen<bool> BteTagAbsent(Zen<RouteEnvironment> env)
+  {
+    return Zen.Implies(env.GetResultValue(), Zen.Not(env.GetCommunities().Contains(BlockToExternalCommunity)));
+  }
+
+  /// <summary>
+  ///   Check that if a given route exists, it does not match any of the given prefixes.
   /// </summary>
   /// <param name="prefixes"></param>
   /// <param name="env"></param>
@@ -145,17 +150,19 @@ public static class Internet2
   }
 
   /// <summary>
-  /// Assign a fresh symbolic variable as an external route from each of the given nodes.
-  /// If a constraint is given, apply it to every symbolic variable.
+  ///   Assign a fresh symbolic variable as an external route from each of the given nodes.
+  ///   If a constraint is given, apply it to every symbolic variable.
   /// </summary>
   /// <param name="externalPeers"></param>
   /// <param name="constraint"></param>
   /// <returns></returns>
   private static Dictionary<string, SymbolicValue<RouteEnvironment>>
-    ExternalRoutes(IEnumerable<string> externalPeers, Func<Zen<RouteEnvironment>, Zen<bool>>? constraint = null) =>
-    externalPeers.ToDictionary(e => e, e => constraint is null
+    ExternalRoutes(IEnumerable<string> externalPeers, Func<Zen<RouteEnvironment>, Zen<bool>>? constraint = null)
+  {
+    return externalPeers.ToDictionary(e => e, e => constraint is null
       ? new SymbolicValue<RouteEnvironment>($"external-route-{e}")
       : new SymbolicValue<RouteEnvironment>($"external-route-{e}", constraint));
+  }
 
   /// <summary>
   ///   Construct a NetworkQuery with constraints that every external node symbolic does not have the BTE tag,
@@ -213,13 +220,12 @@ public static class Internet2
     throw new NotImplementedException();
   }
 
-  // UMichigan: https://whois.domaintools.com/35.0.0.0
-  private static readonly Ipv4Prefix DestinationAddress = new("35.0.0.0", "35.255.255.255");
-
-  private static Zen<bool> ExternalValidRouteExists(IEnumerable<Zen<RouteEnvironment>> externalRoutes) =>
-    Zen.Or(externalRoutes.Select(e =>
+  private static Zen<bool> ExternalValidRouteExists(IEnumerable<Zen<RouteEnvironment>> externalRoutes)
+  {
+    return Zen.Or(externalRoutes.Select(e =>
       Zen.And(e.GetResultValue(),
         e.GetPrefix() == DestinationAddress)));
+  }
   // NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes), e))));
 
   public static NetworkQuery<RouteEnvironment, string> Reachable(Digraph<string> digraph,
@@ -241,6 +247,7 @@ public static class Internet2
       Internet2Nodes.Contains(n)
         // internal nodes: if an external route exists, then we have a route
         ? r => Zen.Implies(ExternalValidRouteExists(externalRoutes
+            // external route exists at a non AL2S_MGMT neighbor
             .Where(ext => !Al2sManagementNodes.Contains(ext.Key))
             .Select(s => s.Value.Value)),
           Zen.And(r.GetResultValue(), r.GetPrefix() == DestinationAddress))
@@ -279,7 +286,7 @@ public static class Internet2
   }
 
   /// <summary>
-  /// Return a constraint that one of the node's external neighbors has a route.
+  ///   Return a constraint that one of the node's external neighbors has a route.
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="node"></param>

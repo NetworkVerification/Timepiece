@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using Timepiece.Angler.Ast.AstExpr;
 using Timepiece.Angler.Ast.AstFunction;
 using Timepiece.Angler.Ast.AstStmt;

@@ -5,6 +5,7 @@ using System.Numerics;
 using Timepiece.Networks;
 using Xunit;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -13,15 +14,15 @@ public static class ShortestPathsTests
   private static readonly SymbolicValue<BigInteger> DRoute = new("d", r => r >= BigInteger.Zero);
 
   private static readonly ShortestPath<string> Concrete = new(Topologies.Path(3), "A",
-    System.Array.Empty<ISymbolic>());
+    Array.Empty<ISymbolic>());
 
-  private static SymbolicValue<BigInteger>[] SymbolicWitnessTimes()
-  {
-    var aTime = new SymbolicTime("tau-A");
-    var bTime = new SymbolicTime("tau-B", aTime);
-    var cTime = new SymbolicTime("tau-C", bTime);
-    return new SymbolicValue<BigInteger>[] {aTime, bTime, cTime};
-  }
+  private static readonly ShortestPath<string> SymbolicRoute = new(Topologies.Complete(3),
+    new Dictionary<string, Zen<Option<BigInteger>>>
+    {
+      {"A", Option.Create(DRoute.Value)},
+      {"B", Option.None<BigInteger>()},
+      {"C", Option.None<BigInteger>()}
+    }, new ISymbolic[] {DRoute});
 
   public static TheoryData<string, string[], Zen<Option<BigInteger>>> ExpectedRoutes => new()
   {
@@ -32,45 +33,6 @@ public static class ShortestPathsTests
     {"B", new[] {"C"}, Option.Null<BigInteger>()},
     {"B", new[] {"A", "C"}, Option.Create<BigInteger>(BigInteger.One)}
   };
-
-  [Theory]
-  [MemberData(nameof(ExpectedRoutes))]
-  public static void UpdateNodeRouteComputesExpectedValue(string node, string[] neighbors,
-    Zen<Option<BigInteger>> expected)
-  {
-    var routes = new Dictionary<string, Zen<Option<BigInteger>>>
-    {
-      {"A", Option.Create<BigInteger>(BigInteger.Zero)},
-      {"B", Option.Null<BigInteger>()},
-      {"C", Option.Null<BigInteger>()},
-    };
-    var actual = Concrete.UpdateNodeRoute(node, routes, neighbors);
-    var query = Zen.Not(Zen.Eq(actual, expected)).Solve();
-    Assert.False(query.IsSatisfiable());
-  }
-
-  private static readonly ShortestPath<string> SymbolicRoute = new(Topologies.Complete(3),
-    new Dictionary<string, Zen<Option<BigInteger>>>
-    {
-      {"A", Option.Create(DRoute.Value)},
-      {"B", Option.None<BigInteger>()},
-      {"C", Option.None<BigInteger>()}
-    }, new ISymbolic[] {DRoute});
-
-  private static Zen<bool> IsInDigraph<NodeType>(Digraph<NodeType> digraph, Zen<NodeType> node)
-    where NodeType : notnull =>
-    digraph.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, n == node));
-
-  private static SymbolicValue<string> SymbolicDestination(Digraph<string> digraph) =>
-    new("dest", n => IsInDigraph(digraph, n));
-
-  private static ShortestPath<string> SymbolicDestinationShortestPath(Digraph<string> digraph,
-    SymbolicValue<string> dest)
-  {
-    return new ShortestPath<string>(digraph,
-      digraph.MapNodes(n => Zen.If(dest.EqualsValue(n),
-        Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>())), new ISymbolic[] {dest});
-  }
 
   public static TheoryData<Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>> ConcreteProperties => new()
   {
@@ -84,6 +46,49 @@ public static class ShortestPathsTests
       {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))}
     }
   };
+
+  private static SymbolicValue<BigInteger>[] SymbolicWitnessTimes()
+  {
+    var aTime = new SymbolicTime("tau-A");
+    var bTime = new SymbolicTime("tau-B", aTime);
+    var cTime = new SymbolicTime("tau-C", bTime);
+    return new SymbolicValue<BigInteger>[] {aTime, bTime, cTime};
+  }
+
+  [Theory]
+  [MemberData(nameof(ExpectedRoutes))]
+  public static void UpdateNodeRouteComputesExpectedValue(string node, string[] neighbors,
+    Zen<Option<BigInteger>> expected)
+  {
+    var routes = new Dictionary<string, Zen<Option<BigInteger>>>
+    {
+      {"A", Option.Create<BigInteger>(BigInteger.Zero)},
+      {"B", Option.Null<BigInteger>()},
+      {"C", Option.Null<BigInteger>()}
+    };
+    var actual = Concrete.UpdateNodeRoute(node, routes, neighbors);
+    var query = Zen.Not(Zen.Eq(actual, expected)).Solve();
+    Assert.False(query.IsSatisfiable());
+  }
+
+  private static Zen<bool> IsInDigraph<NodeType>(Digraph<NodeType> digraph, Zen<NodeType> node)
+    where NodeType : notnull
+  {
+    return digraph.FoldNodes(Zen.False(), (b, n) => Zen.Or(b, n == node));
+  }
+
+  private static SymbolicValue<string> SymbolicDestination(Digraph<string> digraph)
+  {
+    return new SymbolicValue<string>("dest", n => IsInDigraph(digraph, n));
+  }
+
+  private static ShortestPath<string> SymbolicDestinationShortestPath(Digraph<string> digraph,
+    SymbolicValue<string> dest)
+  {
+    return new ShortestPath<string>(digraph,
+      digraph.MapNodes(n => Zen.If(dest.EqualsValue(n),
+        Option.Create<BigInteger>(BigInteger.Zero), Option.Null<BigInteger>())), new ISymbolic[] {dest});
+  }
 
   private static AnnotatedNetwork<Option<BigInteger>, string> AnnotatedConcrete(
     Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -131,7 +136,7 @@ public static class ShortestPathsTests
       {"B", Lang.Never(Lang.IsSome<BigInteger>())},
       {"C", Lang.Never(Lang.IsSome<BigInteger>())}
     };
-    var net = AnnotatedConcrete(annotations, new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>()
+    var net = AnnotatedConcrete(annotations, new Dictionary<string, Func<Zen<Option<BigInteger>>, Zen<bool>>>
     {
       {"A", Lang.IfSome<BigInteger>(r => r == BigInteger.Zero)},
       {"B", Lang.IfSome<BigInteger>(r => r == BigInteger.One)},
@@ -248,10 +253,7 @@ public static class ShortestPathsTests
     var net = new ShortestPath<string>(Topologies.Path(3), "A", symbolics.Cast<ISymbolic>().ToArray());
 
     // weaken the symbolic constraints
-    foreach (var symbolic in symbolics)
-    {
-      symbolic.Constraint = x => x >= BigInteger.Zero;
-    }
+    foreach (var symbolic in symbolics) symbolic.Constraint = x => x >= BigInteger.Zero;
 
     var annotations = net.Digraph.MapNodes(n =>
       Lang.Finally<Option<BigInteger>>(symbolics.First(s => s.Name.Equals($"tau-{n}")).Value, Option.IsSome));

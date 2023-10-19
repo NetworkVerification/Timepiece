@@ -1,20 +1,21 @@
 using System.Numerics;
+using System.Text.RegularExpressions;
 using ZenLib;
 using Regex = System.Text.RegularExpressions.Regex;
 
 namespace Timepiece.Angler.Queries;
 
 /// <summary>
-/// Queries for checking properties of fat-tree networks.
+///   Queries for checking properties of fat-tree networks.
 /// </summary>
 public static partial class FatTreeQuery
 {
-  [System.Text.RegularExpressions.GeneratedRegex(@"(edge|aggregation|core)-(\d*)")]
+  [GeneratedRegex(@"(edge|aggregation|core)-(\d*)")]
   private static partial Regex FatTreeNodePattern();
 
   /// <summary>
-  /// Infer the pod labels on a fat-tree digraph.
-  /// A k-fat-tree has (k^2)/2 core nodes, k^2 aggregation nodes and k^2 edge nodes.
+  ///   Infer the pod labels on a fat-tree digraph.
+  ///   A k-fat-tree has (k^2)/2 core nodes, k^2 aggregation nodes and k^2 edge nodes.
   /// </summary>
   /// <param name="digraph"></param>
   /// <returns></returns>
@@ -94,7 +95,7 @@ public static partial class FatTreeQuery
   }
 
   /// <summary>
-  /// Return the second (dropping) community associated with the given node.
+  ///   Return the second (dropping) community associated with the given node.
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="node"></param>
@@ -146,8 +147,7 @@ public static partial class FatTreeQuery
               r.GetAsPathLength() >= BigInteger.Zero,
               // no route should have any community indicating it has taken a valley and should be dropped
               Zen.And(dropCommunities.Select(c => Zen.Not(r.HasCommunity(c)))))));
-      // (3) Eventually, nodes close to the destination must not be tagged down.
-      //     All nodes eventually have routes no worse than their best path length.
+      // (3) All nodes eventually have routes no worse than their best path length.
       var eventually =
         Lang.Finally<RouteEnvironment>(witnessTime,
           r =>

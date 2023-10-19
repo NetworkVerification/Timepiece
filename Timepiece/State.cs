@@ -10,18 +10,18 @@ using ZenLib.ModelChecking;
 namespace Timepiece;
 
 /// <summary>
-/// A counterexample state of the network.
+///   A counterexample state of the network.
 /// </summary>
 /// <typeparam name="RouteType"></typeparam>
 /// <typeparam name="NodeType"></typeparam>
 public class State<RouteType, NodeType>
 {
-  private readonly Option<(NodeType, RouteType)> _focusedNode = Option.None<(NodeType, RouteType)>();
   private readonly SmtCheck _check;
+  private readonly Option<(NodeType, RouteType)> _focusedNode = Option.None<(NodeType, RouteType)>();
   private readonly IReadOnlyDictionary<NodeType, RouteType> _nodeStates;
+  private readonly IReadOnlyDictionary<NodeType, BigInteger> _nodeTimes;
   private readonly IReadOnlyDictionary<string, object> _symbolicStates;
   private readonly Option<BigInteger> _time;
-  private readonly IReadOnlyDictionary<NodeType, BigInteger> _nodeTimes;
 
   /// <summary>
   ///   Reconstruct the network state from the given model, focused on the given node.
@@ -85,7 +85,7 @@ public class State<RouteType, NodeType>
     IEnumerable<ISymbolic> symbolics)
   {
     _check = SmtCheck.Monolithic;
-    this._nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
+    _nodeStates = nodeStates.ToDictionary(p => p.Key, p => model.Get(p.Value));
     _symbolicStates = GetAllSymbolics(model, symbolics);
   }
 
@@ -111,13 +111,9 @@ public class State<RouteType, NodeType>
     {
       var specifier = _focusedNode.HasValue ? $"neighbor {node} of {_focusedNode.Value.Item1}" : $"node {node}";
       if (_check is SmtCheck.InductiveDelayed)
-      {
         sb.AppendLine($"{specifier} had route := {route} at time {_nodeTimes[node]}");
-      }
       else
-      {
         sb.AppendLine($"{specifier} had route := {route}");
-      }
     }
 
     return sb.ToString();

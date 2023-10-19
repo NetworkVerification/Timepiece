@@ -4,7 +4,7 @@ using ZenLib;
 namespace Timepiece.Angler.Ast.AstExpr;
 
 /// <summary>
-/// An expression wrapping a <c>RouteFilterList</c>.
+///   An expression wrapping a <c>RouteFilterList</c>.
 /// </summary>
 public class RouteFilterListExpr : Expr
 {
@@ -20,5 +20,8 @@ public class RouteFilterListExpr : Expr
     ;
   }
 
-  public Zen<bool> Contains(Zen<Ipv4Prefix> prefix) => FilterList.Permits(prefix);
+  public Zen<bool> Contains(Zen<Ipv4Prefix> prefix)
+  {
+    return FilterList.Permits(prefix);
+  }
 }

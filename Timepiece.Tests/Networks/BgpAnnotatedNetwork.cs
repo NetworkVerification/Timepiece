@@ -23,10 +23,10 @@ public class BgpAnnotatedNetwork<TV> : AnnotatedNetwork<Option<Bgp>, TV> where T
   }
 
   /// <summary>
-  /// Return a per-edge transfer function where, for a given edge source-target,
-  /// if the route contains a tag matching the target node,
-  /// then the route is dropped (mimicking BGP loop detection)
-  /// and otherwise the function adds a tag matching the source node.
+  ///   Return a per-edge transfer function where, for a given edge source-target,
+  ///   if the route contains a tag matching the target node,
+  ///   then the route is dropped (mimicking BGP loop detection)
+  ///   and otherwise the function adds a tag matching the source node.
   /// </summary>
   /// <param name="edge"></param>
   /// <returns></returns>

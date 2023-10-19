@@ -13,6 +13,27 @@ namespace Timepiece.Networks;
 public class Network<RouteType, NodeType>
 {
   /// <summary>
+  ///   Construct a new <c>Network</c>.
+  /// </summary>
+  /// <param name="digraph">a network topology</param>
+  /// <param name="transferFunction">a dictionary from edges to transfer functions</param>
+  /// <param name="mergeFunction">a function for merging two routes</param>
+  /// <param name="initialValues">a dictionary from nodes to initial routes</param>
+  /// <param name="symbolics">an array of symbolic values</param>
+  public Network(Digraph<NodeType> digraph,
+    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
+    Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
+    Dictionary<NodeType, Zen<RouteType>> initialValues,
+    ISymbolic[] symbolics)
+  {
+    Digraph = digraph;
+    TransferFunction = transferFunction;
+    MergeFunction = mergeFunction;
+    InitialValues = initialValues;
+    Symbolics = symbolics;
+  }
+
+  /// <summary>
   ///   The topology of the network.
   /// </summary>
   public Digraph<NodeType> Digraph { get; }
@@ -42,27 +63,6 @@ public class Network<RouteType, NodeType>
   public ISymbolic[] Symbolics { get; set; }
 
   /// <summary>
-  /// Construct a new <c>Network</c>.
-  /// </summary>
-  /// <param name="digraph">a network topology</param>
-  /// <param name="transferFunction">a dictionary from edges to transfer functions</param>
-  /// <param name="mergeFunction">a function for merging two routes</param>
-  /// <param name="initialValues">a dictionary from nodes to initial routes</param>
-  /// <param name="symbolics">an array of symbolic values</param>
-  public Network(Digraph<NodeType> digraph,
-    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
-    Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
-    Dictionary<NodeType, Zen<RouteType>> initialValues,
-    ISymbolic[] symbolics)
-  {
-    Digraph = digraph;
-    TransferFunction = transferFunction;
-    MergeFunction = mergeFunction;
-    InitialValues = initialValues;
-    Symbolics = symbolics;
-  }
-
-  /// <summary>
   ///   Return a route corresponding to the application of one step of the network semantics:
   ///   starting from the initial route at a node, merge in each transferred route from the node's neighbors.
   /// </summary>
@@ -76,9 +76,12 @@ public class Network<RouteType, NodeType>
         MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
   }
 
-  /// <inheritdoc cref="UpdateNodeRoute(NodeType,System.Collections.Generic.IReadOnlyDictionary{NodeType,ZenLib.Zen{RouteType}})"/>
-  /// <param name="neighbors">The specific neighbors to transfer from: must be a subset (or equal to) the actual
-  /// set of neighbors, otherwise an exception will be raised.</param>
+  /// <inheritdoc
+  ///   cref="UpdateNodeRoute(NodeType,System.Collections.Generic.IReadOnlyDictionary{NodeType,ZenLib.Zen{RouteType}})" />
+  /// <param name="neighbors">
+  ///   The specific neighbors to transfer from: must be a subset (or equal to) the actual
+  ///   set of neighbors, otherwise an exception will be raised.
+  /// </param>
   /// <returns>A route.</returns>
   public Zen<RouteType> UpdateNodeRoute(NodeType node, IReadOnlyDictionary<NodeType, Zen<RouteType>> routes,
     IEnumerable<NodeType> neighbors)

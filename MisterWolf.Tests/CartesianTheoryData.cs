@@ -4,7 +4,7 @@ using Xunit;
 namespace MisterWolf.Tests;
 
 /// <summary>
-/// A TheoryData subclass for generating tests that take the Cartesian product of two enumerables.
+///   A TheoryData subclass for generating tests that take the Cartesian product of two enumerables.
 /// </summary>
 /// <typeparam name="T1"></typeparam>
 /// <typeparam name="T2"></typeparam>

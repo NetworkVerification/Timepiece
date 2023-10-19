@@ -65,8 +65,8 @@ public static class AstFunctionTests
     // check that there does not exist a model where f(x) == y and y != x + 4 and y != 3
     // note that we need to store the result of f(x) in y as separate calls to f(x) can choose
     // to branch differently, meaning f(x) == 3 and f(x) != 3 is satisfiable (pick the else branch, pick the then branch)
-    var model = Zen.Not(Zen.Implies(Zen.Eq<uint>(f(x).GetLp(), y.GetLp()),
-        Zen.Or(Zen.Eq<uint>(y.GetLp(), x.GetLp() + 4), Zen.Eq<uint>(y.GetLp(), 3))))
+    var model = Zen.Not(Zen.Implies(Zen.Eq(f(x).GetLp(), y.GetLp()),
+        Zen.Or(Zen.Eq(y.GetLp(), x.GetLp() + 4), Zen.Eq(y.GetLp(), 3))))
       .Solve();
     Assert.False(model.IsSatisfiable());
   }
@@ -85,7 +85,7 @@ public static class AstFunctionTests
           new Plus(new GetField(typeof(RouteEnvironment), typeof(uint), new Var(arg), "Lp"), new Var(envVar))))
     }));
     var y = Zen.Symbolic<RouteEnvironment>();
-    var model = Zen.Not(Zen.Eq<uint>(y.GetLp() + 3, f1(y).GetLp())).Solve();
+    var model = Zen.Not(Zen.Eq(y.GetLp() + 3, f1(y).GetLp())).Solve();
     Assert.False(model.IsSatisfiable());
   }
 }

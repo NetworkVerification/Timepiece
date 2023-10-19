@@ -3,8 +3,8 @@ using System.Text;
 namespace Timepiece.Angler;
 
 /// <summary>
-/// Adds a method to produce a compact string representation of an inheriting class.
-/// Properties which are not changed from the default value will be suppressed.
+///   Adds a method to produce a compact string representation of an inheriting class.
+///   Properties which are not changed from the default value will be suppressed.
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public interface IDifferentiatedString<T> where T : new()

@@ -42,9 +42,6 @@ public static class CMapArrangementTests
     var n = neighbors.ToArray();
     var a = new CMapArrangement<string>(invariant, n);
     Assert.Equal(invariant, a.Invariant);
-    foreach (var (m, v) in n)
-    {
-      Assert.Equal(v, a[m]);
-    }
+    foreach (var (m, v) in n) Assert.Equal(v, a[m]);
   }
 }

@@ -14,9 +14,8 @@ var sizeOption = new System.CommandLine.Option<uint>(
   parseArgument: result =>
   {
     if (int.TryParse(result.Tokens.Single().Value, out var size))
-    {
-      if (size >= 0) return (uint) size;
-    }
+      if (size >= 0)
+        return (uint) size;
 
     result.ErrorMessage = "Size must be a non-negative integer.";
     return 0;
@@ -26,7 +25,7 @@ var sizeOption = new System.CommandLine.Option<uint>(
 };
 var destOption = new System.CommandLine.Option<string>(
   new[] {"--dest", "-d"},
-  description: "The destination node of the benchmark");
+  "The destination node of the benchmark");
 var inferOption = new System.CommandLine.Option<bool>(
   new[] {"--infer", "-I"},
   "If given, infer witness times rather than giving them");
@@ -37,7 +36,7 @@ var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically simulating Minesweeper");
 var benchArgument = new Argument<BenchmarkType>(
-  name: "benchmark",
+  "benchmark",
   description: "The type of benchmark to test (accepts short-hands: 'r', 'l', 'v', 'h'...)",
   parse: result => result.Tokens.Single().Value.Parse());
 rootCommand.Add(sizeOption);

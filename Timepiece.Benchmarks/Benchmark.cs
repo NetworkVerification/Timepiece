@@ -129,7 +129,7 @@ public enum BenchmarkType
   FatTreeHijack,
   FatTreeHijackSymbolic,
   ApFatTreeHijack,
-  ApFatTreeHijackSymbolic,
+  ApFatTreeHijackSymbolic
 }
 
 public static class BenchmarkTypeExtensions

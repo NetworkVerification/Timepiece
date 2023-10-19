@@ -11,9 +11,20 @@ public static class FatTree
     Core
   }
 
-  public static bool IsCore(this FatTreeLayer l) => l == FatTreeLayer.Core;
-  public static bool IsAggregation(this FatTreeLayer l) => l == FatTreeLayer.Aggregation;
-  public static bool IsEdge(this FatTreeLayer l) => l == FatTreeLayer.Edge;
+  public static bool IsCore(this FatTreeLayer l)
+  {
+    return l == FatTreeLayer.Core;
+  }
+
+  public static bool IsAggregation(this FatTreeLayer l)
+  {
+    return l == FatTreeLayer.Aggregation;
+  }
+
+  public static bool IsEdge(this FatTreeLayer l)
+  {
+    return l == FatTreeLayer.Edge;
+  }
 
   // note: this needs to have a different name from ToString as we can't override that directly
   // so we give it this different name instead

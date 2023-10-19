@@ -14,9 +14,6 @@ public class FirstMatchChain : VariadicExpr
       throw new Exception("Default policy not set!");
     // add the default policy at the end of the chain
     var policies = Exprs.Append(new Call(astEnv.defaultPolicy));
-    // go through the policies in reverse order to produce the final environment
-    // we start with false as the return value as a default, but the default policy should never fall through
-    var acc = env.WithValue(Zen.False());
     // each policy may update the route, so the policy routes need to be computed in sequential order
     var policyResults = new List<Environment<RouteEnvironment>>();
     var lastEnv = env;
@@ -27,6 +24,9 @@ public class FirstMatchChain : VariadicExpr
       lastEnv = subroutineResult;
     }
 
+    // go through the policies in reverse order to produce the final environment
+    // we start with the local default action as the return value as a default
+    var acc = env.WithValue(env.route.GetLocalDefaultAction());
     for (var i = policyResults.Count - 1; i >= 0; i--)
     {
       // Logic of subroutines:

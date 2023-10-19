@@ -69,5 +69,8 @@ public static class BgpExtensions
     return b.WithAsLength(b.GetAsLength() + BigInteger.One);
   }
 
-  public static Zen<bool> LpEquals(this Zen<Bgp> b, BigInteger lp) => b.GetLp() == lp;
+  public static Zen<bool> LpEquals(this Zen<Bgp> b, BigInteger lp)
+  {
+    return b.GetLp() == lp;
+  }
 }

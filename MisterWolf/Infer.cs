@@ -12,10 +12,6 @@ namespace MisterWolf;
 public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquatable<TNode>
 {
   private readonly int _processes = Environment.ProcessorCount;
-  private ConcurrentDictionary<TNode, long> InferInitialTimes { get; set; }
-  private ConcurrentDictionary<TNode, long> InferInductiveTimes { get; set; }
-  private ConcurrentDictionary<(TNode, IReadOnlyList<bool>), long> InferBeforeInductiveTimes { get; set; }
-  private ConcurrentDictionary<(TNode, IReadOnlyList<bool>), long> InferAfterInductiveTimes { get; set; }
 
   public Infer(Digraph<TNode> digraph,
     Dictionary<(TNode, TNode), Func<Zen<TRoute>, Zen<TRoute>>> transferFunction,
@@ -44,28 +40,33 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   {
   }
 
+  private ConcurrentDictionary<TNode, long> InferInitialTimes { get; }
+  private ConcurrentDictionary<TNode, long> InferInductiveTimes { get; }
+  private ConcurrentDictionary<(TNode, IReadOnlyList<bool>), long> InferBeforeInductiveTimes { get; }
+  private ConcurrentDictionary<(TNode, IReadOnlyList<bool>), long> InferAfterInductiveTimes { get; }
+
   /// <summary>
-  /// If true, log the times taken by inference to the Infer dictionaries.
+  ///   If true, log the times taken by inference to the Infer dictionaries.
   /// </summary>
   public bool LogTimes { get; set; }
 
   /// <summary>
-  /// If true, print the generated bounds to standard output.
+  ///   If true, print the generated bounds to standard output.
   /// </summary>
   public bool PrintBounds { get; set; } = false;
 
   /// <summary>
-  /// If true, report all failures to standard output.
+  ///   If true, report all failures to standard output.
   /// </summary>
   public bool ReportFailures { get; set; } = false;
 
   /// <summary>
-  /// Record the number of inductive check failures for each node.
+  ///   Record the number of inductive check failures for each node.
   /// </summary>
   private Dictionary<TNode, int> NumInductiveFailures { get; }
 
   /// <summary>
-  /// If true, report all times inferred to standard output.
+  ///   If true, report all times inferred to standard output.
   /// </summary>
   public bool PrintTimes { get; set; } = false;
 
@@ -73,17 +74,17 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   private IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> BeforeInvariants { get; }
   private IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> AfterInvariants { get; }
 
-  private static string BoolToInvariantType(bool b) => b ? "before" : "after";
+  private static string BoolToInvariantType(bool b)
+  {
+    return b ? "before" : "after";
+  }
 
   private static string ArrangementToString(IEnumerable<bool> b, IEnumerable<TNode> neighbors)
   {
     var builder = new StringBuilder();
     foreach (var (neighbor, bb) in neighbors.Zip(b))
     {
-      if (builder.Length > 0)
-      {
-        builder.Append("/");
-      }
+      if (builder.Length > 0) builder.Append("/");
 
       builder.Append($"{neighbor}:{BoolToInvariantType(bb)}");
     }
@@ -140,8 +141,10 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   /// <param name="invariant">A predicate to check on the node.</param>
   /// <param name="b">A bit array over the node's neighbors.</param>
   /// <param name="routes">The routes of the network for the neighboring nodes.</param>
-  /// <param name="blockingClauses">An additional enumerable of clauses over b variables
-  ///   to block when checking the invariant.</param>
+  /// <param name="blockingClauses">
+  ///   An additional enumerable of clauses over b variables
+  ///   to block when checking the invariant.
+  /// </param>
   /// <returns>An arrangement b which causes the invariant to *not* always be satisfied if one exists, and null otherwise.</returns>
   private List<bool>? CheckInductive(TNode node, IReadOnlyList<TNode> neighbors, Func<Zen<TRoute>, Zen<bool>> invariant,
     IReadOnlyList<Zen<bool>> b, IReadOnlyDictionary<TNode, Zen<TRoute>> routes,
@@ -185,10 +188,12 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  /// Check all nodes' initial values against the invariants and return which nodes' invariants failed.
+  ///   Check all nodes' initial values against the invariants and return which nodes' invariants failed.
   /// </summary>
-  /// <returns>Two collections collecting all nodes that failed the before invariant (the first collection),
-  /// or the second invariant (the second collection).</returns>
+  /// <returns>
+  ///   Two collections collecting all nodes that failed the before invariant (the first collection),
+  ///   or the second invariant (the second collection).
+  /// </returns>
   private IEnumerable<(TNode, bool)> FailingInitialChecks()
   {
     return Digraph.Nodes
@@ -238,8 +243,8 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  /// Return all arrangements for the given node that cause the inductive check to fail.
-  /// Uses a solver to search for the arrangements, rather than explicitly enumerating them.
+  ///   Return all arrangements for the given node that cause the inductive check to fail.
+  ///   Uses a solver to search for the arrangements, rather than explicitly enumerating them.
   /// </summary>
   /// <param name="node"></param>
   /// <returns></returns>
@@ -267,7 +272,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
       bSol =
         CheckInductive(node, Digraph[node], r => Zen.If(b[^1], BeforeInvariants[node](r), AfterInvariants[node](r)),
           b, routes,
-          blockingClauses: blockingClauses);
+          blockingClauses);
     }
 
     return foundArrangements;
@@ -310,16 +315,14 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
       t1[(node, false)] = new HashSet<(TNode, bool)>();
       // Populate the rows for each neighbor ("column")
       foreach (var neighbor in neighbors)
+      foreach (var (bu, bv) in t1Combinations)
       {
-        foreach (var (bu, bv) in t1Combinations)
-        {
-          // Check that the node's invariant holds given its initial route and the routes from only this neighbor.
-          var check = CheckInductive(node, new[] {neighbor}, bv ? BeforeInvariants[node] : AfterInvariants[node],
-            new[] {Zen.Constant(bu)}, routes);
-          // if the check passed, add the neighbor to the set
-          if (check is null)
-            t1[(node, bv)].Add((neighbor, bu));
-        }
+        // Check that the node's invariant holds given its initial route and the routes from only this neighbor.
+        var check = CheckInductive(node, new[] {neighbor}, bv ? BeforeInvariants[node] : AfterInvariants[node],
+          new[] {Zen.Constant(bu)}, routes);
+        // if the check passed, add the neighbor to the set
+        if (check is null)
+          t1[(node, bv)].Add((neighbor, bu));
       }
     }
 
@@ -344,7 +347,6 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
         var neighbor1 = neighbors[i1];
         var neighbor2 = neighbors[i2];
         foreach (var (b1, b2, bv) in t2Combinations)
-        {
           if (!t1[(node, bv)].Contains((neighbor1, b1)) && !t1[(node, bv)].Contains((neighbor2, b2)))
           {
             // both neighbors fail
@@ -360,12 +362,9 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
             var check = CheckInductive(node, new[] {neighbor1, neighbor2},
               bv ? BeforeInvariants[node] : AfterInvariants[node], new[] {Zen.Constant(b1), Zen.Constant(b2)}, routes);
             if (check is null)
-            {
               // pair passed, add to t2
               t2[(node, bv)].Add((neighbor1, b1, neighbor2, b2));
-            }
           }
-        }
       }
     }
 
@@ -389,7 +388,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  /// Return if a hashset of edges represents a connected directed graph.
+  ///   Return if a hashset of edges represents a connected directed graph.
   /// </summary>
   /// <param name="edges">A collection of edges with type (A, B, A, B).</param>
   /// <param name="nodes">A collection of nodes with type (A, B).</param>
@@ -415,18 +414,15 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
         }
       }
 
-      if (visited.Count == nodes.Count)
-      {
-        return true;
-      }
+      if (visited.Count == nodes.Count) return true;
     }
 
     return false;
   }
 
   /// <summary>
-  /// Return a dictionary from nodes to witness times, such that the returned witness times
-  /// ensure that all the given arrangements are blocked, or an empty dictionary if no such witness times exist.
+  ///   Return a dictionary from nodes to witness times, such that the returned witness times
+  ///   ensure that all the given arrangements are blocked, or an empty dictionary if no such witness times exist.
   /// </summary>
   /// <param name="initialChecks">Nodes where the invariant failed to hold on the initial value.</param>
   /// <param name="inductiveChecks">Node arrangements where the inductive check failed with the before invariant.</param>
@@ -452,21 +448,17 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 >= t_n
     foreach (var (node, arrangements) in inductiveChecks)
-    {
       bounds = (from arrangement in arrangements select BoundArrangement(node, times, arrangement))
         .Aggregate(bounds, (current, beforeBounds) => current.Union(beforeBounds));
-    }
 
     // (2) if the after check failed for node n and b anc, add bounds for all predecessors m of n
     //     where m converges before all nodes u_j in anc (t_m < t_j), or after all nodes u_j not in anc (t_m >= t_j),
     //     or t_m + 1 < t_n,
     //     or n converges before all nodes u_j in anc (t_n - 1 < t_j), or after all nodes u_j not in anc (t_n - 1 >= t_j)
     foreach (var (node, arrangements) in inductiveChecks)
-    {
       bounds = arrangements.Where(a => !a[^1])
         .Select(arrangement => TimeInterval(Digraph[node], times[node] - BigInteger.One, times, arrangement))
         .Aggregate(bounds, (current, nextBound) => current.Add(nextBound));
-    }
 
     // print the computed bounds
     if (PrintBounds)
@@ -489,9 +481,10 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   /// <param name="time">The symbolic time.</param>
   /// <param name="times">The witness times of the predecessors.</param>
   /// <param name="arrangement">
-  /// The arrangement of the predecessors, such that if arrangement[i] is true for predecessor i,
-  /// then the given symbolic time is greater than or equal to predecessor i's witness time,
-  /// and otherwise less than (when arrangement[i] is false).</param>
+  ///   The arrangement of the predecessors, such that if arrangement[i] is true for predecessor i,
+  ///   then the given symbolic time is greater than or equal to predecessor i's witness time,
+  ///   and otherwise less than (when arrangement[i] is false).
+  /// </param>
   /// <returns>A disjunction over comparisons between time and the witness times.</returns>
   private static Zen<bool> TimeInterval(IEnumerable<TNode> predecessors, Zen<BigInteger> time,
     IReadOnlyDictionary<TNode, Zen<BigInteger>> times, IEnumerable<bool> arrangement)
@@ -506,11 +499,11 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  /// Return an enumerable of boolean constraints representing that
-  /// there does not exist a time such that the given arrangement can occur.
-  /// Each constraint captures a possible lower bound on an interval,
-  /// such that all possible times that could occur are considered,
-  /// effectively eliminating the quantifier over time.
+  ///   Return an enumerable of boolean constraints representing that
+  ///   there does not exist a time such that the given arrangement can occur.
+  ///   Each constraint captures a possible lower bound on an interval,
+  ///   such that all possible times that could occur are considered,
+  ///   effectively eliminating the quantifier over time.
   /// </summary>
   /// <param name="node">The node for which the arrangement is being considered.</param>
   /// <param name="times">The witness times of the node and its predecessors.</param>
@@ -532,7 +525,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  /// Log the time taken (in milliseconds) by the given function to complete.
+  ///   Log the time taken (in milliseconds) by the given function to complete.
   /// </summary>
   /// <param name="key"></param>
   /// <param name="times">The dictionary in which the time taken should be stored.</param>
@@ -561,10 +554,10 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  /// Infer suitable annotations for a Timepiece <c>AnnotatedNetwork{T,TS}</c> instance.
-  /// The given inference strategy determines the form of inference used.
+  ///   Infer suitable annotations for a Timepiece <c>AnnotatedNetwork{T,TS}</c> instance.
+  ///   The given inference strategy determines the form of inference used.
   /// </summary>
-  /// <param name="strategy">the <c>InferenceStrategy</c> inference strategy: see <see cref="InferenceStrategy"/></param>
+  /// <param name="strategy">the <c>InferenceStrategy</c> inference strategy: see <see cref="InferenceStrategy" /></param>
   /// <exception cref="ArgumentOutOfRangeException">if an invalid inference strategy is given</exception>
   /// <returns>a dictionary from nodes to temporal predicates</returns>
   public Dictionary<TNode, Func<Zen<TRoute>, Zen<BigInteger>, Zen<bool>>> InferAnnotationsWithStats(

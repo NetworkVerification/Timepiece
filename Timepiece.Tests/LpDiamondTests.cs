@@ -4,6 +4,7 @@ using System.Numerics;
 using Timepiece.Networks;
 using Xunit;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.Tests;
 
@@ -11,7 +12,7 @@ namespace Timepiece.Tests;
 using Route = Pair<BigInteger, BigInteger>;
 
 /// <summary>
-/// Tests based on examples presented in Tim Alberdingk Thijm's dissertation, "Modular Control Plane Verification".
+///   Tests based on examples presented in Tim Alberdingk Thijm's dissertation, "Modular Control Plane Verification".
 /// </summary>
 public static class LpDiamondTests
 {
@@ -20,32 +21,8 @@ public static class LpDiamondTests
     {"a", new List<string>()},
     {"b", new List<string> {"a", "c"}},
     {"c", new List<string> {"a", "b"}},
-    {"d", new List<string> {"b", "c"}},
+    {"d", new List<string> {"b", "c"}}
   });
-
-  public static AnnotatedNetwork<Option<Route>, string> Net(
-    Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>> annotations,
-    Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
-    Dictionary<string, Func<Zen<Option<Route>>, Zen<bool>>> monolithicProperties)
-  {
-    var initialValues = new Dictionary<string, Zen<Option<Route>>>
-    {
-      {"a", Option.Create<Route>(Pair.Create<BigInteger, BigInteger>(new BigInteger(100), BigInteger.Zero))},
-      {"b", Option.Null<Route>()},
-      {"c", Option.Null<Route>()},
-      {"d", Option.Null<Route>()},
-    };
-    return new AnnotatedNetwork<Option<Route>, string>(Digraph, Transfer, Lang.Omap2<Route>(Merge),
-      initialValues, annotations, modularProperties, monolithicProperties, System.Array.Empty<ISymbolic>());
-  }
-
-  private static Zen<Route> Merge(Zen<Route> r1, Zen<Route> r2) =>
-    Zen.If(r1.Item1() > r2.Item1(), r1,
-      Zen.If(r1.Item1() < r2.Item1(), r2,
-        Zen.If(r1.Item2() < r2.Item2(), r1, r2)));
-
-  private static Zen<Route> Increment(Zen<Route> r) =>
-    Pair.Create(r.Item1(), r.Item2() + BigInteger.One);
 
   private static Dictionary<(string, string), Func<Zen<Option<Route>>, Zen<Option<Route>>>> Transfer =>
     Digraph.MapEdges(e => e switch
@@ -58,6 +35,34 @@ public static class LpDiamondTests
       // all other routes are just incremented and reset to LP 100
       _ => Lang.Omap<Route, Route>(Increment)
     });
+
+  public static AnnotatedNetwork<Option<Route>, string> Net(
+    Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<string, Func<Zen<Option<Route>>, Zen<bool>>> monolithicProperties)
+  {
+    var initialValues = new Dictionary<string, Zen<Option<Route>>>
+    {
+      {"a", Option.Create<Route>(Pair.Create<BigInteger, BigInteger>(new BigInteger(100), BigInteger.Zero))},
+      {"b", Option.Null<Route>()},
+      {"c", Option.Null<Route>()},
+      {"d", Option.Null<Route>()}
+    };
+    return new AnnotatedNetwork<Option<Route>, string>(Digraph, Transfer, Lang.Omap2<Route>(Merge),
+      initialValues, annotations, modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
+  }
+
+  private static Zen<Route> Merge(Zen<Route> r1, Zen<Route> r2)
+  {
+    return Zen.If(r1.Item1() > r2.Item1(), r1,
+      Zen.If(r1.Item1() < r2.Item1(), r2,
+        Zen.If(r1.Item2() < r2.Item2(), r1, r2)));
+  }
+
+  private static Zen<Route> Increment(Zen<Route> r)
+  {
+    return Pair.Create(r.Item1(), r.Item2() + BigInteger.One);
+  }
 
   [Fact]
   public static void DHasTaggedRoute()
@@ -86,21 +91,21 @@ public static class LpDiamondTests
         "d", Lang.Until(new BigInteger(3), Lang.OrSome<Route>(r => Zen.And(r.Item1() >= new BigInteger(0),
             r.Item1() < new BigInteger(150), r.Item2() > new BigInteger(1))),
           Lang.IfSome<Route>(r => Zen.And(r.Item2() == new BigInteger(3))))
-      },
+      }
     };
     var modularProperties = new Dictionary<string, Func<Zen<Option<Route>>, Zen<BigInteger>, Zen<bool>>>
     {
       {"a", Lang.Globally(Lang.True<Option<Route>>())},
       {"b", Lang.Globally(Lang.True<Option<Route>>())},
       {"c", Lang.Globally(Lang.True<Option<Route>>())},
-      {"d", Lang.Finally(new BigInteger(3), Lang.IfSome<Route>(r => r.Item2() == new BigInteger(3)))},
+      {"d", Lang.Finally(new BigInteger(3), Lang.IfSome<Route>(r => r.Item2() == new BigInteger(3)))}
     };
     var monolithicProperties = new Dictionary<string, Func<Zen<Option<Route>>, Zen<bool>>>
     {
       {"a", Lang.True<Option<Route>>()},
       {"b", Lang.True<Option<Route>>()},
       {"c", Lang.True<Option<Route>>()},
-      {"d", Lang.IfSome<Route>(r => r.Item2() == new BigInteger(3))},
+      {"d", Lang.IfSome<Route>(r => r.Item2() == new BigInteger(3))}
     };
     var net = Net(annotations, modularProperties, monolithicProperties);
     NetworkAssert.CheckSoundMonolithic(net);

@@ -7,19 +7,18 @@ using ZenLib;
 namespace Timepiece.Angler;
 
 /// <summary>
-/// A representation of a route and the current routing environment:
-/// the results of executing the policy, and the current local default action.
+///   A representation of a route and the current routing environment:
+///   the results of executing the policy, and the current local default action.
 /// </summary>
 [ZenObject]
 public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
 {
-  public static readonly UInt<_2> IncompleteOrigin = new(0);
-  public static readonly UInt<_2> ExternalOrigin = new(2);
-  public static readonly UInt<_2> InternalOrigin = new(3);
-
   public const uint DefaultLp = 100;
   public const uint DefaultWeight = 32768;
   public const uint DefaultMetric = 0;
+  public static readonly UInt<_2> IncompleteOrigin = new(0);
+  public static readonly UInt<_2> ExternalOrigin = new(2);
+  public static readonly UInt<_2> InternalOrigin = new(3);
 
   public RouteEnvironment()
   {
@@ -38,7 +37,8 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
 
 
   [JsonConstructor]
-  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, CSet<string> asSet, BigInteger asPathLength, uint metric, uint tag,
+  public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, CSet<string> asSet, BigInteger asPathLength,
+    uint metric, uint tag,
     UInt<_2> originType, CSet<string> communities, RouteResult result,
     bool localDefaultAction)
   {
@@ -80,7 +80,7 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
   public uint Lp { get; set; }
 
   /// <summary>
-  /// Set representation of the ASes in the AS path.
+  ///   Set representation of the ASes in the AS path.
   /// </summary>
   public CSet<string> AsSet { get; set; }
 
@@ -127,13 +127,9 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
         case "CSet":
           var value = (CSet<string>?) property.GetValue(this);
           if (value is null)
-          {
             propertiesBuilder.Append($"{value}");
-          }
           else
-          {
             propertiesBuilder.AppendJoin(", ", value.Map.Values.Keys);
-          }
           break;
         default:
           propertiesBuilder.Append($"{property.GetValue(this)}");
@@ -204,10 +200,12 @@ public static class RouteEnvironmentExtensions
   }
 
   /// <summary>
-  /// Return the route with returned and value both set to true.
+  ///   Return the route with returned and value both set to true.
   /// </summary>
   /// <param name="r"></param>
   /// <returns></returns>
-  public static Zen<RouteEnvironment> ReturnAccept(Zen<RouteEnvironment> r) =>
-    r.WithResultReturned(true).WithResultValue(true);
+  public static Zen<RouteEnvironment> ReturnAccept(Zen<RouteEnvironment> r)
+  {
+    return r.WithResultReturned(true).WithResultValue(true);
+  }
 }

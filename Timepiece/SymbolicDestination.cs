@@ -6,7 +6,7 @@ using ZenLib;
 namespace Timepiece;
 
 /// <summary>
-/// Representation of a symbolically-chosen destination top-of-rack node in a particular fat-tree pod.
+///   Representation of a symbolically-chosen destination top-of-rack node in a particular fat-tree pod.
 /// </summary>
 public class SymbolicDestination : SymbolicValue<Pair<string, int>>
 {
@@ -28,7 +28,8 @@ public class SymbolicDestination : SymbolicValue<Pair<string, int>>
   public Zen<string> Node { get; set; }
 
   /// <summary>
-  ///   Return a concrete integer representing the (possibly-symbolic) distance between a node and a destination edge-layer node
+  ///   Return a concrete integer representing the (possibly-symbolic) distance between a node and a destination edge-layer
+  ///   node
   ///   in a fat-tree topology.
   /// </summary>
   /// <param name="node">The given node.</param>
@@ -45,10 +46,10 @@ public class SymbolicDestination : SymbolicValue<Pair<string, int>>
   }
 
   /// <summary>
-  /// Return a <i>symbolic</i> integer representing the distance between a node and a destination edge-layer node
-  /// in a fat-tree topology.
-  /// The integer is chosen according to its position in the given <c>symbolicTimes</c> list,
-  /// which must have exactly 5 elements.
+  ///   Return a <i>symbolic</i> integer representing the distance between a node and a destination edge-layer node
+  ///   in a fat-tree topology.
+  ///   The integer is chosen according to its position in the given <c>symbolicTimes</c> list,
+  ///   which must have exactly 5 elements.
   /// </summary>
   /// <param name="node"></param>
   /// <param name="nodePod"></param>

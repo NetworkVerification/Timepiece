@@ -56,7 +56,7 @@ public static class ArrangementTests
     // FSeq.Create(Enumerable.Repeat(Zen.Symbolic<Option<bool>>(), 3)));
     // var a = Zen.Symbolic<Arrangement>();
     var a = ArrangementExtensions.Symbolic(3);
-    var query = Zen.And(a.GetInvariant().IsSome(), a.GetNeighbor(2).Case(none: () => false, some: b => b)).Solve();
+    var query = Zen.And(a.GetInvariant().IsSome(), a.GetNeighbor(2).Case(() => false, b => b)).Solve();
     Assert.True(query.IsSatisfiable());
     var a2 = query.Get(a);
     Assert.True(a2.Invariant.HasValue);

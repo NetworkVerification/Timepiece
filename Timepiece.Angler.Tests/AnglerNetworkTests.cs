@@ -9,12 +9,12 @@ public static class AnglerNetworkTests
   {
     {"A", new NodeProperties(new[] {"B", "C", "123.123.45.45"})},
     {"B", new NodeProperties(new[] {"A", "C"})},
-    {"C", new NodeProperties(new[] {"A", "B"})},
+    {"C", new NodeProperties(new[] {"A", "B"})}
   };
 
   private static readonly List<ExternalPeer> ExternalPeers = new()
   {
-    new ExternalPeer("123.123.45.45", new[] {"A"}),
+    new ExternalPeer("123.123.45.45", new[] {"A"})
   };
 
   private static readonly AnglerNetwork SmallMeshNetwork = new(SmallMesh, ExternalPeers);
@@ -25,7 +25,7 @@ public static class AnglerNetworkTests
     var externalNodes = ExternalPeers.Select(p => p.Name);
     var nodes = externalNodes.Concat(SmallMesh.Keys);
     var (topology, _) = SmallMeshNetwork.TopologyAndTransfer();
-    Assert.Equivalent(nodes, topology.Nodes, strict: true);
+    Assert.Equivalent(nodes, topology.Nodes, true);
   }
 
   [Fact]
@@ -39,7 +39,7 @@ public static class AnglerNetworkTests
     var allExpectedEdges = edges.Concat(externalEdges);
     var (topology, _) = SmallMeshNetwork.TopologyAndTransfer();
     var allActualEdges = topology.FoldEdges(ImmutableList<(string Key, string m)>.Empty, (l, e) => l.Add(e));
-    Assert.Equivalent(allExpectedEdges, allActualEdges, strict: true);
+    Assert.Equivalent(allExpectedEdges, allActualEdges, true);
   }
 
   [Fact]
@@ -53,6 +53,6 @@ public static class AnglerNetworkTests
     var allExpectedEdges = edges.Concat(externalEdges);
     var (_, transfer) = SmallMeshNetwork.TopologyAndTransfer();
     var allActualEdges = transfer.Keys;
-    Assert.Equivalent(allExpectedEdges, allActualEdges, strict: true);
+    Assert.Equivalent(allExpectedEdges, allActualEdges, true);
   }
 }

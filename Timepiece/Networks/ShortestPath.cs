@@ -6,7 +6,7 @@ using static ZenLib.Zen;
 namespace Timepiece.Networks;
 
 /// <summary>
-/// A network with a shortest-paths routing algebra, using unbounded integers.
+///   A network with a shortest-paths routing algebra, using unbounded integers.
 /// </summary>
 /// <typeparam name="NodeType">The type of nodes.</typeparam>
 public class ShortestPath<NodeType> : Network<Option<BigInteger>, NodeType>

@@ -6,7 +6,7 @@ using ZenLib;
 namespace Timepiece;
 
 /// <summary>
-/// A symbolic value which represents a particular symbolically-chosen time.
+///   A symbolic value which represents a particular symbolically-chosen time.
 /// </summary>
 public class SymbolicTime : SymbolicValue<BigInteger>
 {
@@ -20,13 +20,13 @@ public class SymbolicTime : SymbolicValue<BigInteger>
   }
 
   /// <summary>
-  /// Return a list of <c>numTimes</c> many symbolic witness times,
-  /// where <c>time[i] &lt; time[i+1]</c> for all <c>i &lt; numTimes</c>.
+  ///   Return a list of <c>numTimes</c> many symbolic witness times,
+  ///   where <c>time[i] &lt; time[i+1]</c> for all <c>i &lt; numTimes</c>.
   /// </summary>
   /// <returns></returns>
   public static IReadOnlyList<SymbolicTime> AscendingSymbolicTimes(int numTimes)
   {
-    var startTime = new SymbolicTime($"tau-0");
+    var startTime = new SymbolicTime("tau-0");
     var times = new List<SymbolicTime> {startTime};
     for (var i = 1; i < numTimes; i++)
     {

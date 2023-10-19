@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 namespace Timepiece.Angler.Ast;
 
 /// <summary>
-/// An external peer outside the network.
-/// Identified via an IP address and its connections into the network.
+///   An external peer outside the network.
+///   Identified via an IP address and its connections into the network.
 /// </summary>
 /// <param name="ip"></param>
 /// <param name="peers"></param>
@@ -20,7 +20,7 @@ public record ExternalPeer(IPAddress ip, string[] peers)
   }
 
   /// <summary>
-  /// Return the node's "name" -- its IP address as a CIDR string.
+  ///   Return the node's "name" -- its IP address as a CIDR string.
   /// </summary>
   public string Name => ip.ToString();
 }

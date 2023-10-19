@@ -52,7 +52,7 @@ public class Digraph<NodeType> where NodeType : notnull
   public int NEdges { get; set; }
 
   /// <summary>
-  /// The number of nodes.
+  ///   The number of nodes.
   /// </summary>
   [JsonIgnore]
   public int NNodes => Nodes.Count;
@@ -87,7 +87,7 @@ public class Digraph<NodeType> where NodeType : notnull
   }
 
   /// <summary>
-  /// Return true if the digraph contains the given edge.
+  ///   Return true if the digraph contains the given edge.
   /// </summary>
   /// <param name="edge">An edge.</param>
   /// <returns>True if the edge is present, false otherwise.</returns>
@@ -97,8 +97,8 @@ public class Digraph<NodeType> where NodeType : notnull
   }
 
   /// <summary>
-  /// Add a new edge from a neighbor to the node.
-  /// If either the neighbor or the node are not already in the digraph, add them.
+  ///   Add a new edge from a neighbor to the node.
+  ///   If either the neighbor or the node are not already in the digraph, add them.
   /// </summary>
   /// <param name="node"></param>
   /// <param name="neighbor"></param>
@@ -124,7 +124,7 @@ public class Digraph<NodeType> where NodeType : notnull
   }
 
   /// <summary>
-  /// Take the union of two graphs, such that the result contains all the nodes and edges of both.
+  ///   Take the union of two graphs, such that the result contains all the nodes and edges of both.
   /// </summary>
   /// <param name="other"></param>
   /// <returns></returns>
@@ -132,16 +132,10 @@ public class Digraph<NodeType> where NodeType : notnull
   {
     var extended = Neighbors;
     foreach (var (node, neighbors) in other.Neighbors)
-    {
       if (extended.ContainsKey(node))
-      {
         extended[node] = extended[node].Union(neighbors);
-      }
       else
-      {
         extended[node] = neighbors;
-      }
-    }
 
     return new Digraph<NodeType>(extended);
   }
@@ -287,7 +281,7 @@ public class EdgeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType>
   }
 
   /// <summary>
-  /// Labels for the edges in the digraph.
+  ///   Labels for the edges in the digraph.
   /// </summary>
   public Dictionary<(NodeType, NodeType), LabelType> Labels { get; set; }
 

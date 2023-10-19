@@ -14,7 +14,7 @@ JsonSerializer serializer = new()
 {
   // use $type for type names, and the given binder
   TypeNameHandling = TypeNameHandling.All,
-  SerializationBinder = new AstSerializationBinder(),
+  SerializationBinder = new AstSerializationBinder()
   // throw an error when members are missing from the object instead of ignoring them
   // MissingMemberHandling = MissingMemberHandling.Error
 };

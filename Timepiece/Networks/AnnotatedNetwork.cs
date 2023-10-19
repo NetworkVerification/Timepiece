@@ -78,7 +78,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   }
 
   /// <summary>
-  /// Construct a new <c>AnnotatedNetwork{T,TS}</c> from another.
+  ///   Construct a new <c>AnnotatedNetwork{T,TS}</c> from another.
   /// </summary>
   /// <param name="net"></param>
   /// <param name="annotations"></param>
@@ -95,7 +95,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   }
 
   /// <summary>
-  /// Construct a new <c>AnnotatedNetwork{T,TS}</c> from another, using an alternate properties definition.
+  ///   Construct a new <c>AnnotatedNetwork{T,TS}</c> from another, using an alternate properties definition.
   /// </summary>
   /// <param name="net"></param>
   /// <param name="annotations"></param>
@@ -132,7 +132,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   public bool PrintFormulas { get; set; }
 
   /// <summary>
-  /// The maximum number of logical time steps of delay to consider.
+  ///   The maximum number of logical time steps of delay to consider.
   /// </summary>
   public Zen<BigInteger>? MaxDelay { get; set; }
 

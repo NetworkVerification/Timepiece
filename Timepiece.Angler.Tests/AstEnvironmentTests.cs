@@ -1,5 +1,7 @@
 using System.Numerics;
+using Newtonsoft.Json;
 using Timepiece.Angler.Ast;
+using Timepiece.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler.Tests;
@@ -11,6 +13,1236 @@ public static class AstEnvironmentTests
   private const string ExitReject = "exitReject";
   private const string AddCommunity = "addCommunity";
   private const string CommunityTag = "10000:99999";
+
+  /// <summary>
+  ///   The CONNECTOR_IN routing policy statements from the Internet2 Angler JSON file.
+  /// </summary>
+  private const string ConnectorIn = """
+                                     [
+                                      {
+                                        "$type": "Assign(_)",
+                                        "Expr": {
+                                          "$type": "WithField(TEnvironment;TSet)",
+                                          "FieldName": "Communities",
+                                          "FieldType": "TSet",
+                                          "FieldValue": {
+                                            "$type": "SetDifference",
+                                            "Operand1": {
+                                            "$type": "LiteralSet",
+                                            "elements": [
+                                                           {
+                                                             "$type": "String",
+                                                             "Value": "11537:40"
+                                                           }
+                                                         ]
+                                                       },
+                                                       "Operand2": {
+                                                         "$type": "GetField(TEnvironment;TSet)",
+                                                         "FieldName": "Communities",
+                                                         "FieldType": "TSet",
+                                                         "Record": {
+                                                           "$type": "Var(_)",
+                                                           "Name": "env"
+                                                         },
+                                                         "RecordType": "TEnvironment"
+                                                       }
+                                                     },
+                                                     "Record": {
+                                                       "$type": "Var(_)",
+                                                       "Name": "env"
+                                                     },
+                                                     "RecordType": "TEnvironment"
+                                                   },
+                                                   "Var": "env"
+                                                 },
+                                                 {
+                                                   "$type": "If(_)",
+                                                   "Comment": "early_return",
+                                                   "ElseCase": [
+                                                     {
+                                                       "$type": "Assign(_)",
+                                                       "Expr": {
+                                                         "$type": "WithField(TEnvironment;TSet)",
+                                                         "FieldName": "Communities",
+                                                         "FieldType": "TSet",
+                                                         "FieldValue": {
+                                                           "$type": "SetDifference",
+                                                           "Operand1": {
+                                                             "$type": "LiteralSet",
+                                                             "elements": [
+                                                               {
+                                                                 "$type": "String",
+                                                                 "Value": "11537:160"
+                                                               }
+                                                             ]
+                                                           },
+                                                           "Operand2": {
+                                                             "$type": "GetField(TEnvironment;TSet)",
+                                                             "FieldName": "Communities",
+                                                             "FieldType": "TSet",
+                                                             "Record": {
+                                                               "$type": "Var(_)",
+                                                               "Name": "env"
+                                                             },
+                                                             "RecordType": "TEnvironment"
+                                                           }
+                                                         },
+                                                         "Record": {
+                                                           "$type": "Var(_)",
+                                                           "Name": "env"
+                                                         },
+                                                         "RecordType": "TEnvironment"
+                                                       },
+                                                       "Var": "env"
+                                                     },
+                                                     {
+                                                       "$type": "If(_)",
+                                                       "Comment": "early_return",
+                                                       "ElseCase": [
+                                                         {
+                                                           "$type": "If(_)",
+                                                           "Comment": "discard",
+                                                           "ElseCase": [],
+                                                           "Guard": {
+                                                             "$type": "And",
+                                                             "Exprs": [
+                                                               {
+                                                                 "$type": "Subset",
+                                                                 "Operand1": {
+                                                                   "$type": "LiteralSet",
+                                                                   "elements": [
+                                                                     {
+                                                                       "$type": "String",
+                                                                       "Value": "11537:911"
+                                                                     }
+                                                                   ]
+                                                                 },
+                                                                 "Operand2": {
+                                                                   "$type": "GetField(TEnvironment;TSet)",
+                                                                   "FieldName": "Communities",
+                                                                   "FieldType": "TSet",
+                                                                   "Record": {
+                                                                     "$type": "Var(_)",
+                                                                     "Name": "env"
+                                                                   },
+                                                                   "RecordType": "TEnvironment"
+                                                                 }
+                                                               },
+                                                               {
+                                                                 "$type": "PrefixMatchSet",
+                                                                 "Prefix": {
+                                                                   "$type": "GetField(TEnvironment;TIpPrefix)",
+                                                                   "FieldName": "Prefix",
+                                                                   "FieldType": "TIpPrefix",
+                                                                   "Record": {
+                                                                     "$type": "Var(_)",
+                                                                     "Name": "env"
+                                                                   },
+                                                                   "RecordType": "TEnvironment"
+                                                                 },
+                                                                 "PrefixSet": {
+                                                                   "$type": "RouteFilterListExpr",
+                                                                   "List": {
+                                                                     "$type": "RouteFilterList",
+                                                                     "Lines": [
+                                                                       {
+                                                                         "Action": true,
+                                                                         "MaxLength": 32,
+                                                                         "MinLength": 24,
+                                                                         "Wildcard": {
+                                                                           "Begin": "0.0.0.0",
+                                                                           "HostMask": "255.255.255.255"
+                                                                         }
+                                                                       }
+                                                                     ]
+                                                                   }
+                                                                 }
+                                                               }
+                                                             ]
+                                                           },
+                                                           "ThenCase": [
+                                                             {
+                                                               "$type": "Assign(_)",
+                                                               "Expr": {
+                                                                 "$type": "WithField(TEnvironment;TSet)",
+                                                                 "FieldName": "Communities",
+                                                                 "FieldType": "TSet",
+                                                                 "FieldValue": {
+                                                                   "$type": "SetUnion",
+                                                                   "Exprs": [
+                                                                     {
+                                                                       "$type": "GetField(TEnvironment;TSet)",
+                                                                       "FieldName": "Communities",
+                                                                       "FieldType": "TSet",
+                                                                       "Record": {
+                                                                         "$type": "Var(_)",
+                                                                         "Name": "env"
+                                                                       },
+                                                                       "RecordType": "TEnvironment"
+                                                                     },
+                                                                     {
+                                                                       "$type": "LiteralSet",
+                                                                       "elements": [
+                                                                         {
+                                                                           "$type": "String",
+                                                                           "Value": "65535:65281"
+                                                                         }
+                                                                       ]
+                                                                     }
+                                                                   ]
+                                                                 },
+                                                                 "Record": {
+                                                                   "$type": "Var(_)",
+                                                                   "Name": "env"
+                                                                 },
+                                                                 "RecordType": "TEnvironment"
+                                                               },
+                                                               "Var": "env"
+                                                             },
+                                                             {
+                                                               "$type": "If(_)",
+                                                               "Comment": "early_return",
+                                                               "ElseCase": [
+                                                                 {
+                                                                   "$type": "If(_)",
+                                                                   "ElseCase": [
+                                                                     {
+                                                                       "$type": "Assign(_)",
+                                                                       "Expr": {
+                                                                         "$type": "WithField(TEnvironment;TResult)",
+                                                                         "FieldName": "Result",
+                                                                         "FieldType": "TResult",
+                                                                         "FieldValue": {
+                                                                           "$type": "CreateRecord",
+                                                                           "Fields": {
+                                                                             "Exit": {
+                                                                               "$type": "Bool",
+                                                                               "Value": true
+                                                                             },
+                                                                             "Fallthrough": {
+                                                                               "$type": "Bool",
+                                                                               "Value": false
+                                                                             },
+                                                                             "Returned": {
+                                                                               "$type": "Bool",
+                                                                               "Value": false
+                                                                             },
+                                                                             "Value": {
+                                                                               "$type": "Bool",
+                                                                               "Value": true
+                                                                             }
+                                                                           },
+                                                                           "RecordType": "TResult"
+                                                                         },
+                                                                         "Record": {
+                                                                           "$type": "Var(_)",
+                                                                           "Name": "env"
+                                                                         },
+                                                                         "RecordType": "TEnvironment"
+                                                                       },
+                                                                       "Var": "env"
+                                                                     }
+                                                                   ],
+                                                                   "Guard": {
+                                                                     "$type": "CallExprContext"
+                                                                   },
+                                                                   "ThenCase": [
+                                                                     {
+                                                                       "$type": "Assign(_)",
+                                                                       "Expr": {
+                                                                         "$type": "WithField(TEnvironment;TResult)",
+                                                                         "FieldName": "Result",
+                                                                         "FieldType": "TResult",
+                                                                         "FieldValue": {
+                                                                           "$type": "CreateRecord",
+                                                                           "Fields": {
+                                                                             "Exit": {
+                                                                               "$type": "Bool",
+                                                                               "Value": false
+                                                                             },
+                                                                             "Fallthrough": {
+                                                                               "$type": "Bool",
+                                                                               "Value": false
+                                                                             },
+                                                                             "Returned": {
+                                                                               "$type": "Bool",
+                                                                               "Value": true
+                                                                             },
+                                                                             "Value": {
+                                                                               "$type": "Bool",
+                                                                               "Value": true
+                                                                             }
+                                                                           },
+                                                                           "RecordType": "TResult"
+                                                                         },
+                                                                         "Record": {
+                                                                           "$type": "Var(_)",
+                                                                           "Name": "env"
+                                                                         },
+                                                                         "RecordType": "TEnvironment"
+                                                                       },
+                                                                       "Var": "env"
+                                                                     }
+                                                                   ]
+                                                                 }
+                                                               ],
+                                                               "Guard": {
+                                                                 "$type": "Or",
+                                                                 "Exprs": [
+                                                                   {
+                                                                     "$type": "GetField(TResult;TBool)",
+                                                                     "FieldName": "Returned",
+                                                                     "FieldType": "TBool",
+                                                                     "Record": {
+                                                                       "$type": "GetField(TEnvironment;TResult)",
+                                                                       "FieldName": "Result",
+                                                                       "FieldType": "TResult",
+                                                                       "Record": {
+                                                                         "$type": "Var(_)",
+                                                                         "Name": "env"
+                                                                       },
+                                                                       "RecordType": "TEnvironment"
+                                                                     },
+                                                                     "RecordType": "TResult"
+                                                                   },
+                                                                   {
+                                                                     "$type": "GetField(TResult;TBool)",
+                                                                     "FieldName": "Exit",
+                                                                     "FieldType": "TBool",
+                                                                     "Record": {
+                                                                       "$type": "GetField(TEnvironment;TResult)",
+                                                                       "FieldName": "Result",
+                                                                       "FieldType": "TResult",
+                                                                       "Record": {
+                                                                         "$type": "Var(_)",
+                                                                         "Name": "env"
+                                                                       },
+                                                                       "RecordType": "TEnvironment"
+                                                                     },
+                                                                     "RecordType": "TResult"
+                                                                   }
+                                                                 ]
+                                                               },
+                                                               "ThenCase": []
+                                                             }
+                                                           ]
+                                                         },
+                                                         {
+                                                           "$type": "If(_)",
+                                                           "Comment": "early_return",
+                                                           "ElseCase": [
+                                                             {
+                                                               "$type": "If(_)",
+                                                               "Comment": "allow-unicast",
+                                                               "ElseCase": [],
+                                                               "Guard": {
+                                                                 "$type": "PrefixMatchSet",
+                                                                 "Prefix": {
+                                                                   "$type": "GetField(TEnvironment;TIpPrefix)",
+                                                                   "FieldName": "Prefix",
+                                                                   "FieldType": "TIpPrefix",
+                                                                   "Record": {
+                                                                     "$type": "Var(_)",
+                                                                     "Name": "env"
+                                                                   },
+                                                                   "RecordType": "TEnvironment"
+                                                                 },
+                                                                 "PrefixSet": {
+                                                                   "$type": "RouteFilterListExpr",
+                                                                   "List": {
+                                                                     "$type": "RouteFilterList",
+                                                                     "Lines": [
+                                                                       {
+                                                                         "Action": true,
+                                                                         "MaxLength": 27,
+                                                                         "MinLength": 0,
+                                                                         "Wildcard": {
+                                                                           "Begin": "0.0.0.0",
+                                                                           "HostMask": "255.255.255.255"
+                                                                         }
+                                                                       }
+                                                                     ]
+                                                                   }
+                                                                 }
+                                                               },
+                                                               "ThenCase": [
+                                                                 {
+                                                                   "$type": "Assign(_)",
+                                                                   "Expr": {
+                                                                     "$type": "WithField(TEnvironment;TSet)",
+                                                                     "FieldName": "Communities",
+                                                                     "FieldType": "TSet",
+                                                                     "FieldValue": {
+                                                                       "$type": "SetUnion",
+                                                                       "Exprs": [
+                                                                         {
+                                                                           "$type": "GetField(TEnvironment;TSet)",
+                                                                           "FieldName": "Communities",
+                                                                           "FieldType": "TSet",
+                                                                           "Record": {
+                                                                             "$type": "Var(_)",
+                                                                             "Name": "env"
+                                                                           },
+                                                                           "RecordType": "TEnvironment"
+                                                                         },
+                                                                         {
+                                                                           "$type": "LiteralSet",
+                                                                           "elements": [
+                                                                             {
+                                                                               "$type": "String",
+                                                                               "Value": "11537:950"
+                                                                             }
+                                                                           ]
+                                                                         }
+                                                                       ]
+                                                                     },
+                                                                     "Record": {
+                                                                       "$type": "Var(_)",
+                                                                       "Name": "env"
+                                                                     },
+                                                                     "RecordType": "TEnvironment"
+                                                                   },
+                                                                   "Var": "env"
+                                                                 },
+                                                                 {
+                                                                   "$type": "If(_)",
+                                                                   "Comment": "early_return",
+                                                                   "ElseCase": [
+                                                                     {
+                                                                       "$type": "If(_)",
+                                                                       "ElseCase": [
+                                                                         {
+                                                                           "$type": "Assign(_)",
+                                                                           "Expr": {
+                                                                             "$type": "WithField(TEnvironment;TResult)",
+                                                                             "FieldName": "Result",
+                                                                             "FieldType": "TResult",
+                                                                             "FieldValue": {
+                                                                               "$type": "CreateRecord",
+                                                                               "Fields": {
+                                                                                 "Exit": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": true
+                                                                                 },
+                                                                                 "Fallthrough": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Returned": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Value": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": true
+                                                                                 }
+                                                                               },
+                                                                               "RecordType": "TResult"
+                                                                             },
+                                                                             "Record": {
+                                                                               "$type": "Var(_)",
+                                                                               "Name": "env"
+                                                                             },
+                                                                             "RecordType": "TEnvironment"
+                                                                           },
+                                                                           "Var": "env"
+                                                                         }
+                                                                       ],
+                                                                       "Guard": {
+                                                                         "$type": "CallExprContext"
+                                                                       },
+                                                                       "ThenCase": [
+                                                                         {
+                                                                           "$type": "Assign(_)",
+                                                                           "Expr": {
+                                                                             "$type": "WithField(TEnvironment;TResult)",
+                                                                             "FieldName": "Result",
+                                                                             "FieldType": "TResult",
+                                                                             "FieldValue": {
+                                                                               "$type": "CreateRecord",
+                                                                               "Fields": {
+                                                                                 "Exit": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Fallthrough": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Returned": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": true
+                                                                                 },
+                                                                                 "Value": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": true
+                                                                                 }
+                                                                               },
+                                                                               "RecordType": "TResult"
+                                                                             },
+                                                                             "Record": {
+                                                                               "$type": "Var(_)",
+                                                                               "Name": "env"
+                                                                             },
+                                                                             "RecordType": "TEnvironment"
+                                                                           },
+                                                                           "Var": "env"
+                                                                         }
+                                                                       ]
+                                                                     }
+                                                                   ],
+                                                                   "Guard": {
+                                                                     "$type": "Or",
+                                                                     "Exprs": [
+                                                                       {
+                                                                         "$type": "GetField(TResult;TBool)",
+                                                                         "FieldName": "Returned",
+                                                                         "FieldType": "TBool",
+                                                                         "Record": {
+                                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                                           "FieldName": "Result",
+                                                                           "FieldType": "TResult",
+                                                                           "Record": {
+                                                                             "$type": "Var(_)",
+                                                                             "Name": "env"
+                                                                           },
+                                                                           "RecordType": "TEnvironment"
+                                                                         },
+                                                                         "RecordType": "TResult"
+                                                                       },
+                                                                       {
+                                                                         "$type": "GetField(TResult;TBool)",
+                                                                         "FieldName": "Exit",
+                                                                         "FieldType": "TBool",
+                                                                         "Record": {
+                                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                                           "FieldName": "Result",
+                                                                           "FieldType": "TResult",
+                                                                           "Record": {
+                                                                             "$type": "Var(_)",
+                                                                             "Name": "env"
+                                                                           },
+                                                                           "RecordType": "TEnvironment"
+                                                                         },
+                                                                         "RecordType": "TResult"
+                                                                       }
+                                                                     ]
+                                                                   },
+                                                                   "ThenCase": []
+                                                                 }
+                                                               ]
+                                                             },
+                                                             {
+                                                               "$type": "If(_)",
+                                                               "Comment": "early_return",
+                                                               "ElseCase": [
+                                                                 {
+                                                                   "$type": "If(_)",
+                                                                   "Comment": "allow-multicast",
+                                                                   "ElseCase": [],
+                                                                   "Guard": {
+                                                                     "$type": "PrefixMatchSet",
+                                                                     "Prefix": {
+                                                                       "$type": "GetField(TEnvironment;TIpPrefix)",
+                                                                       "FieldName": "Prefix",
+                                                                       "FieldType": "TIpPrefix",
+                                                                       "Record": {
+                                                                         "$type": "Var(_)",
+                                                                         "Name": "env"
+                                                                       },
+                                                                       "RecordType": "TEnvironment"
+                                                                     },
+                                                                     "PrefixSet": {
+                                                                       "$type": "RouteFilterListExpr",
+                                                                       "List": {
+                                                                         "$type": "RouteFilterList",
+                                                                         "Lines": [
+                                                                           {
+                                                                             "Action": true,
+                                                                             "MaxLength": 27,
+                                                                             "MinLength": 0,
+                                                                             "Wildcard": {
+                                                                               "Begin": "0.0.0.0",
+                                                                               "HostMask": "255.255.255.255"
+                                                                             }
+                                                                           }
+                                                                         ]
+                                                                       }
+                                                                     }
+                                                                   },
+                                                                   "ThenCase": [
+                                                                     {
+                                                                       "$type": "Assign(_)",
+                                                                       "Expr": {
+                                                                         "$type": "WithField(TEnvironment;TSet)",
+                                                                         "FieldName": "Communities",
+                                                                         "FieldType": "TSet",
+                                                                         "FieldValue": {
+                                                                           "$type": "SetUnion",
+                                                                           "Exprs": [
+                                                                             {
+                                                                               "$type": "GetField(TEnvironment;TSet)",
+                                                                               "FieldName": "Communities",
+                                                                               "FieldType": "TSet",
+                                                                               "Record": {
+                                                                                 "$type": "Var(_)",
+                                                                                 "Name": "env"
+                                                                               },
+                                                                               "RecordType": "TEnvironment"
+                                                                             },
+                                                                             {
+                                                                               "$type": "LiteralSet",
+                                                                               "elements": [
+                                                                                 {
+                                                                                   "$type": "String",
+                                                                                   "Value": "11537:950"
+                                                                                 }
+                                                                               ]
+                                                                             }
+                                                                           ]
+                                                                         },
+                                                                         "Record": {
+                                                                           "$type": "Var(_)",
+                                                                           "Name": "env"
+                                                                         },
+                                                                         "RecordType": "TEnvironment"
+                                                                       },
+                                                                       "Var": "env"
+                                                                     },
+                                                                     {
+                                                                       "$type": "If(_)",
+                                                                       "Comment": "early_return",
+                                                                       "ElseCase": [
+                                                                         {
+                                                                           "$type": "If(_)",
+                                                                           "ElseCase": [
+                                                                             {
+                                                                               "$type": "Assign(_)",
+                                                                               "Expr": {
+                                                                                 "$type": "WithField(TEnvironment;TResult)",
+                                                                                 "FieldName": "Result",
+                                                                                 "FieldType": "TResult",
+                                                                                 "FieldValue": {
+                                                                                   "$type": "CreateRecord",
+                                                                                   "Fields": {
+                                                                                     "Exit": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": true
+                                                                                     },
+                                                                                     "Fallthrough": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     },
+                                                                                     "Returned": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     },
+                                                                                     "Value": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": true
+                                                                                     }
+                                                                                   },
+                                                                                   "RecordType": "TResult"
+                                                                                 },
+                                                                                 "Record": {
+                                                                                   "$type": "Var(_)",
+                                                                                   "Name": "env"
+                                                                                 },
+                                                                                 "RecordType": "TEnvironment"
+                                                                               },
+                                                                               "Var": "env"
+                                                                             }
+                                                                           ],
+                                                                           "Guard": {
+                                                                             "$type": "CallExprContext"
+                                                                           },
+                                                                           "ThenCase": [
+                                                                             {
+                                                                               "$type": "Assign(_)",
+                                                                               "Expr": {
+                                                                                 "$type": "WithField(TEnvironment;TResult)",
+                                                                                 "FieldName": "Result",
+                                                                                 "FieldType": "TResult",
+                                                                                 "FieldValue": {
+                                                                                   "$type": "CreateRecord",
+                                                                                   "Fields": {
+                                                                                     "Exit": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     },
+                                                                                     "Fallthrough": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     },
+                                                                                     "Returned": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": true
+                                                                                     },
+                                                                                     "Value": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": true
+                                                                                     }
+                                                                                   },
+                                                                                   "RecordType": "TResult"
+                                                                                 },
+                                                                                 "Record": {
+                                                                                   "$type": "Var(_)",
+                                                                                   "Name": "env"
+                                                                                 },
+                                                                                 "RecordType": "TEnvironment"
+                                                                               },
+                                                                               "Var": "env"
+                                                                             }
+                                                                           ]
+                                                                         }
+                                                                       ],
+                                                                       "Guard": {
+                                                                         "$type": "Or",
+                                                                         "Exprs": [
+                                                                           {
+                                                                             "$type": "GetField(TResult;TBool)",
+                                                                             "FieldName": "Returned",
+                                                                             "FieldType": "TBool",
+                                                                             "Record": {
+                                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                                               "FieldName": "Result",
+                                                                               "FieldType": "TResult",
+                                                                               "Record": {
+                                                                                 "$type": "Var(_)",
+                                                                                 "Name": "env"
+                                                                               },
+                                                                               "RecordType": "TEnvironment"
+                                                                             },
+                                                                             "RecordType": "TResult"
+                                                                           },
+                                                                           {
+                                                                             "$type": "GetField(TResult;TBool)",
+                                                                             "FieldName": "Exit",
+                                                                             "FieldType": "TBool",
+                                                                             "Record": {
+                                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                                               "FieldName": "Result",
+                                                                               "FieldType": "TResult",
+                                                                               "Record": {
+                                                                                 "$type": "Var(_)",
+                                                                                 "Name": "env"
+                                                                               },
+                                                                               "RecordType": "TEnvironment"
+                                                                             },
+                                                                             "RecordType": "TResult"
+                                                                           }
+                                                                         ]
+                                                                       },
+                                                                       "ThenCase": []
+                                                                     }
+                                                                   ]
+                                                                 },
+                                                                 {
+                                                                   "$type": "If(_)",
+                                                                   "Comment": "early_return",
+                                                                   "ElseCase": [
+                                                                     {
+                                                                       "$type": "If(_)",
+                                                                       "ElseCase": [
+                                                                         {
+                                                                           "$type": "Assign(_)",
+                                                                           "Expr": {
+                                                                             "$type": "WithField(TEnvironment;TResult)",
+                                                                             "FieldName": "Result",
+                                                                             "FieldType": "TResult",
+                                                                             "FieldValue": {
+                                                                               "$type": "CreateRecord",
+                                                                               "Fields": {
+                                                                                 "Exit": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": true
+                                                                                 },
+                                                                                 "Fallthrough": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Returned": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Value": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 }
+                                                                               },
+                                                                               "RecordType": "TResult"
+                                                                             },
+                                                                             "Record": {
+                                                                               "$type": "Var(_)",
+                                                                               "Name": "env"
+                                                                             },
+                                                                             "RecordType": "TEnvironment"
+                                                                           },
+                                                                           "Var": "env"
+                                                                         }
+                                                                       ],
+                                                                       "Guard": {
+                                                                         "$type": "CallExprContext"
+                                                                       },
+                                                                       "ThenCase": [
+                                                                         {
+                                                                           "$type": "Assign(_)",
+                                                                           "Expr": {
+                                                                             "$type": "WithField(TEnvironment;TResult)",
+                                                                             "FieldName": "Result",
+                                                                             "FieldType": "TResult",
+                                                                             "FieldValue": {
+                                                                               "$type": "CreateRecord",
+                                                                               "Fields": {
+                                                                                 "Exit": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Fallthrough": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 },
+                                                                                 "Returned": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": true
+                                                                                 },
+                                                                                 "Value": {
+                                                                                   "$type": "Bool",
+                                                                                   "Value": false
+                                                                                 }
+                                                                               },
+                                                                               "RecordType": "TResult"
+                                                                             },
+                                                                             "Record": {
+                                                                               "$type": "Var(_)",
+                                                                               "Name": "env"
+                                                                             },
+                                                                             "RecordType": "TEnvironment"
+                                                                           },
+                                                                           "Var": "env"
+                                                                         }
+                                                                       ]
+                                                                     },
+                                                                     {
+                                                                       "$type": "If(_)",
+                                                                       "Comment": "early_return",
+                                                                       "ElseCase": [
+                                                                         {
+                                                                           "$type": "If(_)",
+                                                                           "ElseCase": [
+                                                                             {
+                                                                               "$type": "Assign(_)",
+                                                                               "Expr": {
+                                                                                 "$type": "WithField(TEnvironment;TResult)",
+                                                                                 "FieldName": "Result",
+                                                                                 "FieldType": "TResult",
+                                                                                 "FieldValue": {
+                                                                                   "$type": "CreateRecord",
+                                                                                   "Fields": {
+                                                                                     "Exit": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     },
+                                                                                     "Fallthrough": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     },
+                                                                                     "Returned": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": true
+                                                                                     },
+                                                                                     "Value": {
+                                                                                       "$type": "Bool",
+                                                                                       "Value": false
+                                                                                     }
+                                                                                   },
+                                                                                   "RecordType": "TResult"
+                                                                                 },
+                                                                                 "Record": {
+                                                                                   "$type": "Var(_)",
+                                                                                   "Name": "env"
+                                                                                 },
+                                                                                 "RecordType": "TEnvironment"
+                                                                               },
+                                                                               "Var": "env"
+                                                                             }
+                                                                           ],
+                                                                           "Guard": {
+                                                                             "$type": "CallExprContext"
+                                                                           },
+                                                                           "ThenCase": []
+                                                                         }
+                                                                       ],
+                                                                       "Guard": {
+                                                                         "$type": "Or",
+                                                                         "Exprs": [
+                                                                           {
+                                                                             "$type": "GetField(TResult;TBool)",
+                                                                             "FieldName": "Returned",
+                                                                             "FieldType": "TBool",
+                                                                             "Record": {
+                                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                                               "FieldName": "Result",
+                                                                               "FieldType": "TResult",
+                                                                               "Record": {
+                                                                                 "$type": "Var(_)",
+                                                                                 "Name": "env"
+                                                                               },
+                                                                               "RecordType": "TEnvironment"
+                                                                             },
+                                                                             "RecordType": "TResult"
+                                                                           },
+                                                                           {
+                                                                             "$type": "GetField(TResult;TBool)",
+                                                                             "FieldName": "Exit",
+                                                                             "FieldType": "TBool",
+                                                                             "Record": {
+                                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                                               "FieldName": "Result",
+                                                                               "FieldType": "TResult",
+                                                                               "Record": {
+                                                                                 "$type": "Var(_)",
+                                                                                 "Name": "env"
+                                                                               },
+                                                                               "RecordType": "TEnvironment"
+                                                                             },
+                                                                             "RecordType": "TResult"
+                                                                           }
+                                                                         ]
+                                                                       },
+                                                                       "ThenCase": []
+                                                                     }
+                                                                   ],
+                                                                   "Guard": {
+                                                                     "$type": "Or",
+                                                                     "Exprs": [
+                                                                       {
+                                                                         "$type": "GetField(TResult;TBool)",
+                                                                         "FieldName": "Returned",
+                                                                         "FieldType": "TBool",
+                                                                         "Record": {
+                                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                                           "FieldName": "Result",
+                                                                           "FieldType": "TResult",
+                                                                           "Record": {
+                                                                             "$type": "Var(_)",
+                                                                             "Name": "env"
+                                                                           },
+                                                                           "RecordType": "TEnvironment"
+                                                                         },
+                                                                         "RecordType": "TResult"
+                                                                       },
+                                                                       {
+                                                                         "$type": "GetField(TResult;TBool)",
+                                                                         "FieldName": "Exit",
+                                                                         "FieldType": "TBool",
+                                                                         "Record": {
+                                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                                           "FieldName": "Result",
+                                                                           "FieldType": "TResult",
+                                                                           "Record": {
+                                                                             "$type": "Var(_)",
+                                                                             "Name": "env"
+                                                                           },
+                                                                           "RecordType": "TEnvironment"
+                                                                         },
+                                                                         "RecordType": "TResult"
+                                                                       }
+                                                                     ]
+                                                                   },
+                                                                   "ThenCase": []
+                                                                 }
+                                                               ],
+                                                               "Guard": {
+                                                                 "$type": "Or",
+                                                                 "Exprs": [
+                                                                   {
+                                                                     "$type": "GetField(TResult;TBool)",
+                                                                     "FieldName": "Returned",
+                                                                     "FieldType": "TBool",
+                                                                     "Record": {
+                                                                       "$type": "GetField(TEnvironment;TResult)",
+                                                                       "FieldName": "Result",
+                                                                       "FieldType": "TResult",
+                                                                       "Record": {
+                                                                         "$type": "Var(_)",
+                                                                         "Name": "env"
+                                                                       },
+                                                                       "RecordType": "TEnvironment"
+                                                                     },
+                                                                     "RecordType": "TResult"
+                                                                   },
+                                                                   {
+                                                                     "$type": "GetField(TResult;TBool)",
+                                                                     "FieldName": "Exit",
+                                                                     "FieldType": "TBool",
+                                                                     "Record": {
+                                                                       "$type": "GetField(TEnvironment;TResult)",
+                                                                       "FieldName": "Result",
+                                                                       "FieldType": "TResult",
+                                                                       "Record": {
+                                                                         "$type": "Var(_)",
+                                                                         "Name": "env"
+                                                                       },
+                                                                       "RecordType": "TEnvironment"
+                                                                     },
+                                                                     "RecordType": "TResult"
+                                                                   }
+                                                                 ]
+                                                               },
+                                                               "ThenCase": []
+                                                             }
+                                                           ],
+                                                           "Guard": {
+                                                             "$type": "Or",
+                                                             "Exprs": [
+                                                               {
+                                                                 "$type": "GetField(TResult;TBool)",
+                                                                 "FieldName": "Returned",
+                                                                 "FieldType": "TBool",
+                                                                 "Record": {
+                                                                   "$type": "GetField(TEnvironment;TResult)",
+                                                                   "FieldName": "Result",
+                                                                   "FieldType": "TResult",
+                                                                   "Record": {
+                                                                     "$type": "Var(_)",
+                                                                     "Name": "env"
+                                                                   },
+                                                                   "RecordType": "TEnvironment"
+                                                                 },
+                                                                 "RecordType": "TResult"
+                                                               },
+                                                               {
+                                                                 "$type": "GetField(TResult;TBool)",
+                                                                 "FieldName": "Exit",
+                                                                 "FieldType": "TBool",
+                                                                 "Record": {
+                                                                   "$type": "GetField(TEnvironment;TResult)",
+                                                                   "FieldName": "Result",
+                                                                   "FieldType": "TResult",
+                                                                   "Record": {
+                                                                     "$type": "Var(_)",
+                                                                     "Name": "env"
+                                                                   },
+                                                                   "RecordType": "TEnvironment"
+                                                                 },
+                                                                 "RecordType": "TResult"
+                                                               }
+                                                             ]
+                                                           },
+                                                           "ThenCase": []
+                                                         }
+                                                       ],
+                                                       "Guard": {
+                                                         "$type": "Or",
+                                                         "Exprs": [
+                                                           {
+                                                             "$type": "GetField(TResult;TBool)",
+                                                             "FieldName": "Returned",
+                                                             "FieldType": "TBool",
+                                                             "Record": {
+                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                               "FieldName": "Result",
+                                                               "FieldType": "TResult",
+                                                               "Record": {
+                                                                 "$type": "Var(_)",
+                                                                 "Name": "env"
+                                                               },
+                                                               "RecordType": "TEnvironment"
+                                                             },
+                                                             "RecordType": "TResult"
+                                                           },
+                                                           {
+                                                             "$type": "GetField(TResult;TBool)",
+                                                             "FieldName": "Exit",
+                                                             "FieldType": "TBool",
+                                                             "Record": {
+                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                               "FieldName": "Result",
+                                                               "FieldType": "TResult",
+                                                               "Record": {
+                                                                 "$type": "Var(_)",
+                                                                 "Name": "env"
+                                                               },
+                                                               "RecordType": "TEnvironment"
+                                                             },
+                                                             "RecordType": "TResult"
+                                                           }
+                                                         ]
+                                                       },
+                                                       "ThenCase": []
+                                                     }
+                                                   ],
+                                                   "Guard": {
+                                                     "$type": "Or",
+                                                     "Exprs": [
+                                                       {
+                                                         "$type": "GetField(TResult;TBool)",
+                                                         "FieldName": "Returned",
+                                                         "FieldType": "TBool",
+                                                         "Record": {
+                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                           "FieldName": "Result",
+                                                           "FieldType": "TResult",
+                                                           "Record": {
+                                                             "$type": "Var(_)",
+                                                             "Name": "env"
+                                                           },
+                                                           "RecordType": "TEnvironment"
+                                                         },
+                                                         "RecordType": "TResult"
+                                                       },
+                                                       {
+                                                         "$type": "GetField(TResult;TBool)",
+                                                         "FieldName": "Exit",
+                                                         "FieldType": "TBool",
+                                                         "Record": {
+                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                           "FieldName": "Result",
+                                                           "FieldType": "TResult",
+                                                           "Record": {
+                                                             "$type": "Var(_)",
+                                                             "Name": "env"
+                                                           },
+                                                           "RecordType": "TEnvironment"
+                                                         },
+                                                         "RecordType": "TResult"
+                                                       }
+                                                     ]
+                                                   },
+                                                   "ThenCase": []
+                                                 },
+                                                 {
+                                                   "$type": "If(_)",
+                                                   "Comment": "reset_return",
+                                                   "ElseCase": [
+                                                     {
+                                                       "$type": "Assign(_)",
+                                                       "Expr": {
+                                                         "$type": "WithField(TEnvironment;TResult)",
+                                                         "FieldName": "Result",
+                                                         "FieldType": "TResult",
+                                                         "FieldValue": {
+                                                           "$type": "WithField(TResult;TBool)",
+                                                           "FieldName": "Fallthrough",
+                                                           "FieldType": "TBool",
+                                                           "FieldValue": {
+                                                             "$type": "Bool",
+                                                             "Value": true
+                                                           },
+                                                           "Record": {
+                                                             "$type": "WithField(TResult;TBool)",
+                                                             "FieldName": "Value",
+                                                             "FieldType": "TBool",
+                                                             "FieldValue": {
+                                                               "$type": "GetField(TEnvironment;TBool)",
+                                                               "FieldName": "LocalDefaultAction",
+                                                               "FieldType": "TBool",
+                                                               "Record": {
+                                                                 "$type": "Var(_)",
+                                                                 "Name": "env"
+                                                               },
+                                                               "RecordType": "TEnvironment"
+                                                             },
+                                                             "Record": {
+                                                               "$type": "GetField(TEnvironment;TResult)",
+                                                               "FieldName": "Result",
+                                                               "FieldType": "TResult",
+                                                               "Record": {
+                                                                 "$type": "Var(_)",
+                                                                 "Name": "env"
+                                                               },
+                                                               "RecordType": "TEnvironment"
+                                                             },
+                                                             "RecordType": "TResult"
+                                                           },
+                                                           "RecordType": "TResult"
+                                                         },
+                                                         "Record": {
+                                                           "$type": "Var(_)",
+                                                           "Name": "env"
+                                                         },
+                                                         "RecordType": "TEnvironment"
+                                                       },
+                                                       "Var": "env"
+                                                     }
+                                                   ],
+                                                   "Guard": {
+                                                     "$type": "Or",
+                                                     "Exprs": [
+                                                       {
+                                                         "$type": "GetField(TResult;TBool)",
+                                                         "FieldName": "Returned",
+                                                         "FieldType": "TBool",
+                                                         "Record": {
+                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                           "FieldName": "Result",
+                                                           "FieldType": "TResult",
+                                                           "Record": {
+                                                             "$type": "Var(_)",
+                                                             "Name": "env"
+                                                           },
+                                                           "RecordType": "TEnvironment"
+                                                         },
+                                                         "RecordType": "TResult"
+                                                       },
+                                                       {
+                                                         "$type": "GetField(TResult;TBool)",
+                                                         "FieldName": "Exit",
+                                                         "FieldType": "TBool",
+                                                         "Record": {
+                                                           "$type": "GetField(TEnvironment;TResult)",
+                                                           "FieldName": "Result",
+                                                           "FieldType": "TResult",
+                                                           "Record": {
+                                                             "$type": "Var(_)",
+                                                             "Name": "env"
+                                                           },
+                                                           "RecordType": "TEnvironment"
+                                                         },
+                                                         "RecordType": "TResult"
+                                                       }
+                                                     ]
+                                                   },
+                                                   "ThenCase": [
+                                                     {
+                                                       "$type": "Assign(_)",
+                                                       "Expr": {
+                                                         "$type": "WithField(TEnvironment;TResult)",
+                                                         "FieldName": "Result",
+                                                         "FieldType": "TResult",
+                                                         "FieldValue": {
+                                                           "$type": "WithField(TResult;TBool)",
+                                                           "FieldName": "Returned",
+                                                           "FieldType": "TBool",
+                                                           "FieldValue": {
+                                                             "$type": "Bool",
+                                                             "Value": false
+                                                           },
+                                                           "Record": {
+                                                             "$type": "GetField(TEnvironment;TResult)",
+                                                             "FieldName": "Result",
+                                                             "FieldType": "TResult",
+                                                             "Record": {
+                                                               "$type": "Var(_)",
+                                                               "Name": "env"
+                                                             },
+                                                             "RecordType": "TEnvironment"
+                                                           },
+                                                           "RecordType": "TResult"
+                                                         },
+                                                         "Record": {
+                                                           "$type": "Var(_)",
+                                                           "Name": "env"
+                                                         },
+                                                         "RecordType": "TEnvironment"
+                                                       },
+                                                       "Var": "env"
+                                                     }
+                                                   ]
+                                                 }
+                                               ]
+                                     """;
 
   /// <summary>
   ///   AstFunction to add a community to the route.
@@ -457,5 +1689,26 @@ public static class AstEnvironmentTests
     var evaluated = Env.EvaluateFunction(fun)(inputRoute);
     AssertEqValid(evaluated,
       inputRoute.WithResultValue(true).WithCommunities(inputRoute.GetCommunities().Add(CommunityTag)));
+  }
+
+  [Fact]
+  public static void ConnectorInAddsParticipantTag()
+  {
+    var serializer = new JsonSerializer
+    {
+      TypeNameHandling = TypeNameHandling.All,
+      SerializationBinder = new AstSerializationBinder()
+    };
+    var statements = serializer.Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
+    var env = new AstEnvironment();
+    var r = Zen.Constant(new RouteEnvironment
+    {
+      Prefix = new Ipv4Prefix("35.0.0.0", "35.255.255.255"),
+      Result = new RouteResult {Value = true}
+    });
+    Zen<RouteEnvironment> updated =
+      env.Update("env", r).EvaluateStatements("env", new Environment<RouteEnvironment>(r), statements)["env"];
+    var query = Zen.Not(Zen.And(updated.GetResultValue(), updated.GetCommunities().Contains("11537:160"))).Solve();
+    Assert.Null(query.IsSatisfiable() ? query.Get(updated) : null);
   }
 }

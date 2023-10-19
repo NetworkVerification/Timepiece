@@ -36,6 +36,26 @@ public class SymbolicValue<T> : ISymbolic
   /// </summary>
   public string Name { get; }
 
+  public bool HasConstraint()
+  {
+    return Constraint != null;
+  }
+
+  public Zen<bool> Encode()
+  {
+    return HasConstraint() ? Constraint(Value) : True();
+  }
+
+  public object GetSolution(ZenSolution model)
+  {
+    return model.Get(Value);
+  }
+
+  public string SolutionToString(ZenSolution model)
+  {
+    return $"symbolic {Name} := {model.Get(Value)}";
+  }
+
   /// <summary>
   ///   Return true if the symbolic value equals the given constant value.
   /// </summary>
@@ -55,18 +75,4 @@ public class SymbolicValue<T> : ISymbolic
   {
     return Not(EqualsValue(val));
   }
-
-  public bool HasConstraint()
-  {
-    return Constraint != null;
-  }
-
-  public Zen<bool> Encode()
-  {
-    return HasConstraint() ? Constraint(Value) : True();
-  }
-
-  public object GetSolution(ZenSolution model) => model.Get(Value);
-
-  public string SolutionToString(ZenSolution model) => $"symbolic {Name} := {model.Get(Value)}";
 }

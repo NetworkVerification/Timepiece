@@ -6,9 +6,9 @@ using ZenLib;
 namespace Timepiece.DataTypes;
 
 /// <summary>
-/// An IP address and a wildcard mask.
-/// A wildcard mask is an inverted (sub)net mask: see https://en.wikipedia.org/wiki/Wildcard_mask.
-/// Python's ipaddress module calls these "host masks".
+///   An IP address and a wildcard mask.
+///   A wildcard mask is an inverted (sub)net mask: see https://en.wikipedia.org/wiki/Wildcard_mask.
+///   Python's ipaddress module calls these "host masks".
 /// </summary>
 [ZenObject]
 public class Ipv4Wildcard
@@ -29,6 +29,20 @@ public class Ipv4Wildcard
   {
   }
 
+
+  /// <summary>
+  ///   A 32-bit IPv4 address.
+  /// </summary>
+  public uint Prefix { get; set; }
+
+  /// <summary>
+  ///   A 32-bit address mask: set bits are "don't care" bits.
+  ///   In other words:
+  ///   0: the bit at this position must match
+  ///   1: the bit at this position doesn't matter
+  /// </summary>
+  public uint WildcardMask { get; set; }
+
   /// <summary>
   ///   Convert an IPv4 address to an unsigned integer by extracting the bytes.
   /// </summary>
@@ -39,22 +53,8 @@ public class Ipv4Wildcard
     return address.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
   }
 
-
   /// <summary>
-  /// A 32-bit IPv4 address.
-  /// </summary>
-  public uint Prefix { get; set; }
-
-  /// <summary>
-  /// A 32-bit address mask: set bits are "don't care" bits.
-  /// In other words:
-  /// 0: the bit at this position must match
-  /// 1: the bit at this position doesn't matter
-  /// </summary>
-  public uint WildcardMask { get; set; }
-
-  /// <summary>
-  /// Check that the given 32-bit address is contained in the given prefix.
+  ///   Check that the given 32-bit address is contained in the given prefix.
   /// </summary>
   /// <param name="address"></param>
   /// <returns></returns>
@@ -71,7 +71,7 @@ public class Ipv4Wildcard
 public static class Ipv4WildcardExtensions
 {
   /// <summary>
-  /// Check that the given 32-bit address is contained in the given prefix.
+  ///   Check that the given 32-bit address is contained in the given prefix.
   /// </summary>
   /// <param name="prefix"></param>
   /// <param name="address"></param>

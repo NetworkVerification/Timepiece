@@ -6,14 +6,6 @@ namespace Timepiece.Angler.Tests;
 
 public static class RouteFilterListTests
 {
-  [Fact]
-  public static void TestEmptyListDenies()
-  {
-    var list = new RouteFilterList();
-    var p = Zen.Symbolic<Ipv4Prefix>();
-    Assert.False(list.Permits(p).Solve().IsSatisfiable());
-  }
-
   public static TheoryData<RouteFilterLine[], Zen<Ipv4Prefix>> PermitsTheoryData => new()
   {
     {
@@ -45,6 +37,14 @@ public static class RouteFilterListTests
       Zen.Constant(new Ipv4Prefix("192.168.0.1"))
     }
   };
+
+  [Fact]
+  public static void TestEmptyListDenies()
+  {
+    var list = new RouteFilterList();
+    var p = Zen.Symbolic<Ipv4Prefix>();
+    Assert.False(list.Permits(p).Solve().IsSatisfiable());
+  }
 
   [Theory]
   [MemberData(nameof(PermitsTheoryData))]
