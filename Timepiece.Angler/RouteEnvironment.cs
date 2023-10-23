@@ -179,25 +179,24 @@ public static class RouteEnvironmentExtensions
     return b.GetCommunities().Contains(community);
   }
 
-  public static Zen<bool> GetResultValue(this Zen<RouteEnvironment> b)
-  {
-    return b.GetResult().GetValue();
-  }
+  public static Zen<bool> GetResultValue(this Zen<RouteEnvironment> b) => b.GetResult().GetValue();
+  public static Zen<bool> GetResultExit(this Zen<RouteEnvironment> b) => b.GetResult().GetExit();
+  public static Zen<bool> GetResultReturned(this Zen<RouteEnvironment> b) => b.GetResult().GetReturned();
+  public static Zen<bool> GetResultFallthrough(this Zen<RouteEnvironment> b) => b.GetResult().GetFallthrough();
 
   public static Func<Zen<RouteEnvironment>, Zen<bool>> ResultValueImplies(Func<Zen<RouteEnvironment>, Zen<bool>> f)
   {
     return b => Zen.Implies(b.GetResultValue(), f(b));
   }
 
-  public static Zen<RouteEnvironment> WithResultValue(this Zen<RouteEnvironment> b, Zen<bool> value)
-  {
-    return b.WithResult(b.GetResult().WithValue(value));
-  }
+  public static Zen<RouteEnvironment> WithResultValue(this Zen<RouteEnvironment> b, Zen<bool> value) =>
+    b.WithResult(b.GetResult().WithValue(value));
 
-  public static Zen<RouteEnvironment> WithResultReturned(this Zen<RouteEnvironment> b, Zen<bool> returned)
-  {
-    return b.WithResult(b.GetResult().WithReturned(returned));
-  }
+  public static Zen<RouteEnvironment> WithResultReturned(this Zen<RouteEnvironment> b, Zen<bool> returned) =>
+    b.WithResult(b.GetResult().WithReturned(returned));
+
+  public static Zen<RouteEnvironment> WithResultFallthrough(this Zen<RouteEnvironment> b, Zen<bool> returned) =>
+    b.WithResult(b.GetResult().WithFallthrough(returned));
 
   /// <summary>
   ///   Return the route with returned and value both set to true.
@@ -207,5 +206,15 @@ public static class RouteEnvironmentExtensions
   public static Zen<RouteEnvironment> ReturnAccept(Zen<RouteEnvironment> r)
   {
     return r.WithResultReturned(true).WithResultValue(true);
+  }
+
+  /// <summary>
+  /// Return true if one of the given routes has a value.
+  /// </summary>
+  /// <param name="routes"></param>
+  /// <returns></returns>
+  public static Zen<bool> ExistsValue(IEnumerable<Zen<RouteEnvironment>> routes)
+  {
+    return routes.Aggregate(Zen.False(), (b, r) => Zen.Or(b, r.GetResultValue()));
   }
 }

@@ -1288,6 +1288,12 @@ public static class AstEnvironmentTests
 
   private static readonly Environment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
+  private static readonly JsonSerializer Serializer = new JsonSerializer
+  {
+    TypeNameHandling = TypeNameHandling.All,
+    SerializationBinder = new AstSerializationBinder()
+  };
+
   private static AstFunction<RouteEnvironment> UpdateResultFunction(RouteResult result)
   {
     return new AstFunction<RouteEnvironment>("env", new Statement[]
@@ -1471,7 +1477,7 @@ public static class AstEnvironmentTests
     };
     var env1 = Env.Update(arg, R.route).EvaluateStatements(arg, R, statements);
     var result = (Zen<RouteEnvironment>) env1[arg];
-    var b = Zen.Not(result.GetResult().GetValue()).Solve();
+    var b = Zen.Not(result.GetResultValue()).Solve();
     Assert.False(b.IsSatisfiable());
   }
 
@@ -1694,21 +1700,32 @@ public static class AstEnvironmentTests
   [Fact]
   public static void ConnectorInAddsParticipantTag()
   {
-    var serializer = new JsonSerializer
-    {
-      TypeNameHandling = TypeNameHandling.All,
-      SerializationBinder = new AstSerializationBinder()
-    };
-    var statements = serializer.Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
+    var statements = Serializer.Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
     var env = new AstEnvironment();
-    var r = Zen.Constant(new RouteEnvironment
-    {
-      Prefix = new Ipv4Prefix("35.0.0.0", "35.255.255.255"),
-      Result = new RouteResult {Value = true}
-    });
+    var r = Zen.Symbolic<RouteEnvironment>();
     Zen<RouteEnvironment> updated =
       env.Update("env", r).EvaluateStatements("env", new Environment<RouteEnvironment>(r), statements)["env"];
-    var query = Zen.Not(Zen.And(updated.GetResultValue(), updated.GetCommunities().Contains("11537:160"))).Solve();
-    Assert.Null(query.IsSatisfiable() ? query.Get(updated) : null);
+    // if r has not exited or returned already, and the prefix length is up to 27, it should be accepted
+    var query = Zen.And(
+      Zen.Not(r.GetResultExit()), Zen.Not(r.GetResultReturned()),
+      r.GetPrefix().GetPrefixLength() <= new UInt<_6>(27),
+      Zen.Not(Zen.And(updated.GetResultValue(), updated.GetCommunities().Contains("11537:160")))).Solve();
+    Assert.Null(query.IsSatisfiable() ? (query.Get(r), query.Get(updated)) : null);
+  }
+
+  [Fact]
+  public static void WashNeighborAccepted()
+  {
+    // will need changing on other machines!
+    const string path = "/home/tim/documents/princeton/envy/angler/INTERNET2.angler.json";
+    var json = new JsonTextReader(new StreamReader(path));
+    var ast = Serializer.Deserialize<AnglerNetwork>(json)!;
+    var (_, transfer) = ast.TopologyAndTransfer();
+    var r = Zen.Symbolic<RouteEnvironment>();
+    var assumptions = Zen.And(r.GetResultValue(), Zen.Not(r.GetResultReturned()), Zen.Not(r.GetResultExit()),
+      r.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
+    var transferred = transfer[("192.122.183.13", "wash")](r);
+    var query = Zen.And(assumptions, transferred.GetResultValue()).Solve();
+    Assert.Null(query.IsSatisfiable() ? (query.Get(r), query.Get(transferred)) : null);
   }
 }

@@ -32,8 +32,8 @@ public class FirstMatchChain : VariadicExpr
       // Logic of subroutines:
       // (1) if the subroutine exits, the result will be that subroutine
       // (2) if the subroutine falls through, the result will be the following route
-      var fallthroughGuard = policyResults[i].route.GetResult().GetFallthrough();
-      var exitGuard = policyResults[i].route.GetResult().GetExit();
+      var fallthroughGuard = policyResults[i].route.GetResultFallthrough();
+      var exitGuard = policyResults[i].route.GetResultExit();
       var accRoute = Zen.If(exitGuard, policyResults[i].route,
         Zen.If(fallthroughGuard, acc.route, policyResults[i].route));
       var accResult = Zen.If(exitGuard, policyResults[i].returnValue,

@@ -6,6 +6,7 @@ public enum NetworkQueryType
   Internet2NoMartians,
   Internet2GaoRexford,
   Internet2Reachable,
+  Internet2ReachableInternal,
   FatReachable,
   FatPathLength,
   FatValleyFreedom,
@@ -21,7 +22,8 @@ public static class NetworkQueryTypeExtensions
       "bte" or "Internet2BlockToExternal" => NetworkQueryType.Internet2BlockToExternal,
       "mars" or "Internet2NoMartians" => NetworkQueryType.Internet2NoMartians,
       "transit" or "Internet2GaoRexford" => NetworkQueryType.Internet2GaoRexford,
-      "reach" or "reachable" => NetworkQueryType.Internet2Reachable,
+      "reach" or "Internet2Reachable" => NetworkQueryType.Internet2Reachable,
+      "reachInternal" or "Internet2ReachableInternal" => NetworkQueryType.Internet2ReachableInternal,
       "fatReach" or "FatReachable" => NetworkQueryType.FatReachable,
       "fatLength" or "FatPathLength" => NetworkQueryType.FatPathLength,
       "fatValley" or "FatValleyFreedom" => NetworkQueryType.FatValleyFreedom,
@@ -32,6 +34,7 @@ public static class NetworkQueryTypeExtensions
                                                                + "- 'mars' or 'Internet2NoMartians' for 'Internet2NoMartians'"
                                                                + "- 'gaoRexford' or 'Internet2GaoRexford' for 'Internet2GaoRexford'"
                                                                + "- 'reach' or 'Internet2Reachable' for 'Internet2Reachable'"
+                                                               + "- 'reachInternal' or 'Internet2ReachableInternal' for 'Internet2ReachableInternal'"
                                                                + "- 'fatReach' or 'FatReachable' for 'FatReachable'"
                                                                + "- 'fatLength' or 'FatPathLength' for 'FatPathLength'"
                                                                + "- 'fatValley' or 'FatValleyFreedom' for 'FatValleyFreedom'"

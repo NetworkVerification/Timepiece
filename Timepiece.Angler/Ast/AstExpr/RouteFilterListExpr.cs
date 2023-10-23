@@ -22,6 +22,6 @@ public class RouteFilterListExpr : Expr
 
   public Zen<bool> Contains(Zen<Ipv4Prefix> prefix)
   {
-    return FilterList.Permits(prefix);
+    return FilterList.Matches(prefix);
   }
 }

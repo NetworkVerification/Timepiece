@@ -55,6 +55,7 @@ rootCommand.SetHandler(
         NetworkQueryType.Internet2NoMartians => Internet2.NoMartians(topology, externalNodes),
         NetworkQueryType.Internet2GaoRexford => Internet2.GaoRexford(topology, externalNodes),
         NetworkQueryType.Internet2Reachable => Internet2.Reachable(topology, externalNodes),
+        NetworkQueryType.Internet2ReachableInternal => Internet2.ReachableInternal(topology, externalNodes),
         NetworkQueryType.FatReachable => FatTreeQuery.Reachable(FatTreeQuery.LabelFatTree(topology)),
         NetworkQueryType.FatPathLength => FatTreeQuery.MaxPathLength(FatTreeQuery.LabelFatTree(topology)),
         NetworkQueryType.FatValleyFreedom => FatTreeQuery.ValleyFreedom(FatTreeQuery.LabelFatTree(topology)),

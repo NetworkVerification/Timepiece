@@ -31,7 +31,7 @@ public class RouteFilterList
   /// </summary>
   /// <param name="prefix"></param>
   /// <returns></returns>
-  public Zen<bool> Permits(Zen<Ipv4Prefix> prefix)
+  public Zen<bool> Matches(Zen<Ipv4Prefix> prefix)
   {
     return Lines
       .Reverse() // we build up the successive cases by going in reverse order

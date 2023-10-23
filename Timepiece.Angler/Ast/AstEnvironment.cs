@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices.JavaScript;
 using Timepiece.Angler.Ast.AstExpr;
 using Timepiece.Angler.Ast.AstFunction;
 using Timepiece.Angler.Ast.AstStmt;
@@ -101,15 +100,14 @@ public class AstEnvironment
     switch (e)
     {
       case Call c:
-        var oldReturn = env.route.GetResult().GetReturned();
+        var oldReturn = env.route.GetResultReturned();
         // call the function with the current route as its argument
         var outputRoute =
           WithCallExprContext(true).EvaluateFunction(_declarations[c.Name])(
-            env.route.WithResult(env.route.GetResult().WithReturned(false)));
+            env.route.WithResultReturned(false));
         // return the updated result and its associated value
-        return new Environment<RouteEnvironment>(
-          outputRoute.WithResult(outputRoute.GetResult().WithReturned(oldReturn)),
-          outputRoute.GetResult().GetValue());
+        return new Environment<RouteEnvironment>(outputRoute.WithResultReturned(oldReturn),
+          outputRoute.GetResultValue());
       case CallExprContext:
         return env.WithValue(Zen.Constant(callExprContext));
       case ConjunctionChain cc:

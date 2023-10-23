@@ -33,7 +33,7 @@ public static class AstTests
       ? Zen.Constant(new RouteEnvironment()).WithPrefix(D).WithResultValue(true)
       : Zen.Constant(new RouteEnvironment()));
     var monolithicProperties =
-      graph.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(env => env.GetResult().GetValue()));
+      graph.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(env => env.GetResultValue()));
     var annotations = graph.MapNodes(n => Lang.Finally(distances[n], monolithicProperties[n]));
     var modularProperties = graph.MapNodes(n => Lang.Finally(new BigInteger(4), monolithicProperties[n]));
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes,
