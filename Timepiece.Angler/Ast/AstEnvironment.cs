@@ -142,13 +142,13 @@ public class AstEnvironment
         return notEnv.WithValue(ne.unaryOp(notEnv.returnValue));
       case UnaryOpExpr uoe:
         return env.WithValue(uoe.unaryOp(ignoreRoute(uoe.expr)));
-      case PrefixContains:
-        // TODO: we need to add support for this at some point
-        // right now we match it here to prevent the inner expressions from being evaluated in the BinaryOpExpr branch
-        return env.WithValue(Zen.Symbolic<bool>());
-      case BinaryOpExpr sc when sc.expr1.GetType() == typeof(RegexExpr):
-        // TODO: add support for regex
-        return env.WithValue(Zen.Symbolic<bool>());
+      // case PrefixContains:
+      // TODO: we need to add support for this at some point
+      // right now we match it here to prevent the inner expressions from being evaluated in the BinaryOpExpr branch
+      // return env.WithValue(Zen.Symbolic<bool>());
+      // case BinaryOpExpr sc when sc.expr1.GetType() == typeof(RegexExpr):
+      // TODO: add support for regex
+      // return env.WithValue(Zen.Symbolic<bool>());
       case And ae:
         // evaluate the first conjunct
         // if its return value is false, the final env will be the first conjunct's

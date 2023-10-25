@@ -1698,6 +1698,11 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
+  public static void EvaluateFirstMatchChain()
+  {
+  }
+
+  [Fact]
   public static void ConnectorInAddsParticipantTag()
   {
     var statements = Serializer.Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
@@ -1720,12 +1725,24 @@ public static class AstEnvironmentTests
     const string path = "/home/tim/documents/princeton/envy/angler/INTERNET2.angler.json";
     var json = new JsonTextReader(new StreamReader(path));
     var ast = Serializer.Deserialize<AnglerNetwork>(json)!;
-    var (_, transfer) = ast.TopologyAndTransfer();
-    var r = Zen.Symbolic<RouteEnvironment>();
+    // var (_, transfer) = ast.TopologyAndTransfer();
+    var r = Zen.Symbolic<RouteEnvironment>("r");
     var assumptions = Zen.And(r.GetResultValue(), Zen.Not(r.GetResultReturned()), Zen.Not(r.GetResultExit()),
+      Zen.Not(r.GetResultFallthrough()),
       r.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
-    var transferred = transfer[("192.122.183.13", "wash")](r);
-    var query = Zen.And(assumptions, transferred.GetResultValue()).Solve();
-    Assert.Null(query.IsSatisfiable() ? (query.Get(r), query.Get(transferred)) : null);
+    var washProperties = ast.Nodes["wash"];
+    var importPolicy = washProperties.Policies["192.122.183.13"].Import!;
+    var importFunction = washProperties.Declarations["SANITY-IN"];
+    var import = new AstEnvironment(washProperties.Declarations).EvaluateFunction(importFunction);
+    var imported = import(r);
+    // var transferred = transfer[("192.122.183.13", "wash")](r);
+    // This transfer function does the following:
+    // 1. Set the default policy to ~DEFAULT_BGP_IMPORT_POLICY~
+    // 2. Set LocalDefaultAction to true.
+    // 3. Perform a FirstMatchChain on policies SANITY-IN, SET-PREF, MERIT-IN, CONNECTOR-IN
+    // 4. If the FirstMatchChain returns true, assign the result to Exit=true,Value=true
+    //    Otherwise if it returns false, assign the result to Exit=true,Value=false
+    var query = Zen.And(assumptions, Zen.Not(imported.GetResultValue())).Solve();
+    Assert.Null(query.IsSatisfiable() ? (query.Get(r), query.Get(imported)) : null);
   }
 }

@@ -111,7 +111,8 @@ public class AnglerNetwork
     {
       // always reset the result when first calling the export
       var exported = export(r.WithResult(new RouteResult()));
-      var importedRoute = exported.WithResult(new RouteResult());
+      // we want to make sure to retain the value that was exported, but reset Exit/Returned/Fallthrough
+      var importedRoute = exported.WithResult(Zen.Constant(new RouteResult()).WithValue(exported.GetResultValue()));
       // if the edge is external, increment the AS path length
       if (external) importedRoute = importedRoute.IncrementAsPathLength(BigInteger.One);
       // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)
@@ -129,15 +130,15 @@ public class AnglerNetwork
     var exportFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var importFunctions = new Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
 
-    foreach (var nbr in Externals)
+    foreach (var externalPeer in Externals)
     {
-      edges[nbr.Name] = nbr.peers.ToImmutableSortedSet();
-      foreach (var peer in nbr.peers)
+      edges[externalPeer.Name] = externalPeer.peers.ToImmutableSortedSet();
+      foreach (var networkNode in externalPeer.peers)
       {
         // set import and export as the identity for external peers
         // (we assume they could do anything)
-        importFunctions[(peer, nbr.Name)] = e => e;
-        exportFunctions[(nbr.Name, peer)] = e => e;
+        importFunctions[(networkNode, externalPeer.Name)] = e => e;
+        exportFunctions[(externalPeer.Name, networkNode)] = e => e;
       }
     }
 
