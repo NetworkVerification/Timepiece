@@ -1722,13 +1722,13 @@ public static class AstEnvironmentTests
   public static void WashNeighborAccepted()
   {
     // will need changing on other machines!
-    const string path = "/home/tim/documents/princeton/envy/angler/INTERNET2.angler.json";
+    const string path = "/Users/tim/Documents/Princeton/envy/angler/internet2.angler.json";
     var json = new JsonTextReader(new StreamReader(path));
     var ast = Serializer.Deserialize<AnglerNetwork>(json)!;
     // var (_, transfer) = ast.TopologyAndTransfer();
     var r = Zen.Symbolic<RouteEnvironment>("r");
     var assumptions = Zen.And(r.GetResultValue(), Zen.Not(r.GetResultReturned()), Zen.Not(r.GetResultExit()),
-      Zen.Not(r.GetResultFallthrough()),
+      Zen.Not(r.GetResultFallthrough()), r.GetAsSet().IsSubsetOf(CSet.Empty<string>()),
       r.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
     var washProperties = ast.Nodes["wash"];
     var importPolicy = washProperties.Policies["192.122.183.13"].Import!;
