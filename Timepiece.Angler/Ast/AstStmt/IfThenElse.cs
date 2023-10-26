@@ -4,13 +4,18 @@ namespace Timepiece.Angler.Ast.AstStmt;
 
 public class IfThenElse : Statement
 {
-  public IfThenElse(Expr guard, IEnumerable<Statement> thenCase, IEnumerable<Statement> elseCase)
+  public IfThenElse(Expr guard, IEnumerable<Statement> thenCase, IEnumerable<Statement> elseCase, string? comment = null)
   {
     Guard = guard;
     ThenCase = thenCase;
     ElseCase = elseCase;
+    Comment = comment;
   }
 
+  /// <summary>
+  /// An optional comment describing the if statement.
+  /// </summary>
+  public string? Comment { get; set; }
   public Expr Guard { get; set; }
   public IEnumerable<Statement> ThenCase { get; set; }
   public IEnumerable<Statement> ElseCase { get; set; }

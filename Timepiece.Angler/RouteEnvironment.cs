@@ -33,6 +33,7 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
     Communities = new CSet<string>();
     Result = new RouteResult();
     LocalDefaultAction = false;
+    VisitedTerms = new CSet<string>();
   }
 
 
@@ -40,7 +41,7 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
   public RouteEnvironment(Ipv4Prefix prefix, uint weight, uint lp, CSet<string> asSet, BigInteger asPathLength,
     uint metric, uint tag,
     UInt<_2> originType, CSet<string> communities, RouteResult result,
-    bool localDefaultAction)
+    bool localDefaultAction, CSet<string> visitedTerms)
   {
     Prefix = prefix;
     Weight = weight;
@@ -53,6 +54,7 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
     Communities = communities;
     Result = result;
     LocalDefaultAction = localDefaultAction;
+    VisitedTerms = visitedTerms;
   }
 
 
@@ -111,6 +113,11 @@ public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
   ///   Representation of community tags as strings.
   /// </summary>
   public CSet<string> Communities { get; set; }
+
+  /// <summary>
+  /// Terms visited during the execution of the environment.
+  /// </summary>
+  public CSet<string> VisitedTerms { get; set; }
 
   public override string ToString()
   {
@@ -203,10 +210,18 @@ public static class RouteEnvironmentExtensions
   /// </summary>
   /// <param name="r"></param>
   /// <returns></returns>
-  public static Zen<RouteEnvironment> ReturnAccept(Zen<RouteEnvironment> r)
+  public static Zen<RouteEnvironment> ReturnAccept(this Zen<RouteEnvironment> r)
   {
     return r.WithResultReturned(true).WithResultValue(true);
   }
+
+  /// <summary>
+  /// Reset all the control flow fields of the route's result (everything except for the value).
+  /// </summary>
+  /// <param name="r"></param>
+  /// <returns></returns>
+  public static Zen<RouteEnvironment> ResetResultControlFlow(this Zen<RouteEnvironment> r) =>
+    r.WithResult(Zen.Constant(new RouteResult()).WithValue(r.GetResultValue()));
 
   /// <summary>
   /// Return true if one of the given routes has a value.
@@ -217,4 +232,7 @@ public static class RouteEnvironmentExtensions
   {
     return routes.Aggregate(Zen.False(), (b, r) => Zen.Or(b, r.GetResultValue()));
   }
+
+  public static Zen<RouteEnvironment> AddVisitedTerm(this Zen<RouteEnvironment> route, string term) =>
+    route.WithVisitedTerms(route.GetVisitedTerms().Add(term));
 }

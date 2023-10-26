@@ -110,9 +110,9 @@ public class AnglerNetwork
     return r =>
     {
       // always reset the result when first calling the export
-      var exported = export(r.WithResult(new RouteResult()));
+      var exported = export(r.ResetResultControlFlow());
       // we want to make sure to retain the value that was exported, but reset Exit/Returned/Fallthrough
-      var importedRoute = exported.WithResult(Zen.Constant(new RouteResult()).WithValue(exported.GetResultValue()));
+      var importedRoute = exported.ResetResultControlFlow();
       // if the edge is external, increment the AS path length
       if (external) importedRoute = importedRoute.IncrementAsPathLength(BigInteger.One);
       // only import the route if its result value is true; otherwise, leave it as false (which will cause it to be ignored)

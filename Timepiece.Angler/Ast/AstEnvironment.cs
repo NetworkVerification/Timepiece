@@ -30,6 +30,10 @@ public class AstEnvironment
 
   private readonly IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> _declarations;
   private readonly ImmutableDictionary<string, dynamic> _env;
+  /// <summary>
+  /// Whether or not the call expression context is set.
+  /// See https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/routing_policy/expr/BooleanExprs.java#L13
+  /// </summary>
   public readonly bool callExprContext;
   public readonly string? defaultPolicy;
 
@@ -185,7 +189,9 @@ public class AstEnvironment
         Debug.Assert(a.Expr.GetType() != typeof(Call));
         return Update(a.Var, env.returnValue);
       case IfThenElse ite:
-        var guardEnv = EvaluateExpr(route, ite.Guard);
+        // add the comment as a term to keep track of which policy terms were visited
+        var withTerm = ite.Comment is null ? route : route.WithRoute(route.route.AddVisitedTerm(ite.Comment));
+        var guardEnv = EvaluateExpr(withTerm, ite.Guard);
         // if the guard updated the route (e.g. by evaluating a Call),
         // we need to make sure those updates are observed in the branches // by using Update() here
         var newEnv = Update(arg, guardEnv.route);
