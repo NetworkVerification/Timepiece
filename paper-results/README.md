@@ -19,5 +19,6 @@ The result files are organized as follows:
     * `ms`: the time taken by a monolithic Minesweeper-style single-threaded verification
 
 The number of threads used is reported by the `Environment.ProcessorCount: ...` line.
-We used timeouts on the benchmarks, which are also specified in the text files:
-if a benchmark timed out, the timeout time was written into the data file.
+We used 2-hour timeouts on the benchmarks. 
+if a benchmark timed out, the timeout time (7200000ms) 
+was written into the data file.
