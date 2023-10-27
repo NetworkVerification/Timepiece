@@ -157,11 +157,17 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     return s;
   }
 
+  public Option<State<RouteType, NodeType>> CheckAnnotations(NodeType node)
+  {
+    return CheckAnnotations(node, Digraph[node].ToDictionary(n => n, n => Symbolic<RouteType>($"{n}-route")),
+      Symbolic<BigInteger>("time"));
+  }
+
   private Option<State<RouteType, NodeType>> CheckAnnotations(NodeType node,
     IReadOnlyDictionary<NodeType, Zen<RouteType>> routes,
     Zen<BigInteger> time)
   {
-    return CheckInitial(node).OrElse(() => CheckInductive(node, routes, time)).OrElse(() => CheckAssertions(node));
+    return CheckInitial(node).OrElse(() => CheckInductive(node, routes, time)).OrElse(() => CheckSafety(node));
   }
 
   /// <summary>
@@ -170,12 +176,12 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   /// <returns>True if the annotations pass, false otherwise.</returns>
   public Option<State<RouteType, NodeType>> CheckAnnotations()
   {
-    return CheckInitial().OrElse(CheckInductive).OrElse(CheckAssertions);
+    return CheckInitial().OrElse(CheckInductive).OrElse(CheckSafety);
   }
 
   public Option<State<RouteType, NodeType>> CheckAnnotationsDelayed()
   {
-    return CheckInitial().OrElse(CheckInductiveDelayed).OrElse(CheckAssertions);
+    return CheckInitial().OrElse(CheckInductiveDelayed).OrElse(CheckSafety);
   }
 
   public Option<State<RouteType, NodeType>> CheckInitial(NodeType node)
@@ -216,13 +222,13 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   ///   Ensure that the inductive invariants imply the assertions.
   /// </summary>
   /// <returns>None if the annotations pass, a counterexample State otherwise.</returns>
-  public Option<State<RouteType, NodeType>> CheckAssertions()
+  public Option<State<RouteType, NodeType>> CheckSafety()
   {
     return Digraph.Nodes.AsParallel().Aggregate(Option.None<State<RouteType, NodeType>>(),
-      (current, node) => current.OrElse(() => CheckAssertions(node)));
+      (current, node) => current.OrElse(() => CheckSafety(node)));
   }
 
-  public Option<State<RouteType, NodeType>> CheckAssertions(NodeType node)
+  public Option<State<RouteType, NodeType>> CheckSafety(NodeType node)
   {
     var route = Symbolic<RouteType>($"{node}-route");
     var time = Symbolic<BigInteger>("time");
@@ -263,6 +269,24 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     return Digraph.Nodes.AsParallel().Select(
         node => CheckInductive(node, routes, time))
       .Aggregate(Option.None<State<RouteType, NodeType>>(), (current, s) => current.OrElse(() => s));
+  }
+
+  /// <summary>
+  /// Ensure that a particular node's inductive check passes.
+  /// </summary>
+  /// <param name="node"></param>
+  /// <returns></returns>
+  /// <remarks>
+  ///   Each call to this function initializes its own mapping of nodes to routes and a symbolic time.
+  /// </remarks>
+  public Option<State<RouteType, NodeType>> CheckInductive(NodeType node)
+  {
+    // create symbolic values for each node neighbor.
+    var routes = Digraph[node].ToDictionary(n => n, n => Symbolic<RouteType>($"{n}-route"));
+
+    // create a symbolic time variable.
+    var time = Symbolic<BigInteger>("time");
+    return CheckInductive(node, routes, time);
   }
 
   /// <summary>

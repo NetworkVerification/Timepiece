@@ -96,6 +96,14 @@ public struct Ipv4Prefix : IEquatable<Ipv4Prefix>
 
 public static class Ipv4PrefixExtensions
 {
+  /// <summary>
+  /// Check that the given IPv4 prefix has a valid length (at most 32).
+  /// </summary>
+  /// <param name="prefix"></param>
+  /// <returns></returns>
+  public static Zen<bool> IsValidPrefixLength(this Zen<Ipv4Prefix> prefix)
+    => prefix.GetPrefixLength() <= new UInt<_6>(32);
+
   public static bool Contains(this IPAddressRange range, Ipv4Prefix d)
   {
     return range.Contains(d.AsAddressRange());

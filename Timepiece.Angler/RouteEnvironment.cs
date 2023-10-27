@@ -191,10 +191,14 @@ public static class RouteEnvironmentExtensions
   public static Zen<bool> GetResultReturned(this Zen<RouteEnvironment> b) => b.GetResult().GetReturned();
   public static Zen<bool> GetResultFallthrough(this Zen<RouteEnvironment> b) => b.GetResult().GetFallthrough();
 
-  public static Func<Zen<RouteEnvironment>, Zen<bool>> ResultValueImplies(Func<Zen<RouteEnvironment>, Zen<bool>> f)
-  {
-    return b => Zen.Implies(b.GetResultValue(), f(b));
-  }
+  /// <summary>
+  ///   Return a Zen boolean encoding that, if the route has a value, then the given predicate holds.
+  /// </summary>
+  /// <param name="b"></param>
+  /// <param name="f"></param>
+  /// <returns></returns>
+  public static Zen<bool> IfValue(this Zen<RouteEnvironment> b, Func<Zen<RouteEnvironment>, Zen<bool>> f) =>
+    Zen.Implies(b.GetResultValue(), f(b));
 
   public static Zen<RouteEnvironment> WithResultValue(this Zen<RouteEnvironment> b, Zen<bool> value) =>
     b.WithResult(b.GetResult().WithValue(value));

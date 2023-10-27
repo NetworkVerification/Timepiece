@@ -286,11 +286,26 @@ public static class Internet2
   public static NetworkQuery<RouteEnvironment, string> Reachable(Digraph<string> digraph,
     IEnumerable<string> externalPeers)
   {
-    var externalRoutes = SymbolicRoutes("external-route", new[] {"192.122.183.13"},
-      r => Zen.Implies(r.GetResultValue(), r.GetPrefix() == DestinationAddress));
-    // r => Zen.And(NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes), r), MaxPrefixLengthIs32(r)));
+    // the announced external destination prefix
+    var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
+      // must not be for a martian prefix or an Internet2-internal prefix
+      Zen.And(MartianPrefixes.Concat(InternalPrefixes)
+          .Aggregate(Zen.True(), (b, badPrefix) =>
+            Zen.And(b, Zen.Not(Zen.Constant(badPrefix.Item1).MatchesPrefix(p, badPrefix.Item2, new UInt<_6>(32))))),
+        // must have a valid prefix length
+        p.IsValidPrefixLength()));
+    // TODO: if every peer has the external route, the checks will trivially pass
+    // TODO: but if only some do, we will get a counterexample where the prefix gets blocked because the particular
+    // TODO: neighbors announcing it filter that prefix: we need to also say that the prefix will be chosen such that if the external
+    // TODO: neighbor has the route, then the route will make it through all the filters
+    var externalRoutes = SymbolicRoutes("external-route", externalPeers, //new[] {"192.122.183.13"},
+      r => Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value,
+        // no matching terms in AS set
+        r.GetAsSet().IsSubsetOf(CSet.Empty<string>()))));
     var initialRoutes = digraph.MapNodes(n =>
-      externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment {Prefix = DestinationAddress});
+      externalRoutes.TryGetValue(n, out var route)
+        ? route.Value
+        : Zen.Constant(new RouteEnvironment()).WithPrefix(destinationPrefix.Value));
     // there are 2 symbolic times: when the internal nodes adjacent to the external peer get a route, and when the other internal nodes get a route
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
     // make the external adjacent time constraint strictly greater than 0
@@ -306,7 +321,7 @@ public static class Internet2
             // external route exists at a non AL2S_MGMT neighbor
             .Where(ext => !Al2sManagementNodes.Contains(ext.Key))
             .Select(s => s.Value.Value)),
-          Zen.And(r.GetResultValue(), r.GetPrefix() == DestinationAddress))
+          Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value))
         // no check on external nodes
         : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n =>
@@ -331,13 +346,10 @@ public static class Internet2
             Zen.If(
               externalRoutes.TryGetValue(n, out var externalRoute) ? externalRoute.Value.GetResultValue() : Zen.False(),
               r.GetResultValue(), Zen.True())),
-        // Lang.Globally<RouteEnvironment>(r => Zen.Implies(r.GetResultValue(), r.GetLp() == RouteEnvironment.DefaultLp)),
-        Lang.Globally<RouteEnvironment>(r => Zen.Implies(r.GetResultValue(), r.GetPrefix() == DestinationAddress))));
-    // routes should always have prefix lengths at most 32
-    // Lang.Globally<RouteEnvironment>(MaxPrefixLengthIs32),
-    // routes should not be for a martian prefix
-    // Lang.Globally<RouteEnvironment>(env => NoPrefixMatch(MartianPrefixes, env))));
-    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
+        Lang.Globally<RouteEnvironment>(r =>
+          Zen.Implies(r.GetResultValue(),
+            Zen.And(r.GetPrefix() == destinationPrefix.Value, r.GetAsSet() == CSet.Empty<string>())))));
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
       annotations);
   }

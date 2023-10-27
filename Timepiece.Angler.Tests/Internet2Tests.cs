@@ -99,6 +99,6 @@ public class Internet2Tests
     var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
     var net = Internet2.Reachable(topology, externalNodes)
       .ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
-    NetworkAsserts.Sound(net, SmtCheck.Inductive);
+    NetworkAsserts.Sound(net, SmtCheck.Inductive, "wash");
   }
 }
