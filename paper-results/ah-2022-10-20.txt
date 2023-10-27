@@ -1,0 +1,130 @@
+Running benchmark k=4 with options: ah
+Trial 0 of 1 started 2022-10-19 20:48:09.343659+00:00
+k=4
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 336ms
+Check statistics:
+Maximum check time: node core-3 in 317ms
+Minimum check time: node hijacker in 125ms
+Average check time: 272.04761904761904ms
+Median check time: node edge-19 in 277ms
+99th percentile check time: node core-3 in 317ms
+Total check time: 5713ms
+Running benchmark k=8 with options: ah
+Trial 0 of 1 started 2022-10-19 20:48:10.031174+00:00
+k=8
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 1465ms
+Check statistics:
+Maximum check time: node core-14 in 1080ms
+Minimum check time: node hijacker in 228ms
+Average check time: 586.358024691358ms
+Median check time: node edge-77 in 558ms
+99th percentile check time: node core-14 in 1080ms
+Total check time: 47495ms
+Running benchmark k=12 with options: ah
+Trial 0 of 1 started 2022-10-19 20:48:11.957984+00:00
+k=12
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 7086ms
+Check statistics:
+Maximum check time: node core-16 in 3304ms
+Minimum check time: node hijacker in 137ms
+Average check time: 1134.7900552486187ms
+Median check time: node core-22 in 1025ms
+99th percentile check time: node core-0 in 2875ms
+Total check time: 205397ms
+Running benchmark k=16 with options: ah
+Trial 0 of 1 started 2022-10-19 20:48:19.462533+00:00
+k=16
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 23109ms
+Check statistics:
+Maximum check time: node core-35 in 6750ms
+Minimum check time: node hijacker in 56ms
+Average check time: 2223.626168224299ms
+Median check time: node aggregation-67 in 2224ms
+99th percentile check time: node core-21 in 5625ms
+Total check time: 713784ms
+Running benchmark k=20 with options: ah
+Trial 0 of 1 started 2022-10-19 20:48:43.051311+00:00
+k=20
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 72818ms
+Check statistics:
+Maximum check time: node core-33 in 13502ms
+Minimum check time: node hijacker in 234ms
+Average check time: 4274.143712574851ms
+Median check time: node aggregation-129 in 4529ms
+99th percentile check time: node core-56 in 10993ms
+Total check time: 2141346ms
+Running benchmark k=24 with options: ah
+Trial 0 of 1 started 2022-10-19 20:49:56.347690+00:00
+k=24
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 175968ms
+Check statistics:
+Maximum check time: node core-0 in 19335ms
+Minimum check time: node hijacker in 91ms
+Average check time: 7915.7198335644935ms
+Median check time: node core-85 in 8190ms
+99th percentile check time: node aggregation-672 in 17568ms
+Total check time: 5707234ms
+Running benchmark k=28 with options: ah
+Trial 0 of 1 started 2022-10-19 20:52:52.804955+00:00
+k=28
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 375469ms
+Check statistics:
+Maximum check time: node core-63 in 30323ms
+Minimum check time: node hijacker in 190ms
+Average check time: 12610.020387359837ms
+Median check time: node core-38 in 13047ms
+99th percentile check time: node core-151 in 28287ms
+Total check time: 12370430ms
+Running benchmark k=32 with options: ah
+Trial 0 of 1 started 2022-10-20 05:16:30.855844+00:00
+k=32
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 675082ms
+Check statistics:
+Maximum check time: node aggregation-943 in 45300ms
+Minimum check time: node hijacker in 126ms
+Average check time: 19180.553473848555ms
+Median check time: node aggregation-366 in 20383ms
+99th percentile check time: node core-249 in 40105ms
+Total check time: 24570289ms
+Running benchmark k=36 with options: ah
+Trial 0 of 1 started 2022-10-20 05:27:46.558525+00:00
+k=36
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 1376664ms
+Check statistics:
+Maximum check time: node core-214 in 62552ms
+Minimum check time: node hijacker in 253ms
+Average check time: 30306.638494756324ms
+Median check time: node aggregation-845 in 31342ms
+99th percentile check time: node aggregation-695 in 59950ms
+Total check time: 49127061ms
+Running benchmark k=40 with options: ah
+Trial 0 of 1 started 2022-10-20 05:50:43.985101+00:00
+k=40
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 2196169ms
+Check statistics:
+Maximum check time: node aggregation-1932 in 103030ms
+Minimum check time: node hijacker in 412ms
+Average check time: 40050.43128435782ms
+Median check time: node aggregation-401 in 41087ms
+99th percentile check time: node aggregation-1083 in 81180ms
+Total check time: 80140913ms

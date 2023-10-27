@@ -1,0 +1,4 @@
+Running benchmark k=8 with options: ar -m
+Trial 0 of 1 started 2022-11-08 00:17:49.235535+00:00
+Timed out after 7200 seconds
+k=8

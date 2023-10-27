@@ -1,0 +1,12 @@
+Running benchmark k=4 with options: v -m
+Trial 0 of 1 started 2022-10-19 19:45:06.383000+00:00
+k=4
+Inferred destination node: edge-19
+    The monolithic checks passed!
+Monolithic verification took 222ms
+Running benchmark k=8 with options: v -m
+Trial 0 of 1 started 2022-10-19 19:45:06.836162+00:00
+k=8
+Inferred destination node: edge-79
+    The monolithic checks passed!
+Monolithic verification took 10631ms

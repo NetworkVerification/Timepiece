@@ -1,0 +1,4 @@
+Running benchmark k=4 with options: alw -m
+Trial 0 of 1 started 2022-11-08 02:17:49.754785+00:00
+Timed out after 3600 seconds
+k=4

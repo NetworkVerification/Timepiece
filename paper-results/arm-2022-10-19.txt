@@ -1,0 +1,8 @@
+Running benchmark k=4 with options: ar -m
+Trial 0 of 1 started 2022-10-19 20:59:08.884815+00:00
+k=4
+    The monolithic checks passed!
+Monolithic verification took 238ms
+Running benchmark k=8 with options: ar -m
+Trial 0 of 1 started 2022-10-19 20:59:09.384814+00:00
+k=8

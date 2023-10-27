@@ -1,0 +1,140 @@
+Running benchmark k=4 with options: v
+Trial 0 of 1 started 2022-10-19 19:40:26.320728+00:00
+k=4
+Inferred destination node: edge-19
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 320ms
+Check statistics:
+Maximum check time: node core-1 in 297ms
+Minimum check time: node edge-10 in 193ms
+Average check time: 253.1ms
+Median check time: node aggregation-9 in 264ms
+99th percentile check time: node core-1 in 297ms
+Total check time: 5062ms
+Running benchmark k=8 with options: v
+Trial 0 of 1 started 2022-10-19 19:40:26.961334+00:00
+k=8
+Inferred destination node: edge-79
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 1045ms
+Check statistics:
+Maximum check time: node aggregation-74 in 675ms
+Minimum check time: node aggregation-48 in 324ms
+Average check time: 491.4375ms
+Median check time: node edge-54 in 490ms
+99th percentile check time: node aggregation-74 in 675ms
+Total check time: 39315ms
+Running benchmark k=12 with options: v
+Trial 0 of 1 started 2022-10-19 19:40:28.464618+00:00
+k=12
+Inferred destination node: edge-179
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 3384ms
+Check statistics:
+Maximum check time: node core-32 in 1320ms
+Minimum check time: node edge-43 in 248ms
+Average check time: 604.0166666666667ms
+Median check time: node edge-42 in 546ms
+99th percentile check time: node core-0 in 1317ms
+Total check time: 108723ms
+Running benchmark k=16 with options: v
+Trial 0 of 1 started 2022-10-19 19:40:32.492568+00:00
+k=16
+Inferred destination node: edge-319
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 8711ms
+Check statistics:
+Maximum check time: node core-0 in 2332ms
+Minimum check time: node edge-104 in 68ms
+Average check time: 759.771875ms
+Median check time: node aggregation-128 in 750ms
+99th percentile check time: node core-56 in 2167ms
+Total check time: 243127ms
+Running benchmark k=20 with options: v
+Trial 0 of 1 started 2022-10-19 19:40:41.773801+00:00
+k=20
+Inferred destination node: edge-499
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 17065ms
+Check statistics:
+Maximum check time: node core-88 in 3034ms
+Minimum check time: node edge-130 in 88ms
+Average check time: 866.02ms
+Median check time: node aggregation-465 in 739ms
+99th percentile check time: node core-11 in 2690ms
+Total check time: 433010ms
+Running benchmark k=24 with options: v
+Trial 0 of 1 started 2022-10-19 19:40:59.383241+00:00
+k=24
+Inferred destination node: edge-719
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 37506ms
+Check statistics:
+Maximum check time: node core-135 in 5446ms
+Minimum check time: node edge-494 in 152ms
+Average check time: 1186.1708333333333ms
+Median check time: node aggregation-194 in 1105ms
+99th percentile check time: node core-106 in 4811ms
+Total check time: 854043ms
+Running benchmark k=28 with options: v
+Trial 0 of 1 started 2022-10-19 19:41:37.398216+00:00
+k=28
+Inferred destination node: edge-979
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 97098ms
+Check statistics:
+Maximum check time: node core-126 in 11204ms
+Minimum check time: node edge-271 in 144ms
+Average check time: 1991.4020408163265ms
+Median check time: node aggregation-598 in 1825ms
+99th percentile check time: node core-127 in 10098ms
+Total check time: 1951574ms
+Running benchmark k=32 with options: v
+Trial 0 of 1 started 2022-10-20 00:52:04.536356+00:00
+k=32
+Inferred destination node: edge-1279
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 210804ms
+Check statistics:
+Maximum check time: node core-162 in 16685ms
+Minimum check time: node edge-1044 in 148ms
+Average check time: 3706.8125ms
+Median check time: node aggregation-869 in 4561ms
+99th percentile check time: node core-108 in 15813ms
+Total check time: 4744720ms
+Running benchmark k=36 with options: v
+Trial 0 of 1 started 2022-10-20 00:55:35.848699+00:00
+k=36
+Inferred destination node: edge-1619
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 291670ms
+Check statistics:
+Maximum check time: node core-34 in 16041ms
+Minimum check time: node edge-746 in 303ms
+Average check time: 5569.111111111111ms
+Median check time: node core-23 in 5636ms
+99th percentile check time: node core-42 in 14825ms
+Total check time: 9021960ms
+Running benchmark k=40 with options: v
+Trial 0 of 1 started 2022-10-20 01:00:28.058319+00:00
+k=40
+Inferred destination node: edge-1999
+Environment.ProcessorCount: 48
+    All the modular checks passed!
+Modular verification took 398173ms
+Check statistics:
+Maximum check time: node core-84 in 18800ms
+Minimum check time: node edge-1235 in 273ms
+Average check time: 5046.3575ms
+Median check time: node core-38 in 6957ms
+99th percentile check time: node core-297 in 18479ms
+Total check time: 10092715ms

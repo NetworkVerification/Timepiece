@@ -1,0 +1,10 @@
+Running benchmark k=4 with options: av -m
+Trial 0 of 1 started 2022-10-19 22:59:10.562812+00:00
+k=4
+    The monolithic checks passed!
+Monolithic verification took 362ms
+Running benchmark k=8 with options: av -m
+Trial 0 of 1 started 2022-10-19 22:59:11.187812+00:00
+k=8
+    The monolithic checks passed!
+Monolithic verification took 835362ms

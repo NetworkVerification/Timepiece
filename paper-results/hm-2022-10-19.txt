@@ -1,0 +1,6 @@
+Running benchmark k=4 with options: h -m
+Trial 0 of 1 started 2022-10-19 19:45:17.793084+00:00
+k=4
+Inferred destination node: edge-19
+    The monolithic checks passed!
+Monolithic verification took 2212ms

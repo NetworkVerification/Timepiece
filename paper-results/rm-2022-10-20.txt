@@ -1,0 +1,60 @@
+Running benchmark k=4 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:50.213186+00:00
+k=4
+Inferred destination node: edge-19
+    The monolithic checks passed!
+Monolithic verification took 136ms
+Running benchmark k=8 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:50.601950+00:00
+k=8
+Inferred destination node: edge-79
+    The monolithic checks passed!
+Monolithic verification took 269ms
+Running benchmark k=12 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:51.101798+00:00
+k=12
+Inferred destination node: edge-179
+    The monolithic checks passed!
+Monolithic verification took 569ms
+Running benchmark k=16 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:51.929942+00:00
+k=16
+Inferred destination node: edge-319
+    The monolithic checks passed!
+Monolithic verification took 1093ms
+Running benchmark k=20 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:53.289269+00:00
+k=20
+Inferred destination node: edge-499
+    The monolithic checks passed!
+Monolithic verification took 1950ms
+Running benchmark k=24 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:55.531349+00:00
+k=24
+Inferred destination node: edge-719
+    The monolithic checks passed!
+Monolithic verification took 3244ms
+Running benchmark k=28 with options: r -m
+Trial 0 of 1 started 2022-10-19 19:44:59.070552+00:00
+k=28
+Inferred destination node: edge-979
+    The monolithic checks passed!
+Monolithic verification took 4881ms
+Running benchmark k=32 with options: r -m
+Trial 0 of 1 started 2022-10-20 01:11:34.216843+00:00
+k=32
+Inferred destination node: edge-1279
+    The monolithic checks passed!
+Monolithic verification took 7480ms
+Running benchmark k=36 with options: r -m
+Trial 0 of 1 started 2022-10-20 01:11:42.091863+00:00
+k=36
+Inferred destination node: edge-1619
+    The monolithic checks passed!
+Monolithic verification took 10407ms
+Running benchmark k=40 with options: r -m
+Trial 0 of 1 started 2022-10-20 01:11:52.935580+00:00
+k=40
+Inferred destination node: edge-1999
+    The monolithic checks passed!
+Monolithic verification took 13613ms

@@ -1,0 +1,5 @@
+Running benchmark k=36 with options: av
+Trial 0 of 1 started 2022-11-07 22:17:48.804673+00:00
+Timed out after 7200 seconds
+k=36
+Environment.ProcessorCount: 48
