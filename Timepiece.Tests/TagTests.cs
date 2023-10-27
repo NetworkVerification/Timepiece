@@ -90,7 +90,7 @@ public static class TagTests
     };
     var net = CSetNet(CSetTransferWithBehavior(addBehavior), monolithicProperties,
       new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>());
-    NetworkAssert.CheckSoundMonolithic(net);
+    NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 
   [Fact]
@@ -109,7 +109,7 @@ public static class TagTests
     };
     var net = CSetNet(CSetTransferWithBehavior(addBehavior), monolithicProperties,
       new Dictionary<string, Func<Zen<CSetRoute>, Zen<BigInteger>, Zen<bool>>>());
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+    NetworkAsserts.Unsound(net, SmtCheck.Monolithic);
   }
 
   [Fact]
@@ -129,7 +129,7 @@ public static class TagTests
     };
     var net = SetNet(monolithicProperties,
       new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>());
-    NetworkAssert.CheckSoundMonolithic(net);
+    NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 
   [Fact]
@@ -143,6 +143,6 @@ public static class TagTests
     };
     var net = SetNet(monolithicProperties,
       new Dictionary<string, Func<Zen<SetRoute>, Zen<BigInteger>, Zen<bool>>>());
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+    NetworkAsserts.Unsound(net, SmtCheck.Monolithic);
   }
 }

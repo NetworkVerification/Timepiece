@@ -1286,13 +1286,7 @@ public static class AstEnvironmentTests
     {AddCommunity, AddCommunityFunction}
   });
 
-  private static readonly Environment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
-
-  private static readonly JsonSerializer Serializer = new JsonSerializer
-  {
-    TypeNameHandling = TypeNameHandling.All,
-    SerializationBinder = new AstSerializationBinder()
-  };
+  private static readonly ReturnEnvironment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
   private static AstFunction<RouteEnvironment> UpdateResultFunction(RouteResult result)
   {
@@ -1337,7 +1331,7 @@ public static class AstEnvironmentTests
 
   private static dynamic EvaluateExprIgnoreRoute(Expr e)
   {
-    return Env.EvaluateExpr(R, e).returnValue;
+    return Env.EvaluateExpr(R, e).ReturnValue;
   }
 
   /// <summary>
@@ -1404,7 +1398,7 @@ public static class AstEnvironmentTests
   {
     const string name = "x";
     var env1 = Env.EvaluateStatement(name, R, new Assign(name, new IntExpr(0)));
-    var evaluated = (Zen<int>) env1.EvaluateExpr(R, new Var(name)).returnValue;
+    var evaluated = (Zen<int>) env1.EvaluateExpr(R, new Var(name)).ReturnValue;
     AssertEqValid(evaluated, Zen.Constant(0));
   }
 
@@ -1423,9 +1417,9 @@ public static class AstEnvironmentTests
       new Assign(var1, new Var(var2)),
       new Assign(var2, new Var(tempVar))
     };
-    var env1 = Env.Update(dummy, R.route).EvaluateStatements(dummy, R, statements);
-    var getVar1 = (Zen<int>) env1.EvaluateExpr(R, new Var(var1)).returnValue;
-    var getVar2 = (Zen<int>) env1.EvaluateExpr(R, new Var(var2)).returnValue;
+    var env1 = Env.Update(dummy, R.Route).EvaluateStatements(dummy, R, statements);
+    var getVar1 = (Zen<int>) env1.EvaluateExpr(R, new Var(var1)).ReturnValue;
+    var getVar2 = (Zen<int>) env1.EvaluateExpr(R, new Var(var2)).ReturnValue;
     AssertEqValid(getVar1, Zen.Constant(1));
     AssertEqValid(getVar2, Zen.Constant(0));
   }
@@ -1475,7 +1469,7 @@ public static class AstEnvironmentTests
             {"Fallthrough", new BoolExpr(false)}
           })))
     };
-    var env1 = Env.Update(arg, R.route).EvaluateStatements(arg, R, statements);
+    var env1 = Env.Update(arg, R.Route).EvaluateStatements(arg, R, statements);
     var result = (Zen<RouteEnvironment>) env1[arg];
     var b = Zen.Not(result.GetResultValue()).Solve();
     Assert.False(b.IsSatisfiable());
@@ -1493,7 +1487,7 @@ public static class AstEnvironmentTests
         new Plus(new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen),
           new BigIntExpr(BigInteger.One))))
     };
-    var env1 = Env.Update(route, R.route).EvaluateStatements(route, R, statements);
+    var env1 = Env.Update(route, R.Route).EvaluateStatements(route, R, statements);
     var result = (Zen<RouteEnvironment>) env1[route];
     var incrementedRoute = Zen.Constant(new RouteEnvironment()).IncrementAsPathLength(BigInteger.One);
     AssertEqValid(result, incrementedRoute);
@@ -1600,10 +1594,10 @@ public static class AstEnvironmentTests
   {
     var e = new Call(functionName);
     var evaluated = Env.EvaluateExpr(R, e);
-    AssertEqValid(evaluated.returnValue, value);
+    AssertEqValid(evaluated.ReturnValue, value);
     // returned will be reset to whatever it had been before the call, so we just check the value, exit and fallthrough
-    AssertEqValid(evaluated.route,
-      R.route.WithResult(R.route.GetResult().WithValue(value).WithExit(exit).WithFallthrough(fallthrough)));
+    AssertEqValid(evaluated.Route,
+      R.Route.WithResult(R.Route.GetResult().WithValue(value).WithExit(exit).WithFallthrough(fallthrough)));
   }
 
   [Fact]
@@ -1625,7 +1619,7 @@ public static class AstEnvironmentTests
       )
     };
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
-    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(arg, R.WithRoute(inputRoute), statements);
+    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(arg, R with {Route = inputRoute}, statements);
     AssertEqValid(evaluated[arg], inputRoute.WithResultValue(true));
   }
 
@@ -1648,7 +1642,7 @@ public static class AstEnvironmentTests
       )
     };
     var inputRoute = Zen.Symbolic<RouteEnvironment>().WithResult(new RouteResult());
-    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(arg, R.WithRoute(inputRoute), statements);
+    var evaluated = Env.Update(arg, inputRoute).EvaluateStatements(arg, R with {Route = inputRoute}, statements);
     AssertEqValid(evaluated[arg], inputRoute.WithResultValue(true));
   }
 
@@ -1669,7 +1663,7 @@ public static class AstEnvironmentTests
       )
     };
     Assert.Throws<Exception>(() =>
-      Env.Update(arg, R.route).EvaluateStatements(arg, R, statements));
+      Env.Update(arg, R.Route).EvaluateStatements(arg, R, statements));
   }
 
   /// <summary>
@@ -1705,11 +1699,12 @@ public static class AstEnvironmentTests
   [Fact]
   public static void ConnectorInAddsParticipantTag()
   {
-    var statements = Serializer.Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
+    var statements = AstSerializationBinder.JsonSerializer()
+      .Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
     var env = new AstEnvironment();
     var r = Zen.Symbolic<RouteEnvironment>();
     Zen<RouteEnvironment> updated =
-      env.Update("env", r).EvaluateStatements("env", new Environment<RouteEnvironment>(r), statements)["env"];
+      env.Update("env", r).EvaluateStatements("env", new ReturnEnvironment<RouteEnvironment>(r), statements)["env"];
     // if r has not exited or returned already, and the prefix length is up to 27, it should be accepted
     var query = Zen.And(
       Zen.Not(r.GetResultExit()), Zen.Not(r.GetResultReturned()),

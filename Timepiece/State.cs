@@ -132,6 +132,8 @@ public class State<RouteType, NodeType>
       SmtCheck.Inductive => "Inductive",
       SmtCheck.Safety => "Safety",
       SmtCheck.InductiveDelayed => "Inductive (delayed)",
+      SmtCheck.Modular => "Modular",
+      SmtCheck.ModularDelayed => "Modular (delayed)",
       _ => throw new ArgumentOutOfRangeException()
     };
     Console.WriteLine($"{whichCheck} check failed!");

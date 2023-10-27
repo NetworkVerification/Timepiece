@@ -57,7 +57,7 @@ public static class FaultToleranceTests
 
     var net = UnitFtNet(annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -76,6 +76,6 @@ public static class FaultToleranceTests
     var net = UnitFtNet(annotations);
 
     // inductive check fails
-    NetworkAssert.CheckUnsound(net);
+    NetworkAsserts.Unsound(net);
   }
 }

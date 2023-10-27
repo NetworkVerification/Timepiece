@@ -108,7 +108,7 @@ public static class LpDiamondTests
       {"d", Lang.IfSome<Route>(r => r.Item2() == new BigInteger(3))}
     };
     var net = Net(annotations, modularProperties, monolithicProperties);
-    NetworkAssert.CheckSoundMonolithic(net);
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net, SmtCheck.Monolithic);
+    NetworkAsserts.Sound(net);
   }
 }

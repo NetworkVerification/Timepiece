@@ -10,15 +10,6 @@ using ZenLib;
 ZenSettings.UseLargeStack = true;
 ZenSettings.LargeStackSize = 30_000_000;
 
-JsonSerializer serializer = new()
-{
-  // use $type for type names, and the given binder
-  TypeNameHandling = TypeNameHandling.All,
-  SerializationBinder = new AstSerializationBinder()
-  // throw an error when members are missing from the object instead of ignoring them
-  // MissingMemberHandling = MissingMemberHandling.Error
-};
-
 var rootCommand = new RootCommand("Timepiece benchmark runner");
 var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
@@ -38,7 +29,7 @@ rootCommand.SetHandler(
   {
     var json = new JsonTextReader(new StreamReader(file));
 
-    var ast = serializer.Deserialize<AnglerNetwork>(json);
+    var ast = AstSerializationBinder.JsonSerializer().Deserialize<AnglerNetwork>(json);
 
     Console.WriteLine($"Successfully deserialized JSON file {file}");
     Debug.WriteLine("Running in debug mode...");

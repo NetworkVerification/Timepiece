@@ -6,5 +6,7 @@ public enum SmtCheck
   Initial,
   Inductive,
   InductiveDelayed,
-  Safety
+  Safety,
+  Modular,
+  ModularDelayed,
 }

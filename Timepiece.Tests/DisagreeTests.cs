@@ -67,7 +67,7 @@ public static class DisagreeTests
 
     var net = Net(annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
     // Assert.True(net.CheckAnnotations(), "Sound disagree annotations should pass checks.");
   }
 
@@ -89,7 +89,6 @@ public static class DisagreeTests
 
     var net = Net(annotations);
 
-    NetworkAssert.CheckUnsound(net);
-    // Assert.False(net.CheckAnnotations(), "Unsound disagree annotations should fail checks.");
+    NetworkAsserts.Unsound(net);
   }
 }

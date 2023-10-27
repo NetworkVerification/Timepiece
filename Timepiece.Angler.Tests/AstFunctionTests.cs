@@ -77,7 +77,7 @@ public static class AstFunctionTests
     const string envVar = "x";
     const string arg = "y";
     var env = new AstEnvironment(ImmutableDictionary<string, dynamic>.Empty.Add(envVar, 3U),
-      new Dictionary<string, AstFunction<RouteEnvironment>>(), null, false);
+      new Dictionary<string, AstFunction<RouteEnvironment>>());
     var f1 = env.EvaluateFunction(new AstFunction<RouteEnvironment>(arg, new Statement[]
     {
       new Assign(arg,

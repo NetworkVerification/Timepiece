@@ -27,11 +27,11 @@ public class RouteFilterList
   private RouteFilterLine[] Lines { get; }
 
   /// <summary>
-  ///   Return a Zen expression encoding if the route filter list matches the given prefix.
+  ///   Return a Zen expression encoding if the route filter list matches (contains) the given prefix.
   /// </summary>
   /// <param name="prefix"></param>
   /// <returns></returns>
-  public Zen<bool> Matches(Zen<Ipv4Prefix> prefix)
+  public Zen<bool> Contains(Zen<Ipv4Prefix> prefix)
   {
     return Lines
       .Reverse() // we build up the successive cases by going in reverse order

@@ -38,6 +38,6 @@ public static class HijackTests
         });
     var net = Net(annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 }

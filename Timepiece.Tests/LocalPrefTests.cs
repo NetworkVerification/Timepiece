@@ -65,7 +65,7 @@ public static class LocalPrefTests
     };
     var net = AnnotatedNetwork(annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -87,6 +87,6 @@ public static class LocalPrefTests
     };
     var net = AnnotatedNetwork(annotations);
 
-    NetworkAssert.CheckUnsound(net);
+    NetworkAsserts.Unsound(net);
   }
 }

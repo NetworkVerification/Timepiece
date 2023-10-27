@@ -1,6 +1,7 @@
 using System.Numerics;
 using Timepiece;
 using Timepiece.Networks;
+using Timepiece.Tests;
 using Xunit;
 using ZenLib;
 using Array = System.Array;
@@ -60,25 +61,26 @@ public static class InferTests
     };
 
   // a boolean network where one node has a route initially and others do not
-  private static Network<bool, TV> BoolNet<TV>(Digraph<TV> digraph, TV destination) where TV : IEquatable<TV>
+  private static Network<bool, NodeType> BoolNet<NodeType>(Digraph<NodeType> digraph, NodeType destination)
+    where NodeType : IEquatable<NodeType>
   {
-    return new BooleanNetwork<TV>(digraph,
+    return new BooleanNetwork<NodeType>(digraph,
       digraph.MapNodes(n => n.Equals(destination) ? Zen.True() : Zen.False()), Array.Empty<ISymbolic>());
   }
 
   // a boolean network where one symbolically-chosen node has a route initially and others do not
-  private static Network<bool, TV> BoolNetMultiDest<TV>(Digraph<TV> digraph) where TV : notnull
+  private static Network<bool, NodeType> BoolNetMultiDest<NodeType>(Digraph<NodeType> digraph) where NodeType : notnull
   {
-    var dest = new SymbolicValue<TV>("dest",
+    var dest = new SymbolicValue<NodeType>("dest",
       x => digraph.Nodes.Aggregate(Zen.False(), (b, n) => Zen.Or(b, x == n)));
-    return new BooleanNetwork<TV>(digraph,
+    return new BooleanNetwork<NodeType>(digraph,
       digraph.MapNodes(n => dest.EqualsValue(n)), new ISymbolic[] {dest});
   }
 
   // a triangular integer network where the path A-B-C is cheaper than the path A-C
   private static Network<Option<BigInteger>, string> TriangleNet()
   {
-    var topology = Topologies.Complete(3, true);
+    var topology = Topologies.Complete(3);
     var transfer =
       topology.MapEdges<Func<Zen<Option<BigInteger>>, Zen<Option<BigInteger>>>>(e =>
         e.Item1 == "B" || e.Item2 == "B"
@@ -191,8 +193,8 @@ public static class InferTests
     // confirm that all checks pass
     var annotations = net.Digraph.MapNodes(n => Lang.Until(times[n], beforeInvariants[n], afterInvariants[n]));
     var annotated = new AnnotatedNetwork<Option<BigInteger>, string>(net, annotations,
-      net.Digraph.MapNodes(n => Lang.Finally(new BigInteger(2), Lang.IsSome<BigInteger>())),
+      net.Digraph.MapNodes(_ => Lang.Finally(new BigInteger(2), Lang.IsSome<BigInteger>())),
       net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
-    Assert.Equal(Option.None<State<Option<BigInteger>, string>>(), annotated.CheckAnnotations());
+    NetworkAsserts.Sound(annotated);
   }
 }

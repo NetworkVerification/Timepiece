@@ -68,7 +68,7 @@ public static class BgpNetworkTests
 
     var net = Net(annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -97,14 +97,14 @@ public static class BgpNetworkTests
     };
     var net = Net(annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
   public static void MonolithicNetworkPassesExactChecks()
   {
     var net = Net(new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>());
-    NetworkAssert.CheckSoundMonolithic(net);
+    NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 
   [Fact]
@@ -118,7 +118,7 @@ public static class BgpNetworkTests
         {"C", Lang.Finally<Option<Bgp>>(new BigInteger(2), r => r == Start)}
       };
     var net = Net(annotations);
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
+    NetworkAsserts.Unsound(net, SmtCheck.Inductive);
   }
 
   [Fact]
@@ -131,7 +131,7 @@ public static class BgpNetworkTests
       {"B", r => r == Start},
       {"C", r => r == Start}
     };
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+    NetworkAsserts.Unsound(net, SmtCheck.Monolithic);
   }
 
   [Fact]
@@ -149,7 +149,7 @@ public static class BgpNetworkTests
     var net = new BgpAnnotatedNetwork<string>(topology, initialValues, annotations, modularProperties,
       monolithicProperties,
       Array.Empty<ISymbolic>());
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Monolithic);
+    NetworkAsserts.Unsound(net, SmtCheck.Monolithic);
   }
 
   /// <summary>

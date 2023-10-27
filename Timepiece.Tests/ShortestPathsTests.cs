@@ -124,7 +124,7 @@ public static class ShortestPathsTests
     };
     var net = AnnotatedConcrete(annotations, properties);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -143,7 +143,7 @@ public static class ShortestPathsTests
       {"C", Lang.IfSome<BigInteger>(r => r == new BigInteger(2))}
     });
 
-    NetworkAssert.CheckUnsound(net);
+    NetworkAsserts.Unsound(net);
   }
 
   [Fact]
@@ -157,7 +157,7 @@ public static class ShortestPathsTests
     };
     var net = AnnotatedSymbolicRoute(annotations, SymbolicRoute.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -171,7 +171,7 @@ public static class ShortestPathsTests
     };
     var net = AnnotatedSymbolicRoute(annotations, SymbolicRoute.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
-    NetworkAssert.CheckUnsound(net);
+    NetworkAsserts.Unsound(net);
   }
 
   [Fact]
@@ -209,7 +209,7 @@ public static class ShortestPathsTests
       topology.MapNodes(_ => Lang.Finally(convergeTime, Lang.IsSome<BigInteger>())),
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
-    NetworkAssert.CheckSound(annotated);
+    NetworkAsserts.Sound(annotated);
   }
 
   [Fact]
@@ -228,7 +228,7 @@ public static class ShortestPathsTests
       topology.MapNodes(_ => Lang.Finally(new BigInteger(3), Lang.IsSome<BigInteger>())),
       topology.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
-    NetworkAssert.CheckUnsoundCheck(annotated, SmtCheck.Inductive);
+    NetworkAsserts.Unsound(annotated, SmtCheck.Inductive);
   }
 
   [Fact]
@@ -242,7 +242,7 @@ public static class ShortestPathsTests
       net.Digraph.MapNodes(_ => Lang.Finally(symbolics.Last().Value, Lang.IsSome<BigInteger>())),
       net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
-    NetworkAssert.CheckSound(annotated);
+    NetworkAsserts.Sound(annotated);
   }
 
   [Fact]
@@ -261,6 +261,6 @@ public static class ShortestPathsTests
       net.Digraph.MapNodes(_ => Lang.Finally(lastTime, Lang.IsSome<BigInteger>())),
       net.Digraph.MapNodes(_ => Lang.IsSome<BigInteger>()));
 
-    NetworkAssert.CheckUnsoundCheck(annotated, SmtCheck.Inductive);
+    NetworkAsserts.Unsound(annotated, SmtCheck.Inductive);
   }
 }

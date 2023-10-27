@@ -11,7 +11,7 @@ namespace Timepiece.Angler;
 ///   the results of executing the policy, and the current local default action.
 /// </summary>
 [ZenObject]
-public class RouteEnvironment : IDifferentiatedString<RouteEnvironment>
+public class RouteEnvironment
 {
   public const uint DefaultLp = 100;
   public const uint DefaultWeight = 32768;

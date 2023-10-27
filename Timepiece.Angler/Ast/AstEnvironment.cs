@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
 using Timepiece.Angler.Ast.AstExpr;
-using Timepiece.Angler.Ast.AstFunction;
 using Timepiece.Angler.Ast.AstStmt;
 using ZenLib;
 
@@ -11,46 +10,35 @@ namespace Timepiece.Angler.Ast;
 /// <summary>
 ///   An immutable state of the AST environment.
 /// </summary>
-public class AstEnvironment
+public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
+  IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> Declarations,
+  string? DefaultPolicy = null, bool CallExprContext = false, bool TrackTerms = false)
 {
   /// <summary>
   ///   The Zen null option creation method.
   /// </summary>
-  internal static readonly MethodInfo Null =
+  private static readonly MethodInfo Null =
     typeof(Option).GetMethod("Null") ?? throw new Exception("Option.Null method not found");
 
   /// <summary>
   ///   The Zen record creation method.
   /// </summary>
-  internal static readonly MethodInfo Create =
+  private static readonly MethodInfo Create =
     typeof(Zen).GetMethod("Create") ?? throw new Exception("Zen.Create method not found");
 
-  internal static readonly MethodInfo GetField =
+  private static readonly MethodInfo GetField =
     typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
 
-  private readonly IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> _declarations;
-  private readonly ImmutableDictionary<string, dynamic> _env;
   /// <summary>
-  /// Whether or not the call expression context is set.
-  /// See https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/routing_policy/expr/BooleanExprs.java#L13
+  /// Construct a new AstEnvironment with no bound variables.
   /// </summary>
-  public readonly bool callExprContext;
-  public readonly string? defaultPolicy;
-
-
-  public AstEnvironment(ImmutableDictionary<string, dynamic> env,
-    IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
-    string? defaultPolicy, bool callExprContext)
-  {
-    _env = env;
-    _declarations = declarations;
-    this.defaultPolicy = defaultPolicy;
-    this.callExprContext = callExprContext;
-  }
-
+  /// <param name="declarations"></param>
+  /// <param name="defaultPolicy"></param>
+  /// <param name="callExprContext"></param>
+  /// <param name="trackTerms"></param>
   public AstEnvironment(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
-    string? defaultPolicy = null, bool callExprContext = false) : this(
-    ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy, callExprContext)
+    string? defaultPolicy = null, bool callExprContext = false, bool trackTerms = false) : this(
+    ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy, callExprContext, trackTerms)
   {
   }
 
@@ -58,7 +46,7 @@ public class AstEnvironment
   {
   }
 
-  public dynamic this[string var] => _env[var];
+  public dynamic this[string var] => Bindings[var];
 
   /// <summary>
   ///   Update the environment with the given value at the given variable,
@@ -69,22 +57,12 @@ public class AstEnvironment
   /// <returns></returns>
   public AstEnvironment Update(string var, dynamic val)
   {
-    return new AstEnvironment(_env.SetItem(var, val), _declarations, defaultPolicy, callExprContext);
-  }
-
-  public AstEnvironment WithDefaultPolicy(string policy)
-  {
-    return new AstEnvironment(_env, _declarations, policy, callExprContext);
-  }
-
-  public AstEnvironment WithCallExprContext(bool context)
-  {
-    return new AstEnvironment(_env, _declarations, defaultPolicy, context);
+    return this with {Bindings = Bindings.SetItem(var, val)};
   }
 
   // FIXME: should this take an additional argument representing the current state of the input variable?
   // could we then modify this state when returning from a Call?
-  public Environment<RouteEnvironment> EvaluateExpr(Environment<RouteEnvironment> env, Expr e)
+  public ReturnEnvironment<RouteEnvironment> EvaluateExpr(ReturnEnvironment<RouteEnvironment> env, Expr e)
   {
     if (e is null) throw new ArgumentNullException(nameof(e), "Given a null expression.");
 
@@ -98,105 +76,110 @@ public class AstEnvironment
       // the updated environment must be the same as the one passed in
       Debug.Assert(updatedEnv.EqualRoutes(env),
         (string?) $"Unexpected route modification during evaluation of expr {e1}!");
-      return updatedEnv.returnValue;
+      return updatedEnv.ReturnValue;
     });
 
     switch (e)
     {
       case Call c:
-        var oldReturn = env.route.GetResultReturned();
+        var oldReturn = env.Route.GetResultReturned();
         // call the function with the current route as its argument
-        var outputRoute =
-          WithCallExprContext(true).EvaluateFunction(_declarations[c.Name])(
-            env.route.WithResultReturned(false));
+        var outputRoute = (this with {CallExprContext = true}).EvaluateFunction(Declarations[c.Name])(
+          env.Route.WithResultReturned(false));
         // return the updated result and its associated value
-        return new Environment<RouteEnvironment>(outputRoute.WithResultReturned(oldReturn),
+        return new ReturnEnvironment<RouteEnvironment>(outputRoute.WithResultReturned(oldReturn),
           outputRoute.GetResultValue());
-      case CallExprContext:
-        return env.WithValue(Zen.Constant(callExprContext));
+      case AstExpr.CallExprContext:
+        return env with {ReturnValue = Zen.Constant(CallExprContext)};
       case ConjunctionChain cc:
         return cc.Evaluate(this, env);
       case FirstMatchChain fmc:
         return fmc.Evaluate(this, env);
-      case RouteFilterListExpr rfl:
-        // TODO: just return as an RFL to use?
-        return env.WithValue(rfl);
       case ConstantExpr c:
-        return env.WithValue(c.constructor(c.value));
+        return env with {ReturnValue = c.constructor(c.value)};
       case LiteralSet s:
-        return env.WithValue(s.elements.Aggregate(CSet.Empty<string>(),
-          (set, element) => CSet.Add<string>(set, ignoreRoute(element))));
+        return env with
+        {
+          ReturnValue = s.elements.Aggregate(CSet.Empty<string>(),
+            (set, element) => CSet.Add<string>(set, ignoreRoute(element)))
+        };
       case CreateRecord r:
-        return env.WithValue(
-          Create.MakeGenericMethod(r.RecordType)
-            .Invoke(null, new object?[] {r.GetFields(ignoreRoute)})!);
+        return env with
+        {
+          ReturnValue = Create.MakeGenericMethod(r.RecordType)
+            .Invoke(null, new object?[] {r.GetFields(ignoreRoute)})!
+        };
       // GetField could be implemented using UnaryOpExpr, but we write it like this just so that
       // the expensive reflection code isn't called at every call to UnaryOpExpr.unaryOp.
       case GetField g:
-        return env.WithValue(GetField.MakeGenericMethod(g.RecordType, g.FieldType)
-          .Invoke(null, new object?[] {ignoreRoute(g.Record), g.FieldName})!);
+        return env with
+        {
+          ReturnValue = GetField.MakeGenericMethod(g.RecordType, g.FieldType)
+            .Invoke(null, new object?[] {ignoreRoute(g.Record), g.FieldName})!
+        };
       case Var v:
-        return env.WithValue(this[v.Name]);
+        return env with {ReturnValue = this[v.Name]};
       case Havoc:
-        return env.WithValue(Zen.Symbolic<bool>());
+        return env with {ReturnValue = Zen.Symbolic<bool>()};
       case None n:
-        return env.WithValue(Null.MakeGenericMethod(n.innerType).Invoke(null, null)!);
+        return env with {ReturnValue = Null.MakeGenericMethod(n.innerType).Invoke(null, null)!};
       case Not ne:
+        // Since Not can wrap around boolean expressions that modify the route, such as Call, it is handled separately
+        // from other UnaryOpExprs.
         var notEnv = EvaluateExpr(env, ne.expr);
-        return notEnv.WithValue(ne.unaryOp(notEnv.returnValue));
+        return notEnv with {ReturnValue = ne.unaryOp(notEnv.ReturnValue)};
       case UnaryOpExpr uoe:
-        return env.WithValue(uoe.unaryOp(ignoreRoute(uoe.expr)));
-      // case PrefixContains:
-      // TODO: we need to add support for this at some point
-      // right now we match it here to prevent the inner expressions from being evaluated in the BinaryOpExpr branch
-      // return env.WithValue(Zen.Symbolic<bool>());
-      // case BinaryOpExpr sc when sc.expr1.GetType() == typeof(RegexExpr):
-      // TODO: add support for regex
-      // return env.WithValue(Zen.Symbolic<bool>());
+        return env with {ReturnValue = uoe.unaryOp(ignoreRoute(uoe.expr))};
       case And ae:
+        // Short-circuiting behavior of And and Or means that the Route might be different depending on which components execute.
         // evaluate the first conjunct
         // if its return value is false, the final env will be the first conjunct's
         var firstConjunctEnv = EvaluateExpr(env, ae.expr1);
         // otherwise, the final env will be the second conjunct's
         var secondConjunctEnv = EvaluateExpr(firstConjunctEnv, ae.expr2);
-        return firstConjunctEnv.WithValue(ae.binaryOp(firstConjunctEnv.returnValue, secondConjunctEnv.returnValue))
-          .WithRoute(Zen.If(firstConjunctEnv.returnValue, secondConjunctEnv.route, firstConjunctEnv.route));
+        return new ReturnEnvironment<RouteEnvironment>(
+          Zen.If(firstConjunctEnv.ReturnValue, secondConjunctEnv.Route, firstConjunctEnv.Route),
+          ae.binaryOp(firstConjunctEnv.ReturnValue, secondConjunctEnv.ReturnValue));
       case Or oe:
+        // Short-circuiting behavior of And and Or means that the Route might be different depending on which components execute.
         // evaluate the first disjunct
         // if its return value is true, the final env will be the first disjunct's
         var firstDisjunctEnv = EvaluateExpr(env, oe.expr1);
         // otherwise, the final env will be the second disjunct's
         var secondDisjunctEnv = EvaluateExpr(firstDisjunctEnv, oe.expr2);
-        return firstDisjunctEnv.WithValue(oe.binaryOp(firstDisjunctEnv.returnValue, secondDisjunctEnv.returnValue))
-          .WithRoute(Zen.If(firstDisjunctEnv.returnValue, firstDisjunctEnv.route, secondDisjunctEnv.route));
+        return new ReturnEnvironment<RouteEnvironment>(
+          Zen.If(firstDisjunctEnv.ReturnValue, firstDisjunctEnv.Route, secondDisjunctEnv.Route),
+          oe.binaryOp(firstDisjunctEnv.ReturnValue, secondDisjunctEnv.ReturnValue));
       case BinaryOpExpr boe:
-        return env.WithValue(boe.binaryOp(ignoreRoute(boe.expr1), ignoreRoute(boe.expr2)));
+        return env with {ReturnValue = boe.binaryOp(ignoreRoute(boe.expr1), ignoreRoute(boe.expr2))};
       default:
         throw new ArgumentOutOfRangeException(nameof(e), $"{e} is not an expr I know how to handle!");
     }
   }
 
-  public AstEnvironment EvaluateStatement(string arg, Environment<RouteEnvironment> route, Statement s)
+  public AstEnvironment EvaluateStatement(string arg, ReturnEnvironment<RouteEnvironment> route, Statement s)
   {
     switch (s)
     {
       case SetDefaultPolicy setDefaultPolicy:
-        return WithDefaultPolicy(setDefaultPolicy.PolicyName);
+        return this with {DefaultPolicy = setDefaultPolicy.PolicyName};
       case Assign a:
         var env = EvaluateExpr(route, a.Expr);
         // we assume that we never separately update the result in an assignment
         // (i.e. we never use Call within an Assign statement)
         Debug.Assert(a.Expr.GetType() != typeof(Call));
-        return Update(a.Var, env.returnValue);
+        return Update(a.Var, env.ReturnValue);
       case IfThenElse ite:
-        // add the comment as a term to keep track of which policy terms were visited
-        var withTerm = ite.Comment is null ? route : route.WithRoute(route.route.AddVisitedTerm(ite.Comment));
+        // add the comment as a term (if track terms is on) to keep track of which policy terms were visited
+        var withTerm = ite.Comment is null || !TrackTerms
+          ? route
+          : route with {Route = route.Route.AddVisitedTerm(ite.Comment)};
         var guardEnv = EvaluateExpr(withTerm, ite.Guard);
         // if the guard updated the route (e.g. by evaluating a Call),
         // we need to make sure those updates are observed in the branches // by using Update() here
-        var newEnv = Update(arg, guardEnv.route);
+        var newEnv = Update(arg, guardEnv.Route);
         return newEnv.EvaluateStatements(arg, guardEnv, ite.ThenCase)
-          .Join(newEnv.EvaluateStatements(arg, guardEnv, ite.ElseCase), guardEnv.returnValue);
+          .Join(newEnv.EvaluateStatements(arg, guardEnv, ite.ElseCase), guardEnv.ReturnValue);
       default:
         throw new ArgumentOutOfRangeException(nameof(s));
     }
@@ -210,29 +193,30 @@ public class AstEnvironment
   /// <param name="route"></param>
   /// <param name="statements"></param>
   /// <returns></returns>
-  public AstEnvironment EvaluateStatements(string arg, Environment<RouteEnvironment> route,
+  public AstEnvironment EvaluateStatements(string arg, ReturnEnvironment<RouteEnvironment> route,
     IEnumerable<Statement> statements)
   {
     return statements.Aggregate(this,
-      (env, s) => env.EvaluateStatement(arg, route.WithRoute((Zen<RouteEnvironment>) env[arg]), s));
+      (env, s) => env.EvaluateStatement(arg, route with {Route = (Zen<RouteEnvironment>) env[arg]}, s));
   }
 
   public Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> EvaluateFunction(AstFunction<RouteEnvironment> function)
   {
     return t =>
-      Update(function.Arg, t).EvaluateStatements(function.Arg, new Environment<RouteEnvironment>(t), function.Body)[
-        function.Arg];
+      Update(function.Arg, t)
+        .EvaluateStatements(function.Arg, new ReturnEnvironment<RouteEnvironment>(t), function.Body)[
+          function.Arg];
   }
 
   private AstEnvironment Join(AstEnvironment other, Zen<bool> guard)
   {
-    if (other._env.Any(p => !_env.ContainsKey(p.Key)))
+    if (other.Bindings.Any(p => !Bindings.ContainsKey(p.Key)))
       throw new ArgumentException("Environments do not bind the same variables.");
 
-    var e = new AstEnvironment(_declarations, defaultPolicy, callExprContext);
-    foreach (var (variable, value) in _env)
+    var e = new AstEnvironment(Declarations, DefaultPolicy, CallExprContext);
+    foreach (var (variable, value) in Bindings)
     {
-      if (!other._env.ContainsKey(variable))
+      if (!other.Bindings.ContainsKey(variable))
         throw new ArgumentException($"{variable} not bound in both environments", nameof(other));
 
       var updatedValue = Zen.If(guard, value, other[variable]);
@@ -254,13 +238,15 @@ public class AstEnvironment
       {"Prefix", new PrefixExpr(env.Prefix)},
       {"Weight", new UIntExpr(env.Weight)},
       {"Lp", new UIntExpr(env.Lp)},
+      {"AsSet", LiteralSet.Empty()},
       {"AsPathLength", new BigIntExpr(env.AsPathLength)},
       {"Metric", new UIntExpr(env.Metric)},
       {"Tag", new UIntExpr(env.Tag)},
       {"OriginType", new UInt2Expr(env.OriginType)},
       {"Communities", LiteralSet.Empty()},
       {"Result", ResultToRecord(new RouteResult())},
-      {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)}
+      {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)},
+      {"VisitedTerms", LiteralSet.Empty()}
     });
   }
 

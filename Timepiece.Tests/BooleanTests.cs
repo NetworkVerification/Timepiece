@@ -67,7 +67,7 @@ public static class BooleanTests
     };
     var net = K2Net(annotations, new BigInteger(2));
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Theory]
@@ -87,7 +87,7 @@ public static class BooleanTests
     var net = K2Net(annotations, new BigInteger(1 + max));
     net.MaxDelay = new BigInteger(max);
 
-    NetworkAssert.CheckSoundDelayed(net);
+    NetworkAsserts.Sound(net, SmtCheck.ModularDelayed);
   }
 
   /// <summary>
@@ -112,7 +112,7 @@ public static class BooleanTests
     // NOTE: if we wanted, we could generalize this further to have an arbitrary delay on each edge
     annotated.MaxDelay = delay.Value;
 
-    NetworkAssert.CheckSoundDelayed(annotated);
+    NetworkAsserts.Sound(annotated, SmtCheck.ModularDelayed);
   }
 
   [Fact]
@@ -125,7 +125,7 @@ public static class BooleanTests
     };
     var net = K2Net(annotations, new BigInteger(2));
 
-    NetworkAssert.CheckUnsound(net);
+    NetworkAsserts.Unsound(net);
   }
 
   [Fact]
@@ -139,7 +139,7 @@ public static class BooleanTests
     var annotatedNetwork = BooleanAnnotatedNetwork(net, annotations, new BigInteger(4));
     // change edge-7's annotation to a bad property
     annotatedNetwork.MonolithicProperties[FatTree.FatTreeLayer.Edge.Node(7)] = _ => False();
-    NetworkAssert.CheckUnsoundCheck(annotatedNetwork, SmtCheck.Monolithic);
+    NetworkAsserts.Unsound(annotatedNetwork, SmtCheck.Monolithic);
   }
 
   [Fact]
@@ -194,6 +194,6 @@ public static class BooleanTests
       }
     };
     var net = TinyWideAreaNet(topology, externalRoutes, annotations);
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 }

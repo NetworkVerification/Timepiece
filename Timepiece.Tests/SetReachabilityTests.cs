@@ -45,7 +45,7 @@ public static class SetReachabilityTests
       topology.MapNodes(n => Lang.Until(new BigInteger(1), route => route.Contains(n), ContainsAll(topology)));
     var net = Net(topology, convergeTime, annotations);
 
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
     // Assert.False(net.CheckAnnotations().HasValue, "Sound boolean annotations should pass checks.");
   }
 
@@ -76,7 +76,7 @@ public static class SetReachabilityTests
       }
     };
     var net = Net(topology, convergeTime, annotations);
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -97,7 +97,7 @@ public static class SetReachabilityTests
       // route.IsSubsetOf(topology[n].Aggregate(CSet.Empty<string>().Add(n), (r, m) => r.Add(m)))),
       ContainsAll(topology)));
     var net = Net(topology, convergeTime, annotations);
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
+    NetworkAsserts.Unsound(net, SmtCheck.Inductive);
   }
 
   [Fact]
@@ -119,7 +119,7 @@ public static class SetReachabilityTests
           topology[n].Aggregate(CSet.Empty<string>().Add(n), CSet.Add).IsSubsetOf(route),
           ContainsAll(topology)(route))));
     var net = Net(topology, convergeTime, annotations);
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -131,7 +131,6 @@ public static class SetReachabilityTests
       topology.MapNodes(_ => Lang.Globally(ContainsAll(topology)));
     var net = Net(topology, convergeTime, annotations);
 
-    NetworkAssert.CheckUnsound(net);
-    // Assert.True(net.CheckAnnotations().HasValue, "Unsound boolean annotations should fail checks.");
+    NetworkAsserts.Unsound(net);
   }
 }

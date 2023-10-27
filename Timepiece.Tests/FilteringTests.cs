@@ -106,7 +106,7 @@ public static class FilteringTests
       {"v", Lang.True<Option<Bgp>>()}
     };
     var net = Net(annotations, modularProperties, monolithicProperties);
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -137,8 +137,8 @@ public static class FilteringTests
       {"e", Lang.IsSome<Bgp>()}
     };
     var net = Net(annotations, modularProperties, monolithicProperties);
-    // NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
-    NetworkAssert.CheckSound(net);
+    // NetworkAsserts.Unsound(net, SmtCheck.Inductive);
+    NetworkAsserts.Sound(net);
   }
 
   [Fact]
@@ -169,7 +169,7 @@ public static class FilteringTests
       {"e", Lang.IsNone<Bgp>()}
     };
     var net = Net(annotations, modularProperties, monolithicProperties);
-    NetworkAssert.CheckUnsoundCheck(net, SmtCheck.Inductive);
+    NetworkAsserts.Unsound(net, SmtCheck.Inductive);
   }
 
   [Fact]
@@ -208,6 +208,6 @@ public static class FilteringTests
       {"e", Lang.Both(Lang.IsSome<Bgp>(), Lang.Identity<bool>())}
     };
     var net = NetGhostState(annotations, modularProperties, monolithicProperties);
-    NetworkAssert.CheckSound(net);
+    NetworkAsserts.Sound(net);
   }
 }

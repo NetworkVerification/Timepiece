@@ -2,20 +2,23 @@ using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
+/// <summary>
+///   See Batfish's FirstMatchChain.
+/// </summary>
 public class FirstMatchChain : VariadicExpr
 {
   public FirstMatchChain(params Expr[] subroutines) : base(subroutines)
   {
   }
 
-  public Environment<RouteEnvironment> Evaluate(AstEnvironment astEnv, Environment<RouteEnvironment> env)
+  public ReturnEnvironment<RouteEnvironment> Evaluate(AstEnvironment astEnv, ReturnEnvironment<RouteEnvironment> env)
   {
-    if (astEnv.defaultPolicy is null)
+    if (astEnv.DefaultPolicy is null)
       throw new Exception("Default policy not set!");
     // add the default policy at the end of the chain
-    var policies = Exprs.Append(new Call(astEnv.defaultPolicy));
+    var policies = Exprs.Append(new Call(astEnv.DefaultPolicy));
     // each policy may update the route, so the policy routes need to be computed in sequential order
-    var policyResults = new List<Environment<RouteEnvironment>>();
+    var policyResults = new List<ReturnEnvironment<RouteEnvironment>>();
     var lastEnv = env;
     foreach (var policy in policies)
     {
@@ -26,19 +29,20 @@ public class FirstMatchChain : VariadicExpr
 
     // go through the policies in reverse order to produce the final environment
     // we start with the local default action as the return value as a default
-    var acc = env.WithValue(env.route.GetLocalDefaultAction());
+    dynamic returnValue = env.Route.GetLocalDefaultAction();
+    var acc = env with {ReturnValue = returnValue};
     for (var i = policyResults.Count - 1; i >= 0; i--)
     {
       // Logic of subroutines:
       // (1) if the subroutine exits, the result will be that subroutine
       // (2) if the subroutine falls through, the result will be the following route
-      var fallthroughGuard = policyResults[i].route.GetResultFallthrough();
-      var exitGuard = policyResults[i].route.GetResultExit();
-      var accRoute = Zen.If(exitGuard, policyResults[i].route,
-        Zen.If(fallthroughGuard, acc.route, policyResults[i].route));
-      var accResult = Zen.If(exitGuard, policyResults[i].returnValue,
-        Zen.If(fallthroughGuard, acc.returnValue, policyResults[i].returnValue));
-      acc = new Environment<RouteEnvironment>(accRoute, accResult);
+      var fallthroughGuard = policyResults[i].Route.GetResultFallthrough();
+      var exitGuard = policyResults[i].Route.GetResultExit();
+      var accRoute = Zen.If(exitGuard, policyResults[i].Route,
+        Zen.If(fallthroughGuard, acc.Route, policyResults[i].Route));
+      var accResult = Zen.If(exitGuard, policyResults[i].ReturnValue,
+        Zen.If(fallthroughGuard, acc.ReturnValue, policyResults[i].ReturnValue));
+      acc = new ReturnEnvironment<RouteEnvironment>(accRoute, accResult);
     }
 
     return acc;

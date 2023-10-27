@@ -17,7 +17,7 @@ namespace Timepiece.Angler;
 ///   classes for reference.
 /// </summary>
 [ZenObject]
-public class RouteResult : IDifferentiatedString<RouteResult>, IEquatable<RouteResult>
+public class RouteResult : IEquatable<RouteResult>
 {
   public RouteResult(bool exit, bool fallthrough, bool returned, bool value)
   {

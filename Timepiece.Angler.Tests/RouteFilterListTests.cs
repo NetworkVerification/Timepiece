@@ -151,7 +151,7 @@ public static class RouteFilterListTests
   {
     var list = new RouteFilterList();
     var p = Zen.Symbolic<Ipv4Prefix>();
-    Assert.False(list.Matches(p).Solve().IsSatisfiable());
+    Assert.False(list.Contains(p).Solve().IsSatisfiable());
   }
 
   [Theory]
@@ -159,24 +159,20 @@ public static class RouteFilterListTests
   public static void TestListMatches(RouteFilterLine[] lines, Zen<Ipv4Prefix> prefix)
   {
     var list = new RouteFilterList(lines);
-    // check that it is *not* possible for Matches to ever return false, i.e. it always returns true
+    // check that it is *not* possible for Contains to ever return false, i.e. it always returns true
     // note that we have to constrain the prefix length to be at most 32
     Assert.False(Zen.And(prefix.GetPrefixLength() <= Zen.Constant(new UInt<_6>(32)),
-      Zen.Not(list.Matches(prefix))).Solve().IsSatisfiable());
+      Zen.Not(list.Contains(prefix))).Solve().IsSatisfiable());
   }
 
   [Fact]
   public static void TestNonMartians()
   {
-    var serializer = new JsonSerializer
-    {
-      TypeNameHandling = TypeNameHandling.All,
-      SerializationBinder = new AstSerializationBinder()
-    };
-    var list = serializer.Deserialize<RouteFilterList>(new JsonTextReader(new StringReader(MartiansRouteFilterList)))!;
+    var list = AstSerializationBinder.JsonSerializer()
+      .Deserialize<RouteFilterList>(new JsonTextReader(new StringReader(MartiansRouteFilterList)))!;
     var nonMartianPrefix = Zen.Constant(new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
     // check that the prefix matches -- we expect it not to
-    var query = list.Matches(nonMartianPrefix).Solve();
+    var query = list.Contains(nonMartianPrefix).Solve();
     Assert.Null(query.IsSatisfiable() ? query.Get(nonMartianPrefix) : null);
   }
 }
