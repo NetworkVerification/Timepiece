@@ -19,9 +19,12 @@ public static class Ipv4WildcardTests
   [InlineData("127.0.0.0", "0.0.0.255", "127.0.0.1")]
   [InlineData("70.0.19.0", "0.0.0.1", "70.0.19.1")]
   [InlineData("70.0.19.0", "0.0.0.0", "70.0.19.0")]
+  [InlineData("0.0.0.0", "255.255.255.255", "0.0.0.0")]
+  [InlineData("0.0.0.0", "255.255.255.255", "80.0.0.0")]
+  [InlineData("0.0.0.0", "0.0.0.1", "0.0.0.1")]
   public static void Ipv4WildcardContainsIpv4Address(string address, string mask, string other)
   {
     var p = new Ipv4Wildcard(address, mask);
-    Assert.True(p.ContainsIp(Ipv4Wildcard.AddressToUint(IPAddress.Parse(other))));
+    Assert.True(p.ContainsIp(IPAddress.Parse(other).ToUnsignedInt()));
   }
 }

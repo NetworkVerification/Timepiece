@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Numerics;
 using Newtonsoft.Json;
 using Timepiece.Angler.Ast;
+using Timepiece.Angler.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler;

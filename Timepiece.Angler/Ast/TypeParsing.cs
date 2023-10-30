@@ -1,6 +1,7 @@
 using System.Numerics;
 using Timepiece.Angler.Ast.AstExpr;
 using Timepiece.Angler.Ast.AstStmt;
+using Timepiece.Angler.DataTypes;
 using Timepiece.DataTypes;
 using ZenLib;
 
@@ -122,7 +123,6 @@ public static class TypeParsing
       // types
       "RouteFilterList" => typeof(RouteFilterList),
       "TEnvironment" => typeof(RouteEnvironment),
-      "TRoute" => typeof(BatfishBgpRoute),
       "TResult" => typeof(RouteResult),
       "TIpAddress" => typeof(uint),
       "TIpPrefix" => typeof(Ipv4Prefix),

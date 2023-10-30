@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Net;
 using NetTools;
@@ -11,11 +10,10 @@ namespace Timepiece.DataTypes;
 ///   A Zen-friendly representation of an IPv4 prefix.
 /// </summary>
 [ZenObject]
-public struct Ipv4Prefix : IEquatable<Ipv4Prefix>
+public struct Ipv4Prefix
 {
   public uint Prefix { get; set; }
 
-  // TODO: constrain to at most 32
   public UInt<_6> PrefixLength { get; set; }
 
   public Ipv4Prefix()
@@ -26,23 +24,13 @@ public struct Ipv4Prefix : IEquatable<Ipv4Prefix>
 
   public Ipv4Prefix(IPAddressRange range)
   {
-    Prefix = AddressToUint(range.Begin);
+    Prefix = range.Begin.ToUnsignedInt();
     PrefixLength = new UInt<_6>(range.GetPrefixLength());
   }
 
   internal IPAddressRange AsAddressRange()
   {
     return new IPAddressRange(new IPAddress(Prefix), (int) PrefixLength.ToLong());
-  }
-
-  /// <summary>
-  ///   Convert an IPv4 address to an unsigned integer by extracting the bytes.
-  /// </summary>
-  /// <param name="address"></param>
-  /// <returns></returns>
-  private static uint AddressToUint(IPAddress address)
-  {
-    return address.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
   }
 
   /// <summary>
@@ -65,37 +53,20 @@ public struct Ipv4Prefix : IEquatable<Ipv4Prefix>
   public override string ToString()
   {
     return AsAddressRange().ToCidrString();
-    // return $"{Prefix}/{PrefixLength}";
-  }
-
-  public bool Equals(Ipv4Prefix other)
-  {
-    return Prefix == other.Prefix && Equals(PrefixLength, other.PrefixLength);
-  }
-
-  public override bool Equals(object obj)
-  {
-    return obj is Ipv4Prefix other && Equals(other);
-  }
-
-  public static bool operator ==(Ipv4Prefix left, Ipv4Prefix right)
-  {
-    return left.Equals(right);
-  }
-
-  public static bool operator !=(Ipv4Prefix left, Ipv4Prefix right)
-  {
-    return !left.Equals(right);
-  }
-
-  public override int GetHashCode()
-  {
-    return HashCode.Combine(Prefix, PrefixLength);
   }
 }
 
 public static class Ipv4PrefixExtensions
 {
+  /// <summary>
+  ///   Convert an IPv4 address to an unsigned integer by extracting the bytes.
+  /// </summary>
+  /// <param name="address"></param>
+  /// <returns></returns>
+  public static uint ToUnsignedInt(this IPAddress address) =>
+    // we need to use Reverse() to flip the endianness of the bytes
+    address.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
+
   /// <summary>
   /// Check that the given IPv4 prefix has a valid length (at most 32).
   /// </summary>

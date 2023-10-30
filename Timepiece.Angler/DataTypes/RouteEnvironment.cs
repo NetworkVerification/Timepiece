@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Timepiece.DataTypes;
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.DataTypes;
 
 /// <summary>
 ///   A representation of a route and the current routing environment:

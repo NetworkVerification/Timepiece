@@ -1,6 +1,6 @@
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.DataTypes;
 
 /// <summary>
 ///   A representation of the result of evaluating a routing policy.

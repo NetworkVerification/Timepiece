@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using ZenLib;
@@ -19,8 +18,8 @@ public class Ipv4Wildcard
     WildcardMask = wildcardMask;
   }
 
-  public Ipv4Wildcard(IPAddress prefix, IPAddress wildcardMask) : this(AddressToUint(prefix),
-    AddressToUint(wildcardMask))
+  public Ipv4Wildcard(IPAddress prefix, IPAddress wildcardMask) : this(prefix.ToUnsignedInt(),
+    wildcardMask.ToUnsignedInt())
   {
   }
 
@@ -42,16 +41,6 @@ public class Ipv4Wildcard
   ///   1: the bit at this position doesn't matter
   /// </summary>
   public uint WildcardMask { get; set; }
-
-  /// <summary>
-  ///   Convert an IPv4 address to an unsigned integer by extracting the bytes.
-  /// </summary>
-  /// <param name="address"></param>
-  /// <returns></returns>
-  public static uint AddressToUint(IPAddress address)
-  {
-    return address.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
-  }
 
   /// <summary>
   ///   Check that the given 32-bit address is contained in the given prefix.

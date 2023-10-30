@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Numerics;
 using Timepiece.Angler.Ast;
+using Timepiece.Angler.DataTypes;
 using ZenLib;
 
 namespace Timepiece.Angler.Tests;

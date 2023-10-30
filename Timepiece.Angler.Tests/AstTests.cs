@@ -1,6 +1,7 @@
 using System.Numerics;
 using NetTools;
 using Timepiece.Angler.Ast;
+using Timepiece.Angler.DataTypes;
 using Timepiece.Angler.Queries;
 using Timepiece.DataTypes;
 using ZenLib;

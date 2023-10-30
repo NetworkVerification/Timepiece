@@ -1,4 +1,5 @@
 using System.Numerics;
+using Timepiece.Angler.DataTypes;
 using Timepiece.DataTypes;
 using ZenLib;
 
@@ -66,8 +67,9 @@ public static class Internet2
 
   /// <summary>
   ///   Addresses for the AL2S_MGMT peer group.
+  ///   See https://internet2.edu/services/layer-2-service/ for what AL2S is.
   /// </summary>
-  private static readonly string[] Al2sManagementNodes =
+  private static readonly string[] AdvancedLayer2ServiceManagementNodes =
   {
     "64.57.25.164", "64.57.25.165", "64.57.24.204", "64.57.24.205", "64.57.25.124"
   };
@@ -86,10 +88,19 @@ public static class Internet2
   /// </summary>
   private static readonly (Ipv4Wildcard, UInt<_6>)[] MartianPrefixes =
   {
-    (new Ipv4Wildcard("0.0.0.0", "0.0.0.0"), new UInt<_6>(0)), // default route 0.0.0.0/0
-    (new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // local network 10.0.0.0/8
-    (new Ipv4Wildcard("127.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // loopback 127.0.0.0/8
-    (new Ipv4Wildcard("255.255.255.255", "0.0.0.0"), new UInt<_6>(32)) // limited broadcast
+    (new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0)), // default route 0.0.0.0/0
+    (new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // RFC1918 local network 10.0.0.0/8
+    (new Ipv4Wildcard("127.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // RFC3330 loopback 127.0.0.0/8
+    (new Ipv4Wildcard("169.254.0.0", "0.0.255.255"), new UInt<_6>(16)), // RFC3330 link-local addresses 169.254.0.0/16
+    (new Ipv4Wildcard("172.16.0.0", "0.15.255.255"), new UInt<_6>(12)), // RFC1918 private addresses 172.16.0.0/12
+    (new Ipv4Wildcard("192.0.2.0", "0.0.0.255"), new UInt<_6>(24)), // IANA reserved 192.0.2.0/24
+    (new Ipv4Wildcard("192.88.99.1", "0.0.0.0"), new UInt<_6>(32)), // 6to4 relay 192.88.99.1/32
+    (new Ipv4Wildcard("192.168.0.0", "0.0.255.255"), new UInt<_6>(16)), // RFC1918 private addresses 192.168.0.0/16
+    (new Ipv4Wildcard("198.18.0.0", "0.1.255.255"),
+      new UInt<_6>(15)), // RFC2544 network device benchmarking 198.18.0.0/15
+    (new Ipv4Wildcard("224.0.0.0", "15.255.255.255"), new UInt<_6>(4)), // RFC3171 multicast group addresses 224.0.0.0/4
+    (new Ipv4Wildcard("240.0.0.0", "15.255.255.255"), new UInt<_6>(4)), // RFC3330 special-use addresses 240.0.0.0/4
+    (new Ipv4Wildcard("255.255.255.255", "0.0.0.0"), new UInt<_6>(32)) // limited broadcast -- used?
   };
 
   // List of prefixes which Abilene originates
@@ -109,19 +120,6 @@ public static class Internet2
     (new Ipv4Wildcard("198.71.45.0", "0.0.0.255"), new UInt<_6>(24)),
     (new Ipv4Wildcard("198.71.46.0", "0.0.0.255"), new UInt<_6>(24))
   };
-
-  // UMichigan: https://whois.domaintools.com/35.0.0.0
-  private static readonly Ipv4Prefix DestinationAddress = new("35.0.0.0", "35.255.255.255");
-
-  /// <summary>
-  ///   Predicate that the route is for the internal prefix.
-  /// </summary>
-  /// <param name="env"></param>
-  /// <returns></returns>
-  public static Zen<bool> HasInternalRoute(Zen<RouteEnvironment> env)
-  {
-    return Zen.And(env.GetResultValue(), env.GetPrefix() == InternalPrefix);
-  }
 
   private static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env)
   {
@@ -150,19 +148,18 @@ public static class Internet2
   }
 
   /// <summary>
-  ///   Assign a fresh symbolic variable as a route for each of the given nodes.
-  ///   Use the given prefix to name the route.
-  ///   If a constraint is given, apply it to every symbolic variable.
+  ///   Assign a fresh symbolic variable as a route for each of the given <paramref name="nodes"/>.
+  ///   Use the given <paramref name="namePrefix"/> to name the route.
+  ///   If a <paramref name="constraint"/> is given, apply it to every symbolic variable.
   /// </summary>
-  /// <param name="namePrefix"></param>
-  /// <param name="externalPeers"></param>
-  /// <param name="constraint"></param>
-  /// <returns></returns>
-  private static Dictionary<string, SymbolicValue<RouteEnvironment>>
-    SymbolicRoutes(string namePrefix, IEnumerable<string> externalPeers,
-      Func<Zen<RouteEnvironment>, Zen<bool>>? constraint = null)
+  /// <param name="namePrefix">a string prefix for the symbolic variable names</param>
+  /// <param name="nodes">the nodes to create symbolic routes for (i.e. the keys to the dictionary)</param>
+  /// <param name="constraint">a predicate over <c>RouteEnvironment</c>s</param>
+  /// <returns>a dictionary from nodes to symbolic variables</returns>
+  private static Dictionary<string, SymbolicValue<RouteEnvironment>> SymbolicRoutes(string namePrefix,
+    IEnumerable<string> nodes, Func<Zen<RouteEnvironment>, Zen<bool>>? constraint = null)
   {
-    return externalPeers.ToDictionary(e => e, e => constraint is null
+    return nodes.ToDictionary(e => e, e => constraint is null
       ? new SymbolicValue<RouteEnvironment>($"{namePrefix}-{e}")
       : new SymbolicValue<RouteEnvironment>($"{namePrefix}-{e}", constraint));
   }
@@ -223,13 +220,15 @@ public static class Internet2
     throw new NotImplementedException();
   }
 
-  private static Zen<bool> ExternalValidRouteExists(IEnumerable<Zen<RouteEnvironment>> externalRoutes)
-  {
-    return Zen.Or(externalRoutes.Select(e =>
-      Zen.And(e.GetResultValue(),
-        e.GetPrefix() == DestinationAddress)));
-  }
-  // NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes), e))));
+  /// <summary>
+  /// Returns true if there exists a route in the given <paramref name="routes"/> that has a value and equals
+  /// the given <paramref name="prefix"/>.
+  /// </summary>
+  /// <param name="prefix"></param>
+  /// <param name="routes"></param>
+  /// <returns></returns>
+  private static Zen<bool> ExistsPrefixRoute(Zen<Ipv4Prefix> prefix, IEnumerable<Zen<RouteEnvironment>> routes) =>
+    Zen.Or(routes.Select(e => Zen.And(e.GetResultValue(), e.GetPrefix() == prefix)));
 
   /// <summary>
   /// Check that all the internal nodes receive a valid route if one is shared by one of them to the others.
@@ -240,15 +239,19 @@ public static class Internet2
   public static NetworkQuery<RouteEnvironment, string> ReachableInternal(Digraph<string> digraph,
     IEnumerable<string> externalPeers)
   {
-    var externalRoutes = SymbolicRoutes("external-route", externalPeers,
-      r => Zen.Implies(r.GetResultValue(), r.GetPrefix() == DestinationAddress));
+    // UMichigan: https://whois.domaintools.com/35.0.0.0
+    // var destinationAddress = new Ipv4Prefix("35.0.0.0", "35.255.255.255"); // 35.0.0.0/8
+    var destinationAddress = InternalPrefix;
+    // var externalRoutes = SymbolicRoutes("external-route", externalPeers,
+    // r => Zen.Implies(r.GetResultValue(), r.GetPrefix() == destinationAddress));
     var internalRoutes = SymbolicRoutes("internal-route", Internet2Nodes,
-      r => Zen.And(r.GetPrefix() == DestinationAddress, r.GetResultValue()));
+      r => Zen.And(r.GetPrefix() == destinationAddress, r.GetResultValue()));
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
     var initialRoutes = digraph.MapNodes(n =>
-      externalRoutes.TryGetValue(n, out var externalRoute) ? externalRoute.Value :
-      internalRoutes.TryGetValue(n, out var internalRoute) ? internalRoute.Value :
-      new RouteEnvironment {Prefix = DestinationAddress});
+      // externalRoutes.TryGetValue(n, out var externalRoute) ? externalRoute.Value :
+      internalRoutes.TryGetValue(n, out var internalRoute)
+        ? internalRoute.Value
+        : new RouteEnvironment {Prefix = destinationAddress});
     var monolithicProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
         // internal nodes have a route if one of them has one initially
@@ -256,7 +259,7 @@ public static class Internet2
           // if one of the internal routes is true,
           RouteEnvironmentExtensions.ExistsValue(internalRoutes.Values.Select(ir => ir.Value)),
           // then all the internal nodes will have routes
-          Zen.And(r.GetResultValue(), r.GetPrefix() == DestinationAddress))
+          Zen.And(r.GetResultValue(), r.GetPrefix() == destinationAddress))
         // no check on external nodes
         : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n =>
@@ -269,8 +272,8 @@ public static class Internet2
     var annotations = digraph.MapNodes(n =>
       Lang.Intersect(modularProperties[n],
         Lang.Globally<RouteEnvironment>(r => Zen.Implies(r.GetResultValue(),
-          r.GetPrefix() == DestinationAddress))));
-    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(internalRoutes.Values).Concat(symbolicTimes)
+          r.GetPrefix() == destinationAddress))));
+    var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes)
       .ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
       annotations);
@@ -288,17 +291,13 @@ public static class Internet2
   {
     // the announced external destination prefix
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
-      // must not be for a martian prefix or an Internet2-internal prefix
-      Zen.And(MartianPrefixes.Concat(InternalPrefixes)
-          .Aggregate(Zen.True(), (b, badPrefix) =>
-            Zen.And(b, Zen.Not(Zen.Constant(badPrefix.Item1).MatchesPrefix(p, badPrefix.Item2, new UInt<_6>(32))))),
-        // must have a valid prefix length
-        p.IsValidPrefixLength()));
-    // TODO: if every peer has the external route, the checks will trivially pass
-    // TODO: but if only some do, we will get a counterexample where the prefix gets blocked because the particular
-    // TODO: neighbors announcing it filter that prefix: we need to also say that the prefix will be chosen such that if the external
-    // TODO: neighbor has the route, then the route will make it through all the filters
-    var externalRoutes = SymbolicRoutes("external-route", externalPeers, //new[] {"192.122.183.13"},
+      Zen.Or(Zen.And(
+        // (1) must not be for a martian prefix or an Internet2-internal prefix
+        Zen.And(MartianPrefixes.Concat(InternalPrefixes).Select(badPrefix =>
+          Zen.Not(Zen.Constant(badPrefix.Item1).MatchesPrefix(p, badPrefix.Item2, new UInt<_6>(32))))),
+        // (2) must have a valid prefix length
+        p.IsValidPrefixLength())));
+    var externalRoutes = SymbolicRoutes("external-route", externalPeers,
       r => Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value,
         // no matching terms in AS set
         r.GetAsSet().IsSubsetOf(CSet.Empty<string>()))));
@@ -317,10 +316,11 @@ public static class Internet2
     var monolithicProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
         // internal nodes: if an external route exists, then we have a route
-        ? r => Zen.Implies(ExternalValidRouteExists(externalRoutes
-            // external route exists at a non AL2S_MGMT neighbor
-            .Where(ext => !Al2sManagementNodes.Contains(ext.Key))
-            .Select(s => s.Value.Value)),
+        ? r => Zen.Implies(ExistsPrefixRoute(destinationPrefix.Value,
+            externalRoutes
+              // external route exists at a non AL2S_MGMT neighbor
+              .Where(ext => !AdvancedLayer2ServiceManagementNodes.Contains(ext.Key))
+              .Select(s => s.Value.Value)),
           Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value))
         // no check on external nodes
         : Lang.True<RouteEnvironment>());
