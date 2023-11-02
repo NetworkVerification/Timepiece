@@ -50,7 +50,9 @@ public class Internet2Tests
   private static Zen<bool> IsGoodRoute(Zen<RouteEnvironment> route) => Zen.And(route.GetResultValue(),
     route.GetLocalDefaultAction(), Zen.Not(route.GetResultReturned()),
     Zen.Not(route.GetResultExit()),
-    Zen.Not(route.GetResultFallthrough()), route.GetAsSet().IsSubsetOf(CSet.Empty<string>()),
+    Zen.Not(route.GetResultFallthrough()), Zen.Not(route.GetAsSet().Contains(Internet2.NlrAs)),
+    Zen.Not(route.GetAsSet().Contains(Internet2.PrivateAs)),
+    Zen.Not(route.GetAsSet().Contains(Internet2.CommercialAs)),
     route.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
 
   [Fact]
