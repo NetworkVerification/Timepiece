@@ -11,7 +11,7 @@ namespace Timepiece.Angler.Ast;
 /// <summary>
 ///   An immutable state of the AST environment.
 /// </summary>
-public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
+public record AstState(ImmutableDictionary<string, dynamic> Bindings,
   IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> Declarations,
   string? DefaultPolicy = null, bool CallExprContext = false, bool TrackTerms = false)
 {
@@ -31,19 +31,19 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
     typeof(Zen).GetMethod("GetField") ?? throw new Exception("Zen.GetField method not found");
 
   /// <summary>
-  /// Construct a new AstEnvironment with no bound variables.
+  /// Construct a new AstState with no bound variables.
   /// </summary>
   /// <param name="declarations"></param>
   /// <param name="defaultPolicy"></param>
   /// <param name="callExprContext"></param>
   /// <param name="trackTerms"></param>
-  public AstEnvironment(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
+  public AstState(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
     string? defaultPolicy = null, bool callExprContext = false, bool trackTerms = false) : this(
     ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy, callExprContext, trackTerms)
   {
   }
 
-  public AstEnvironment() : this(new Dictionary<string, AstFunction<RouteEnvironment>>())
+  public AstState() : this(new Dictionary<string, AstFunction<RouteEnvironment>>())
   {
   }
 
@@ -56,14 +56,14 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
   /// <param name="var"></param>
   /// <param name="val"></param>
   /// <returns></returns>
-  public AstEnvironment Update(string var, dynamic val)
+  public AstState Update(string var, dynamic val)
   {
     return this with {Bindings = Bindings.SetItem(var, val)};
   }
 
   // FIXME: should this take an additional argument representing the current state of the input variable?
   // could we then modify this state when returning from a Call?
-  public ReturnEnvironment<RouteEnvironment> EvaluateExpr(ReturnEnvironment<RouteEnvironment> env, Expr e)
+  public ReturnRoute<RouteEnvironment> EvaluateExpr(ReturnRoute<RouteEnvironment> env, Expr e)
   {
     if (e is null) throw new ArgumentNullException(nameof(e), "Given a null expression.");
 
@@ -88,7 +88,7 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
         var outputRoute = (this with {CallExprContext = true}).EvaluateFunction(Declarations[c.Name])(
           env.Route.WithResultReturned(false));
         // return the updated result and its associated value
-        return new ReturnEnvironment<RouteEnvironment>(outputRoute.WithResultReturned(oldReturn),
+        return new ReturnRoute<RouteEnvironment>(outputRoute.WithResultReturned(oldReturn),
           outputRoute.GetResultValue());
       case AstExpr.CallExprContext:
         return env with {ReturnValue = Zen.Constant(CallExprContext)};
@@ -138,7 +138,7 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
         var firstConjunctEnv = EvaluateExpr(env, ae.expr1);
         // otherwise, the final env will be the second conjunct's
         var secondConjunctEnv = EvaluateExpr(firstConjunctEnv, ae.expr2);
-        return new ReturnEnvironment<RouteEnvironment>(
+        return new ReturnRoute<RouteEnvironment>(
           Zen.If(firstConjunctEnv.ReturnValue, secondConjunctEnv.Route, firstConjunctEnv.Route),
           ae.binaryOp(firstConjunctEnv.ReturnValue, secondConjunctEnv.ReturnValue));
       case Or oe:
@@ -148,7 +148,7 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
         var firstDisjunctEnv = EvaluateExpr(env, oe.expr1);
         // otherwise, the final env will be the second disjunct's
         var secondDisjunctEnv = EvaluateExpr(firstDisjunctEnv, oe.expr2);
-        return new ReturnEnvironment<RouteEnvironment>(
+        return new ReturnRoute<RouteEnvironment>(
           Zen.If(firstDisjunctEnv.ReturnValue, firstDisjunctEnv.Route, secondDisjunctEnv.Route),
           oe.binaryOp(firstDisjunctEnv.ReturnValue, secondDisjunctEnv.ReturnValue));
       case BinaryOpExpr boe:
@@ -158,7 +158,7 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
     }
   }
 
-  public AstEnvironment EvaluateStatement(string arg, ReturnEnvironment<RouteEnvironment> route, Statement s)
+  public AstState EvaluateStatement(string arg, ReturnRoute<RouteEnvironment> route, Statement s)
   {
     switch (s)
     {
@@ -194,7 +194,7 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
   /// <param name="route"></param>
   /// <param name="statements"></param>
   /// <returns></returns>
-  public AstEnvironment EvaluateStatements(string arg, ReturnEnvironment<RouteEnvironment> route,
+  public AstState EvaluateStatements(string arg, ReturnRoute<RouteEnvironment> route,
     IEnumerable<Statement> statements)
   {
     return statements.Aggregate(this,
@@ -205,16 +205,16 @@ public record AstEnvironment(ImmutableDictionary<string, dynamic> Bindings,
   {
     return t =>
       Update(function.Arg, t)
-        .EvaluateStatements(function.Arg, new ReturnEnvironment<RouteEnvironment>(t), function.Body)[
+        .EvaluateStatements(function.Arg, new ReturnRoute<RouteEnvironment>(t), function.Body)[
           function.Arg];
   }
 
-  private AstEnvironment Join(AstEnvironment other, Zen<bool> guard)
+  private AstState Join(AstState other, Zen<bool> guard)
   {
     if (other.Bindings.Any(p => !Bindings.ContainsKey(p.Key)))
       throw new ArgumentException("Environments do not bind the same variables.");
 
-    var e = new AstEnvironment(Declarations, DefaultPolicy, CallExprContext);
+    var e = new AstState(Declarations, DefaultPolicy, CallExprContext);
     foreach (var (variable, value) in Bindings)
     {
       if (!other.Bindings.ContainsKey(variable))

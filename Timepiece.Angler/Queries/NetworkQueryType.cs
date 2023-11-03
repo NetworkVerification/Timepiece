@@ -4,6 +4,7 @@ public enum NetworkQueryType
 {
   Internet2BlockToExternal,
   Internet2NoMartians,
+  Internet2NoPrivateAs,
   Internet2GaoRexford,
   Internet2Reachable,
   Internet2ReachableInternal,
@@ -21,6 +22,7 @@ public static class NetworkQueryTypeExtensions
     {
       "bte" or "Internet2BlockToExternal" => NetworkQueryType.Internet2BlockToExternal,
       "mars" or "Internet2NoMartians" => NetworkQueryType.Internet2NoMartians,
+      "private" or "Internet2NoPrivateAs" => NetworkQueryType.Internet2NoPrivateAs,
       "transit" or "Internet2GaoRexford" => NetworkQueryType.Internet2GaoRexford,
       "reach" or "Internet2Reachable" => NetworkQueryType.Internet2Reachable,
       "reachInternal" or "Internet2ReachableInternal" => NetworkQueryType.Internet2ReachableInternal,
@@ -32,6 +34,7 @@ public static class NetworkQueryTypeExtensions
                                                                + "Acceptable values:\n"
                                                                + "- 'bte' or 'Internet2BlockToExternal' for 'Internet2BlockToExternal'"
                                                                + "- 'mars' or 'Internet2NoMartians' for 'Internet2NoMartians'"
+                                                               + "- 'private' or 'Internet2NoPrivateAs' for 'Internet2NoPrivateAs'"
                                                                + "- 'gaoRexford' or 'Internet2GaoRexford' for 'Internet2GaoRexford'"
                                                                + "- 'reach' or 'Internet2Reachable' for 'Internet2Reachable'"
                                                                + "- 'reachInternal' or 'Internet2ReachableInternal' for 'Internet2ReachableInternal'"

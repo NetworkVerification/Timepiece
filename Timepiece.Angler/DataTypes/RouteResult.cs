@@ -90,3 +90,15 @@ public class RouteResult : IEquatable<RouteResult>
     return $"RouteResult(Exit={Exit},Fallthrough={Fallthrough},Returned={Returned},Value={Value})";
   }
 }
+
+public static class RouteResultExtensions
+{
+  /// <summary>
+  /// Return true if the result indicates termination of execution, i.e. that
+  /// an exit, return or fallthrough has been reached.
+  /// </summary>
+  /// <param name="r"></param>
+  /// <returns></returns>
+  public static Zen<bool> IsTerminated(this Zen<RouteResult> r) =>
+    Zen.Or(r.GetExit(), r.GetReturned(), r.GetFallthrough());
+}

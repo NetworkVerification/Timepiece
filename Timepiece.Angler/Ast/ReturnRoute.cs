@@ -1,19 +1,19 @@
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.Ast;
 
 /// <summary>
 ///   Representation of a return value and a route being manipulated
 ///   in the current environment.
 /// </summary>
 /// <typeparam name="RouteType">The type of routes.</typeparam>
-public record ReturnEnvironment<RouteType>(Zen<RouteType> Route, dynamic ReturnValue)
+public record ReturnRoute<RouteType>(Zen<RouteType> Route, dynamic ReturnValue)
 {
   /// <summary>
-  ///   Construct a ReturnEnvironment where the route is the returned value.
+  ///   Construct a ReturnRoute where the route is the returned value.
   /// </summary>
   /// <param name="route"></param>
-  public ReturnEnvironment(Zen<RouteType> route) : this(route, route)
+  public ReturnRoute(Zen<RouteType> route) : this(route, route)
   {
   }
 
@@ -23,7 +23,7 @@ public record ReturnEnvironment<RouteType>(Zen<RouteType> Route, dynamic ReturnV
   /// </summary>
   /// <param name="other"></param>
   /// <returns></returns>
-  public bool EqualRoutes(ReturnEnvironment<RouteType> other)
+  public bool EqualRoutes(ReturnRoute<RouteType> other)
   {
     return !Zen.Not(Zen.Eq(Route, other.Route)).Solve().IsSatisfiable();
   }

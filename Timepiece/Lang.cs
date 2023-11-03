@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using ZenLib;
@@ -348,4 +349,7 @@ public static class Lang
   {
     return (t1, t2) => If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1, t2);
   }
+
+  public static Zen<bool> Exists<T>(this IEnumerable<Zen<T>> enumerable, Func<Zen<T>, Zen<bool>> predicate) =>
+    Or(enumerable.Select(predicate));
 }

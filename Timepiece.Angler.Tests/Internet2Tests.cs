@@ -47,10 +47,11 @@ public class Internet2Tests
   /// </summary>
   /// <param name="route"></param>
   /// <returns></returns>
-  private static Zen<bool> IsGoodRoute(Zen<RouteEnvironment> route) => Zen.And(route.GetResultValue(),
-    route.GetLocalDefaultAction(), Zen.Not(route.GetResultReturned()),
-    Zen.Not(route.GetResultExit()),
-    Zen.Not(route.GetResultFallthrough()), Zen.Not(route.GetAsSet().Contains(Internet2.NlrAs)),
+  private static Zen<bool> IsGoodRoute(Zen<RouteEnvironment> route) => Zen.And(
+    route.GetResultValue(),
+    route.GetLocalDefaultAction(),
+    route.NonTerminated(),
+    Zen.Not(route.GetAsSet().Contains(Internet2.NlrAs)),
     Zen.Not(route.GetAsSet().Contains(Internet2.PrivateAs)),
     Zen.Not(route.GetAsSet().Contains(Internet2.CommercialAs)),
     route.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
@@ -60,7 +61,7 @@ public class Internet2Tests
   {
     var sanityIn = WashProperties.Declarations["SANITY-IN"];
     // the call expression context must be true in order for SANITY-IN not to Return when it completes
-    var import = new AstEnvironment(WashProperties.Declarations, callExprContext: true).EvaluateFunction(sanityIn);
+    var import = new AstState(WashProperties.Declarations, callExprContext: true).EvaluateFunction(sanityIn);
     var transfer = new TransferCheck<RouteEnvironment>(import);
     var result = transfer.Check(Zen.Symbolic<RouteEnvironment>("r"), IsGoodRoute, r => r.GetResultValue());
     Assert.Null(result);
@@ -71,7 +72,7 @@ public class Internet2Tests
   {
     var importPolicy = WashProperties.Policies["192.122.183.13"].Import!;
     var importFunction = WashProperties.Declarations[importPolicy];
-    var import = new AstEnvironment(WashProperties.Declarations).EvaluateFunction(importFunction);
+    var import = new AstState(WashProperties.Declarations).EvaluateFunction(importFunction);
     // This import function does the following:
     // 1. Set the default policy to ~DEFAULT_BGP_IMPORT_POLICY~
     // 2. Set LocalDefaultAction to true.
@@ -84,14 +85,60 @@ public class Internet2Tests
     Assert.Null(result);
   }
 
+  /// <summary>
+  /// Check that every edge that goes into an Internet2 node accepts some route.
+  /// </summary>
+  [Fact]
+  public void Internet2TransferAccepts()
+  {
+    var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
+    var route = Zen.Symbolic<RouteEnvironment>("r");
+    // neighbors whose incoming routes are always rejected
+    var rejectIncoming = Internet2.OtherGroup
+      .Concat(Internet2.OtherInternalGroup)
+      .Concat(Internet2.AdvancedLayer2ServiceManagementGroup);
+    // iterate over the edges from non-rejected neighbors to Internet2 nodes
+    var acceptedEdges = topology.Edges(e =>
+      !rejectIncoming.Contains(e.Item1) && Internet2.Internet2Nodes.Contains(e.Item2));
+    // check all the accepted edges
+    Assert.All(acceptedEdges, edge =>
+    {
+      var transferred = transfer[edge](route);
+      var model = Zen.And(route.GetPrefix().IsValidPrefixLength(), transferred.GetResultValue()).Solve();
+      (RouteEnvironment, RouteEnvironment)? result =
+        model.IsSatisfiable() ? (model.Get(route), model.Get(transferred)) : null;
+      _testOutputHelper.WriteLine(result.HasValue
+        ? $"Edge {edge}: {result.Value.Item1} --> {result.Value.Item2}"
+        : $"Edge {edge}: null");
+      Assert.NotNull(result);
+    });
+  }
+
   [Fact]
   public void WashNeighborTransferAcceptsGoodRoute()
   {
     var (_, transfer) = Internet2Ast.TopologyAndTransfer();
     // export + import
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("192.122.183.13", "wash")]);
-    _testOutputHelper.WriteLine(transferCheck.Transfer(Zen.Symbolic<RouteEnvironment>("route")).Format());
     var result = transferCheck.Check(Zen.Symbolic<RouteEnvironment>("r"), IsGoodRoute, r => r.GetResultValue());
+    Assert.Null(result);
+  }
+
+  [Fact]
+  public void WashNeighborTransferRejectsBadRoute()
+  {
+    var (_, transfer) = Internet2Ast.TopologyAndTransfer();
+    // export + import
+    var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("192.122.183.13", "wash")]);
+    _testOutputHelper.WriteLine(transferCheck.Transfer(Zen.Symbolic<RouteEnvironment>("route")).Format());
+    var result = transferCheck.Check(Zen.Symbolic<RouteEnvironment>("r"),
+      // constrain the route to have an AsSet element that forces it to be filtered
+      route => Zen.And(route.GetResultValue(),
+        route.GetLocalDefaultAction(),
+        route.NonTerminated(),
+        Zen.Or(route.GetAsSet().Contains(Internet2.NlrAs), route.GetAsSet().Contains(Internet2.PrivateAs),
+          route.GetAsSet().Contains(Internet2.CommercialAs)),
+        route.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255")), r => Zen.Not(r.GetResultValue()));
     Assert.Null(result);
   }
 
@@ -103,5 +150,15 @@ public class Internet2Tests
     var net = Internet2.Reachable(topology, externalNodes)
       .ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
     NetworkAsserts.Sound(net, SmtCheck.Inductive, "wash");
+  }
+
+  [Fact]
+  public void Internet2ReachableMonolithic()
+  {
+    var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
+    var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
+    var net = Internet2.Reachable(topology, externalNodes)
+      .ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
+    NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 }

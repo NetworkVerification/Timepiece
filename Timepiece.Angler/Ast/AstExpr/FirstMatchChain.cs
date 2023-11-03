@@ -12,14 +12,14 @@ public class FirstMatchChain : VariadicExpr
   {
   }
 
-  public ReturnEnvironment<RouteEnvironment> Evaluate(AstEnvironment astEnv, ReturnEnvironment<RouteEnvironment> env)
+  public ReturnRoute<RouteEnvironment> Evaluate(AstState astEnv, ReturnRoute<RouteEnvironment> env)
   {
     if (astEnv.DefaultPolicy is null)
       throw new Exception("Default policy not set!");
     // add the default policy at the end of the chain
     var policies = Exprs.Append(new Call(astEnv.DefaultPolicy));
     // each policy may update the route, so the policy routes need to be computed in sequential order
-    var policyResults = new List<ReturnEnvironment<RouteEnvironment>>();
+    var policyResults = new List<ReturnRoute<RouteEnvironment>>();
     var lastEnv = env;
     foreach (var policy in policies)
     {
@@ -43,7 +43,7 @@ public class FirstMatchChain : VariadicExpr
         Zen.If(fallthroughGuard, acc.Route, policyResults[i].Route));
       var accResult = Zen.If(exitGuard, policyResults[i].ReturnValue,
         Zen.If(fallthroughGuard, acc.ReturnValue, policyResults[i].ReturnValue));
-      acc = new ReturnEnvironment<RouteEnvironment>(accRoute, accResult);
+      acc = new ReturnRoute<RouteEnvironment>(accRoute, accResult);
     }
 
     return acc;

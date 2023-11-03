@@ -66,7 +66,7 @@ public class NodeProperties
   public NetworkNode<RouteEnvironment> CreateNode(Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultExport,
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultImport)
   {
-    var env = new AstEnvironment(Declarations);
+    var env = new AstState(Declarations);
 
     var imports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var exports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();

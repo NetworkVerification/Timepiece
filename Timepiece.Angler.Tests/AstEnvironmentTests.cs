@@ -1279,7 +1279,7 @@ public static class AstEnvironmentTests
   });
 
   // DefaultPolicy is a policy that just accepts a route.
-  private static readonly AstEnvironment Env = new(new Dictionary<string, AstFunction<RouteEnvironment>>
+  private static readonly AstState Env = new(new Dictionary<string, AstFunction<RouteEnvironment>>
   {
     {DefaultPolicy, ReturnTrueFunction},
     {WillFallThrough, FallThroughFunction},
@@ -1287,7 +1287,7 @@ public static class AstEnvironmentTests
     {AddCommunity, AddCommunityFunction}
   });
 
-  private static readonly ReturnEnvironment<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
+  private static readonly ReturnRoute<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
   private static AstFunction<RouteEnvironment> UpdateResultFunction(RouteResult result)
   {
@@ -1295,7 +1295,7 @@ public static class AstEnvironmentTests
     {
       new Assign("env",
         new WithField(new Var("env"), "Result",
-          AstEnvironment.ResultToRecord(result)))
+          AstState.ResultToRecord(result)))
     });
   }
 
@@ -1390,7 +1390,7 @@ public static class AstEnvironmentTests
   public static void EvaluateDefaultRoute()
   {
     var zen = new RouteEnvironment();
-    var evaluated = (Zen<RouteEnvironment>) EvaluateExprIgnoreRoute(AstEnvironment.DefaultRoute());
+    var evaluated = (Zen<RouteEnvironment>) EvaluateExprIgnoreRoute(AstState.DefaultRoute());
     AssertEqValid(evaluated, zen);
   }
 
@@ -1449,7 +1449,7 @@ public static class AstEnvironmentTests
   public static void EvaluateGetField()
   {
     const string pathLen = "AsPathLength";
-    var route = AstEnvironment.DefaultRoute();
+    var route = AstState.DefaultRoute();
     const string arg = "route";
     var statements = new Statement[]
     {
@@ -1483,7 +1483,7 @@ public static class AstEnvironmentTests
     const string route = "route";
     var statements = new Statement[]
     {
-      new Assign(route, AstEnvironment.DefaultRoute()),
+      new Assign(route, AstState.DefaultRoute()),
       new Assign(route, new WithField(new Var(route), pathLen,
         new Plus(new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(route), pathLen),
           new BigIntExpr(BigInteger.One))))
@@ -1524,7 +1524,7 @@ public static class AstEnvironmentTests
     {
       new Assign(arg,
         new WithField(new Var(arg), "Result",
-          AstEnvironment.ResultToRecord(new RouteResult
+          AstState.ResultToRecord(new RouteResult
           {
             Value = true,
             Returned = true
@@ -1702,10 +1702,10 @@ public static class AstEnvironmentTests
   {
     var statements = AstSerializationBinder.JsonSerializer()
       .Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
-    var env = new AstEnvironment();
+    var env = new AstState();
     var r = Zen.Symbolic<RouteEnvironment>();
     Zen<RouteEnvironment> updated =
-      env.Update("env", r).EvaluateStatements("env", new ReturnEnvironment<RouteEnvironment>(r), statements)["env"];
+      env.Update("env", r).EvaluateStatements("env", new ReturnRoute<RouteEnvironment>(r), statements)["env"];
     // if r has not exited or returned already, and the prefix length is up to 27, it should be accepted
     var query = Zen.And(
       Zen.Not(r.GetResultExit()), Zen.Not(r.GetResultReturned()),

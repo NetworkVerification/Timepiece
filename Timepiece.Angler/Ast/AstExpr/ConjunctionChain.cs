@@ -12,16 +12,16 @@ public class ConjunctionChain : VariadicExpr
   {
   }
 
-  public ReturnEnvironment<RouteEnvironment> Evaluate(AstEnvironment astEnv,
-    ReturnEnvironment<RouteEnvironment> returnEnv)
+  public ReturnRoute<RouteEnvironment> Evaluate(AstState astEnv,
+    ReturnRoute<RouteEnvironment> returnEnv)
   {
     // add the default policy at the end of the chain
     var policies = astEnv.DefaultPolicy is not null ? Exprs.Append(new Call(astEnv.DefaultPolicy)) : Exprs;
     // go through the policies in reverse order to produce the final environment
     // we start with false as the return value as a default, but the default policy should never fall through
-    var acc = new ReturnEnvironment<RouteEnvironment>(returnEnv.Route.WithResultFallthrough(true), Zen.False());
+    var acc = new ReturnRoute<RouteEnvironment>(returnEnv.Route.WithResultFallthrough(true), Zen.False());
     // each policy may update the route, so the policy routes need to be computed in sequential order
-    var policyResults = new List<ReturnEnvironment<RouteEnvironment>>();
+    var policyResults = new List<ReturnRoute<RouteEnvironment>>();
     var lastReturn = returnEnv with {Route = returnEnv.Route.WithResultFallthrough(true)};
     foreach (var policy in policies)
     {
@@ -42,7 +42,7 @@ public class ConjunctionChain : VariadicExpr
         Zen.If(fallthroughGuard, acc.Route, policyResults[i].Route));
       var accResult = Zen.If(exitGuard, policyResults[i].ReturnValue,
         (dynamic?) Zen.If(fallthroughGuard, acc.ReturnValue, policyResults[i].ReturnValue));
-      ReturnEnvironment<RouteEnvironment> tempQualifier = (policyResults[i] with {Route = accRoute});
+      ReturnRoute<RouteEnvironment> tempQualifier = (policyResults[i] with {Route = accRoute});
       acc = tempQualifier with {ReturnValue = accResult};
     }
 

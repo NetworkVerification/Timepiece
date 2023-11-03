@@ -62,7 +62,7 @@ public static class Internet2
   ///   Addresses for neighbors in the OTHER-INTERNAL, PAIX and WILC peer group of the internal nodes.
   ///   These connections should also be considered internal.
   /// </summary>
-  private static readonly string[] OtherInternalNodes =
+  public static readonly string[] OtherInternalNodes =
   {
     // OTHER-INTERNAL peer group
     "64.57.16.133", "64.57.16.196", "64.57.16.4", "64.57.16.68", "64.57.17.133", "64.57.17.194",
@@ -72,12 +72,29 @@ public static class Internet2
   };
 
   /// <summary>
+  ///   Addresses for neighbors in the OTHER-INTERNAL peer group.
+  ///   These connections should be considered internal and any routes from them are rejected.
+  /// </summary>
+  public static readonly string[] OtherInternalGroup =
+  {
+    "64.57.16.133", "64.57.16.196", "64.57.16.4", "64.57.16.68", "64.57.17.133", "64.57.17.194",
+    "64.57.17.7", "64.57.17.71", "64.57.19.2",
+  };
+
+  public static readonly string[] OtherGroup =
+  {
+    "128.223.51.102", "128.223.51.108", "207.75.164.233", "207.75.164.213",
+    "203.181.248.35" // "zebra.jp.apan.net | I2-S13129"
+  };
+
+  /// <summary>
   ///   Addresses for the AL2S_MGMT peer group.
   ///   See https://internet2.edu/services/layer-2-service/ for what AL2S is.
+  ///   Routes should never be imported or exported to these nodes.
   /// </summary>
-  private static readonly string[] AdvancedLayer2ServiceManagementNodes =
+  public static readonly string[] AdvancedLayer2ServiceManagementGroup =
   {
-    "64.57.25.164", "64.57.25.165", "64.57.24.204", "64.57.24.205", "64.57.25.124"
+    "64.57.25.164", "64.57.25.165", "64.57.24.204", "64.57.24.205", "64.57.25.124", "64.57.25.236"
   };
 
   private static readonly IEnumerable<string> InternalNodes = Internet2Nodes.Concat(OtherInternalNodes);
@@ -195,6 +212,12 @@ public static class Internet2
       modularProperties, modularProperties);
   }
 
+  /// <summary>
+  /// Check that the internal nodes never select a route for a Martian prefix.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="externalPeers"></param>
+  /// <returns></returns>
   public static NetworkQuery<RouteEnvironment, string> NoMartians(Digraph<string> digraph,
     IEnumerable<string> externalPeers)
   {
@@ -206,6 +229,31 @@ public static class Internet2
     var monolithicProperties = digraph.MapNodes(n =>
       InternalNodes.Contains(n)
         ? Lang.Intersect<RouteEnvironment>(env => NoPrefixMatch(MartianPrefixes, env), MaxPrefixLengthIs32)
+        : Lang.True<RouteEnvironment>());
+    // annotations and modular properties are the same
+    var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
+    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties,
+      modularProperties, modularProperties);
+  }
+
+  /// <summary>
+  /// Check that the internal nodes never select a route with a private AS in the path.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="externalPeers"></param>
+  /// <returns></returns>
+  public static NetworkQuery<RouteEnvironment, string> NoPrivateAs(Digraph<string> digraph,
+    IEnumerable<string> externalPeers)
+  {
+    var externalRoutes = SymbolicRoutes("external-route", externalPeers, MaxPrefixLengthIs32);
+    var initialRoutes = digraph.MapNodes(n =>
+      externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
+
+    // internal nodes must not select private AS routes
+    var monolithicProperties = digraph.MapNodes(n =>
+      InternalNodes.Contains(n)
+        ? Lang.Intersect<RouteEnvironment>(env => Zen.Not(env.GetAsSet().Contains(PrivateAs)), MaxPrefixLengthIs32)
         : Lang.True<RouteEnvironment>());
     // annotations and modular properties are the same
     var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
@@ -227,37 +275,19 @@ public static class Internet2
   }
 
   /// <summary>
-  /// Returns true if there exists a route in the given <paramref name="routes"/> that has a value and equals
-  /// the given <paramref name="prefix"/>.
-  /// </summary>
-  /// <param name="prefix"></param>
-  /// <param name="routes"></param>
-  /// <returns></returns>
-  private static Zen<bool> ExistsPrefixRoute(Zen<Ipv4Prefix> prefix, IEnumerable<Zen<RouteEnvironment>> routes) =>
-    Zen.Or(routes.Select(e => Zen.And(e.GetResultValue(), e.GetPrefix() == prefix)));
-
-  /// <summary>
   /// Check that all the internal nodes receive a valid route if one is shared by one of them to the others.
   /// </summary>
   /// <param name="digraph"></param>
-  /// <param name="externalPeers"></param>
   /// <returns></returns>
-  public static NetworkQuery<RouteEnvironment, string> ReachableInternal(Digraph<string> digraph,
-    IEnumerable<string> externalPeers)
+  public static NetworkQuery<RouteEnvironment, string> ReachableInternal(Digraph<string> digraph)
   {
-    // UMichigan: https://whois.domaintools.com/35.0.0.0
-    // var destinationAddress = new Ipv4Prefix("35.0.0.0", "35.255.255.255"); // 35.0.0.0/8
-    var destinationAddress = InternalPrefix;
-    // var externalRoutes = SymbolicRoutes("external-route", externalPeers,
-    // r => Zen.Implies(r.GetResultValue(), r.GetPrefix() == destinationAddress));
     var internalRoutes = SymbolicRoutes("internal-route", Internet2Nodes,
-      r => Zen.And(r.GetPrefix() == destinationAddress, r.GetResultValue()));
+      r => Zen.And(r.GetPrefix() == InternalPrefix, r.GetResultValue()));
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
     var initialRoutes = digraph.MapNodes(n =>
-      // externalRoutes.TryGetValue(n, out var externalRoute) ? externalRoute.Value :
       internalRoutes.TryGetValue(n, out var internalRoute)
         ? internalRoute.Value
-        : new RouteEnvironment {Prefix = destinationAddress});
+        : new RouteEnvironment {Prefix = InternalPrefix});
     var monolithicProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
         // internal nodes have a route if one of them has one initially
@@ -265,7 +295,7 @@ public static class Internet2
           // if one of the internal routes is true,
           RouteEnvironmentExtensions.ExistsValue(internalRoutes.Values.Select(ir => ir.Value)),
           // then all the internal nodes will have routes
-          Zen.And(r.GetResultValue(), r.GetPrefix() == destinationAddress))
+          Zen.And(r.GetResultValue(), r.GetPrefix() == InternalPrefix))
         // no check on external nodes
         : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n =>
@@ -278,7 +308,7 @@ public static class Internet2
     var annotations = digraph.MapNodes(n =>
       Lang.Intersect(modularProperties[n],
         Lang.Globally<RouteEnvironment>(r => Zen.Implies(r.GetResultValue(),
-          r.GetPrefix() == destinationAddress))));
+          r.GetPrefix() == InternalPrefix))));
     var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes)
       .ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
@@ -313,9 +343,10 @@ public static class Internet2
         // (2) must have a valid prefix length
         p.IsValidPrefixLength()));
     var externalRoutes = SymbolicRoutes("external-route", externalPeers,
-      r => Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value)));
-    // no matching terms in AS set
-    // r.GetAsSet().IsSubsetOf(CSet.Empty<string>()))));
+      RouteEnvironmentExtensions.IfValue(r =>
+        Zen.And(r.GetPrefix() == destinationPrefix.Value,
+          // force to contain private as (forcing a counterexample -- comment out when making this work!)
+          r.GetAsSet().Contains(PrivateAs))));
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route)
         ? route.Value
@@ -327,15 +358,18 @@ public static class Internet2
     var nextToPeerTime = symbolicTimes[0].Value;
     var notNextToPeerTime = symbolicTimes[1].Value;
     var lastTime = symbolicTimes[^1].Value;
+    // encoding that an external route exists
+    var externalRouteExists = externalRoutes
+      // external route exists at a non-AL2S_MGMT/OTHER/OTHER_INTERNAL neighbor
+      .Where(ext =>
+        !AdvancedLayer2ServiceManagementGroup.Concat(OtherGroup).Concat(OtherInternalGroup).Contains(ext.Key))
+      .Select(ext => ext.Value.Value)
+      .Exists(r => Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value));
 
     var monolithicProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
-        // internal nodes: if an external route exists, then we have a route
-        ? r => Zen.Implies(ExistsPrefixRoute(destinationPrefix.Value,
-            externalRoutes
-              // external route exists at a non AL2S_MGMT neighbor
-              .Where(ext => !AdvancedLayer2ServiceManagementNodes.Contains(ext.Key))
-              .Select(s => s.Value.Value)),
+        // Internet2 nodes: if an external route exists, then we must have a route
+        ? r => Zen.Implies(externalRouteExists,
           Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value))
         // no check on external nodes
         : Lang.True<RouteEnvironment>());
@@ -360,7 +394,7 @@ public static class Internet2
           : Lang.Globally<RouteEnvironment>(r =>
             Zen.If(
               externalRoutes.TryGetValue(n, out var externalRoute) ? externalRoute.Value.GetResultValue() : Zen.False(),
-              r.GetResultValue(), Zen.True())),
+              Zen.And(r.GetResultValue(), r.GetAsSet().Contains(PrivateAs)), Zen.True())),
         Lang.Globally<RouteEnvironment>(r =>
           Zen.Implies(r.GetResultValue(),
             Zen.And(r.GetPrefix() == destinationPrefix.Value))))); // r.GetAsSet() == CSet.Empty<string>())))));
@@ -381,7 +415,7 @@ public static class Internet2
   {
     return digraph[node].Aggregate(Zen.False(),
       (b, neighbor) => externalRoutes.TryGetValue(neighbor, out var externalRoute)
-        // if the neighbor is external, add a constraint that it can have a value
+        // if the neighbor is external, add a constraint that it has a value
         ? Zen.Or(b, externalRoute.Value.GetResultValue())
         // otherwise, we can just skip it
         : b);

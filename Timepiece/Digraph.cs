@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -159,11 +160,14 @@ public class Digraph<NodeType> where NodeType : notnull
   /// <summary>
   ///   Return all the edges in the network.
   /// </summary>
+  /// <param name="edgeSelector">a predicate to select particular edges in the network</param>
   /// <returns>an enumerable over the edges of the network</returns>
-  private IEnumerable<(NodeType, NodeType)> AllEdges()
+  public IEnumerable<(NodeType, NodeType)> Edges(Func<(NodeType, NodeType), bool>? edgeSelector = null)
   {
-    return Neighbors
-      .SelectMany(nodeNeighbors => nodeNeighbors.Value, (node, nbr) => (nbr, node.Key));
+    var edges = Neighbors
+      .SelectMany(nodeNeighbors => nodeNeighbors.Value,
+        (node, nbr) => (nbr, node.Key));
+    return edgeSelector is null ? edges : edges.Where(edgeSelector);
   }
 
   /// <summary>
@@ -174,12 +178,12 @@ public class Digraph<NodeType> where NodeType : notnull
   /// <returns></returns>
   public Dictionary<(NodeType, NodeType), T> MapEdges<T>(Func<(NodeType, NodeType), T> edgeFunc)
   {
-    return AllEdges().ToDictionary(e => e, edgeFunc);
+    return Edges().ToDictionary(e => e, edgeFunc);
   }
 
   public TAcc FoldEdges<TAcc>(TAcc initial, Func<TAcc, (NodeType, NodeType), TAcc> f)
   {
-    return AllEdges().Aggregate(initial, f);
+    return Edges().Aggregate(initial, f);
   }
 
   public override string ToString()

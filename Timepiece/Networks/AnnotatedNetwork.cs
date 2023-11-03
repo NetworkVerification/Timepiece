@@ -197,7 +197,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     if (PrintFormulas)
     {
       Console.Write($"Initial check at {node}: ");
-      Console.WriteLine(query);
+      Console.WriteLine(query.Format());
     }
 
     var model = query.Solve();
@@ -241,7 +241,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     if (PrintFormulas)
     {
       Console.Write($"Safety check at {node}: ");
-      Console.WriteLine(query);
+      Console.WriteLine(query.Format());
     }
 
     var model = query.Solve();
@@ -319,7 +319,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     if (PrintFormulas)
     {
       Console.Write($"Inductive check at {node}: ");
-      Console.WriteLine(query);
+      Console.WriteLine(query.Format());
     }
 
     var model = query.Solve();
@@ -369,8 +369,8 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
-      Console.Write($"Inductive check at {node}: ");
-      Console.WriteLine(query);
+      Console.Write($"Inductive (delayed) check at {node}: ");
+      Console.WriteLine(query.Format());
     }
 
     var model = query.Solve();
@@ -399,10 +399,15 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     var constraints = Digraph.Nodes.Select(node =>
       routes[node] == UpdateNodeRoute(node, routes));
 
-    var check = And(GetSymbolicConstraints(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
+    var query = And(GetSymbolicConstraints(), And(constraints.ToArray()), Not(And(assertions.ToArray())));
+    if (PrintFormulas)
+    {
+      Console.WriteLine("Monolithic check:");
+      Console.WriteLine(query.Format());
+    }
 
     // negate and try to prove unsatisfiable.
-    var model = check.Solve();
+    var model = query.Solve();
 
     if (model.IsSatisfiable())
       return Option.Some(new State<RouteType, NodeType>(model, routes, Symbolics));

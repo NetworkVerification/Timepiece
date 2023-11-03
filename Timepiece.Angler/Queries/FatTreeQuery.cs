@@ -29,6 +29,7 @@ public static partial class FatTreeQuery
     var labels = digraph.MapNodes(n =>
     {
       var match = FatTreeNodePattern().Match(n);
+      // TODO: add a handler for a hijack/backbone node
       if (!match.Success) throw new ArgumentException($"Given node {n} does not match the fat-tree node pattern!");
       var nodeNumber = int.Parse(match.Groups[2].Value);
       // if the node is a core node, then the groups are defined as the maximum pod number plus the core node's number
@@ -159,5 +160,10 @@ public static partial class FatTreeQuery
 
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolicTimes.Cast<ISymbolic>().ToArray(),
       monolithicProperties, modularProperties, annotations);
+  }
+
+  public static NetworkQuery<RouteEnvironment, string> FatTreeHijackFiltering(NodeLabelledDigraph<string, int> digraph)
+  {
+    throw new NotImplementedException("Not implemented!");
   }
 }
