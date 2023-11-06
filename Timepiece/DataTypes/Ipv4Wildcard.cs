@@ -43,7 +43,7 @@ public class Ipv4Wildcard
   public uint WildcardMask { get; set; }
 
   /// <summary>
-  ///   Check that the given 32-bit address is contained in the given prefix.
+  ///   Verify that the given 32-bit address is contained in the given prefix.
   /// </summary>
   /// <param name="address"></param>
   /// <returns></returns>
@@ -60,7 +60,7 @@ public class Ipv4Wildcard
 public static class Ipv4WildcardExtensions
 {
   /// <summary>
-  ///   Check that the given 32-bit address is contained in the given prefix.
+  ///   Verify that the given 32-bit address is contained in the given prefix.
   /// </summary>
   /// <param name="prefix"></param>
   /// <param name="address"></param>

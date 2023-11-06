@@ -137,7 +137,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   public Zen<BigInteger>? MaxDelay { get; set; }
 
   /// <summary>
-  ///   Check that the annotations are sound, calling the given function f on each node's check.
+  ///   Verify that the annotations are sound, calling the given function f on each node's check.
   /// </summary>
   /// <param name="collector"></param>
   /// <param name="f"></param>
@@ -171,7 +171,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   }
 
   /// <summary>
-  ///   Check that the annotations are sound.
+  ///   Verify that the annotations are sound.
   /// </summary>
   /// <returns>True if the annotations pass, false otherwise.</returns>
   public Option<State<RouteType, NodeType>> CheckAnnotations()
@@ -384,7 +384,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   }
 
   /// <summary>
-  ///   Check the network using a stable routes encoding.
+  ///   Verify the network using a stable routes encoding.
   /// </summary>
   /// <returns>Some state if verification fails with a counterexample, and None otherwise.</returns>
   public Option<State<RouteType, NodeType>> CheckMonolithic()

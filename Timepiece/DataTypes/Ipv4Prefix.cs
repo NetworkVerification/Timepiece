@@ -68,7 +68,7 @@ public static class Ipv4PrefixExtensions
     address.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
 
   /// <summary>
-  /// Check that the given IPv4 prefix has a valid length (at most 32).
+  /// Verify that the given IPv4 prefix has a valid length (at most 32).
   /// </summary>
   /// <param name="prefix"></param>
   /// <returns></returns>

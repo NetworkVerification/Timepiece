@@ -1,4 +1,7 @@
+#nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ZenLib;
 using ZenLib.ModelChecking;
 using static ZenLib.Zen;
@@ -9,7 +12,7 @@ namespace Timepiece;
 ///   A symbolic value with an associated name, for ease of reference.
 /// </summary>
 /// <typeparam name="T">The symbolic type associated with the value.</typeparam>
-public class SymbolicValue<T> : ISymbolic
+public record SymbolicValue<T> : ISymbolic
 {
   public SymbolicValue(string name)
   {
@@ -24,7 +27,7 @@ public class SymbolicValue<T> : ISymbolic
     Constraint = constraint;
   }
 
-  public Func<Zen<T>, Zen<bool>> Constraint { get; set; }
+  public Func<Zen<T>, Zen<bool>>? Constraint { get; set; }
 
   /// <summary>
   ///   The internal Zen symbolic.
@@ -43,10 +46,10 @@ public class SymbolicValue<T> : ISymbolic
 
   public Zen<bool> Encode()
   {
-    return HasConstraint() ? Constraint(Value) : True();
+    return HasConstraint() ? Constraint!(Value) : True();
   }
 
-  public object GetSolution(ZenSolution model)
+  public object? GetSolution(ZenSolution model)
   {
     return model.Get(Value);
   }
@@ -74,5 +77,25 @@ public class SymbolicValue<T> : ISymbolic
   public Zen<bool> DoesNotEqualValue(T val)
   {
     return Not(EqualsValue(val));
+  }
+}
+
+public static class SymbolicValue
+{
+  /// <summary>
+  ///   Assign a fresh symbolic variable for each of the given <paramref name="keys"/>.
+  ///   Use the given <paramref name="namePrefix"/> to name the variable.
+  ///   If a <paramref name="constraint"/> is given, apply it to every symbolic variable.
+  /// </summary>
+  /// <param name="namePrefix">a string prefix for the symbolic variable names</param>
+  /// <param name="keys">the keys to create symbolic routes for (i.e. the keys to the dictionary)</param>
+  /// <param name="constraint">a predicate over <c>RouteEnvironment</c>s</param>
+  /// <returns>a dictionary from keys to symbolic variables</returns>
+  public static Dictionary<string, SymbolicValue<T>> SymbolicDictionary<T>(string namePrefix,
+    IEnumerable<string> keys, Func<Zen<T>, Zen<bool>>? constraint = null)
+  {
+    return keys.ToDictionary(e => e, e => constraint is null
+      ? new SymbolicValue<T>($"{namePrefix}-{e}")
+      : new SymbolicValue<T>($"{namePrefix}-{e}", constraint));
   }
 }

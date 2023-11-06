@@ -8,7 +8,7 @@ namespace Timepiece;
 /// <summary>
 ///   A symbolic value which represents a particular symbolically-chosen time.
 /// </summary>
-public class SymbolicTime : SymbolicValue<BigInteger>
+public record SymbolicTime : SymbolicValue<BigInteger>
 {
   public SymbolicTime(string name) : base(name, t => t >= BigInteger.Zero)
   {

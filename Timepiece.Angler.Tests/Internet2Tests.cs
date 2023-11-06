@@ -25,6 +25,13 @@ public class Internet2Tests
 
   private static readonly NodeProperties WashProperties = Internet2Ast.Nodes["wash"];
 
+  /// <summary>
+  /// Nodes whose incoming routes (to Internet2 nodes) are always rejected.
+  /// </summary>
+  private static readonly IEnumerable<string> RejectIncoming = Internet2.OtherGroup
+    .Concat(Internet2.OtherInternalGroup)
+    .Concat(Internet2.AdvancedLayer2ServiceManagementGroup);
+
   public Internet2Tests(ITestOutputHelper testOutputHelper)
   {
     _testOutputHelper = testOutputHelper;
@@ -38,16 +45,16 @@ public class Internet2Tests
   }
 
   /// <summary>
-  /// Check that the given route is "good":
+  /// Verify that the given route is "good":
   /// <list type="bullet">
   ///   <item>its result value is true and other result features are false</item>
   ///   <item>its AS set is empty</item>
-  ///   <item>its prefix is 35.0.0.0/8</item>
+  ///   <item>its prefix is 35.0.0.0/8 (UMichigan's prefix)</item>
   /// </list>
   /// </summary>
   /// <param name="route"></param>
   /// <returns></returns>
-  private static Zen<bool> IsGoodRoute(Zen<RouteEnvironment> route) => Zen.And(
+  private static Zen<bool> IsGoodUMichRoute(Zen<RouteEnvironment> route) => Zen.And(
     route.GetResultValue(),
     route.GetLocalDefaultAction(),
     route.NonTerminated(),
@@ -63,7 +70,7 @@ public class Internet2Tests
     // the call expression context must be true in order for SANITY-IN not to Return when it completes
     var import = new AstState(WashProperties.Declarations, callExprContext: true).EvaluateFunction(sanityIn);
     var transfer = new TransferCheck<RouteEnvironment>(import);
-    var result = transfer.Check(Zen.Symbolic<RouteEnvironment>("r"), IsGoodRoute, r => r.GetResultValue());
+    var result = transfer.Verify(Zen.Symbolic<RouteEnvironment>("r"), IsGoodUMichRoute, r => r.GetResultValue());
     Assert.Null(result);
   }
 
@@ -80,36 +87,28 @@ public class Internet2Tests
     // 4. If the FirstMatchChain returns true, assign the result to Exit=true,Value=true
     //    Otherwise if it returns false, assign the result to Exit=true,Value=false
     var transfer = new TransferCheck<RouteEnvironment>(import);
-    var result = transfer.Check(Zen.Symbolic<RouteEnvironment>("r"), IsGoodRoute,
+    var result = transfer.Verify(Zen.Symbolic<RouteEnvironment>("r"), IsGoodUMichRoute,
       imported => Zen.And(imported.GetResultValue(), imported.GetResultExit()));
     Assert.Null(result);
   }
 
   /// <summary>
-  /// Check that every edge that goes into an Internet2 node accepts some route.
+  /// Verify that every edge that goes into an Internet2 node accepts some route.
   /// </summary>
   [Fact]
   public void Internet2TransferAccepts()
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
     var route = Zen.Symbolic<RouteEnvironment>("r");
-    // neighbors whose incoming routes are always rejected
-    var rejectIncoming = Internet2.OtherGroup
-      .Concat(Internet2.OtherInternalGroup)
-      .Concat(Internet2.AdvancedLayer2ServiceManagementGroup);
     // iterate over the edges from non-rejected neighbors to Internet2 nodes
     var acceptedEdges = topology.Edges(e =>
-      !rejectIncoming.Contains(e.Item1) && Internet2.Internet2Nodes.Contains(e.Item2));
+      !RejectIncoming.Contains(e.Item1) && Internet2.Internet2Nodes.Contains(e.Item2));
     // check all the accepted edges
     Assert.All(acceptedEdges, edge =>
     {
-      var transferred = transfer[edge](route);
-      var model = Zen.And(route.GetPrefix().IsValidPrefixLength(), transferred.GetResultValue()).Solve();
-      (RouteEnvironment, RouteEnvironment)? result =
-        model.IsSatisfiable() ? (model.Get(route), model.Get(transferred)) : null;
-      _testOutputHelper.WriteLine(result.HasValue
-        ? $"Edge {edge}: {result.Value.Item1} --> {result.Value.Item2}"
-        : $"Edge {edge}: null");
+      var transferCheck = new TransferCheck<RouteEnvironment>(transfer[edge]);
+      var result = transferCheck.Solve(route, r => r.GetPrefix().IsValidPrefixLength(), r => r.GetResultValue());
+      _testOutputHelper.WriteLine($"Edge {edge}: {result}");
       Assert.NotNull(result);
     });
   }
@@ -120,26 +119,59 @@ public class Internet2Tests
     var (_, transfer) = Internet2Ast.TopologyAndTransfer();
     // export + import
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("192.122.183.13", "wash")]);
-    var result = transferCheck.Check(Zen.Symbolic<RouteEnvironment>("r"), IsGoodRoute, r => r.GetResultValue());
+    var result = transferCheck.Verify(Zen.Symbolic<RouteEnvironment>("r"), IsGoodUMichRoute, r => r.GetResultValue());
     Assert.Null(result);
   }
 
   [Fact]
-  public void WashNeighborTransferRejectsBadRoute()
+  public void WashNeighborTransferRejectsAsSetRoute()
   {
     var (_, transfer) = Internet2Ast.TopologyAndTransfer();
-    // export + import
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("192.122.183.13", "wash")]);
-    _testOutputHelper.WriteLine(transferCheck.Transfer(Zen.Symbolic<RouteEnvironment>("route")).Format());
-    var result = transferCheck.Check(Zen.Symbolic<RouteEnvironment>("r"),
+    // _testOutputHelper.WriteLine(transferCheck.Transfer(Zen.Symbolic<RouteEnvironment>("route")).Format());
+    var result = transferCheck.Verify(Zen.Symbolic<RouteEnvironment>("r"),
       // constrain the route to have an AsSet element that forces it to be filtered
-      route => Zen.And(route.GetResultValue(),
-        route.GetLocalDefaultAction(),
-        route.NonTerminated(),
+      route =>
         Zen.Or(route.GetAsSet().Contains(Internet2.NlrAs), route.GetAsSet().Contains(Internet2.PrivateAs),
           route.GetAsSet().Contains(Internet2.CommercialAs)),
-        route.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255")), r => Zen.Not(r.GetResultValue()));
+      r => Zen.Not(r.GetResultValue()));
     Assert.Null(result);
+  }
+
+  [Fact]
+  public void HousNeighborRejectsPrivateRoute()
+  {
+    var (_, transfer) = Internet2Ast.TopologyAndTransfer();
+    // 64.57.28.149 is the [NETPLUS] Level(3) IP SIP Commodity | I2-S08834 neighbor
+    var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("64.57.28.149", "hous")]);
+    var result = transferCheck.Verify(Zen.Symbolic<RouteEnvironment>("r"),
+      // constrain the route to be from a private AS
+      r => r.GetAsSet().Contains(Internet2.PrivateAs),
+      r => Zen.Not(r.GetResultValue()));
+    Assert.Null(result);
+  }
+
+  [Fact]
+  public void SomeNeighborAcceptsAsSetRoute()
+  {
+    var (topology, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
+    // iterate over the edges from non-rejected neighbors to Internet2 nodes
+    var acceptedEdges = topology.Edges(e =>
+      !RejectIncoming.Contains(e.Item1) && Internet2.Internet2Nodes.Contains(e.Item2));
+    Assert.Contains(acceptedEdges, edge =>
+    {
+      var transferCheck = new TransferCheck<RouteEnvironment>(transfer[edge]);
+      var result = transferCheck.Solve(Zen.Symbolic<RouteEnvironment>("r"),
+        r => Zen.And(r.GetResultValue(),
+          r.GetLocalDefaultAction(),
+          r.NonTerminated(),
+          // has one of the filtered AsSet elements
+          Zen.Or(r.GetAsSet().Contains(Internet2.NlrAs), r.GetAsSet().Contains(Internet2.PrivateAs),
+            r.GetAsSet().Contains(Internet2.CommercialAs)),
+          r.GetPrefix().IsValidPrefixLength()),
+        r => r.GetResultValue());
+      return result is not null;
+    });
   }
 
   [Fact]
@@ -160,5 +192,21 @@ public class Internet2Tests
     var net = Internet2.Reachable(topology, externalNodes)
       .ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
     NetworkAsserts.Sound(net, SmtCheck.Monolithic);
+  }
+
+  [Theory]
+  [InlineData(SmtCheck.Monolithic)]
+  [InlineData(SmtCheck.Modular)]
+  public void Internet2BadPropertyFails(SmtCheck check)
+  {
+    var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
+    var routes = SymbolicValue.SymbolicDictionary<RouteEnvironment>("route", topology.Nodes);
+    var initialRoutes = topology.MapNodes(n => routes[n].Value);
+    var monolithicProperties = topology.MapNodes(_ => Lang.False<RouteEnvironment>());
+    var modularProperties = topology.MapNodes(n => Lang.Globally(monolithicProperties[n]));
+    var query = new NetworkQuery<RouteEnvironment, string>(initialRoutes, routes.Values.Cast<ISymbolic>().ToArray(),
+      monolithicProperties, modularProperties, modularProperties);
+    var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
+    NetworkAsserts.Unsound(net, check);
   }
 }

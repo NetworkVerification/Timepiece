@@ -171,7 +171,7 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
         Debug.Assert(a.Expr.GetType() != typeof(Call));
         return Update(a.Var, env.ReturnValue);
       case IfThenElse ite:
-        // add the comment as a term (if track terms is on) to keep track of which policy terms were visited
+        // add the comment as a term (if TrackTerms is true) to keep track of which policy terms were visited
         var withTerm = ite.Comment is null || !TrackTerms
           ? route
           : route with {Route = route.Route.AddVisitedTerm(ite.Comment)};
@@ -245,7 +245,7 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
       {"Tag", new UIntExpr(env.Tag)},
       {"OriginType", new UInt2Expr(env.OriginType)},
       {"Communities", LiteralSet.Empty()},
-      {"Result", ResultToRecord(new RouteResult())},
+      {"Result", ResultToRecord(env.Result)},
       {"LocalDefaultAction", new BoolExpr(env.LocalDefaultAction)},
       {"VisitedTerms", LiteralSet.Empty()}
     });

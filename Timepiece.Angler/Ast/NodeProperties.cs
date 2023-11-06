@@ -21,7 +21,6 @@ public class NodeProperties
     Policies = policies;
     Prefixes = prefixes;
     Declarations = declarations;
-    // DisambiguateVariableNames();
   }
 
   /// <summary>
@@ -46,7 +45,6 @@ public class NodeProperties
   [JsonProperty("ASNumber")]
   public int? Asn { get; set; }
 
-
   /// <summary>
   ///   Additional function declarations.
   /// </summary>
@@ -62,11 +60,12 @@ public class NodeProperties
   /// </summary>
   /// <param name="defaultExport">A default export function.</param>
   /// <param name="defaultImport">A default import function.</param>
+  /// <param name="trackTerms">Whether or not to track the visited terms.</param>
   /// <returns></returns>
   public NetworkNode<RouteEnvironment> CreateNode(Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultExport,
-    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultImport)
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> defaultImport, bool trackTerms)
   {
-    var env = new AstState(Declarations);
+    var env = new AstState(Declarations) {TrackTerms = trackTerms};
 
     var imports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();
     var exports = new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>();

@@ -33,7 +33,7 @@ public class AnglerNetwork
   public List<ExternalPeer> Externals { get; }
 
   /// <summary>
-  ///   Check the network for possible topology errors.
+  ///   Verify the network for possible topology errors.
   ///   The network must have an edge to and from every node.
   /// </summary>
   /// <exception cref="Exception"></exception>
@@ -124,7 +124,7 @@ public class AnglerNetwork
   }
 
   public (Digraph<string>, Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>)
-    TopologyAndTransfer()
+    TopologyAndTransfer(bool trackTerms = false)
   {
     // construct all the mappings we'll need
     var edges = new Dictionary<string, ImmutableSortedSet<string>>();
@@ -145,7 +145,8 @@ public class AnglerNetwork
 
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(RouteEnvironmentExtensions.ReturnAccept, RouteEnvironmentExtensions.ReturnAccept);
+      var details = props.CreateNode(RouteEnvironmentExtensions.ReturnAccept, RouteEnvironmentExtensions.ReturnAccept,
+        trackTerms);
       // add an edge between each node and its neighbor
       foreach (var nbr in details.imports.Keys.Union(details.exports.Keys))
       {

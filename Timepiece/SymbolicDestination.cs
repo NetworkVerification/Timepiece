@@ -8,7 +8,7 @@ namespace Timepiece;
 /// <summary>
 ///   Representation of a symbolically-chosen destination top-of-rack node in a particular fat-tree pod.
 /// </summary>
-public class SymbolicDestination : SymbolicValue<Pair<string, int>>
+public record SymbolicDestination : SymbolicValue<Pair<string, int>>
 {
   public SymbolicDestination(NodeLabelledDigraph<string, int> digraph) : base("dest",
     p => digraph.ExistsNode(n => Zen.And(n.IsEdge(), DestEquals(p, digraph, n))))

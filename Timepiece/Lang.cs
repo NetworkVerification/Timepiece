@@ -113,15 +113,11 @@ public static class Lang
   /// </summary>
   /// <typeparam name="T">The type of routes.</typeparam>
   /// <returns>A function from routes to routes.</returns>
-  public static Func<Zen<T>, Zen<T>> Identity<T>()
-  {
-    return r => r;
-  }
+  public static Func<Zen<T>, Zen<T>> Identity<T>() => r => r;
 
-  public static Func<Zen<T>, Zen<bool>> True<T>()
-  {
-    return _ => Zen.True();
-  }
+  public static Func<Zen<T>, Zen<bool>> True<T>() => _ => Zen.True();
+
+  public static Func<Zen<T>, Zen<bool>> False<T>() => _ => Zen.False();
 
   /// <summary>
   ///   Construct a function over tuples from functions over tuple elements.

@@ -116,7 +116,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  ///   Check that a node's initial route satisfies the given invariant.
+  ///   Verify that a node's initial route satisfies the given invariant.
   /// </summary>
   /// <param name="node"></param>
   /// <param name="invariant"></param>
@@ -132,7 +132,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  ///   Check that the given node's invariant is implied by the invariants of its neighbors.
+  ///   Verify that the given node's invariant is implied by the invariants of its neighbors.
   ///   The bitvector b controls whether the neighbor i sends a route satisfying its before condition
   ///   (b[i] is true) or after condition (b[i] is false)
   /// </summary>
@@ -188,7 +188,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
   }
 
   /// <summary>
-  ///   Check all nodes' initial values against the invariants and return which nodes' invariants failed.
+  ///   Verify all nodes' initial values against the invariants and return which nodes' invariants failed.
   /// </summary>
   /// <returns>
   ///   Two collections collecting all nodes that failed the before invariant (the first collection),
@@ -317,7 +317,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
       foreach (var neighbor in neighbors)
       foreach (var (bu, bv) in t1Combinations)
       {
-        // Check that the node's invariant holds given its initial route and the routes from only this neighbor.
+        // Verify that the node's invariant holds given its initial route and the routes from only this neighbor.
         var check = CheckInductive(node, new[] {neighbor}, bv ? BeforeInvariants[node] : AfterInvariants[node],
           new[] {Zen.Constant(bu)}, routes);
         // if the check passed, add the neighbor to the set
@@ -358,7 +358,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
           }
           else
           {
-            // Check that the node's invariant holds given its initial route and the routes from only these two neighbors.
+            // Verify that the node's invariant holds given its initial route and the routes from only these two neighbors.
             var check = CheckInductive(node, new[] {neighbor1, neighbor2},
               bv ? BeforeInvariants[node] : AfterInvariants[node], new[] {Zen.Constant(b1), Zen.Constant(b2)}, routes);
             if (check is null)
