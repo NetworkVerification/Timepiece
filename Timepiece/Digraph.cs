@@ -133,10 +133,11 @@ public class Digraph<NodeType> where NodeType : notnull
   {
     var extended = Neighbors;
     foreach (var (node, neighbors) in other.Neighbors)
-      if (extended.ContainsKey(node))
-        extended[node] = extended[node].Union(neighbors);
-      else
-        extended[node] = neighbors;
+    {
+      // add a new node if not previously in extended
+      extended.TryAdd(node, ImmutableSortedSet.Create<NodeType>());
+      extended[node] = extended[node].Union(neighbors);
+    }
 
     return new Digraph<NodeType>(extended);
   }
@@ -236,7 +237,7 @@ public class Digraph<NodeType> where NodeType : notnull
 /// <summary>
 ///   Represents the digraph of an NV network with node labels.
 /// </summary>
-public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType>
+public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
 {
   public NodeLabelledDigraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors,
     Dictionary<NodeType, LabelType> labels) :
@@ -275,7 +276,7 @@ public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType>
   }
 }
 
-public class EdgeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType>
+public class EdgeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
 {
   public EdgeLabelledDigraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors,
     Dictionary<(NodeType, NodeType), LabelType> labels) :

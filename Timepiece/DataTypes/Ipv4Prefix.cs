@@ -52,7 +52,15 @@ public struct Ipv4Prefix
 
   public override string ToString()
   {
-    return AsAddressRange().ToCidrString();
+    // we use a try-catch here in case some aspect of the prefix is invalid; typically, it's the length
+    try
+    {
+      return AsAddressRange().ToCidrString();
+    }
+    catch (System.FormatException)
+    {
+      return $"{Prefix}/{PrefixLength} (invalid)";
+    }
   }
 }
 

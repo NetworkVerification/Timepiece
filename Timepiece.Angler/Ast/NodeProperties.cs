@@ -74,12 +74,12 @@ public class NodeProperties
       if (policies.Export is null)
         exports[neighbor] = defaultExport;
       else
-        exports[neighbor] = env.EvaluateFunction(Declarations[policies.Export]);
+        exports[neighbor] = (env with {Function = policies.Export}).EvaluateFunction(Declarations[policies.Export]);
 
       if (policies.Import is null)
         imports[neighbor] = defaultImport;
       else
-        imports[neighbor] = env.EvaluateFunction(Declarations[policies.Import]);
+        imports[neighbor] = (env with {Function = policies.Import}).EvaluateFunction(Declarations[policies.Import]);
     }
 
     return new NetworkNode<RouteEnvironment>(imports.ToImmutableDictionary(), exports.ToImmutableDictionary());

@@ -18,6 +18,9 @@ var monoOption = new System.CommandLine.Option<bool>(
 var queryOption = new System.CommandLine.Option<bool>(
   new[] {"--query", "-q"},
   "If given, print the query formulas to stdout");
+var trackTermsOption = new System.CommandLine.Option<bool>(
+  new[] {"--track-terms", "-t"},
+  "If given, turn on tracking of the visited terms of a route.");
 var fileArgument = new Argument<string>(
   "file",
   "The .angler.json file to use");
@@ -29,8 +32,9 @@ rootCommand.Add(fileArgument);
 rootCommand.Add(queryArgument);
 rootCommand.Add(monoOption);
 rootCommand.Add(queryOption);
+rootCommand.Add(trackTermsOption);
 rootCommand.SetHandler(
-  (file, queryType, mono, printQuery) =>
+  (file, queryType, mono, printQuery, trackTerms) =>
   {
     var json = new JsonTextReader(new StreamReader(file));
 
@@ -42,7 +46,7 @@ rootCommand.SetHandler(
     json.Close();
     if (ast != null)
     {
-      var (topology, transfer) = ast.TopologyAndTransfer();
+      var (topology, transfer) = ast.TopologyAndTransfer(trackTerms: trackTerms);
       var externalNodes = ast.Externals.Select(i => i.Name);
       var query = queryType switch
       {
@@ -70,6 +74,6 @@ rootCommand.SetHandler(
     {
       Console.WriteLine("Failed to deserialize contents of {file} (received null).");
     }
-  }, fileArgument, queryArgument, monoOption, queryOption);
+  }, fileArgument, queryArgument, monoOption, queryOption, trackTermsOption);
 
 await rootCommand.InvokeAsync(args);

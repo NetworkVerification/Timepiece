@@ -109,45 +109,48 @@ public static class Internet2
   ///   Must not be advertised or accepted.
   ///   Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
   /// </summary>
-  private static readonly (Ipv4Wildcard, UInt<_6>)[] MartianPrefixes =
+  private static readonly (Ipv4Wildcard, UInt<_6>, UInt<_6>)[] MartianPrefixes =
   {
-    (new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0)), // default route 0.0.0.0/0
-    (new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // RFC1918 local network 10.0.0.0/8
-    (new Ipv4Wildcard("127.0.0.0", "0.255.255.255"), new UInt<_6>(8)), // RFC3330 loopback 127.0.0.0/8
-    (new Ipv4Wildcard("169.254.0.0", "0.0.255.255"), new UInt<_6>(16)), // RFC3330 link-local addresses 169.254.0.0/16
-    (new Ipv4Wildcard("172.16.0.0", "0.15.255.255"), new UInt<_6>(12)), // RFC1918 private addresses 172.16.0.0/12
-    (new Ipv4Wildcard("192.0.2.0", "0.0.0.255"), new UInt<_6>(24)), // IANA reserved 192.0.2.0/24
-    (new Ipv4Wildcard("192.88.99.1", "0.0.0.0"), new UInt<_6>(32)), // 6to4 relay 192.88.99.1/32
-    (new Ipv4Wildcard("192.168.0.0", "0.0.255.255"), new UInt<_6>(16)), // RFC1918 private addresses 192.168.0.0/16
+    (new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0), new UInt<_6>(0)), // default route 0.0.0.0/0
+    (new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8),
+      new UInt<_6>(32)), // RFC1918 local network 10.0.0.0/8
+    (new Ipv4Wildcard("127.0.0.0", "0.255.255.255"), new UInt<_6>(8), new UInt<_6>(32)), // RFC3330 loopback 127.0.0.0/8
+    (new Ipv4Wildcard("169.254.0.0", "0.0.255.255"), new UInt<_6>(16),
+      new UInt<_6>(32)), // RFC3330 link-local addresses 169.254.0.0/16
+    (new Ipv4Wildcard("172.16.0.0", "0.15.255.255"), new UInt<_6>(12),
+      new UInt<_6>(32)), // RFC1918 private addresses 172.16.0.0/12
+    (new Ipv4Wildcard("192.0.2.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32)), // IANA reserved 192.0.2.0/24
+    (new Ipv4Wildcard("192.88.99.1", "0.0.0.0"), new UInt<_6>(32), new UInt<_6>(32)), // 6to4 relay 192.88.99.1/32
+    (new Ipv4Wildcard("192.168.0.0", "0.0.255.255"), new UInt<_6>(16),
+      new UInt<_6>(32)), // RFC1918 private addresses 192.168.0.0/16
     (new Ipv4Wildcard("198.18.0.0", "0.1.255.255"),
-      new UInt<_6>(15)), // RFC2544 network device benchmarking 198.18.0.0/15
-    (new Ipv4Wildcard("224.0.0.0", "15.255.255.255"), new UInt<_6>(4)), // RFC3171 multicast group addresses 224.0.0.0/4
-    (new Ipv4Wildcard("240.0.0.0", "15.255.255.255"), new UInt<_6>(4)), // RFC3330 special-use addresses 240.0.0.0/4
-    (new Ipv4Wildcard("255.255.255.255", "0.0.0.0"), new UInt<_6>(32)) // limited broadcast -- used?
+      new UInt<_6>(15), new UInt<_6>(32)), // RFC2544 network device benchmarking 198.18.0.0/15
+    (new Ipv4Wildcard("224.0.0.0", "15.255.255.255"), new UInt<_6>(4),
+      new UInt<_6>(32)), // RFC3171 multicast group addresses 224.0.0.0/4
+    (new Ipv4Wildcard("240.0.0.0", "15.255.255.255"), new UInt<_6>(4),
+      new UInt<_6>(32)), // RFC3330 special-use addresses 240.0.0.0/4
+    (new Ipv4Wildcard("255.255.255.255", "0.0.0.0"), new UInt<_6>(32), new UInt<_6>(32)) // limited broadcast -- used?
   };
 
   // List of prefixes which Abilene originates
-  private static readonly (Ipv4Wildcard, UInt<_6>)[] InternalPrefixes =
+  private static readonly (Ipv4Wildcard, UInt<_6>, UInt<_6>)[] InternalPrefixes =
   {
     // Internet2 Backbone
-    (new Ipv4Wildcard("64.57.16.0", "0.0.15.255"), new UInt<_6>(20)),
+    (new Ipv4Wildcard("64.57.16.0", "0.0.15.255"), new UInt<_6>(20), new UInt<_6>(32)),
     // Transit VRF
-    (new Ipv4Wildcard("64.57.22.0", "0.0.0.255"), new UInt<_6>(24)),
-    (new Ipv4Wildcard("64.57.23.240", "0.0.0.15"), new UInt<_6>(28)),
+    (new Ipv4Wildcard("64.57.22.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32)),
+    (new Ipv4Wildcard("64.57.23.240", "0.0.0.15"), new UInt<_6>(28), new UInt<_6>(32)),
     // Abilene Backbone
-    (new Ipv4Wildcard("198.32.8.0", "0.0.3.255"), new UInt<_6>(22)),
+    (new Ipv4Wildcard("198.32.8.0", "0.0.3.255"), new UInt<_6>(22), new UInt<_6>(32)),
     // Abilene Observatory
-    (new Ipv4Wildcard("198.32.12.0", "0.0.3.255"), new UInt<_6>(22)),
+    (new Ipv4Wildcard("198.32.12.0", "0.0.3.255"), new UInt<_6>(22), new UInt<_6>(32)),
     // MANLAN
-    (new Ipv4Wildcard("198.32.154.0", "0.0.0.255"), new UInt<_6>(24)),
-    (new Ipv4Wildcard("198.71.45.0", "0.0.0.255"), new UInt<_6>(24)),
-    (new Ipv4Wildcard("198.71.46.0", "0.0.0.255"), new UInt<_6>(24))
+    (new Ipv4Wildcard("198.32.154.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32)),
+    (new Ipv4Wildcard("198.71.45.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32)),
+    (new Ipv4Wildcard("198.71.46.0", "0.0.0.255"), new UInt<_6>(24), new UInt<_6>(32))
   };
 
-  private static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env)
-  {
-    return env.GetPrefix().GetPrefixLength() <= new UInt<_6>(32);
-  }
+  private static Zen<bool> MaxPrefixLengthIs32(Zen<RouteEnvironment> env) => env.GetPrefix().IsValidPrefixLength();
 
   /// <summary>
   ///   Predicate that the BTE tag is not on the route if the route has a value.
@@ -163,10 +166,11 @@ public static class Internet2
   /// <param name="prefixes"></param>
   /// <param name="env"></param>
   /// <returns></returns>
-  private static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Wildcard, UInt<_6>)> prefixes, Zen<RouteEnvironment> env)
+  private static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Wildcard, UInt<_6>, UInt<_6>)> prefixes,
+    Zen<RouteEnvironment> env)
   {
     var matchesAnyMartian = prefixes.Aggregate(Zen.False(), (b, martian) =>
-      Zen.Or(b, Zen.Constant(martian.Item1).MatchesPrefix(env.GetPrefix(), martian.Item2, new UInt<_6>(32))));
+      Zen.Or(b, Zen.Constant(martian.Item1).MatchesPrefix(env.GetPrefix(), martian.Item2, martian.Item3)));
     return Zen.Implies(env.GetResultValue(), Zen.Not(matchesAnyMartian));
   }
 
@@ -307,9 +311,9 @@ public static class Internet2
   /// <param name="p"></param>
   /// <param name="prefixes"></param>
   /// <returns></returns>
-  private static Zen<bool> NoPrefixMatch(Zen<Ipv4Prefix> p, IEnumerable<(Ipv4Wildcard, UInt<_6>)> prefixes) =>
+  private static Zen<bool> NoPrefixMatch(Zen<Ipv4Prefix> p, IEnumerable<(Ipv4Wildcard, UInt<_6>, UInt<_6>)> prefixes) =>
     Zen.And(prefixes.Select(prefix =>
-      Zen.Not(Zen.Constant(prefix.Item1).MatchesPrefix(p, prefix.Item2, new UInt<_6>(32)))));
+      Zen.Not(Zen.Constant(prefix.Item1).MatchesPrefix(p, prefix.Item2, prefix.Item3))));
 
   /// <summary>
   /// Verify that if a valid route comes from the external peers to the network,
@@ -322,19 +326,15 @@ public static class Internet2
     IEnumerable<string> externalPeers)
   {
     // the announced external destination prefix
-    // TODO: figure out the problem with the commented constraint!!
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
-      p == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
-    // Zen.And(
-    // (1) must not be for a martian prefix or an Internet2-internal prefix
-    // NoPrefixMatch(p, MartianPrefixes.Concat(InternalPrefixes)),
-    // (2) must have a valid prefix length
-    // p.IsValidPrefixLength()));
+      Zen.And(
+        // (1) must not be for a martian prefix or an Internet2-internal prefix
+        NoPrefixMatch(p, MartianPrefixes.Concat(InternalPrefixes)),
+        // (2) must have a valid prefix length
+        p.IsValidPrefixLength()));
     var externalRoutes = SymbolicValue.SymbolicDictionary("external-route", externalPeers,
       RouteEnvironmentExtensions.IfValue(r =>
-        Zen.And(r.GetPrefix() == destinationPrefix.Value,
-          // force to contain private as (forcing a counterexample -- comment out when making this work!)
-          r.GetAsSet().Contains(PrivateAs))));
+        Zen.And(r.GetPrefix() == destinationPrefix.Value)));
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route)
         ? route.Value
@@ -357,9 +357,8 @@ public static class Internet2
     var monolithicProperties = digraph.MapNodes(n =>
       Internet2Nodes.Contains(n)
         // Internet2 nodes: if an external route exists, then we must have a route
-        ? r => // Zen.Implies(externalRouteExists,
-          // TODO: debugging -- remove Not once fixed
-          Zen.And(Zen.Not(r.GetResultValue()), r.GetPrefix() == destinationPrefix.Value)
+        ? r => Zen.Implies(externalRouteExists,
+          Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value))
         // no check on external nodes
         : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n =>
@@ -380,20 +379,17 @@ public static class Internet2
               // case 2
               notNextToPeerTime),
             monolithicProperties[n])
-          // external nodes get routes at 2 different possible times also
-          // case 3: external peer starts with a route.
-          // case 4: external peer does not start with a route. it gets a route once it receives it from the network
+          // if an external node starts with a route, it must always have one
           : Lang.Globally<RouteEnvironment>(r =>
-            externalRoutes.TryGetValue(n, out var externalRoute)
-              // case 3
-              ? Zen.Implies(externalRoute.Value.GetResultValue(),
-                // TODO/FIXME: it should be necessary that the AS set _not_ contain a private AS!
-                Zen.And(r.GetResultValue(), r.GetAsSet().Contains(PrivateAs)))
-              // case 4 (we don't care what the peer's route is)
-              : Zen.True()),
+            Zen.Implies(externalRoutes.TryGetValue(n, out var externalRoute)
+              ? externalRoute.Value.GetResultValue()
+              : Zen.False(), r.GetResultValue())),
         Lang.Globally<RouteEnvironment>(r =>
           Zen.Implies(r.GetResultValue(),
-            Zen.And(r.GetPrefix() == destinationPrefix.Value))))); // r.GetAsSet() == CSet.Empty<string>())))));
+            Zen.And(r.GetPrefix() == destinationPrefix.Value,
+              Zen.Not(r.GetAsSet().Contains(PrivateAs)),
+              Zen.Not(r.GetAsSet().Contains(NlrAs)),
+              Zen.Not(r.GetAsSet().Contains(CommercialAs)))))));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(destinationPrefix).ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
       annotations);

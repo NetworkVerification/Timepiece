@@ -13,7 +13,7 @@ namespace Timepiece.Angler.Ast;
 /// </summary>
 public record AstState(ImmutableDictionary<string, dynamic> Bindings,
   IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> Declarations,
-  string? DefaultPolicy = null, bool CallExprContext = false, bool TrackTerms = false)
+  string? Function = null, string? DefaultPolicy = null, bool CallExprContext = false, bool TrackTerms = false)
 {
   /// <summary>
   ///   The Zen null option creation method.
@@ -38,8 +38,9 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
   /// <param name="callExprContext"></param>
   /// <param name="trackTerms"></param>
   public AstState(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
-    string? defaultPolicy = null, bool callExprContext = false, bool trackTerms = false) : this(
-    ImmutableDictionary<string, dynamic>.Empty, declarations, defaultPolicy, callExprContext, trackTerms)
+    string? function = null, string? defaultPolicy = null, bool callExprContext = false,
+    bool trackTerms = false) : this(
+    ImmutableDictionary<string, dynamic>.Empty, declarations, function, defaultPolicy, callExprContext, trackTerms)
   {
   }
 
@@ -85,8 +86,9 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
       case Call c:
         var oldReturn = env.Route.GetResultReturned();
         // call the function with the current route as its argument
-        var outputRoute = (this with {CallExprContext = true}).EvaluateFunction(Declarations[c.Name])(
-          env.Route.WithResultReturned(false));
+        var outputRoute =
+          (this with {CallExprContext = true, Function = c.Name}).EvaluateFunction(Declarations[c.Name])(
+            env.Route.WithResultReturned(false));
         // return the updated result and its associated value
         return new ReturnRoute<RouteEnvironment>(outputRoute.WithResultReturned(oldReturn),
           outputRoute.GetResultValue());
@@ -174,7 +176,7 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
         // add the comment as a term (if TrackTerms is true) to keep track of which policy terms were visited
         var withTerm = ite.Comment is null || !TrackTerms
           ? route
-          : route with {Route = route.Route.AddVisitedTerm(ite.Comment)};
+          : route with {Route = route.Route.AddVisitedTerm($"{Function ?? ""}.{ite.Comment}")};
         var guardEnv = EvaluateExpr(withTerm, ite.Guard);
         // if the guard updated the route (e.g. by evaluating a Call),
         // we need to make sure those updates are observed in the branches // by using Update() here
@@ -212,9 +214,18 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
   private AstState Join(AstState other, Zen<bool> guard)
   {
     if (other.Bindings.Any(p => !Bindings.ContainsKey(p.Key)))
-      throw new ArgumentException("Environments do not bind the same variables.");
+      throw new ArgumentException("AstStates do not bind the same variables.");
 
-    var e = new AstState(Declarations, DefaultPolicy, CallExprContext);
+    if (other.Function != Function)
+      throw new ArgumentException("AstStates are not in the same functions.");
+
+    if (other.DefaultPolicy != DefaultPolicy)
+      throw new ArgumentException("AstStates do not have the same default policies.");
+
+    if (other.CallExprContext != CallExprContext)
+      throw new ArgumentException("AstStates do not have the same CallExprContext.");
+
+    var e = new AstState(Declarations, Function, DefaultPolicy, CallExprContext);
     foreach (var (variable, value) in Bindings)
     {
       if (!other.Bindings.ContainsKey(variable))

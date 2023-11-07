@@ -1,3 +1,4 @@
+using NetTools;
 using Newtonsoft.Json;
 using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
@@ -114,12 +115,38 @@ public class Internet2Tests
   }
 
   [Fact]
-  public void WashNeighborTransferAcceptsGoodRoute()
+  public void WashMeritNeighborTransferAcceptsGoodRoute()
   {
     var (_, transfer) = Internet2Ast.TopologyAndTransfer();
     // export + import
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("192.122.183.13", "wash")]);
     var result = transferCheck.Verify(Zen.Symbolic<RouteEnvironment>("r"), IsGoodUMichRoute, r => r.GetResultValue());
+    Assert.Null(result);
+  }
+
+  [Fact]
+  public void WashCaarenNeighborTransfersGoodRoute()
+  {
+    var route = Zen.Symbolic<RouteEnvironment>("r");
+    // var route = new RouteEnvironment
+    // {
+      // Result = new RouteResult {Exit = false, Fallthrough = false, Returned = false, Value = true},
+      // LocalDefaultAction = false, Prefix = new Ipv4Prefix("128.164.0.0", "128.164.255.255"), Weight = 0, Lp = 0,
+      // AsSet = new CSet<string>(),
+      // AsPathLength = 0, Metric = 0, OriginType = new UInt<_2>(0), Tag = 0, Communities =
+        // new CSet<string>(),
+      // VisitedTerms = new CSet<string>()
+    // };
+    var (_, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
+    var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("198.71.45.247", "wash")]);
+    var result = transferCheck.Verify(route,
+      r => Zen.And(r.NonTerminated(), r.GetResultValue(),
+        r.GetPrefix() == new Ipv4Prefix("128.164.0.0", "128.164.255.255"),
+        Zen.Not(r.GetAsSet().Contains(Internet2.PrivateAs)),
+        Zen.Not(r.GetAsSet().Contains(Internet2.CommercialAs)),
+        Zen.Not(r.GetAsSet().Contains(Internet2.NlrAs))),
+      r => r.GetResultValue());
+    _testOutputHelper.WriteLine($"{result}");
     Assert.Null(result);
   }
 
