@@ -57,6 +57,32 @@ public static class BooleanTests
     return new AnnotatedNetwork<bool, string>(net, annotations, modularProperties, monolithicProperties);
   }
 
+  public static TheoryData<string, IReadOnlyDictionary<string, Zen<bool>>, Zen<bool>> ConcreteBooleanRouteUpdates =>
+    new()
+    {
+      {"A", new Dictionary<string, Zen<bool>> {{"B", false}, {"C", false}}, true},
+      {"A", new Dictionary<string, Zen<bool>> {{"B", false}, {"C", true}}, true},
+      {"A", new Dictionary<string, Zen<bool>> {{"B", true}, {"C", false}}, true},
+      {"A", new Dictionary<string, Zen<bool>> {{"B", true}, {"C", true}}, true},
+      {"B", new Dictionary<string, Zen<bool>> {{"A", true}, {"C", false}}, true},
+      {"B", new Dictionary<string, Zen<bool>> {{"A", true}, {"C", true}}, true},
+      {"B", new Dictionary<string, Zen<bool>> {{"A", false}, {"C", false}}, false},
+      {"B", new Dictionary<string, Zen<bool>> {{"A", false}, {"C", true}}, true}
+    };
+
+  [Theory]
+  [MemberData(nameof(ConcreteBooleanRouteUpdates))]
+  public static void UpdateRouteProducesCorrectResult(string node, IReadOnlyDictionary<string, Zen<bool>> routes,
+    Zen<bool> expectedRoute)
+  {
+    var topology = Topologies.Complete(3);
+    var initialValues = topology.MapNodes(n => Constant(n == "A"));
+    var net = new BooleanNetwork<string>(topology, initialValues, Array.Empty<ISymbolic>());
+    var actualRoute = net.UpdateNodeRoute(node, routes);
+    var query = Not(Eq(actualRoute, expectedRoute)).Solve();
+    Assert.False(query.IsSatisfiable());
+  }
+
   [Fact]
   public static void SoundAnnotationsPassChecks()
   {

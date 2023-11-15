@@ -14,7 +14,8 @@ namespace Timepiece.Networks;
 /// </summary>
 /// <typeparam name="RouteType">The type of the routes.</typeparam>
 /// <typeparam name="NodeType">The type of nodes.</typeparam>
-public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType> where NodeType : notnull
+public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType>, IAnnotated<RouteType, NodeType>
+  where NodeType : notnull
 {
   /// <summary>
   ///   Construct a new <c>AnnotatedNetwork{T,TV,TS}</c>.

@@ -11,12 +11,6 @@ namespace Timepiece;
 
 public static class Profile
 {
-  public static void RunCmpPerNode<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> annotatedNetwork)
-  {
-    RunAnnotatedWithStats(annotatedNetwork);
-    RunMonoWithStats(annotatedNetwork);
-  }
-
   public static void RunMonoWithStats<RouteType, NodeType>(AnnotatedNetwork<RouteType, NodeType> annotatedNetwork)
   {
     const string headers = "n\ttotal";
