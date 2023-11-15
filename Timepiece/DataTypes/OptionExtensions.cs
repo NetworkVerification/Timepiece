@@ -13,11 +13,6 @@ public static class OptionExtensions
     if (o.HasValue) f(o.Value);
   }
 
-  public static Option<T2> Select<T1, T2>(this Option<T1> o, Func<T1, T2> f)
-  {
-    return o.HasValue ? Option.Some(f(o.Value)) : Option.None<T2>();
-  }
-
   public static Option<T2> Bind<T1, T2>(this Option<T1> o, Func<T1, Option<T2>> f)
   {
     return o.HasValue ? f(o.Value) : Option.None<T2>();
