@@ -34,9 +34,9 @@ public struct Ipv4Prefix
   }
 
   /// <summary>
-  ///   Construct an IPv4 prefix from an address in CIDR notation.
+  ///   Construct an IPv4 prefix from a prefix in CIDR notation.
   /// </summary>
-  /// <param name="address">An IPv4 address in CIDR notation.</param>
+  /// <param name="address">An IPv4 prefix in CIDR notation.</param>
   public Ipv4Prefix(string address) : this(IPAddressRange.Parse(address))
   {
   }
