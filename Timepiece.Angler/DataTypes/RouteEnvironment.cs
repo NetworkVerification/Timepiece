@@ -146,6 +146,15 @@ public class RouteEnvironment
 
     return $"RouteEnvironment({propertiesBuilder})";
   }
+
+  /// <summary>
+  ///   Return a Zen boolean encoding that lifts a predicate <paramref name="f"/> over a route
+  ///   such that it only applies if the route has a result with a value.
+  /// </summary>
+  /// <param name="f"></param>
+  /// <returns></returns>
+  public static Func<Zen<RouteEnvironment>, Zen<bool>> IfValue(Func<Zen<RouteEnvironment>, Zen<bool>> f) =>
+    b => Zen.Implies(b.GetResultValue(), f(b));
 }
 
 public static class RouteEnvironmentExtensions
@@ -197,15 +206,6 @@ public static class RouteEnvironmentExtensions
   /// <param name="b"></param>
   /// <returns></returns>
   public static Zen<bool> NonTerminated(this Zen<RouteEnvironment> b) => Zen.Not(b.GetResult().IsTerminated());
-
-  /// <summary>
-  ///   Return a Zen boolean encoding that lifts a predicate <paramref name="f"/> over a route
-  ///   such that it only applies if the route has a result with a value.
-  /// </summary>
-  /// <param name="f"></param>
-  /// <returns></returns>
-  public static Func<Zen<RouteEnvironment>, Zen<bool>> IfValue(Func<Zen<RouteEnvironment>, Zen<bool>> f) =>
-    b => Zen.Implies(b.GetResultValue(), f(b));
 
   public static Zen<RouteEnvironment> WithResultValue(this Zen<RouteEnvironment> b, Zen<bool> value) =>
     b.WithResult(b.GetResult().WithValue(value));

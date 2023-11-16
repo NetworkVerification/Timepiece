@@ -284,11 +284,13 @@ public static class Internet2
     PrefixListExtensions.DeserializePrefixes("participants.json") ??
     throw new IOException("Unable to deserialize participant prefixes");
 
-  private static Zen<bool> IsParticipantPrefix(Zen<Ipv4Prefix> prefix)
+  private static Zen<bool> IsParticipantPrefix(Zen<Ipv4Prefix> prefix, string nameSubString)
   {
-    // get the list of participant prefixes
-    // convert them to Ipv4Wildcard classes that can match the prefix from the given length up
-    throw new NotImplementedException("TODO");
+    // get the list of participant prefixes matching the sub string
+    return ParticipantPrefixes.Where(pl => pl.Name.Contains(nameSubString))
+      // convert them to Ipv4Wildcard classes that can match the given prefix from their prefix length up to 32
+      .Exists(pl =>
+        pl.Prefixes.Exists(p => Zen.Constant(p.ToWildcard()).MatchesPrefix(prefix, p.PrefixLength, new UInt<_6>(32))));
   }
 
   private static readonly IEnumerable<string> InternalNodes = Internet2Nodes.Concat(OtherInternalNodes);
@@ -303,7 +305,7 @@ public static class Internet2
   ///   Must not be advertised or accepted.
   ///   Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
   /// </summary>
-  private static readonly (Ipv4Wildcard, UInt<_6>, UInt<_6>)[] MartianPrefixes =
+  private static readonly (Zen<Ipv4Wildcard>, UInt<_6>, UInt<_6>)[] MartianPrefixes =
   {
     (new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0), new UInt<_6>(0)), // default route 0.0.0.0/0
     (new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8),
@@ -327,7 +329,7 @@ public static class Internet2
   };
 
   // List of prefixes which Abilene originates
-  private static readonly (Ipv4Wildcard, UInt<_6>, UInt<_6>)[] InternalPrefixes =
+  private static readonly (Zen<Ipv4Wildcard>, UInt<_6>, UInt<_6>)[] InternalPrefixes =
   {
     // Internet2 Backbone
     (new Ipv4Wildcard("64.57.16.0", "0.0.15.255"), new UInt<_6>(20), new UInt<_6>(32)),
@@ -355,17 +357,16 @@ public static class Internet2
   }
 
   /// <summary>
-  ///   Verify that if a given route exists, it does not match any of the given prefixes.
+  ///   Return true if none of the given Ipv4 wildcards match the given prefix
   /// </summary>
-  /// <param name="prefixes"></param>
-  /// <param name="env"></param>
+  /// <param name="candidates"></param>
+  /// <param name="prefix"></param>
   /// <returns></returns>
-  private static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Wildcard, UInt<_6>, UInt<_6>)> prefixes,
-    Zen<RouteEnvironment> env)
+  private static Zen<bool> NoPrefixMatch(IEnumerable<(Zen<Ipv4Wildcard>, UInt<_6>, UInt<_6>)> candidates,
+    Zen<Ipv4Prefix> prefix)
   {
-    var matchesAnyMartian = prefixes.Aggregate(Zen.False(), (b, martian) =>
-      Zen.Or(b, Zen.Constant(martian.Item1).MatchesPrefix(env.GetPrefix(), martian.Item2, martian.Item3)));
-    return Zen.Implies(env.GetResultValue(), Zen.Not(matchesAnyMartian));
+    return candidates.ForAll(candidate =>
+      Zen.Not(candidate.Item1.MatchesPrefix(prefix, candidate.Item2, candidate.Item3)));
   }
 
   /// <summary>
@@ -411,7 +412,11 @@ public static class Internet2
     // internal nodes must not select martian routes
     var monolithicProperties = digraph.MapNodes(n =>
       InternalNodes.Contains(n)
-        ? Lang.Intersect<RouteEnvironment>(env => NoPrefixMatch(MartianPrefixes, env), MaxPrefixLengthIs32)
+        ? Lang.Intersect<RouteEnvironment>(
+          // route is non-martian
+          env => Zen.Implies(env.GetResultValue(), NoPrefixMatch(MartianPrefixes, env.GetPrefix())),
+          // route has prefix length at most 32
+          MaxPrefixLengthIs32)
         : Lang.True<RouteEnvironment>());
     // annotations and modular properties are the same
     var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
@@ -491,23 +496,11 @@ public static class Internet2
         : Lang.Globally(monolithicProperties[n]));
     var annotations = digraph.MapNodes(n =>
       Lang.Intersect(modularProperties[n],
-        Lang.Globally<RouteEnvironment>(r => Zen.Implies(r.GetResultValue(),
-          r.GetPrefix() == InternalPrefix))));
-    var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes)
-      .ToArray();
+        Lang.Globally(RouteEnvironment.IfValue(r => r.GetPrefix() == InternalPrefix))));
+    var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
     return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
       annotations);
   }
-
-  /// <summary>
-  /// Encode that the given prefix <paramref name="p"/> does not match any of the prefixes in <paramref name="prefixes"/>.
-  /// </summary>
-  /// <param name="p"></param>
-  /// <param name="prefixes"></param>
-  /// <returns></returns>
-  private static Zen<bool> NoPrefixMatch(Zen<Ipv4Prefix> p, IEnumerable<(Ipv4Wildcard, UInt<_6>, UInt<_6>)> prefixes) =>
-    Zen.And(prefixes.Select(prefix =>
-      Zen.Not(Zen.Constant(prefix.Item1).MatchesPrefix(p, prefix.Item2, prefix.Item3))));
 
   /// <summary>
   /// Verify that if a valid route comes from the external peers to the network,
@@ -523,11 +516,13 @@ public static class Internet2
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
       Zen.And(
         // (1) must not be for a martian prefix or an Internet2-internal prefix
-        NoPrefixMatch(p, MartianPrefixes.Concat(InternalPrefixes)),
+        NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes), p),
         // (2) must have a valid prefix length
         p.IsValidPrefixLength()));
+    // TODO: modify the constraint based on which neighbor sends routes for that prefix
+    // map from the external peer to the appropriate participant prefix list!
     var externalRoutes = SymbolicValue.SymbolicDictionary("external-route", externalPeers,
-      RouteEnvironmentExtensions.IfValue(r =>
+      RouteEnvironment.IfValue(r =>
         Zen.And(r.GetPrefix() == destinationPrefix.Value)));
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route)

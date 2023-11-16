@@ -346,6 +346,9 @@ public static class Lang
     return (t1, t2) => If(keyComparator(keyAccessor(t1), keyAccessor(t2)), t1, t2);
   }
 
-  public static Zen<bool> Exists<T>(this IEnumerable<Zen<T>> enumerable, Func<Zen<T>, Zen<bool>> predicate) =>
+  public static Zen<bool> Exists<T>(this IEnumerable<T> enumerable, Func<T, Zen<bool>> predicate) =>
     Or(enumerable.Select(predicate));
+
+  public static Zen<bool> ForAll<T>(this IEnumerable<T> enumerable, Func<T, Zen<bool>> predicate) =>
+    And(enumerable.Select(predicate));
 }

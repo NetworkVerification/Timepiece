@@ -40,4 +40,19 @@ public static class Ipv4PrefixTests
     var actualLength = address.ToUnsignedInt();
     Assert.Equal(expectedLength, actualLength);
   }
+
+  [Theory]
+  [InlineData("0.0.0.0/0")]
+  [InlineData("127.0.0.0/24")]
+  [InlineData("70.0.19.0/24")]
+  [InlineData("70.0.19.0/25")]
+  [InlineData("70.0.19.0/26")]
+  [InlineData("70.0.19.0/27")]
+  [InlineData("70.0.19.1/32")]
+  [InlineData("255.255.255.255/32")]
+  public static void RoundTripViaWildcard(string address)
+  {
+    var prefix = new Ipv4Prefix(address);
+    Assert.Equal(prefix, prefix.ToWildcard().ToPrefix());
+  }
 }

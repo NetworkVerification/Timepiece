@@ -27,4 +27,17 @@ public static class Ipv4WildcardTests
     var p = new Ipv4Wildcard(address, mask);
     Assert.True(p.ContainsIp(IPAddress.Parse(other).ToUnsignedInt()));
   }
+
+  [Theory]
+  [InlineData("127.0.0.0", "0.0.0.255")]
+  [InlineData("70.0.19.0", "0.0.0.1")]
+  [InlineData("70.0.19.0", "0.0.0.0")]
+  [InlineData("0.0.0.0", "255.255.255.255")]
+  [InlineData("0.0.0.0", "127.255.255.255")]
+  [InlineData("0.0.0.0", "0.0.0.1")]
+  public static void RoundTripViaPrefix(string address, string mask)
+  {
+    var w = new Ipv4Wildcard(address, mask);
+    Assert.Equal(w, w.ToPrefix().ToWildcard());
+  }
 }

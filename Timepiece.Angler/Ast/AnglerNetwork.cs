@@ -1,11 +1,10 @@
 using System.Collections.Immutable;
 using System.Numerics;
 using Newtonsoft.Json;
-using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
 using ZenLib;
 
-namespace Timepiece.Angler;
+namespace Timepiece.Angler.Ast;
 
 /// <summary>
 ///   Representation of the routing policies of all nodes in an Angler-produced network.

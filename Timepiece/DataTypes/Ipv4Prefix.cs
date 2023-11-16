@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using System.Net;
 using NetTools;
 using Newtonsoft.Json;
 using ZenLib;
+using Array = System.Array;
 
 namespace Timepiece.DataTypes;
 
@@ -50,6 +52,15 @@ public struct Ipv4Prefix
   {
   }
 
+  public Ipv4Wildcard ToWildcard()
+  {
+    // convert the prefix length to a bit mask
+    var bitMask = Bits.GetBitMask(4, (int) PrefixLength.ToLong());
+    // reverse for endianness
+    Array.Reverse(bitMask);
+    return new Ipv4Wildcard(Prefix, ~BitConverter.ToUInt32(bitMask, 0));
+  }
+
   public override string ToString()
   {
     // we use a try-catch here in case some aspect of the prefix is invalid; typically, it's the length
@@ -57,7 +68,7 @@ public struct Ipv4Prefix
     {
       return AsAddressRange().ToCidrString();
     }
-    catch (System.FormatException)
+    catch (FormatException)
     {
       return $"{Prefix}/{PrefixLength} (invalid)";
     }
@@ -73,7 +84,9 @@ public static class Ipv4PrefixExtensions
   /// <returns></returns>
   public static uint ToUnsignedInt(this IPAddress address) =>
     // we need to use Reverse() to flip the endianness of the bytes
-    address.GetAddressBytes().Reverse().Aggregate(0U, (curr, b) => (curr << 8) | b);
+    BitConverter.ToUInt32(address.GetAddressBytes().Reverse().ToArray(), 0);
+
+  public static IPAddress ToIpAddress(this uint u) => new(BitConverter.GetBytes(u).Reverse().ToArray());
 
   /// <summary>
   /// Verify that the given IPv4 prefix has a valid length (at most 32).

@@ -1,5 +1,5 @@
-using System;
 using System.Net;
+using NetTools;
 using Newtonsoft.Json;
 using ZenLib;
 
@@ -11,7 +11,7 @@ namespace Timepiece.DataTypes;
 ///   Python's ipaddress module calls these "host masks".
 /// </summary>
 [ZenObject]
-public class Ipv4Wildcard
+public struct Ipv4Wildcard
 {
   public Ipv4Wildcard(uint prefix, uint wildcardMask)
   {
@@ -55,6 +55,19 @@ public class Ipv4Wildcard
     var maskedPrefix = Prefix | WildcardMask;
     var maskedAddress = address | WildcardMask;
     return maskedPrefix == maskedAddress;
+  }
+
+  /// <summary>
+  /// Return the corresponding Ipv4Prefix of the wildcard.
+  /// </summary>
+  /// <returns></returns>
+  public Ipv4Prefix ToPrefix()
+  {
+    // we first do a bitwise NOT (~) on the wildcard mask to get the subnet mask, then convert
+    // (IPAddressRange has a handy builtin we can use)
+    var maskLength = IPAddressRange.SubnetMaskLength((~WildcardMask).ToIpAddress());
+    var range = new IPAddressRange(Prefix.ToIpAddress(), maskLength: maskLength);
+    return new Ipv4Prefix(range);
   }
 }
 
