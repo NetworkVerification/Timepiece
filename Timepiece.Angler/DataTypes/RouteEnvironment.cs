@@ -235,15 +235,11 @@ public static class RouteEnvironmentExtensions
     r.WithResult(Zen.Constant(new RouteResult()).WithValue(r.GetResultValue()));
 
   /// <summary>
-  /// Return true if one of the given routes has a value.
+  /// Add the given term string to the route's visited terms.
   /// </summary>
-  /// <param name="routes"></param>
+  /// <param name="route"></param>
+  /// <param name="term"></param>
   /// <returns></returns>
-  public static Zen<bool> ExistsValue(IEnumerable<Zen<RouteEnvironment>> routes)
-  {
-    return routes.Aggregate(Zen.False(), (b, r) => Zen.Or(b, r.GetResultValue()));
-  }
-
   public static Zen<RouteEnvironment> AddVisitedTerm(this Zen<RouteEnvironment> route, string term) =>
     route.WithVisitedTerms(route.GetVisitedTerms().Add(term));
 }

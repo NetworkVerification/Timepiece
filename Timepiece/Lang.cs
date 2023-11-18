@@ -347,8 +347,8 @@ public static class Lang
   }
 
   public static Zen<bool> Exists<T>(this IEnumerable<T> enumerable, Func<T, Zen<bool>> predicate) =>
-    Or(enumerable.Select(predicate));
+    enumerable.Aggregate(Zen.False(), (b, e) => Or(b, predicate(e)));
 
   public static Zen<bool> ForAll<T>(this IEnumerable<T> enumerable, Func<T, Zen<bool>> predicate) =>
-    And(enumerable.Select(predicate));
+    enumerable.Aggregate(Zen.True(), (b, e) => And(b, predicate(e)));
 }

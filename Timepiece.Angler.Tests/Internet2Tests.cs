@@ -1,4 +1,3 @@
-using NetTools;
 using Newtonsoft.Json;
 using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
@@ -29,9 +28,9 @@ public class Internet2Tests
   /// <summary>
   /// Nodes whose incoming routes (to Internet2 nodes) are always rejected.
   /// </summary>
-  private static readonly IEnumerable<string> RejectIncoming = Internet2.OtherGroup
-    .Concat(Internet2.OtherInternalGroup)
-    .Concat(Internet2.AdvancedLayer2ServiceManagementGroup);
+  private static readonly IEnumerable<string> RejectIncoming = Internet2Nodes.OtherGroup
+    .Concat(Internet2Nodes.OtherInternalGroup)
+    .Concat(Internet2Nodes.AdvancedLayer2ServiceManagementGroup);
 
   public Internet2Tests(ITestOutputHelper testOutputHelper)
   {
@@ -103,7 +102,7 @@ public class Internet2Tests
     var route = Zen.Symbolic<RouteEnvironment>("r");
     // iterate over the edges from non-rejected neighbors to Internet2 nodes
     var acceptedEdges = topology.Edges(e =>
-      !RejectIncoming.Contains(e.Item1) && Internet2.Internet2Nodes.Contains(e.Item2));
+      !RejectIncoming.Contains(e.Item1) && Internet2Nodes.AsNodes.Contains(e.Item2));
     // check all the accepted edges
     Assert.All(acceptedEdges, edge =>
     {
@@ -130,12 +129,12 @@ public class Internet2Tests
     var route = Zen.Symbolic<RouteEnvironment>("r");
     // var route = new RouteEnvironment
     // {
-      // Result = new RouteResult {Exit = false, Fallthrough = false, Returned = false, Value = true},
-      // LocalDefaultAction = false, Prefix = new Ipv4Prefix("128.164.0.0", "128.164.255.255"), Weight = 0, Lp = 0,
-      // AsSet = new CSet<string>(),
-      // AsPathLength = 0, Metric = 0, OriginType = new UInt<_2>(0), Tag = 0, Communities =
-        // new CSet<string>(),
-      // VisitedTerms = new CSet<string>()
+    // Result = new RouteResult {Exit = false, Fallthrough = false, Returned = false, Value = true},
+    // LocalDefaultAction = false, Prefix = new Ipv4Prefix("128.164.0.0", "128.164.255.255"), Weight = 0, Lp = 0,
+    // AsSet = new CSet<string>(),
+    // AsPathLength = 0, Metric = 0, OriginType = new UInt<_2>(0), Tag = 0, Communities =
+    // new CSet<string>(),
+    // VisitedTerms = new CSet<string>()
     // };
     var (_, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("198.71.45.247", "wash")]);
@@ -184,7 +183,7 @@ public class Internet2Tests
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
     // iterate over the edges from non-rejected neighbors to Internet2 nodes
     var acceptedEdges = topology.Edges(e =>
-      !RejectIncoming.Contains(e.Item1) && Internet2.Internet2Nodes.Contains(e.Item2));
+      !RejectIncoming.Contains(e.Item1) && Internet2Nodes.AsNodes.Contains(e.Item2));
     Assert.Contains(acceptedEdges, edge =>
     {
       var transferCheck = new TransferCheck<RouteEnvironment>(transfer[edge]);

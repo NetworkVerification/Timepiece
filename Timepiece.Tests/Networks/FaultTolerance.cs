@@ -47,7 +47,7 @@ public class FaultTolerance<RouteType, NodeType> : AnnotatedNetwork<Option<Route
   public static Zen<bool> IsFailed(IEnumerable<SymbolicValue<(NodeType, NodeType)>> failedEdges,
     (NodeType, NodeType) edge)
   {
-    return failedEdges.Aggregate(False(), (current, e) => Or(current, e.EqualsValue(edge)));
+    return failedEdges.Exists(e => e.EqualsValue(edge));
   }
 
   private static Zen<bool> EdgeInNetwork(Digraph<NodeType> digraph, Zen<(NodeType, NodeType)> edge)

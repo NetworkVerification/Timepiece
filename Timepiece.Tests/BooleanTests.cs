@@ -154,7 +154,7 @@ public static class BooleanTests
     NetworkAsserts.Unsound(net);
   }
 
-  [Fact]
+  [Fact(Timeout = 30_000)]
   public static void FatTreeMonoChecks()
   {
     var topology = Topologies.FatTree(4);

@@ -71,8 +71,7 @@ public static class InferTests
   // a boolean network where one symbolically-chosen node has a route initially and others do not
   private static Network<bool, NodeType> BoolNetMultiDest<NodeType>(Digraph<NodeType> digraph) where NodeType : notnull
   {
-    var dest = new SymbolicValue<NodeType>("dest",
-      x => digraph.Nodes.Aggregate(Zen.False(), (b, n) => Zen.Or(b, x == n)));
+    var dest = new SymbolicValue<NodeType>("dest", x => digraph.Nodes.Exists(n => x == n));
     return new BooleanNetwork<NodeType>(digraph,
       digraph.MapNodes(n => dest.EqualsValue(n)), new ISymbolic[] {dest});
   }

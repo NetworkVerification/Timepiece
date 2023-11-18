@@ -10,8 +10,14 @@ using Array = System.Array;
 
 namespace Timepiece.Tests;
 
+/// <summary>
+/// Tests for networks with routes modelling BGP.
+/// </summary>
 public static class BgpNetworkTests
 {
+  /// <summary>
+  /// An initial BGP route.
+  /// </summary>
   private static readonly Zen<Option<Bgp>> Start = Option.Create<Bgp>(new Bgp());
 
   /// <summary>
@@ -25,6 +31,11 @@ public static class BgpNetworkTests
     return digraph.MapNodes(_ => Lang.IsSome<Bgp>());
   }
 
+  /// <summary>
+  /// 3-node path testing network.
+  /// </summary>
+  /// <param name="annotations"></param>
+  /// <returns></returns>
   private static BgpAnnotatedNetwork<string> Net(
     Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>> annotations)
   {
@@ -100,7 +111,7 @@ public static class BgpNetworkTests
     NetworkAsserts.Sound(net);
   }
 
-  [Fact]
+  [Fact(Timeout = 30_000)]
   public static void MonolithicNetworkPassesExactChecks()
   {
     var net = Net(new Dictionary<string, Func<Zen<Option<Bgp>>, Zen<BigInteger>, Zen<bool>>>());
@@ -134,7 +145,7 @@ public static class BgpNetworkTests
     NetworkAsserts.Unsound(net, SmtCheck.Monolithic);
   }
 
-  [Fact]
+  [Fact(Timeout = 30_000)]
   public static void FatTreeNetworkFailsBadMonolithicCheck()
   {
     var topology = Topologies.FatTree(4);
