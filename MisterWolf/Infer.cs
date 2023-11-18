@@ -35,7 +35,7 @@ public class Infer<TRoute, TNode> : Network<TRoute, TNode> where TNode : IEquata
 
   public Infer(Network<TRoute, TNode> net,
     IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> beforeInvariants,
-    IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> afterInvariants) : this(net.Digraph, net.TransferFunction,
+    IReadOnlyDictionary<TNode, Func<Zen<TRoute>, Zen<bool>>> afterInvariants) : this(net.Digraph, net.TransferFunctions,
     net.MergeFunction, net.InitialValues, beforeInvariants, afterInvariants, net.Symbolics)
   {
   }

@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using Timepiece.DataTypes;
 using ZenLib;
 
-namespace Timepiece.Angler.Ast;
+namespace Timepiece.Angler.DataTypes;
 
 /// <summary>
 ///   A line of a route filter list.

@@ -33,7 +33,7 @@ public class FaultTolerance<RouteType, NodeType> : AnnotatedNetwork<Option<Route
   {
     var failureSymbolics = CreateSymbolics(net.Digraph, numFailed);
     Annotations = annotations(failureSymbolics);
-    TransferFunction = Transfer(net.TransferFunction, failureSymbolics);
+    TransferFunctions = Transfer(net.TransferFunctions, failureSymbolics);
     // add the failure symbolics on
     Symbolics = Symbolics.Concat(failureSymbolics).ToArray();
   }

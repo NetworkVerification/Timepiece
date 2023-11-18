@@ -21,7 +21,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   ///   Construct a new <c>AnnotatedNetwork{T,TV,TS}</c>.
   /// </summary>
   /// <param name="digraph">The network topology.</param>
-  /// <param name="transferFunction">A Dictionary from edges to transfer functions.</param>
+  /// <param name="transferFunctions">A Dictionary from edges to transfer functions.</param>
   /// <param name="mergeFunction">The merge function.</param>
   /// <param name="initialValues">A Dictionary from nodes to initial routes.</param>
   /// <param name="annotations">A Dictionary from nodes to temporal predicates.</param>
@@ -30,13 +30,13 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   /// <param name="symbolics">An array of symbolic values.</param>
   public AnnotatedNetwork(
     Digraph<NodeType> digraph,
-    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
+    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunctions,
     Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
     Dictionary<NodeType, Zen<RouteType>> initialValues,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> monolithicProperties,
-    ISymbolic[] symbolics) : base(digraph, transferFunction, mergeFunction, initialValues, symbolics)
+    ISymbolic[] symbolics) : base(digraph, transferFunctions, mergeFunction, initialValues, symbolics)
   {
     Annotations = annotations;
     ModularProperties = modularProperties;
@@ -51,7 +51,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   ///   <c>safetyProperties[n]</c> and <c>stableProperties[n]</c>.
   /// </summary>
   /// <param name="digraph">The network topology.</param>
-  /// <param name="transferFunction"></param>
+  /// <param name="transferFunctions"></param>
   /// <param name="mergeFunction"></param>
   /// <param name="initialValues"></param>
   /// <param name="annotations"></param>
@@ -60,7 +60,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   /// <param name="convergeTime">The convergence time of the network.</param>
   /// <param name="symbolics"></param>
   public AnnotatedNetwork(Digraph<NodeType> digraph,
-    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
+    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunctions,
     Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
     Dictionary<NodeType, Zen<RouteType>> initialValues,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -68,7 +68,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     IReadOnlyDictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> safetyProperties,
     BigInteger convergeTime,
     ISymbolic[] symbolics) : this(digraph,
-    transferFunction, mergeFunction, initialValues, annotations,
+    transferFunctions, mergeFunction, initialValues, annotations,
     // modular properties: Finally(stable) + Globally(safety)
     digraph.MapNodes(n =>
       Lang.Intersect(Lang.Finally(convergeTime, stableProperties[n]), Lang.Globally(safetyProperties[n]))),
@@ -89,7 +89,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> monolithicProperties) : this(net.Digraph,
-    net.TransferFunction,
+    net.TransferFunctions,
     net.MergeFunction,
     net.InitialValues, annotations, modularProperties, monolithicProperties, net.Symbolics)
   {
@@ -107,7 +107,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     Dictionary<NodeType, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<NodeType, Func<Zen<RouteType>, Zen<bool>>> safetyProperties,
-    BigInteger convergeTime) : this(net.Digraph, net.TransferFunction, net.MergeFunction,
+    BigInteger convergeTime) : this(net.Digraph, net.TransferFunctions, net.MergeFunction,
     net.InitialValues, annotations, stableProperties, safetyProperties, convergeTime, net.Symbolics)
   {
   }

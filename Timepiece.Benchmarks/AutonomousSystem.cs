@@ -8,11 +8,11 @@ namespace Timepiece.Benchmarks;
 public class AutonomousSystem : AnnotatedNetwork<Option<BgpRoute>, string>
 {
   public AutonomousSystem(Digraph<string> digraph, string externalSrc, string externalDest,
-    Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> transferFunction,
+    Dictionary<(string, string), Func<Zen<Option<BgpRoute>>, Zen<Option<BgpRoute>>>> transferFunctions,
     Dictionary<string, Func<Zen<Option<BgpRoute>>, Zen<BigInteger>, Zen<bool>>> annotations,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> stableProperties,
     IReadOnlyDictionary<string, Func<Zen<Option<BgpRoute>>, Zen<bool>>> safetyProperties,
-    BigInteger convergeTime, ISymbolic[] symbolics) : base(digraph, transferFunction,
+    BigInteger convergeTime, ISymbolic[] symbolics) : base(digraph, transferFunctions,
     Lang.Omap2<BgpRoute>(BgpRouteExtensions.Min),
     digraph.MapNodes(n =>
       n == externalSrc ? Option.Create<BgpRoute>(new BgpRoute()) : Option.None<BgpRoute>()),

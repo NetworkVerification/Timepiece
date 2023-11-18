@@ -235,7 +235,7 @@ public class Digraph<NodeType> where NodeType : notnull
 }
 
 /// <summary>
-///   Represents the digraph of an NV network with node labels.
+///   Represents the digraph of a network with node labels.
 /// </summary>
 public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
 {

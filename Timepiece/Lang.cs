@@ -173,7 +173,7 @@ public static class Lang
   /// <param name="by">A function mapping T1 to T2.</param>
   /// <typeparam name="T1">The new merge function's type.</typeparam>
   /// <typeparam name="T2">The original merge function's type.</typeparam>
-  /// <returns></returns>
+  /// <returns>A merge function over T1.</returns>
   public static Func<Zen<T1>, Zen<T1>, Zen<T1>> MergeBy<T1, T2>(Func<Zen<T2>, Zen<T2>, Zen<T2>> f,
     Func<Zen<T1>, Zen<T2>> by)
   {
@@ -291,6 +291,13 @@ public static class Lang
     return r => Or(fs.Select(f => f(r)).ToArray());
   }
 
+  /// <summary>
+  ///   Return the complement of the given predicate <paramref name="f"/>,
+  ///   i.e. the one that returns true for all inputs for which <paramref name="f"/> returns false.
+  /// </summary>
+  /// <param name="f"></param>
+  /// <typeparam name="T"></typeparam>
+  /// <returns></returns>
   public static Func<Zen<T>, Zen<bool>> Not<T>(Func<Zen<T>, Zen<bool>> f)
   {
     return r => Zen.Not(f(r));

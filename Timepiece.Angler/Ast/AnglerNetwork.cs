@@ -36,7 +36,7 @@ public class AnglerNetwork
   ///   The network must have an edge to and from every node.
   /// </summary>
   /// <exception cref="Exception"></exception>
-  public void Validate()
+  private void Validate()
   {
     var errors = false;
     foreach (var peer in Externals)
@@ -144,7 +144,7 @@ public class AnglerNetwork
 
     foreach (var (node, props) in Nodes)
     {
-      var details = props.CreateNode(RouteEnvironmentExtensions.ReturnAccept, RouteEnvironmentExtensions.ReturnAccept,
+      var details = props.CreateNode(r => r.ReturnAccept(), r => r.ReturnAccept(),
         trackTerms);
       // add an edge between each node and its neighbor
       foreach (var nbr in details.imports.Keys.Union(details.exports.Keys))

@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
-using Timepiece.Angler.Queries;
+using Timepiece.Angler.Specifications;
 using Timepiece.DataTypes;
 using Timepiece.Tests;
 using Xunit.Abstractions;
@@ -58,9 +58,9 @@ public class Internet2Tests
     route.GetResultValue(),
     route.GetLocalDefaultAction(),
     route.NonTerminated(),
-    Zen.Not(route.GetAsSet().Contains(Internet2.NlrAs)),
-    Zen.Not(route.GetAsSet().Contains(Internet2.PrivateAs)),
-    Zen.Not(route.GetAsSet().Contains(Internet2.CommercialAs)),
+    Zen.Not(route.GetAsSet().Contains(Internet2Specification.NlrAs)),
+    Zen.Not(route.GetAsSet().Contains(Internet2Specification.PrivateAs)),
+    Zen.Not(route.GetAsSet().Contains(Internet2Specification.CommercialAs)),
     route.GetPrefix() == new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
 
   [Fact]
@@ -75,7 +75,7 @@ public class Internet2Tests
   }
 
   [Fact]
-  public static void WashNeighborImportAcceptsGoodRoute()
+  public void WashNeighborImportAcceptsGoodRoute()
   {
     var importPolicy = WashProperties.Policies["192.122.183.13"].Import!;
     var importFunction = WashProperties.Declarations[importPolicy];
@@ -141,9 +141,9 @@ public class Internet2Tests
     var result = transferCheck.Verify(route,
       r => Zen.And(r.NonTerminated(), r.GetResultValue(),
         r.GetPrefix() == new Ipv4Prefix("128.164.0.0", "128.164.255.255"),
-        Zen.Not(r.GetAsSet().Contains(Internet2.PrivateAs)),
-        Zen.Not(r.GetAsSet().Contains(Internet2.CommercialAs)),
-        Zen.Not(r.GetAsSet().Contains(Internet2.NlrAs))),
+        Zen.Not(r.GetAsSet().Contains(Internet2Specification.PrivateAs)),
+        Zen.Not(r.GetAsSet().Contains(Internet2Specification.CommercialAs)),
+        Zen.Not(r.GetAsSet().Contains(Internet2Specification.NlrAs))),
       r => r.GetResultValue());
     _testOutputHelper.WriteLine($"{result}");
     Assert.Null(result);
@@ -158,8 +158,9 @@ public class Internet2Tests
     var result = transferCheck.Verify(Zen.Symbolic<RouteEnvironment>("r"),
       // constrain the route to have an AsSet element that forces it to be filtered
       route =>
-        Zen.Or(route.GetAsSet().Contains(Internet2.NlrAs), route.GetAsSet().Contains(Internet2.PrivateAs),
-          route.GetAsSet().Contains(Internet2.CommercialAs)),
+        Zen.Or(route.GetAsSet().Contains(Internet2Specification.NlrAs),
+          route.GetAsSet().Contains(Internet2Specification.PrivateAs),
+          route.GetAsSet().Contains(Internet2Specification.CommercialAs)),
       r => Zen.Not(r.GetResultValue()));
     Assert.Null(result);
   }
@@ -172,7 +173,7 @@ public class Internet2Tests
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("64.57.28.149", "hous")]);
     var result = transferCheck.Verify(Zen.Symbolic<RouteEnvironment>("r"),
       // constrain the route to be from a private AS
-      r => r.GetAsSet().Contains(Internet2.PrivateAs),
+      r => r.GetAsSet().Contains(Internet2Specification.PrivateAs),
       r => Zen.Not(r.GetResultValue()));
     Assert.Null(result);
   }
@@ -192,8 +193,9 @@ public class Internet2Tests
           r.GetLocalDefaultAction(),
           r.NonTerminated(),
           // has one of the filtered AsSet elements
-          Zen.Or(r.GetAsSet().Contains(Internet2.NlrAs), r.GetAsSet().Contains(Internet2.PrivateAs),
-            r.GetAsSet().Contains(Internet2.CommercialAs)),
+          Zen.Or(r.GetAsSet().Contains(Internet2Specification.NlrAs),
+            r.GetAsSet().Contains(Internet2Specification.PrivateAs),
+            r.GetAsSet().Contains(Internet2Specification.CommercialAs)),
           r.GetPrefix().IsValidPrefixLength()),
         r => r.GetResultValue());
       return result is not null;
@@ -205,8 +207,7 @@ public class Internet2Tests
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
     var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
-    var net = Internet2.Reachable(topology, externalNodes)
-      .ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
+    var net = Internet2Specification.Reachable(topology, externalNodes, transfer);
     NetworkAsserts.Sound(net, SmtCheck.Inductive, "wash");
   }
 
@@ -215,8 +216,7 @@ public class Internet2Tests
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
     var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
-    var net = Internet2.Reachable(topology, externalNodes)
-      .ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
+    var net = Internet2Specification.Reachable(topology, externalNodes, transfer);
     NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 
@@ -230,9 +230,8 @@ public class Internet2Tests
     var initialRoutes = topology.MapNodes(n => routes[n].Value);
     var monolithicProperties = topology.MapNodes(_ => Lang.False<RouteEnvironment>());
     var modularProperties = topology.MapNodes(n => Lang.Globally(monolithicProperties[n]));
-    var query = new NetworkQuery<RouteEnvironment, string>(initialRoutes, routes.Values.Cast<ISymbolic>().ToArray(),
-      monolithicProperties, modularProperties, modularProperties);
-    var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
+    var net = new Internet2Specification(topology, transfer, initialRoutes, modularProperties, modularProperties,
+      monolithicProperties, routes.Values.Cast<ISymbolic>().ToArray());
     NetworkAsserts.Unsound(net, check);
   }
 }

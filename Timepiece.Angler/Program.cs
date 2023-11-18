@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Timepiece;
 using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
-using Timepiece.Angler.Queries;
+using Timepiece.Angler.Specifications;
 using ZenLib;
 
 ZenSettings.UseLargeStack = true;
@@ -24,9 +24,9 @@ var fileArgument = new Argument<string>(
   "file",
   "The .angler.json file to use");
 var queryArgument =
-  new Argument<NetworkQueryType>("query",
+  new Argument<Specification>("query",
     description: "The type of query to check",
-    parse: result => NetworkQueryTypeExtensions.Parse(result.Tokens.Single().Value));
+    parse: result => SpecificationExtensions.Parse(result.Tokens.Single().Value));
 rootCommand.Add(fileArgument);
 rootCommand.Add(queryArgument);
 rootCommand.Add(monoOption);
@@ -46,22 +46,28 @@ rootCommand.SetHandler(
     if (ast != null)
     {
       var (topology, transfer) = ast.TopologyAndTransfer(trackTerms: trackTerms);
-      var externalNodes = ast.Externals.Select(i => i.Name);
-      var query = queryType switch
+      var externalNodes = ast.Externals.Select(i => i.Name).ToArray();
+      dynamic net = queryType switch
       {
-        NetworkQueryType.Internet2BlockToExternal => Internet2.BlockToExternal(topology, externalNodes),
-        NetworkQueryType.Internet2NoMartians => Internet2.NoMartians(topology, externalNodes),
-        NetworkQueryType.Internet2NoPrivateAs => Internet2.NoPrivateAs(topology, externalNodes),
-        NetworkQueryType.Internet2GaoRexford => Internet2.GaoRexford(topology, externalNodes),
-        NetworkQueryType.Internet2Reachable => Internet2.Reachable(topology, externalNodes),
-        NetworkQueryType.Internet2ReachableInternal => Internet2.ReachableInternal(topology),
-        NetworkQueryType.FatReachable => FatTreeQuery.Reachable(FatTreeQuery.LabelFatTree(topology)),
-        NetworkQueryType.FatPathLength => FatTreeQuery.MaxPathLength(FatTreeQuery.LabelFatTree(topology)),
-        NetworkQueryType.FatValleyFreedom => FatTreeQuery.ValleyFreedom(FatTreeQuery.LabelFatTree(topology)),
-        NetworkQueryType.FatHijackFiltering => FatTreeQuery.FatTreeHijackFiltering(FatTreeQuery.LabelFatTree(topology)),
+        Specification.Internet2BlockToExternal => Internet2Specification.BlockToExternal(topology, externalNodes,
+          transfer),
+        Specification.Internet2NoMartians => Internet2Specification.NoMartians(topology, externalNodes, transfer),
+        Specification.Internet2NoPrivateAs => Internet2Specification.NoPrivateAs(topology, externalNodes, transfer),
+        Specification.Internet2Reachable => Internet2Specification.Reachable(topology, externalNodes, transfer),
+        Specification.Internet2ReachableInternal => Internet2Specification.ReachableInternal(topology, transfer),
+        Specification.FatReachable => FatTreeSpecification<RouteEnvironment>.Reachable(FatTree.LabelFatTree(topology),
+          transfer),
+        Specification.FatPathLength => FatTreeSpecification<RouteEnvironment>.MaxPathLength(
+          FatTree.LabelFatTree(topology),
+          transfer),
+        Specification.FatValleyFreedom => FatTreeSpecification<RouteEnvironment>
+          .ValleyFreedom(FatTree.LabelFatTree(topology), transfer),
+        Specification.FatHijackFiltering => FatTreeSpecification<Pair<RouteEnvironment, bool>>
+          .FatTreeHijackFiltering(FatTree.LabelFatTree(topology, externalNodes), externalNodes, transfer,
+            ast.Nodes.ToDictionary(p => p.Key, p => p.Value.Prefixes)),
         _ => throw new ArgumentOutOfRangeException(nameof(queryType), queryType, "Query type not supported!")
       };
-      var net = query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional);
+
       // turn on query printing if true
       net.PrintFormulas = printQuery;
       if (mono)

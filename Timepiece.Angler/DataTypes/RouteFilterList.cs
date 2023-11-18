@@ -3,7 +3,7 @@ using Timepiece.DataTypes;
 using ZenLib;
 using Array = System.Array;
 
-namespace Timepiece.Angler.Ast;
+namespace Timepiece.Angler.DataTypes;
 
 /// <summary>
 ///   A route filter list for testing if a route should be filtered according to its prefix.

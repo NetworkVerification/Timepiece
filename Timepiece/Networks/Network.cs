@@ -16,18 +16,18 @@ public class Network<RouteType, NodeType>
   ///   Construct a new <c>Network</c>.
   /// </summary>
   /// <param name="digraph">a network topology</param>
-  /// <param name="transferFunction">a dictionary from edges to transfer functions</param>
+  /// <param name="transferFunctions">a dictionary from edges to transfer functions</param>
   /// <param name="mergeFunction">a function for merging two routes</param>
   /// <param name="initialValues">a dictionary from nodes to initial routes</param>
   /// <param name="symbolics">an array of symbolic values</param>
   public Network(Digraph<NodeType> digraph,
-    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunction,
+    Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> transferFunctions,
     Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
     Dictionary<NodeType, Zen<RouteType>> initialValues,
     ISymbolic[] symbolics)
   {
     Digraph = digraph;
-    TransferFunction = transferFunction;
+    TransferFunctions = transferFunctions;
     MergeFunction = mergeFunction;
     InitialValues = initialValues;
     Symbolics = symbolics;
@@ -41,7 +41,7 @@ public class Network<RouteType, NodeType>
   /// <summary>
   ///   The transfer function for each edge.
   /// </summary>
-  public Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> TransferFunction
+  public Dictionary<(NodeType, NodeType), Func<Zen<RouteType>, Zen<RouteType>>> TransferFunctions
   {
     get;
     protected init;
@@ -73,7 +73,7 @@ public class Network<RouteType, NodeType>
   {
     return Digraph[node].Aggregate(InitialValues[node],
       (current, predecessor) =>
-        MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
+        MergeFunction(current, TransferFunctions[(predecessor, node)](routes[predecessor])));
   }
 
   /// <inheritdoc
@@ -88,7 +88,7 @@ public class Network<RouteType, NodeType>
   {
     return neighbors.Aggregate(InitialValues[node],
       (current, predecessor) =>
-        MergeFunction(current, TransferFunction[(predecessor, node)](routes[predecessor])));
+        MergeFunction(current, TransferFunctions[(predecessor, node)](routes[predecessor])));
   }
 
 

@@ -1,4 +1,4 @@
-namespace Timepiece.Angler.Queries;
+namespace Timepiece.Angler.Specifications;
 
 internal static class Internet2Prefixes
 {
@@ -6,7 +6,7 @@ internal static class Internet2Prefixes
   /// External peers to their participant prefix list.
   /// Discovered via the find_participants.py script.
   /// </summary>
-  internal static Dictionary<string, string> ExternalPeerParticipantList = new()
+  internal static readonly Dictionary<string, string> ExternalPeerParticipantList = new()
   {
     {"64.57.23.30", "WORLDBANK-PARTICIPANT"},
     {"64.57.28.2", "NCSA-PARTICIPANT"},

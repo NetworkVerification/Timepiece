@@ -2,8 +2,8 @@ using System.Numerics;
 using NetTools;
 using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
-using Timepiece.Angler.Queries;
 using Timepiece.DataTypes;
+using Timepiece.Networks;
 using ZenLib;
 using Array = System.Array;
 
@@ -26,8 +26,8 @@ public static class AstTests
       new List<Ipv4Prefix>());
   }
 
-  private static NetworkQuery<RouteEnvironment, string> IsValidQuery(Digraph<string> graph,
-    string destNode)
+  private static AnnotatedNetwork<RouteEnvironment, string> IsValidQuery(Digraph<string> graph,
+    string destNode, Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var distances = graph.BreadthFirstSearch(destNode);
     var initialRoutes = graph.MapNodes(n => GetAddressRange(n).Contains(D)
@@ -37,8 +37,9 @@ public static class AstTests
       graph.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(env => env.GetResultValue()));
     var annotations = graph.MapNodes(n => Lang.Finally(distances[n], monolithicProperties[n]));
     var modularProperties = graph.MapNodes(n => Lang.Finally(new BigInteger(4), monolithicProperties[n]));
-    return new NetworkQuery<RouteEnvironment, string>(initialRoutes,
-      Array.Empty<ISymbolic>(), monolithicProperties, modularProperties, annotations);
+    return new AnnotatedNetwork<RouteEnvironment, string>(graph, transferFunctions,
+      RouteEnvironmentExtensions.MinOptional, initialRoutes,
+      annotations, modularProperties, monolithicProperties, Array.Empty<ISymbolic>());
   }
 
   private static IPAddressRange GetAddressRange(string node)
@@ -59,17 +60,16 @@ public static class AstTests
   public static void TestSpAstGoodAnnotations()
   {
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();
-    var query = IsValidQuery(topology, DestinationNode);
-    Assert.False(
-      query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckAnnotations().HasValue);
+    var net = IsValidQuery(topology, DestinationNode, transfer);
+    Assert.False(net.CheckAnnotations().HasValue);
   }
 
   [Fact]
   public static void TestSpAstGoodMonolithic()
   {
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();
-    var query = IsValidQuery(topology, DestinationNode);
-    Assert.False(query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckMonolithic()
+    var net = IsValidQuery(topology, DestinationNode, transfer);
+    Assert.False(net.CheckMonolithic()
       .HasValue);
   }
 
@@ -77,10 +77,10 @@ public static class AstTests
   public static void TestSpAstBadAnnotations()
   {
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();
-    var query = IsValidQuery(topology, DestinationNode);
-    query.Annotations[FatTree.FatTreeLayer.Edge.Node(18)] =
+    var net = IsValidQuery(topology, DestinationNode, transfer);
+    net.Annotations[FatTree.FatTreeLayer.Edge.Node(18)] =
       Lang.Finally<RouteEnvironment>(new BigInteger(1), _ => Zen.False());
-    Assert.True(query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckInductive().HasValue);
+    Assert.True(net.CheckInductive().HasValue);
   }
 
   // warning: this may not complete and need to be aborted (takes a long time to run)
@@ -88,8 +88,8 @@ public static class AstTests
   public static void TestSpAstBadMonolithic()
   {
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();
-    var query = IsValidQuery(topology, DestinationNode);
-    query.MonolithicProperties = topology.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(_ => Zen.False()));
-    Assert.True(query.ToNetwork(topology, transfer, RouteEnvironmentExtensions.MinOptional).CheckMonolithic().HasValue);
+    var net = IsValidQuery(topology, DestinationNode, transfer);
+    net.MonolithicProperties = topology.MapNodes(_ => new Func<Zen<RouteEnvironment>, Zen<bool>>(_ => Zen.False()));
+    Assert.True(net.CheckMonolithic().HasValue);
   }
 }

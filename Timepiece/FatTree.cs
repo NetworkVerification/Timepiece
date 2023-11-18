@@ -1,9 +1,14 @@
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Timepiece;
 
-public static class FatTree
+public static partial class FatTree
 {
+  [GeneratedRegex(@"(edge|aggregation|core)-(\d*)")]
+  private static partial Regex FatTreeNodePattern();
+
   public enum FatTreeLayer
   {
     Edge,
@@ -83,5 +88,41 @@ public static class FatTree
       : s.IsAggregation() && pod != destinationPod ? 3
       : s.IsEdge() && pod != destinationPod ? 4
       : 2;
+  }
+
+  /// <summary>
+  ///   Infer the pod labels on a fat-tree digraph.
+  ///   A k-fat-tree has (k^2)/2 core nodes, k^2 aggregation nodes and k^2 edge nodes.
+  /// </summary>
+  /// <param name="digraph">An (unlabelled) digraph.</param>
+  /// <param name="skipNodes">Nodes not to label.</param>
+  /// <returns>A node-labelled digraph.</returns>
+  /// <exception cref="ArgumentException">If a node in the digraph does not have a name matching <see cref="FatTreeNodePattern"/></exception>
+  /// <remarks>Skipped nodes receive the label -1.</remarks>
+  public static NodeLabelledDigraph<string, int> LabelFatTree(Digraph<string> digraph, string[] skipNodes = null)
+  {
+    // the #nodes = 5/4 k^2 where k is the number of pods, so k = sqrt(#nodes * 4/5)
+    var numberOfPods = (int) Math.Floor(Math.Sqrt(digraph.NNodes * 0.8));
+    var coreNodes = digraph.Nodes.Count(s => s.IsCore());
+    var labels = digraph.MapNodes(n =>
+    {
+      if (skipNodes is not null && skipNodes.Contains(n))
+      {
+        // if the node is skipped, we just give it a dummy label (we won't use it)
+        return -1;
+      }
+
+      var match = FatTreeNodePattern().Match(n);
+      if (!match.Success) throw new ArgumentException($"Given node {n} does not match the fat-tree node pattern!");
+      var nodeNumber = int.Parse(match.Groups[2].Value);
+      // if the node is a core node, then the groups are defined as the maximum pod number plus the core node's number
+      if (IsCore(match.Groups[1].Value)) return numberOfPods + nodeNumber;
+      // for aggregation and edge nodes, the pod number is going to be the quotient of
+      // dividing the node number minus the number of core nodes by the number of pods:
+      // pod # of node = (node # - #core) / #pods
+      return (nodeNumber - coreNodes) / numberOfPods;
+    });
+
+    return new NodeLabelledDigraph<string, int>(digraph, labels);
   }
 }

@@ -2,20 +2,44 @@ using System.Numerics;
 using Newtonsoft.Json;
 using Timepiece.Angler.DataTypes;
 using Timepiece.DataTypes;
+using Timepiece.Networks;
 using ZenLib;
 
-namespace Timepiece.Angler.Queries;
+namespace Timepiece.Angler.Specifications;
 
 /// <summary>
-///   Queries performed by Bagpipe related to the Internet2 network.
-///   See the Bagpipe paper for more information.
+/// Internet2 benchmarks.
 /// </summary>
-public static class Internet2
+public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
 {
+  public Internet2Specification(Digraph<string> digraph,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
+    Dictionary<string, Zen<RouteEnvironment>> initialValues,
+    Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> modularProperties,
+    Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>> monolithicProperties, ISymbolic[] symbolics) : base(
+    digraph, transferFunctions, RouteEnvironmentExtensions.MinOptional, initialValues, annotations, modularProperties,
+    monolithicProperties,
+    symbolics)
+  {
+  }
+
+  public Internet2Specification(Digraph<string> digraph,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
+    Dictionary<string, Zen<RouteEnvironment>> initialValues,
+    Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>> monolithicProperties, ISymbolic[] symbolics) : this(
+    digraph, transferFunctions, initialValues,
+    new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(),
+    new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(), monolithicProperties, symbolics)
+  {
+    ModularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
+    Annotations = ModularProperties;
+  }
+
   /// <summary>
   ///   The block to external community tag used by Internet2.
   /// </summary>
-  private const string BlockToExternalCommunity = "11537:888";
+  public const string BlockToExternalCommunity = "11537:888";
 
   /// <summary>
   ///   Community tag for identifying low-value peer connections.
@@ -84,21 +108,20 @@ public static class Internet2
   /// The mapping of participants to prefixes.
   /// Loaded from a JSON file, since it's quite long and we may want to occasionally tweak it.
   /// </summary>
-  private static readonly IReadOnlyDictionary<string, List<Ipv4Prefix>> ParticipantPrefixes =
+  public static readonly IReadOnlyDictionary<string, List<Ipv4Prefix>> ParticipantPrefixes =
     DeserializePrefixes("participants.json");
-
 
   /// <summary>
   ///   A prefix corresponding to the internal nodes of Internet2.
   /// </summary>
-  private static readonly Ipv4Prefix InternalPrefix = new("64.57.28.0", "64.57.28.255");
+  public static readonly Ipv4Prefix InternalPrefix = new("64.57.28.0", "64.57.28.255");
 
   /// <summary>
   ///   Prefixes that are considered Martians.
   ///   Must not be advertised or accepted.
   ///   Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
   /// </summary>
-  private static readonly (Ipv4Prefix Prefix, bool Exact)[] MartianPrefixes =
+  public static readonly (Ipv4Prefix Prefix, bool Exact)[] MartianPrefixes =
   {
     (new Ipv4Prefix("0.0.0.0/0"), Exact: true), // default route 0.0.0.0/0
     (new Ipv4Prefix("10.0.0.0/8"), Exact: false), // RFC1918 local network
@@ -117,7 +140,7 @@ public static class Internet2
   /// <summary>
   /// List of prefixes which Abilene originates
   /// </summary>
-  private static readonly (Ipv4Prefix Prefix, bool Exact)[] InternalPrefixes =
+  public static readonly (Ipv4Prefix Prefix, bool Exact)[] InternalPrefixes =
   {
     // Internet2 Backbone
     (new Ipv4Prefix("64.57.16.0/20"), Exact: false),
@@ -139,15 +162,7 @@ public static class Internet2
   /// </summary>
   /// <param name="env"></param>
   /// <returns></returns>
-  private static Zen<bool> HasValidPrefixLength(Zen<RouteEnvironment> env) => env.GetPrefix().IsValidPrefixLength();
-
-  /// <summary>
-  ///   Predicate that the BTE tag is not on the route if the route has a value.
-  /// </summary>
-  private static Zen<bool> BteTagAbsent(Zen<RouteEnvironment> env)
-  {
-    return Zen.Implies(env.GetResultValue(), Zen.Not(env.GetCommunities().Contains(BlockToExternalCommunity)));
-  }
+  public static Zen<bool> HasValidPrefixLength(Zen<RouteEnvironment> env) => env.GetPrefix().IsValidPrefixLength();
 
   /// <summary>
   ///   Return true if none of the given Ipv4 wildcards match the given prefix
@@ -155,36 +170,47 @@ public static class Internet2
   /// <param name="candidates"></param>
   /// <param name="prefix"></param>
   /// <returns></returns>
-  private static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
+  public static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
     Zen<Ipv4Prefix> prefix)
   {
+    // TODO: consider converting to Zen<Ipv4Wildcard> first? rather than inside the constraints?
     return candidates.ForAll(candidate =>
       Zen.Not(candidate.Prefix.Matches(prefix, candidate.Exact)));
   }
 
   /// <summary>
-  ///   Construct a NetworkQuery with constraints that every external node symbolic does not have the BTE tag,
+  ///   Construct an AnnotatedNetwork with constraints that every external node symbolic does not have the BTE tag,
   ///   and check that all external nodes never have a BTE tag.
   /// </summary>
   /// <param name="externalPeers"></param>
-  /// <param name="graph"></param>
+  /// <param name="digraph"></param>
+  /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static NetworkQuery<RouteEnvironment, string> BlockToExternal(Digraph<string> graph,
-    IEnumerable<string> externalPeers)
+  public static Internet2Specification BlockToExternal(Digraph<string> digraph,
+    string[] externalPeers,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
       SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers, BteTagAbsent);
     // external nodes start with a route, internal nodes do not
-    var initialRoutes = graph.MapNodes(n =>
+    var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
 
     var monolithicProperties =
-      graph.MapNodes(n => Internet2Nodes.InternalNodes.Contains(n) ? Lang.True<RouteEnvironment>() : BteTagAbsent);
-    // annotations and modular properties are the same
-    var modularProperties = graph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
+      digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(n =>
+        Internet2Nodes.InternalNodes.Contains(n) ? Lang.True<RouteEnvironment>() : BteTagAbsent);
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties,
-      modularProperties, modularProperties);
+    return new Internet2Specification(digraph, transferFunctions, initialRoutes, monolithicProperties,
+      symbolics);
+  }
+
+  /// <summary>
+  ///   Predicate that the BTE tag is not on the route if the route has a value.
+  /// </summary>
+  private static Zen<bool> BteTagAbsent(Zen<RouteEnvironment> env)
+  {
+    return Zen.Implies(env.GetResultValue(),
+      Zen.Not(env.GetCommunities().Contains(BlockToExternalCommunity)));
   }
 
   /// <summary>
@@ -192,12 +218,14 @@ public static class Internet2
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="externalPeers"></param>
+  /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static NetworkQuery<RouteEnvironment, string> NoMartians(Digraph<string> digraph,
-    IEnumerable<string> externalPeers)
+  public static Internet2Specification NoMartians(Digraph<string> digraph, string[] externalPeers,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers, HasValidPrefixLength);
+      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers,
+        HasValidPrefixLength);
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
 
@@ -205,15 +233,14 @@ public static class Internet2
     var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.InternalNodes.Contains(n)
       ? Lang.Intersect<RouteEnvironment>(
         // route is non-martian
-        env => Zen.Implies(env.GetResultValue(), NoPrefixMatch(MartianPrefixes, env.GetPrefix())),
+        env => Zen.Implies(env.GetResultValue(),
+          NoPrefixMatch(MartianPrefixes, env.GetPrefix())),
         // route has prefix length at most 32
         HasValidPrefixLength)
       : Lang.True<RouteEnvironment>());
-    // annotations and modular properties are the same
-    var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties,
-      modularProperties, modularProperties);
+    return new Internet2Specification(digraph, transferFunctions, initialRoutes, monolithicProperties,
+      symbolics);
   }
 
   /// <summary>
@@ -221,47 +248,42 @@ public static class Internet2
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="externalPeers"></param>
+  /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static NetworkQuery<RouteEnvironment, string> NoPrivateAs(Digraph<string> digraph,
-    IEnumerable<string> externalPeers)
+  public static Internet2Specification NoPrivateAs(Digraph<string> digraph,
+    string[] externalPeers,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers, HasValidPrefixLength);
+      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers,
+        HasValidPrefixLength);
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
 
     // internal nodes must not select private AS routes
     var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.InternalNodes.Contains(n)
-      ? Lang.Intersect<RouteEnvironment>(env => Zen.Not(env.GetAsSet().Contains(PrivateAs)), HasValidPrefixLength)
+      ? Lang.Intersect<RouteEnvironment>(env => Zen.Not(env.GetAsSet().Contains(PrivateAs)),
+        HasValidPrefixLength)
       : Lang.True<RouteEnvironment>());
-    // annotations and modular properties are the same
-    var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties,
-      modularProperties, modularProperties);
+    return new Internet2Specification(digraph, transferFunctions, initialRoutes, monolithicProperties,
+      symbolics);
   }
 
-  public static NetworkQuery<RouteEnvironment, string> GaoRexford(Digraph<string> digraph,
-    IEnumerable<string> externalPeers)
-  {
-    // Bagpipe verifies this with a lot of handcrafted analysis:
-    // finding the neighbors and then determining which are which
-    // could we reuse their findings?
-    // see https://github.com/konne88/bagpipe/blob/master/src/bagpipe/racket/test/resources/internet2-properties.rkt
-    // var monolithicProperties = digraph.MapNodes(n => InternalNodes.Contains(n) ?
-    // Lang.Intersect<RouteEnvironment>(MaxPrefixLengthIs32) : Lang.True<RouteEnvironment>());
-    throw new NotImplementedException();
-  }
+  private static Zen<bool> HasInternalPrefixRoute(Zen<RouteEnvironment> r) =>
+    Zen.And(r.GetResultValue(), r.GetPrefix() == InternalPrefix);
 
   /// <summary>
   /// Verify that all the internal nodes receive a valid route if one is shared by one of them to the others.
   /// </summary>
   /// <param name="digraph"></param>
+  /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static NetworkQuery<RouteEnvironment, string> ReachableInternal(Digraph<string> digraph)
+  public static Internet2Specification ReachableInternal(Digraph<string> digraph,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var internalRoutes = SymbolicValue.SymbolicDictionary<RouteEnvironment>("internal-route", Internet2Nodes.AsNodes,
-      r => Zen.And(r.GetPrefix() == InternalPrefix, r.GetResultValue()));
+      HasInternalPrefixRoute);
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
     var initialRoutes = digraph.MapNodes(n =>
       internalRoutes.TryGetValue(n, out var internalRoute)
@@ -273,7 +295,7 @@ public static class Internet2
         // if one of the internal routes is true,
         internalRoutes.Values.Exists(ir => ir.Value.GetResultValue()),
         // then all the internal nodes will have routes
-        Zen.And(r.GetResultValue(), r.GetPrefix() == InternalPrefix))
+        HasInternalPrefixRoute(r))
       // no check on external nodes
       : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n => Internet2Nodes.AsNodes.Contains(n)
@@ -286,8 +308,8 @@ public static class Internet2
       Lang.Intersect(modularProperties[n],
         Lang.Globally(RouteEnvironment.IfValue(r => r.GetPrefix() == InternalPrefix))));
     var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
-    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
-      annotations);
+    return new Internet2Specification(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
+      monolithicProperties, symbolics);
   }
 
   /// <summary>
@@ -296,25 +318,27 @@ public static class Internet2
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="externalPeers"></param>
+  /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static NetworkQuery<RouteEnvironment, string> Reachable(Digraph<string> digraph,
-    IEnumerable<string> externalPeers)
+  public static Internet2Specification Reachable(Digraph<string> digraph,
+    IEnumerable<string> externalPeers,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     // the announced external destination prefix
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
       Zen.And(
         // (1) must not be for a martian prefix or an Internet2-internal prefix
-        NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes), p),
+        NoPrefixMatch(MartianPrefixes.Concat(Internet2Specification.InternalPrefixes),
+          p),
         // (2) must have a prefix length of at most /27 -- higher lengths will be dropped by CONNECTOR-IN
         p.GetPrefixLength() <= new UInt<_6>(27)));
     var externalRoutes = externalPeers.ToDictionary(e => e,
       e =>
       {
         // get the prefix list for this neighbor, to then get the prefixes it uses
-        var participantPrefixes =
-          ParticipantPrefixes.Where(prefixList =>
-            Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(e, out var participant) &&
-            participant == prefixList.Key);
+        var participantPrefixes = ParticipantPrefixes.Where(prefixList =>
+          Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(e, out var participant) &&
+          participant == prefixList.Key);
         // encode the fact that there exists a match of one of the prefixes when one of the prefixes matches the given external peer
         var matchesPrefix = participantPrefixes.Exists(prefixList => prefixList.Value
           // TODO: comment out this line. cutting here to only take one prefix (just to reduce size of encoding for testing)
@@ -381,8 +405,8 @@ public static class Internet2
               Zen.Not(r.GetAsSet().Contains(NlrAs)),
               Zen.Not(r.GetAsSet().Contains(CommercialAs)))))));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(destinationPrefix).ToArray();
-    return new NetworkQuery<RouteEnvironment, string>(initialRoutes, symbolics, monolithicProperties, modularProperties,
-      annotations);
+    return new Internet2Specification(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
+      monolithicProperties, symbolics);
   }
 
   /// <summary>
