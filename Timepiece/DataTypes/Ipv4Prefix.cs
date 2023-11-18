@@ -30,9 +30,9 @@ public struct Ipv4Prefix
     PrefixLength = new UInt<_6>(range.GetPrefixLength());
   }
 
-  internal IPAddressRange AsAddressRange()
+  public IPAddressRange AsAddressRange()
   {
-    return new IPAddressRange(new IPAddress(Prefix), (int) PrefixLength.ToLong());
+    return new IPAddressRange(Prefix.ToIpAddress(), (int) PrefixLength.ToLong());
   }
 
   /// <summary>
@@ -80,13 +80,29 @@ public static class Ipv4PrefixExtensions
   /// <summary>
   ///   Convert an IPv4 address to an unsigned integer by extracting the bytes.
   /// </summary>
-  /// <param name="address"></param>
-  /// <returns></returns>
+  /// <param name="address">The IP address.</param>
+  /// <returns>An unsigned integer.</returns>
+  /// <remarks>
+  ///   The endian-ness of IP addresses is big endian, but most systems use little endian for integers.
+  ///   Hence, this method flips the endian-ness of the bytes according to the response of <see cref="BitConverter.IsLittleEndian"/>.
+  /// </remarks>
   public static uint ToUnsignedInt(this IPAddress address) =>
-    // we need to use Reverse() to flip the endianness of the bytes
-    BitConverter.ToUInt32(address.GetAddressBytes().Reverse().ToArray(), 0);
+    // we need to use Reverse() to flip the endian-ness of the bytes if the system is little-endian
+    // as network addresses are always big-endian
+    BitConverter.ToUInt32(
+      (BitConverter.IsLittleEndian ? address.GetAddressBytes().Reverse() : address.GetAddressBytes()).ToArray(), 0);
 
-  public static IPAddress ToIpAddress(this uint u) => new(BitConverter.GetBytes(u).Reverse().ToArray());
+  /// <summary>
+  ///   Convert an unsigned integer to an IPv4 address.
+  /// </summary>
+  /// <param name="u">The unsigned integer.</param>
+  /// <returns>An IPv4 address.</returns>
+  /// <remarks>
+  ///   The endian-ness of IP addresses is big endian, but most systems use little endian for integers.
+  ///   Hence, this method flips the endian-ness of the bytes according to the response of <see cref="BitConverter.IsLittleEndian"/>.
+  /// </remarks>
+  public static IPAddress ToIpAddress(this uint u) =>
+    new((BitConverter.IsLittleEndian ? BitConverter.GetBytes(u).Reverse() : BitConverter.GetBytes(u)).ToArray());
 
   /// <summary>
   /// Verify that the given IPv4 prefix has a valid length (at most 32).
@@ -96,8 +112,28 @@ public static class Ipv4PrefixExtensions
   public static Zen<bool> IsValidPrefixLength(this Zen<Ipv4Prefix> prefix)
     => prefix.GetPrefixLength() <= new UInt<_6>(32);
 
+  /// <summary>
+  /// Return true if the IP address range contains the given IPv4 Prefix.
+  /// </summary>
+  /// <param name="range"></param>
+  /// <param name="d"></param>
+  /// <returns></returns>
   public static bool Contains(this IPAddressRange range, Ipv4Prefix d)
   {
     return range.Contains(d.AsAddressRange());
+  }
+
+  /// <summary>
+  /// Encode that the given prefix matches the supplied Zen value prefix.
+  /// Matching may be exact (at only this prefix length) or for any larger prefix length.
+  /// </summary>
+  /// <param name="prefix"></param>
+  /// <param name="otherPrefix"></param>
+  /// <param name="exact"></param>
+  /// <returns></returns>
+  public static Zen<bool> Matches(this Ipv4Prefix prefix, Zen<Ipv4Prefix> otherPrefix, bool exact)
+  {
+    return Zen.Constant(prefix.ToWildcard()).MatchesPrefix(otherPrefix, prefix.PrefixLength,
+      exact ? prefix.PrefixLength : new UInt<_6>(32));
   }
 }
