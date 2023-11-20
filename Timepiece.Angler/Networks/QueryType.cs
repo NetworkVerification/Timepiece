@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Timepiece.Angler.Networks;
 
 public enum QueryType
@@ -8,37 +10,59 @@ public enum QueryType
   Internet2Reachable,
   Internet2ReachableInternal,
   FatReachable,
+  FatReachableAllToR,
   FatPathLength,
+  FatPathLengthAllToR,
   FatValleyFreedom,
-  FatHijackFiltering
+  FatValleyFreedomAllToR,
+  FatHijackFiltering,
+  FatHijackFilteringAllToR
 }
 
 public static class QueryTypeExtensions
 {
+  public static string ShortHand(this QueryType qt)
+  {
+    return qt switch
+    {
+      QueryType.Internet2BlockToExternal => "bte",
+      QueryType.Internet2NoMartians => "mars",
+      QueryType.Internet2NoPrivateAs => "private",
+      QueryType.Internet2Reachable => "reach",
+      QueryType.Internet2ReachableInternal => "reachInternal",
+      QueryType.FatReachable => "fatReach",
+      QueryType.FatReachableAllToR => "fatReachAll",
+      QueryType.FatPathLength => "fatLength",
+      QueryType.FatPathLengthAllToR => "fatLengthAll",
+      QueryType.FatValleyFreedom => "fatValley",
+      QueryType.FatValleyFreedomAllToR => "fatValleyAll",
+      QueryType.FatHijackFiltering => "fatHijack",
+      QueryType.FatHijackFilteringAllToR => "fatHijackAll",
+      _ => throw new ArgumentOutOfRangeException(nameof(qt), qt, $"Invalid {nameof(QueryType)} with no shorthand.")
+    };
+  }
+
+  private static readonly Dictionary<string, QueryType> QueryNames = Enum.GetValues<QueryType>()
+    .SelectMany(qt => new[] {(qt.ShortHand(), qt), ($"{qt}", qt)})
+    .ToDictionary(p => p.Item1, p => p.Item2);
+
+  private static string AcceptableQueryValues()
+  {
+    var sb = new StringBuilder();
+    sb.AppendLine("Acceptable values:");
+    foreach (var qt in Enum.GetValues<QueryType>())
+    {
+      sb.AppendLine($"- '{qt.ShortHand()}' or '{qt}' for '{qt}'");
+    }
+
+    return sb.ToString();
+  }
+
   public static QueryType Parse(this string s)
   {
-    return s switch
-    {
-      "bte" or "Internet2BlockToExternal" => QueryType.Internet2BlockToExternal,
-      "mars" or "Internet2NoMartians" => QueryType.Internet2NoMartians,
-      "private" or "Internet2NoPrivateAs" => QueryType.Internet2NoPrivateAs,
-      "reach" or "Internet2Reachable" => QueryType.Internet2Reachable,
-      "reachInternal" or "Internet2ReachableInternal" => QueryType.Internet2ReachableInternal,
-      "fatReach" or "FatReachable" => QueryType.FatReachable,
-      "fatLength" or "FatPathLength" => QueryType.FatPathLength,
-      "fatValley" or "FatValleyFreedom" => QueryType.FatValleyFreedom,
-      "fatHijack" or "FatHijackFiltering" => QueryType.FatHijackFiltering,
-      _ => throw new ArgumentOutOfRangeException(nameof(s), s, "Invalid network query type name! "
-                                                               + "Acceptable values:\n"
-                                                               + "- 'bte' or 'Internet2BlockToExternal' for 'Internet2BlockToExternal'"
-                                                               + "- 'mars' or 'Internet2NoMartians' for 'Internet2NoMartians'"
-                                                               + "- 'private' or 'Internet2NoPrivateAs' for 'Internet2NoPrivateAs'"
-                                                               + "- 'reach' or 'Internet2Reachable' for 'Internet2Reachable'"
-                                                               + "- 'reachInternal' or 'Internet2ReachableInternal' for 'Internet2ReachableInternal'"
-                                                               + "- 'fatReach' or 'FatReachable' for 'FatReachable'"
-                                                               + "- 'fatLength' or 'FatPathLength' for 'FatPathLength'"
-                                                               + "- 'fatValley' or 'FatValleyFreedom' for 'FatValleyFreedom'"
-                                                               + "- 'fatHijack' or 'FatHijackFiltering' for 'FatHijackFiltering'")
-    };
+    return QueryNames.TryGetValue(s, out var queryType)
+      ? queryType
+      : throw new ArgumentOutOfRangeException(nameof(s), s,
+        $"Invalid network query type name! {AcceptableQueryValues()}");
   }
 }

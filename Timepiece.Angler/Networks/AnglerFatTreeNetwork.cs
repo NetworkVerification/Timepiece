@@ -22,33 +22,89 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
   {
   }
 
+  public AnglerFatTreeNetwork(Digraph<string> digraph,
+    Dictionary<(string, string), Func<Zen<RouteType>, Zen<RouteType>>> transferFunctions,
+    Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
+    Dictionary<string, Zen<RouteType>> initialValues,
+    Dictionary<string, Func<Zen<RouteType>, Zen<BigInteger>, Zen<bool>>> annotations,
+    Dictionary<string, Func<Zen<RouteType>, Zen<bool>>> monolithicProperties, IEnumerable<ISymbolic> symbolics,
+    IReadOnlyList<SymbolicTime> times) : this(digraph, transferFunctions, mergeFunction, initialValues, annotations,
+    digraph.MapNodes(n => Lang.Finally(times[^1].Value, monolithicProperties[n])), monolithicProperties,
+    symbolics.Concat(times).ToArray())
+  {
+  }
+}
+
+public static class AnglerFatTreeNetwork
+{
   private static string LastEdgeNode(Digraph<string> digraph)
   {
     return digraph.Nodes.Order().Last(n => n.IsEdge());
   }
+
+  /// <summary>
+  /// Return a mapping from nodes to routes, where a fixed destination node has an initial route and all others do not.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="destination"></param>
+  /// <returns></returns>
+  private static Dictionary<string, Zen<RouteEnvironment>> InitialRoutes(Digraph<string> digraph, string destination) =>
+    digraph.MapNodes(n => Zen.Constant(new RouteEnvironment()).WithResultValue(n.Equals(destination)));
+
+  /// <summary>
+  /// Return a mapping from nodes to routes, where a symbolic destination node has an initial route and all others do not.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="destination"></param>
+  /// <returns></returns>
+  private static Dictionary<string, Zen<RouteEnvironment>> InitialRoutes(NodeLabelledDigraph<string, int> digraph,
+    SymbolicDestination destination) =>
+    digraph.MapNodes(n => Zen.Constant(new RouteEnvironment()).WithResultValue(destination.EqualsDigraph(digraph, n)));
 
   public static AnglerFatTreeNetwork<RouteEnvironment> Reachable(NodeLabelledDigraph<string, int> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     // infer the destination as the last edge node
     var destination = LastEdgeNode(digraph);
-    var initialRoutes =
-      digraph.MapNodes(n =>
-        n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
+    var initialRoutes = InitialRoutes(digraph, destination);
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
-    var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties =
       digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => RouteEnvironmentExtensions.GetResultValue);
-    var modularProperties = digraph.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
     var annotations = FatTreeSymbolicTimes.FinallyAnnotations<RouteEnvironment>(digraph, destination,
       r => r.GetResultValue(), symbolicTimes.Select(s => s.Value).ToList());
 
     return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
-      RouteEnvironmentExtensions.MinOptional,
-      initialRoutes, annotations, modularProperties,
-      monolithicProperties, symbolicTimes.Cast<ISymbolic>().ToArray());
+      RouteEnvironmentExtensions.MinOptional, initialRoutes, annotations, monolithicProperties,
+      System.Array.Empty<ISymbolic>(), symbolicTimes);
   }
+
+  public static AnglerFatTreeNetwork<RouteEnvironment> ReachableAllToR(NodeLabelledDigraph<string, int> digraph,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+  {
+    var destination = new SymbolicDestination(digraph);
+    var initialValues = InitialRoutes(digraph, destination);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
+
+    var monolithicProperties =
+      digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => RouteEnvironmentExtensions.GetResultValue);
+    var annotations = FatTreeSymbolicTimes.FinallyAnnotations<RouteEnvironment>(digraph, destination,
+      r => r.GetResultValue(),
+      symbolicTimes.Select(s => s.Value).ToList());
+
+    return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
+      RouteEnvironmentExtensions.MinOptional,
+      initialValues, annotations, monolithicProperties, new ISymbolic[] {destination}, symbolicTimes);
+  }
+
+  /// <summary>
+  /// Return a Zen value encoding that a route must have a non-negative AS path length, a default local preference and a default weight.
+  /// </summary>
+  /// <param name="r">A route.</param>
+  /// <returns>A Zen boolean.</returns>
+  private static Zen<bool> DefaultLpWeightPath(Zen<RouteEnvironment> r) =>
+    Zen.And(r.GetAsPathLength() >= BigInteger.Zero,
+      r.GetLp() == RouteEnvironment.DefaultLp, r.GetWeight() == RouteEnvironment.DefaultWeight);
 
   public static AnglerFatTreeNetwork<RouteEnvironment> MaxPathLength(NodeLabelledDigraph<string, int> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
@@ -56,47 +112,68 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
     // infer the destination as the last edge node
     var destination = LastEdgeNode(digraph);
     var destinationPod = digraph.L(destination);
-    var initialRoutes =
-      digraph.MapNodes(n =>
-        n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
+    var initialRoutes = InitialRoutes(digraph, destination);
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
-    var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties =
       digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => r => r.GetAsPathLength() <= new BigInteger(4));
-    var modularProperties = digraph.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
     var annotations = digraph.MapNodes(n =>
     {
       var dist = n.DistanceFromDestinationEdge(digraph.L(n), destination, destinationPod);
       var time = symbolicTimes[dist].Value;
       var maxPathLength = new BigInteger(dist);
 
-      var safety =
-        Lang.Globally<RouteEnvironment>(r =>
-          Zen.Implies(r.GetResultValue(),
-            Zen.And(r.GetAsPathLength() >= BigInteger.Zero, r.GetLp() == RouteEnvironment.DefaultLp,
-              r.GetWeight() == RouteEnvironment.DefaultWeight)));
+      var safety = Lang.Globally(RouteEnvironment.IfValue(DefaultLpWeightPath));
       return Lang.Intersect(safety,
         Lang.Finally<RouteEnvironment>(time, r => Zen.And(r.GetResultValue(), r.GetAsPathLength() <= maxPathLength)));
     });
 
     return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
-      RouteEnvironmentExtensions.MinOptional,
-      initialRoutes, annotations, modularProperties,
-      monolithicProperties, symbolicTimes.Cast<ISymbolic>().ToArray());
+      RouteEnvironmentExtensions.MinOptional, initialRoutes, annotations, monolithicProperties,
+      System.Array.Empty<ISymbolic>(), symbolicTimes);
+  }
+
+  public static AnglerFatTreeNetwork<RouteEnvironment> MaxPathLengthAllToR(NodeLabelledDigraph<string, int> digraph,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+  {
+    var destination = new SymbolicDestination(digraph);
+    var initialValues = InitialRoutes(digraph, destination);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
+    var lastTime = symbolicTimes[^1].Value;
+
+    var monolithicProperties =
+      digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => r => r.GetAsPathLength() <= lastTime);
+    var annotations = digraph.MapNodes(n =>
+    {
+      var witnessTime = destination.SymbolicDistanceCases(n, digraph.L(n), symbolicTimes.Select(t => t.Value).ToList());
+      var maxPathLength = destination.SymbolicDistance(n, digraph.L(n));
+
+      var safety = Lang.Globally(RouteEnvironment.IfValue(DefaultLpWeightPath));
+      return Lang.Intersect(safety,
+        Lang.Finally<RouteEnvironment>(witnessTime,
+          r => Zen.And(r.GetResultValue(), r.GetAsPathLength() <= maxPathLength)));
+    });
+
+    return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
+      RouteEnvironmentExtensions.MinOptional, initialValues,
+      annotations, monolithicProperties, new[] {destination}, symbolicTimes);
   }
 
   /// <summary>
   /// Return an enumerable over all communities in the fat-tree that indicate a route should be dropped.
   /// </summary>
-  /// <param name="numberOfPods">The number of pods in the fat-tree.</param>
+  /// <param name="digraph">The fat-tree digraph.</param>
   /// <returns>An enumerable of community tags.</returns>
-  private static IEnumerable<string> DropCommunities(int numberOfPods)
+  private static IEnumerable<string> DropCommunities(NodeLabelledDigraph<string, int> digraph)
   {
+    var numberOfPods = digraph.Labels.Values.Max() + 1;
     return Enumerable.Range(0, numberOfPods)
       .SelectMany(podNumber => new[] {$"4:{podNumber}", $"5:{podNumber}"})
       .Concat(Enumerable.Repeat("6:0", 1));
   }
+
+  private static Zen<bool> NoDropCommunities(this Zen<RouteEnvironment> r, NodeLabelledDigraph<string, int> digraph) =>
+    DropCommunities(digraph).ForAll(c => Zen.Not(r.HasCommunity(c)));
 
   public static AnglerFatTreeNetwork<RouteEnvironment> ValleyFreedom(NodeLabelledDigraph<string, int> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
@@ -104,18 +181,12 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
     // infer the destination as the last edge node
     var destination = LastEdgeNode(digraph);
     var destinationPod = digraph.L(destination);
-    var numberOfPods = destinationPod + 1;
-    var dropCommunities = DropCommunities(numberOfPods).ToArray();
 
-    var initialRoutes =
-      digraph.MapNodes(n =>
-        n.Equals(destination) ? Zen.Constant(new RouteEnvironment()).WithResultValue(true) : new RouteEnvironment());
+    var initialRoutes = InitialRoutes(digraph, destination);
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
-    var lastTime = symbolicTimes[^1].Value;
 
     var monolithicProperties =
       digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => r => r.GetResultValue());
-    var modularProperties = digraph.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
     var annotations = digraph.MapNodes(n =>
     {
       var indexTime = n.DistanceFromDestinationEdge(digraph.L(n), destination, destinationPod);
@@ -125,27 +196,51 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
       var bestPathLength = new BigInteger(indexTime);
       // (2) At all times, either a node has no route, or it has a route with the default LP and weight
       //     and no drop communities
-      var safety =
-        Lang.Globally<RouteEnvironment>(
-          r => Zen.Implies(r.GetResultValue(),
-            Zen.And(r.GetLp() == RouteEnvironment.DefaultLp, r.GetWeight() == RouteEnvironment.DefaultWeight,
-              // no negative path lengths
-              r.GetAsPathLength() >= BigInteger.Zero,
-              // no route should have any community indicating it has taken a valley and should be dropped
-              Zen.And(dropCommunities.Select(c => Zen.Not(r.HasCommunity(c)))))));
+      var safety = Lang.Globally(RouteEnvironment.IfValue(r => Zen.And(DefaultLpWeightPath(r),
+        // no route should have any community indicating it has taken a valley and should be dropped
+        r.NoDropCommunities(digraph))));
       // (3) All nodes eventually have routes no worse than their best path length.
       var eventually =
         Lang.Finally<RouteEnvironment>(witnessTime,
-          r =>
-            Zen.And(r.GetResultValue(),
-              r.GetAsPathLength() <= bestPathLength));
+          r => Zen.And(r.GetResultValue(), r.GetAsPathLength() <= bestPathLength));
       return Lang.Intersect(safety, eventually);
     });
 
     return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
-      RouteEnvironmentExtensions.MinOptional,
-      initialRoutes, annotations, modularProperties,
-      monolithicProperties, symbolicTimes.Cast<ISymbolic>().ToArray());
+      RouteEnvironmentExtensions.MinOptional, initialRoutes, annotations, monolithicProperties,
+      System.Array.Empty<ISymbolic>(), symbolicTimes);
+  }
+
+  public static AnglerFatTreeNetwork<RouteEnvironment> ValleyFreedomAllToR(NodeLabelledDigraph<string, int> digraph,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+  {
+    var destination = new SymbolicDestination(digraph);
+    var initialRoutes = InitialRoutes(digraph, destination);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
+
+    var monolithicProperties =
+      digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(_ => RouteEnvironmentExtensions.GetResultValue);
+    var annotations = digraph.MapNodes(n =>
+    {
+      var witnessTime = destination.SymbolicDistanceCases(n, digraph.L(n), symbolicTimes.Select(t => t.Value).ToList());
+      // (1) We need the precise best path length here as dist can be arbitrarily larger than the path length,
+      //     and we need to ensure that nodes never have routes with path length larger than their best.
+      var bestPathLength = destination.SymbolicDistance(n, digraph.L(n));
+      // (2) At all times, either a node has no route, or it has a route with the default LP and weight
+      //     and no drop communities
+      var safety = Lang.Globally(RouteEnvironment.IfValue(r => Zen.And(DefaultLpWeightPath(r),
+        // no route should have any community indicating it has taken a valley and should be dropped
+        r.NoDropCommunities(digraph))));
+      // (3) All nodes eventually have routes no worse than their best path length.
+      var eventually =
+        Lang.Finally<RouteEnvironment>(witnessTime,
+          r => Zen.And(r.GetResultValue(), r.GetAsPathLength() <= bestPathLength));
+      return Lang.Intersect(safety, eventually);
+    });
+
+    return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
+      RouteEnvironmentExtensions.MinOptional, initialRoutes, annotations, monolithicProperties,
+      new[] {destination}, symbolicTimes);
   }
 
   public static AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>> FatTreeHijackFiltering(
@@ -182,11 +277,11 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
         r => r.Item1());
 
     // the key property: nodes have routes for the destination prefix, and those routes are internal
-    var mapInternal = AndIsInternal(r => Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value));
+    var hasInternalRoute = IsInternal(r => r.HasPrefixRoute(destinationPrefix.Value));
     var monolithicProperties =
       digraph.MapNodes(n => externalRoutes.ContainsKey(n)
         ? Lang.True<Pair<RouteEnvironment, bool>>()
-        : mapInternal);
+        : hasInternalRoute);
     var modularProperties = digraph.MapNodes(n =>
       externalRoutes.ContainsKey(n)
         ? Lang.Globally(monolithicProperties[n])
@@ -195,7 +290,7 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
     // NOTE: since the digraph contains the external peers, this will construct superfluous annotations for them
     // (we won't use those annotations, due to the check below ensuring that external peers' annotations are just G(true))
     var eventuallyAnnotations = FatTreeSymbolicTimes.FinallyAnnotations(digraph,
-      destination, mapInternal, symbolicTimes.Select(s => s.Value).ToList());
+      destination, hasInternalRoute, symbolicTimes.Select(s => s.Value).ToList());
     var annotations = digraph.MapNodes(n =>
     {
       if (externalRoutes.ContainsKey(n))
@@ -203,17 +298,83 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
 
       // if the route has a value with the prefix, then it must not be external
       var safety = Lang.Globally<Pair<RouteEnvironment, bool>>(r =>
-        Zen.Implies(Zen.And(r.Item1().GetResultValue(), r.Item1().GetPrefix() == destinationPrefix.Value),
-          Zen.Not(r.Item2())));
+        Zen.Implies(r.Item1().HasPrefixRoute(destinationPrefix.Value), Zen.Not(r.Item2())));
       return Lang.Intersect(safety, eventuallyAnnotations[n]);
     });
 
     // collect all the symbolics together
     var symbolics = new ISymbolic[] {destinationPrefix}.Concat(externalRoutes.Values).Concat(symbolicTimes).ToArray();
     return new AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>>(digraph, liftedTransferFunctions, liftedMerge,
-      initialRoutes,
-      annotations,
-      modularProperties, monolithicProperties, symbolics);
+      initialRoutes, annotations, modularProperties, monolithicProperties, symbolics);
+  }
+
+  public static AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>> FatTreeHijackFilteringAllToR(
+    NodeLabelledDigraph<string, int> digraph,
+    IEnumerable<string> externalPeers,
+    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
+    IReadOnlyDictionary<string, List<Ipv4Prefix>> prefixes)
+  {
+    // external neighbors send symbolic routes
+    var externalRoutes =
+      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers);
+    var destination = new SymbolicDestination(digraph);
+    // if a node in the graph equals the destination, then the destination prefix is one of that node's prefixes
+    var destinationPrefix = new SymbolicValue<Ipv4Prefix>("destination-prefix",
+      // we need the .Where() here to filter out non-edge nodes; otherwise the constraint will try to look up prefixes[k]
+      // for a node k which is not in prefixes!
+      p1 => digraph.Nodes.Where(n => n.IsEdge()).ForAll(n =>
+        Zen.Implies(destination.EqualsDigraph(digraph, n), prefixes[n].Exists(p2 => p1 == p2))));
+    var initialRoutes =
+      digraph.MapNodes(n =>
+        externalRoutes.TryGetValue(n, out var externalRoute)
+          // external neighbors start with routes with the ghost boolean variable set to true
+          ? Pair.Create(externalRoute.Value, Zen.True())
+          // internal nodes start with routes with the ghost boolean variable set to false
+          : Pair.Create(
+            Zen.Constant(new RouteEnvironment()).WithPrefix(destinationPrefix.Value)
+              .WithResultValue(destination.EqualsDigraph(digraph, n)),
+            Zen.False()));
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(5);
+    var lastTime = symbolicTimes[^1].Value;
+
+    // lift the original transfer and merge to pairs
+    var liftedTransferFunctions = digraph.MapEdges(e => Lang.Product(transferFunctions[e], Lang.Identity<bool>()));
+    var liftedMerge =
+      Lang.MergeBy<Pair<RouteEnvironment, bool>, RouteEnvironment>(
+        (r1, r2) => MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
+        r => r.Item1());
+
+    // the key property: nodes have routes for the destination prefix, and those routes are internal
+    var hasInternalRoute = IsInternal(r => r.HasPrefixRoute(destinationPrefix.Value));
+    var monolithicProperties =
+      digraph.MapNodes(n => externalRoutes.ContainsKey(n)
+        ? Lang.True<Pair<RouteEnvironment, bool>>()
+        : hasInternalRoute);
+    var modularProperties = digraph.MapNodes(n =>
+      externalRoutes.ContainsKey(n)
+        ? Lang.Globally(monolithicProperties[n])
+        : Lang.Finally(lastTime, monolithicProperties[n]));
+    // eventually, every node should have a route to the destination
+    // NOTE: since the digraph contains the external peers, this will construct superfluous annotations for them
+    // (we won't use those annotations, due to the check below ensuring that external peers' annotations are just G(true))
+    var eventuallyAnnotations = FatTreeSymbolicTimes.FinallyAnnotations(digraph,
+      destination, hasInternalRoute, symbolicTimes.Select(s => s.Value).ToList());
+    var annotations = digraph.MapNodes(n =>
+    {
+      if (externalRoutes.ContainsKey(n))
+        return modularProperties[n];
+
+      // if the route has a value with the prefix, then it must not be external
+      var safety = Lang.Globally<Pair<RouteEnvironment, bool>>(r =>
+        Zen.Implies(r.Item1().HasPrefixRoute(destinationPrefix.Value), Zen.Not(r.Item2())));
+      return Lang.Intersect(safety, eventuallyAnnotations[n]);
+    });
+
+    // collect all the symbolics together
+    var symbolics = new ISymbolic[] {destinationPrefix, destination}.Concat(externalRoutes.Values).Concat(symbolicTimes)
+      .ToArray();
+    return new AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>>(digraph, liftedTransferFunctions, liftedMerge,
+      initialRoutes, annotations, modularProperties, monolithicProperties, symbolics);
   }
 
   /// <summary>
@@ -230,7 +391,13 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
     return Zen.If(r1.GetPrefix() != prefix, r2, Zen.If(r2.GetPrefix() != prefix, r1, r1.MinOptional(r2)));
   }
 
-  private static Func<Zen<Pair<RouteEnvironment, bool>>, Zen<bool>> AndIsInternal(
+  /// <summary>
+  /// Lift a predicate over a route to a predicate over a route and a boolean,
+  /// that holds only when the boolean is false.
+  /// </summary>
+  /// <param name="routePredicate"></param>
+  /// <returns></returns>
+  private static Func<Zen<Pair<RouteEnvironment, bool>>, Zen<bool>> IsInternal(
     Func<Zen<RouteEnvironment>, Zen<bool>> routePredicate) =>
     Lang.Both<RouteEnvironment, bool>(routePredicate, Zen.Not);
 }

@@ -195,6 +195,15 @@ public static class RouteEnvironmentExtensions
     return b.GetCommunities().Contains(community);
   }
 
+  /// <summary>
+  /// Return that a route has a value and is for the given prefix.
+  /// </summary>
+  /// <param name="b"></param>
+  /// <param name="prefix"></param>
+  /// <returns></returns>
+  public static Zen<bool> HasPrefixRoute(this Zen<RouteEnvironment> b, Zen<Ipv4Prefix> prefix) =>
+    Zen.And(b.GetResultValue(), b.GetPrefix() == prefix);
+
   public static Zen<bool> GetResultValue(this Zen<RouteEnvironment> b) => b.GetResult().GetValue();
   public static Zen<bool> GetResultExit(this Zen<RouteEnvironment> b) => b.GetResult().GetExit();
   public static Zen<bool> GetResultReturned(this Zen<RouteEnvironment> b) => b.GetResult().GetReturned();

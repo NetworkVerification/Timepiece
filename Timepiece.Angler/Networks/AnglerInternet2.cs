@@ -127,20 +127,20 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// The mapping of participants to prefixes.
   /// Loaded from a JSON file, since it's quite long and we may want to occasionally tweak it.
   /// </summary>
-  public static readonly IReadOnlyDictionary<string, List<Ipv4Prefix>> ParticipantPrefixes =
+  private static readonly IReadOnlyDictionary<string, List<Ipv4Prefix>> ParticipantPrefixes =
     DeserializePrefixes("participants.json");
 
   /// <summary>
   ///   A prefix corresponding to the internal nodes of Internet2.
   /// </summary>
-  public static readonly Ipv4Prefix InternalPrefix = new("64.57.28.0", "64.57.28.255");
+  private static readonly Ipv4Prefix InternalPrefix = new("64.57.28.0", "64.57.28.255");
 
   /// <summary>
   ///   Prefixes that are considered Martians.
   ///   Must not be advertised or accepted.
   ///   Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
   /// </summary>
-  public static readonly (Ipv4Prefix Prefix, bool Exact)[] MartianPrefixes =
+  private static readonly (Ipv4Prefix Prefix, bool Exact)[] MartianPrefixes =
   {
     (new Ipv4Prefix("0.0.0.0/0"), Exact: true), // default route 0.0.0.0/0
     (new Ipv4Prefix("10.0.0.0/8"), Exact: false), // RFC1918 local network
@@ -159,7 +159,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <summary>
   /// List of prefixes which Abilene originates
   /// </summary>
-  public static readonly (Ipv4Prefix Prefix, bool Exact)[] InternalPrefixes =
+  private static readonly (Ipv4Prefix Prefix, bool Exact)[] InternalPrefixes =
   {
     // Internet2 Backbone
     (new Ipv4Prefix("64.57.16.0/20"), Exact: false),
@@ -181,7 +181,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// </summary>
   /// <param name="env"></param>
   /// <returns></returns>
-  public static Zen<bool> HasValidPrefixLength(Zen<RouteEnvironment> env) => env.GetPrefix().IsValidPrefixLength();
+  private static Zen<bool> HasValidPrefixLength(Zen<RouteEnvironment> env) => env.GetPrefix().IsValidPrefixLength();
 
   /// <summary>
   ///   Return true if none of the given Ipv4 wildcards match the given prefix
@@ -189,7 +189,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="candidates"></param>
   /// <param name="prefix"></param>
   /// <returns></returns>
-  public static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
+  private static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
     Zen<Ipv4Prefix> prefix)
   {
     // TODO: consider converting to Zen<Ipv4Wildcard> first? rather than inside the constraints?
@@ -206,7 +206,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
   public static AnglerInternet2 BlockToExternal(Digraph<string> digraph,
-    string[] externalPeers,
+    IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
@@ -239,7 +239,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="externalPeers"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static AnglerInternet2 NoMartians(Digraph<string> digraph, string[] externalPeers,
+  public static AnglerInternet2 NoMartians(Digraph<string> digraph, IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
@@ -270,7 +270,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
   public static AnglerInternet2 NoPrivateAs(Digraph<string> digraph,
-    string[] externalPeers,
+    IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
@@ -347,7 +347,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
       Zen.And(
         // (1) must not be for a martian prefix or an Internet2-internal prefix
-        NoPrefixMatch(MartianPrefixes.Concat(AnglerInternet2.InternalPrefixes),
+        NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes),
           p),
         // (2) must have a prefix length of at most /27 -- higher lengths will be dropped by CONNECTOR-IN
         p.GetPrefixLength() <= new UInt<_6>(27)));
@@ -375,12 +375,12 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
         ? route.Value
         : Zen.Constant(new RouteEnvironment()).WithPrefix(destinationPrefix.Value));
     // there are 2 symbolic times: when the internal nodes adjacent to the external peer get a route, and when the other internal nodes get a route
-    // var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
     // make the external adjacent time constraint strictly greater than 0
-    // symbolicTimes[0].Constraint = t => t > BigInteger.Zero;
-    var nextToPeerTime = new BigInteger(1); // symbolicTimes[0].Value;
-    var notNextToPeerTime = new BigInteger(2); // symbolicTimes[1].Value;
-    var lastTime = new BigInteger(2); // symbolicTimes[^1].Value;
+    symbolicTimes[0].Constraint = t => t > BigInteger.Zero;
+    var nextToPeerTime = symbolicTimes[0].Value;
+    var notNextToPeerTime = symbolicTimes[1].Value;
+    var lastTime = symbolicTimes[^1].Value;
     // encoding that an external route exists
     var externalRouteExists = externalRoutes
       // external route exists at a non-AL2S_MGMT/OTHER/OTHER_INTERNAL neighbor
@@ -388,12 +388,11 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
         !Internet2Nodes.AdvancedLayer2ServiceManagementGroup.Concat(Internet2Nodes.OtherGroup)
           .Concat(Internet2Nodes.OtherInternalGroup).Contains(ext.Key))
       .Select(ext => ext.Value.Value)
-      .Exists(r => Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value));
+      .Exists(r => r.HasPrefixRoute(destinationPrefix.Value));
 
     var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.AsNodes.Contains(n)
       // Internet2 nodes: if an external route exists, then we must have a route
-      ? r => Zen.Implies(externalRouteExists,
-        Zen.And(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value))
+      ? r => Zen.Implies(externalRouteExists, r.HasPrefixRoute(destinationPrefix.Value))
       // no check on external nodes
       : Lang.True<RouteEnvironment>());
     var modularProperties = digraph.MapNodes(n => Internet2Nodes.AsNodes.Contains(n)
@@ -406,7 +405,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
           // case 1: an adjacent external peer has a route. we get a route once they send it to us
           // case 2: no adjacent external peer has a route. we get a route once an internal ""sends it to us
           ? Lang.Finally(
-            Zen.If<BigInteger>(ExternalNeighborHasRoute(digraph, n, externalRoutes),
+            Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes),
               // case 1
               nextToPeerTime,
               // case 2
@@ -423,7 +422,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
               Zen.Not(r.GetAsSet().Contains(PrivateAs)),
               Zen.Not(r.GetAsSet().Contains(NlrAs)),
               Zen.Not(r.GetAsSet().Contains(CommercialAs)))))));
-    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(destinationPrefix).ToArray();
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
     return new AnglerInternet2(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
       monolithicProperties, symbolics);
   }

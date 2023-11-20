@@ -3,7 +3,6 @@ using System.Diagnostics;
 using Newtonsoft.Json;
 using Timepiece;
 using Timepiece.Angler.Ast;
-using Timepiece.Angler.DataTypes;
 using Timepiece.Angler.Networks;
 using ZenLib;
 
@@ -55,16 +54,27 @@ rootCommand.SetHandler(
         QueryType.Internet2NoPrivateAs => AnglerInternet2.NoPrivateAs(topology, externalNodes, transfer),
         QueryType.Internet2Reachable => AnglerInternet2.Reachable(topology, externalNodes, transfer),
         QueryType.Internet2ReachableInternal => AnglerInternet2.ReachableInternal(topology, transfer),
-        QueryType.FatReachable => AnglerFatTreeNetwork<RouteEnvironment>.Reachable(FatTree.LabelFatTree(topology),
+        QueryType.FatReachable => AnglerFatTreeNetwork.Reachable(FatTree.LabelFatTree(topology),
           transfer),
-        QueryType.FatPathLength => AnglerFatTreeNetwork<RouteEnvironment>.MaxPathLength(
+        QueryType.FatReachableAllToR => AnglerFatTreeNetwork.ReachableAllToR(
           FatTree.LabelFatTree(topology),
           transfer),
-        QueryType.FatValleyFreedom => AnglerFatTreeNetwork<RouteEnvironment>
+        QueryType.FatPathLength => AnglerFatTreeNetwork.MaxPathLength(
+          FatTree.LabelFatTree(topology),
+          transfer),
+        QueryType.FatPathLengthAllToR => AnglerFatTreeNetwork.MaxPathLengthAllToR(
+          FatTree.LabelFatTree(topology),
+          transfer),
+        QueryType.FatValleyFreedom => AnglerFatTreeNetwork
           .ValleyFreedom(FatTree.LabelFatTree(topology), transfer),
-        QueryType.FatHijackFiltering => AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>>
-          .FatTreeHijackFiltering(FatTree.LabelFatTree(topology, externalNodes), externalNodes, transfer,
-            ast.Nodes.ToDictionary(p => p.Key, p => p.Value.Prefixes)),
+        QueryType.FatValleyFreedomAllToR => AnglerFatTreeNetwork
+          .ValleyFreedomAllToR(FatTree.LabelFatTree(topology), transfer),
+        QueryType.FatHijackFiltering => AnglerFatTreeNetwork.FatTreeHijackFiltering(
+          FatTree.LabelFatTree(topology, externalNodes), externalNodes, transfer,
+          ast.Nodes.ToDictionary(p => p.Key, p => p.Value.Prefixes)),
+        QueryType.FatHijackFilteringAllToR => AnglerFatTreeNetwork.FatTreeHijackFilteringAllToR(
+          FatTree.LabelFatTree(topology, externalNodes), externalNodes, transfer,
+          ast.Nodes.ToDictionary(p => p.Key, p => p.Value.Prefixes)),
         _ => throw new ArgumentOutOfRangeException(nameof(queryType), queryType, "Query type not supported!")
       };
 

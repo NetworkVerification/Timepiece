@@ -203,7 +203,7 @@ public static class Hijack
         n == HijackNode
           ? hijackRoute.Value
           : Option.Create(BgpRouteExtensions.ToDestination(destinationPrefix.Value))
-            .Where(_ => destination.Equals(topology, n)),
+            .Where(_ => destination.EqualsDigraph(topology, n)),
         n == HijackNode));
     var hijack = new Hijack<string>(topology, initialValues, HijackNode,
       destinationPrefix.Value, new ISymbolic[] {hijackRoute, destinationPrefix, destination});
@@ -236,7 +236,7 @@ public static class Hijack
         n == HijackNode
           ? hijackRoute.Value
           : Option.Create(BgpRouteExtensions.ToDestination(destinationPrefix.Value))
-            .Where(_ => destination.Equals(topology, n)),
+            .Where(_ => destination.EqualsDigraph(topology, n)),
         n == HijackNode));
     var times = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = times[^1].Value;

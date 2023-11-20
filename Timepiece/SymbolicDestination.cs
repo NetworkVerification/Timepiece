@@ -75,7 +75,7 @@ public record SymbolicDestination : SymbolicValue<Pair<string, int>>
   /// <param name="digraph"></param>
   /// <param name="node"></param>
   /// <returns></returns>
-  public Zen<bool> Equals(NodeLabelledDigraph<string, int> digraph, string node)
+  public Zen<bool> EqualsDigraph(NodeLabelledDigraph<string, int> digraph, string node)
   {
     return DestEquals(Value, digraph, node);
   }

@@ -206,7 +206,7 @@ public static class Sp
     // set a node to be the destination if it matches the symbolic
     var initialValues =
       topology.MapNodes(n =>
-        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
+        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.EqualsDigraph(topology, n)));
     var symbolicValues = new ISymbolic[] {dest};
     var sp = new Sp<string>(topology, initialValues, symbolicValues);
     var stableProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
@@ -218,14 +218,14 @@ public static class Sp
 
   public static AnnotatedSp<string> AllPairsReachabilitySymbolicTimes(uint numPods)
   {
-    var symbolics = SymbolicTime.AscendingSymbolicTimes(5).ToArray();
+    var symbolics = SymbolicTime.AscendingSymbolicTimes(5);
     var lastTime = symbolics[^1].Value;
     var g = Topologies.LabelledFatTree(numPods);
     var dest = new SymbolicDestination(g);
     // set a node to be the destination if it matches the symbolic
     var initialValues =
       g.MapNodes(n =>
-        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(g, n)));
+        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.EqualsDigraph(g, n)));
     var monolithicProperties = g.MapNodes(_ => Lang.IsSome<BgpRoute>());
     // use the last (largest) symbolic time as the safety property to check
     var modularProperties = g.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
@@ -244,7 +244,7 @@ public static class Sp
     // set a node to be the destination if it matches the symbolic
     var initialValues =
       topology.MapNodes(n =>
-        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
+        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.EqualsDigraph(topology, n)));
     var sp = new Sp<string>(topology, initialValues,
       new ISymbolic[] {dest});
     var stableProperties = topology.MapNodes(_ =>
@@ -270,9 +270,10 @@ public static class Sp
     // set a node to be the destination if it matches the symbolic
     var initialValues =
       topology.MapNodes(n =>
-        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.Equals(topology, n)));
-    var monolithicProperties = topology.MapNodes(_ => Lang.IsSome<BgpRoute>());
+        Option.Create<BgpRoute>(new BgpRoute()).Where(_ => dest.EqualsDigraph(topology, n)));
     // use the last (largest) symbolic time as the safety property to check
+    var monolithicProperties =
+      topology.MapNodes(_ => Lang.IfSome<BgpRoute>(b => b.LengthAtMost(lastTime)));
     var modularProperties = topology.MapNodes(n => Lang.Finally(lastTime, monolithicProperties[n]));
     var annotations =
       topology.MapNodes(n =>
