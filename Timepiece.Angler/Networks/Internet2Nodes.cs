@@ -9,16 +9,14 @@ public static class Internet2Nodes
     {"atla-re1", "chic", "clev-re1", "hous", "kans-re1", "losa", "newy-re1", "salt-re1", "seat-re1", "wash"};
 
   /// <summary>
-  ///   Addresses for neighbors in the OTHER-INTERNAL, PAIX and WILC peer group of the internal nodes.
-  ///   These connections should also be considered internal.
+  /// Nodes in the INTERNET2 peer group.
+  /// Includes the network's nodes, PAIX and WILC.
   /// </summary>
-  public static readonly string[] OtherInternalNodes =
+  public static readonly string[] Internet2Group =
   {
-    // OTHER-INTERNAL peer group
-    "64.57.16.133", "64.57.16.196", "64.57.16.4", "64.57.16.68", "64.57.17.133", "64.57.17.194",
-    "64.57.17.7", "64.57.17.71", "64.57.19.2",
-    "64.57.28.251", // PAIX group (Palo Alto Internet eXchange)
-    "64.57.28.252" // WILC group
+    "atla-re1", "chic", "clev-re1", "hous", "kans-re1", "losa", "newy-re1", "salt-re1", "seat-re1", "wash",
+    "64.57.28.251", // PAIX (Palo Alto Internet eXchange)
+    "64.57.28.252" // WILC
   };
 
   /// <summary>
@@ -31,9 +29,17 @@ public static class Internet2Nodes
     "64.57.17.7", "64.57.17.71", "64.57.19.2",
   };
 
+  /// <summary>
+  /// Addresses for neighbors in the OTHER peer group.
+  /// Per configs, these are "sessions to route-servers, monitoring hosts, etc."
+  /// They are classified as external.
+  /// </summary>
   public static readonly string[] OtherGroup =
   {
-    "128.223.51.102", "128.223.51.108", "207.75.164.233", "207.75.164.213",
+    "128.223.51.102", // "RouteViews #1 - help@routeviews.org | I2-S13383"
+    "128.223.51.108", // "RouteViews #2 - help@routeviews.org | I2-S13383"
+    "207.75.164.233", // "Internet2 Deepfield peering | I2-S20098 | [NO-NOTIFY]"
+    "207.75.164.213", // "Internet2 Deepfield test server peering | I2-S20098 | [NO-NOTIFY]"
     "203.181.248.35" // "zebra.jp.apan.net | I2-S13129"
   };
 
@@ -41,6 +47,7 @@ public static class Internet2Nodes
   ///   Addresses for the AL2S_MGMT peer group.
   ///   See https://internet2.edu/services/layer-2-service/ for what AL2S is.
   ///   Routes should never be imported or exported to these nodes.
+  ///   These peers are classified as external in the configs.
   /// </summary>
   public static readonly string[] AdvancedLayer2ServiceManagementGroup =
   {
@@ -230,5 +237,5 @@ public static class Internet2Nodes
     // inactive: "206.196.177.78", // "[RE] MAX (Mid Atlantic Crossroads) via AL2S/WASH | [PENDING][6833:121] | I2-S12528"
   };
 
-  public static readonly IEnumerable<string> InternalNodes = AsNodes.Concat(OtherInternalNodes);
+  public static readonly IEnumerable<string> InternalNodes = Internet2Group.Concat(OtherInternalGroup);
 }

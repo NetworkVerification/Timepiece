@@ -12,6 +12,16 @@ namespace Timepiece.Angler.Networks;
 /// </summary>
 public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
 {
+  /// <summary>
+  /// Construct an AnglerInternet2 instance of an <c>AnnotatedNetwork</c>.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="transferFunctions"></param>
+  /// <param name="initialValues"></param>
+  /// <param name="annotations"></param>
+  /// <param name="modularProperties"></param>
+  /// <param name="monolithicProperties"></param>
+  /// <param name="symbolics"></param>
   public AnglerInternet2(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
@@ -24,6 +34,15 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   {
   }
 
+  /// <summary>
+  /// Construct an AnglerInternet2 instance that checks a safety property defined by <paramref name="monolithicProperties"/> on all nodes.
+  /// The safety property must hold at all times, and is used directly as the annotation.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="transferFunctions"></param>
+  /// <param name="initialValues"></param>
+  /// <param name="monolithicProperties"></param>
+  /// <param name="symbolics"></param>
   public AnglerInternet2(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
@@ -39,7 +58,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <summary>
   ///   The block to external community tag used by Internet2.
   /// </summary>
-  public const string BlockToExternalCommunity = "11537:888";
+  private const string BlockToExternalCommunity = "11537:888";
 
   /// <summary>
   ///   Community tag for identifying low-value peer connections.
