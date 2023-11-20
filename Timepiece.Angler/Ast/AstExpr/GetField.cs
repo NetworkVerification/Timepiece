@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class GetField : Expr
+public record GetField : Expr
 {
   public GetField(Type recordTy, Type fieldTy, Expr record, string fieldName)
   {

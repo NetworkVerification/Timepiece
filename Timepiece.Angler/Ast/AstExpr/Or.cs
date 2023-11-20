@@ -3,7 +3,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class Or : AssociativeBinaryOpExpr
+public record Or : AssociativeBinaryOpExpr
 {
   private static readonly Func<dynamic, dynamic, Zen<bool>> Op = (e1, e2) => Zen.Or(e1, e2);
 

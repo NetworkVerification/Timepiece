@@ -1,16 +1,10 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class PrefixMatches : Expr
+public record PrefixMatches(dynamic IpWildcard, dynamic PrefixLengthRange) : Expr
 {
-  public PrefixMatches(dynamic ipWildcard, dynamic prefixLengthRange)
-  {
-    IpWildcard = ipWildcard;
-    PrefixLengthRange = prefixLengthRange;
-  }
+  public dynamic IpWildcard { get; set; } = IpWildcard;
 
-  public dynamic IpWildcard { get; set; }
-
-  public dynamic PrefixLengthRange { get; set; }
+  public dynamic PrefixLengthRange { get; set; } = PrefixLengthRange;
 
   public override void Rename(string oldVar, string newVar)
   {

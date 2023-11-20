@@ -2,9 +2,10 @@ using Timepiece.Angler.Ast.AstExpr;
 
 namespace Timepiece.Angler.Ast.AstStmt;
 
-public class IfThenElse : Statement
+public record IfThenElse : Statement
 {
-  public IfThenElse(Expr guard, IEnumerable<Statement> thenCase, IEnumerable<Statement> elseCase, string? comment = null)
+  public IfThenElse(Expr guard, IEnumerable<Statement> thenCase, IEnumerable<Statement> elseCase,
+    string? comment = null)
   {
     Guard = guard;
     ThenCase = thenCase;
@@ -16,6 +17,7 @@ public class IfThenElse : Statement
   /// An optional comment describing the if statement.
   /// </summary>
   public string? Comment { get; set; }
+
   public Expr Guard { get; set; }
   public IEnumerable<Statement> ThenCase { get; set; }
   public IEnumerable<Statement> ElseCase { get; set; }

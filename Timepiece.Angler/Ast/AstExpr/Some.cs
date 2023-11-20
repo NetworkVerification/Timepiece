@@ -2,7 +2,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class Some : UnaryOpExpr
+public record Some : UnaryOpExpr
 {
   public Some(Type innerTy, Expr expr) : base(expr, Op(innerTy))
   {

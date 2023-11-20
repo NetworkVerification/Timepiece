@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class AssociativeBinaryOpExpr : BinaryOpExpr
+public record AssociativeBinaryOpExpr : BinaryOpExpr
 {
   public AssociativeBinaryOpExpr(Expr operand1, Expr operand2, Func<dynamic, dynamic, dynamic> binaryOp) : base(
     operand1, operand2,

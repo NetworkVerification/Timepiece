@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class CreateRecord : Expr
+public record CreateRecord : Expr
 {
   [JsonConstructor]
   public CreateRecord(string recordType, IDictionary<string, Expr> fields) : this(

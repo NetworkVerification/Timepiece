@@ -5,7 +5,7 @@ namespace Timepiece.Angler.Ast.AstExpr;
 /// <summary>
 ///   Addition of two unsigned integers.
 /// </summary>
-public class Plus : AssociativeBinaryOpExpr
+public record Plus : AssociativeBinaryOpExpr
 {
   private static readonly Func<dynamic, dynamic, dynamic> Op = (e1, e2) => Zen.Plus(e1, e2);
 

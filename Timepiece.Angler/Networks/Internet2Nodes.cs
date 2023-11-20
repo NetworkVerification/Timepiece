@@ -1,4 +1,4 @@
-namespace Timepiece.Angler.Specifications;
+namespace Timepiece.Angler.Networks;
 
 public static class Internet2Nodes
 {

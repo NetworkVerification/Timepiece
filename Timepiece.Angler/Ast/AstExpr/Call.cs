@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class Call : Expr
+public record Call : Expr
 {
   public Call(string name)
   {

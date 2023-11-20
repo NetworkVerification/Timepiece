@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class UnaryOpExpr : Expr
+public record UnaryOpExpr : Expr
 {
   public readonly Expr expr;
   public readonly Func<dynamic, dynamic> unaryOp;

@@ -8,7 +8,7 @@ namespace Timepiece.Angler.Tests;
 
 public static class RouteFilterListTests
 {
-  public static TheoryData<RouteFilterLine[], Zen<Ipv4Prefix>> PermitsTheoryData => new()
+  public static TheoryData<RouteFilterLine[], Zen<Ipv4Prefix>, bool> MatchesTheoryData => new()
   {
     {
       new[]
@@ -17,7 +17,8 @@ public static class RouteFilterListTests
         new RouteFilterLine(true, new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0), new UInt<_6>(32))
       },
       // any prefix
-      Zen.Symbolic<Ipv4Prefix>()
+      Zen.Symbolic<Ipv4Prefix>(),
+      true
     },
     {
       new[]
@@ -26,7 +27,8 @@ public static class RouteFilterListTests
         new RouteFilterLine(true, new Ipv4Wildcard("192.168.0.0", "0.0.0.0"), new UInt<_6>(32), new UInt<_6>(32))
       },
       // the prefix 192.168.0.0/32
-      Zen.Constant(new Ipv4Prefix("192.168.0.0"))
+      Zen.Constant(new Ipv4Prefix("192.168.0.0")),
+      true
     },
     {
       new[]
@@ -36,7 +38,18 @@ public static class RouteFilterListTests
         new RouteFilterLine(true, new Ipv4Wildcard("192.168.0.1", "0.0.0.0"), new UInt<_6>(32), new UInt<_6>(32))
       },
       // the prefix 192.168.0.1/32
-      Zen.Constant(new Ipv4Prefix("192.168.0.1"))
+      Zen.Constant(new Ipv4Prefix("192.168.0.1")),
+      true
+    },
+    {
+      new[]
+      {
+        new RouteFilterLine(false, new Ipv4Wildcard("70.0.0.0", "0.255.255.255"), new UInt<_6>(8), new UInt<_6>(32)),
+        new RouteFilterLine(false, new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8), new UInt<_6>(32)),
+        new RouteFilterLine(true, new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0), new UInt<_6>(32))
+      },
+      Zen.Constant(new Ipv4Prefix("70.0.7.0/24")),
+      false
     }
   };
 
@@ -152,28 +165,30 @@ public static class RouteFilterListTests
   {
     var list = new RouteFilterList();
     var p = Zen.Symbolic<Ipv4Prefix>();
-    Assert.False(list.Contains(p).Solve().IsSatisfiable());
+    Assert.False(list.Matches(p).Solve().IsSatisfiable());
   }
 
   [Theory]
-  [MemberData(nameof(PermitsTheoryData))]
-  public static void TestListMatches(RouteFilterLine[] lines, Zen<Ipv4Prefix> prefix)
+  [MemberData(nameof(MatchesTheoryData))]
+  public static void TestListMatches(RouteFilterLine[] lines, Zen<Ipv4Prefix> prefix, bool expected)
   {
     var list = new RouteFilterList(lines);
-    // check that it is *not* possible for Contains to ever return false, i.e. it always returns true
+    // check that it is *not* possible for Matches to ever contradict the expected result
     // note that we have to constrain the prefix length to be at most 32
-    Assert.False(Zen.And(prefix.GetPrefixLength() <= Zen.Constant(new UInt<_6>(32)),
-      Zen.Not(list.Contains(prefix))).Solve().IsSatisfiable());
+    var assumption = prefix.IsValidPrefixLength();
+    Assert.False(expected
+      ? Zen.And(assumption, Zen.Not(list.Matches(prefix))).Solve().IsSatisfiable()
+      : Zen.And(assumption, list.Matches(prefix)).Solve().IsSatisfiable());
   }
 
   [Fact]
   public static void TestNonMartians()
   {
     var list = AstSerializationBinder.JsonSerializer()
-      .Deserialize<RouteFilterList>(new JsonTextReader(new StringReader(MartiansRouteFilterList)))!;
+      .Deserialize<RouteFilterList>(new JsonTextReader(new StringReader(MartiansRouteFilterList)));
     var nonMartianPrefix = Zen.Constant(new Ipv4Prefix("35.0.0.0", "35.255.255.255"));
     // check that the prefix matches -- we expect it not to
-    var query = list.Contains(nonMartianPrefix).Solve();
+    var query = list.Matches(nonMartianPrefix).Solve();
     Assert.Null(query.IsSatisfiable() ? query.Get(nonMartianPrefix) : null);
   }
 }

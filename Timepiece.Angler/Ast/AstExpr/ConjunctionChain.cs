@@ -6,7 +6,7 @@ namespace Timepiece.Angler.Ast.AstExpr;
 /// <summary>
 ///   See Batfish's ConjunctionChain expression.
 /// </summary>
-public class ConjunctionChain : VariadicExpr
+public record ConjunctionChain : VariadicExpr
 {
   public ConjunctionChain(params Expr[] subroutines) : base(subroutines)
   {

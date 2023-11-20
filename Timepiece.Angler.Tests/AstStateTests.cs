@@ -3,12 +3,17 @@ using Newtonsoft.Json;
 using Timepiece.Angler.Ast;
 using Timepiece.Angler.DataTypes;
 using Timepiece.DataTypes;
+using Xunit.Abstractions;
 using ZenLib;
 
 namespace Timepiece.Angler.Tests;
 
-public static class AstEnvironmentTests
+/// <summary>
+/// Tests for evaluating AstStates.
+/// </summary>
+public class AstStateTests
 {
+  private readonly ITestOutputHelper _testOutputHelper;
   private const string DefaultPolicy = "defaultPolicy";
   private const string WillFallThrough = "willFallThrough";
   private const string ExitReject = "exitReject";
@@ -1289,6 +1294,19 @@ public static class AstEnvironmentTests
 
   private static readonly ReturnRoute<RouteEnvironment> R = new(Zen.Symbolic<RouteEnvironment>());
 
+  private static readonly RouteFilterListExpr _routeFilterListExternal = new RouteFilterListExpr(new RouteFilterList(
+    new[]
+    {
+      new RouteFilterLine(false, new Ipv4Wildcard("70.0.0.0", "0.255.255.255"), new UInt<_6>(8), new UInt<_6>(32)),
+      new RouteFilterLine(false, new Ipv4Wildcard("10.0.0.0", "0.255.255.255"), new UInt<_6>(8), new UInt<_6>(32)),
+      new RouteFilterLine(true, new Ipv4Wildcard("0.0.0.0", "255.255.255.255"), new UInt<_6>(0), new UInt<_6>(32))
+    }));
+
+  public AstStateTests(ITestOutputHelper testOutputHelper)
+  {
+    _testOutputHelper = testOutputHelper;
+  }
+
   private static AstFunction<RouteEnvironment> UpdateResultFunction(RouteResult result)
   {
     return new AstFunction<RouteEnvironment>("env", new Statement[]
@@ -1350,7 +1368,7 @@ public static class AstEnvironmentTests
   [Theory]
   [InlineData(true)]
   [InlineData(false)]
-  public static void EvaluateBoolExprs(bool e)
+  public void EvaluateBoolExprs(bool e)
   {
     var evaluated = (Zen<bool>) EvaluateExprIgnoreRoute(new BoolExpr(e));
     var zen = Zen.Constant(e);
@@ -1361,7 +1379,7 @@ public static class AstEnvironmentTests
   [InlineData(0)]
   [InlineData(1)]
   [InlineData(1000000)]
-  public static void EvaluateIntExprs(int e)
+  public void EvaluateIntExprs(int e)
   {
     var evaluated = (Zen<int>) EvaluateExprIgnoreRoute(new IntExpr(e));
     var zen = Zen.Constant(e);
@@ -1371,7 +1389,7 @@ public static class AstEnvironmentTests
   [Theory]
   [InlineData("foo")]
   [InlineData("bar")]
-  public static void EvaluateStringExprs(string e)
+  public void EvaluateStringExprs(string e)
   {
     var evaluated = (Zen<string>) EvaluateExprIgnoreRoute(new StringExpr(e));
     var zen = Zen.Constant(e);
@@ -1379,7 +1397,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateNoneExpr()
+  public void EvaluateNoneExpr()
   {
     var zen = Option.Null<int>();
     var evaluated = (Zen<Option<int>>) EvaluateExprIgnoreRoute(new None(typeof(int)));
@@ -1387,7 +1405,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateDefaultRoute()
+  public void EvaluateDefaultRoute()
   {
     var zen = new RouteEnvironment();
     var evaluated = (Zen<RouteEnvironment>) EvaluateExprIgnoreRoute(AstState.DefaultRoute());
@@ -1395,7 +1413,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateAssignStmt()
+  public void EvaluateAssignStmt()
   {
     const string name = "x";
     var env1 = Env.EvaluateStatement(name, R, new Assign(name, new IntExpr(0)));
@@ -1404,7 +1422,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateVariableSwap()
+  public void EvaluateVariableSwap()
   {
     const string dummy = "r";
     const string var1 = "x";
@@ -1426,7 +1444,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateIfStatementHavoc()
+  public void EvaluateIfStatementHavoc()
   {
     const string resultVar = "result";
     const int trueResult = 0;
@@ -1446,7 +1464,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateGetField()
+  public void EvaluateGetField()
   {
     const string pathLen = "AsPathLength";
     var route = AstState.DefaultRoute();
@@ -1461,7 +1479,7 @@ public static class AstEnvironmentTests
             // set the value by asking if the field we got is equal to 0
             {
               "Value",
-              new Equals(
+              new EqualsExpr(
                 new BigIntExpr(0),
                 new GetField(typeof(RouteEnvironment), typeof(BigInteger), new Var(arg), pathLen))
             },
@@ -1477,7 +1495,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateIncrementFieldConstant()
+  public void EvaluateIncrementFieldConstant()
   {
     const string pathLen = "AsPathLength";
     const string route = "route";
@@ -1495,7 +1513,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateIncrementFieldSymbolic()
+  public void EvaluateIncrementFieldSymbolic()
   {
     const string pathLen = "AsPathLength";
     var route = Zen.Symbolic<RouteEnvironment>();
@@ -1517,7 +1535,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateReturnTrueFunction()
+  public void EvaluateReturnTrueFunction()
   {
     const string arg = "arg";
     var function = new AstFunction<RouteEnvironment>(arg, new Statement[]
@@ -1558,7 +1576,7 @@ public static class AstEnvironmentTests
   [InlineData(true, false, false)]
   [InlineData(false, true, false)]
   [InlineData(false, false, false)]
-  public static void EvaluateAndExprTruthTable(bool arg1, bool arg2, bool result)
+  public void EvaluateAndExprTruthTable(bool arg1, bool arg2, bool result)
   {
     var e = new And(new BoolExpr(arg1), new BoolExpr(arg2));
     var evaluated = EvaluateExprIgnoreRoute(e);
@@ -1570,7 +1588,7 @@ public static class AstEnvironmentTests
   [InlineData(true, false, true)]
   [InlineData(false, true, true)]
   [InlineData(false, false, false)]
-  public static void EvaluateOrExprTruthTable(bool arg1, bool arg2, bool result)
+  public void EvaluateOrExprTruthTable(bool arg1, bool arg2, bool result)
   {
     var e = new Or(new BoolExpr(arg1), new BoolExpr(arg2));
     var evaluated = EvaluateExprIgnoreRoute(e);
@@ -1580,7 +1598,7 @@ public static class AstEnvironmentTests
   [Theory]
   [InlineData(true, false)]
   [InlineData(false, true)]
-  public static void EvaluateNotExprTruthTable(bool arg, bool result)
+  public void EvaluateNotExprTruthTable(bool arg, bool result)
   {
     var e = new Not(new BoolExpr(arg));
     var evaluated = EvaluateExprIgnoreRoute(e);
@@ -1591,7 +1609,7 @@ public static class AstEnvironmentTests
   [InlineData(DefaultPolicy, true, false, false)]
   [InlineData(ExitReject, false, true, false)]
   [InlineData(WillFallThrough, false, false, true)]
-  public static void EvaluateCallExpr(string functionName, bool value, bool exit, bool fallthrough)
+  public void EvaluateCallExpr(string functionName, bool value, bool exit, bool fallthrough)
   {
     var e = new Call(functionName);
     var evaluated = Env.EvaluateExpr(R, e);
@@ -1602,7 +1620,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateFirstMatchChainDefaultPolicySet()
+  public void EvaluateFirstMatchChainDefaultPolicySet()
   {
     const string arg = "env";
     var statements = new Statement[]
@@ -1625,7 +1643,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateFirstMatchChainFallThrough()
+  public void EvaluateFirstMatchChainFallThrough()
   {
     const string arg = "env";
     var statements = new Statement[]
@@ -1648,7 +1666,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateFirstMatchChainNoDefaultPolicy()
+  public void EvaluateFirstMatchChainNoDefaultPolicy()
   {
     const string arg = "env";
     var statements = new Statement[]
@@ -1671,7 +1689,7 @@ public static class AstEnvironmentTests
   ///   Test that a function that falls through modifies the resulting route when the FMC returns.
   /// </summary>
   [Fact]
-  public static void EvaluateFirstMatchChainAddCommunity()
+  public void EvaluateFirstMatchChainAddCommunity()
   {
     const string arg = "env";
     var fun = new AstFunction<RouteEnvironment>(arg,
@@ -1693,12 +1711,7 @@ public static class AstEnvironmentTests
   }
 
   [Fact]
-  public static void EvaluateFirstMatchChain()
-  {
-  }
-
-  [Fact]
-  public static void ConnectorInAddsParticipantTag()
+  public void ConnectorInAddsParticipantTag()
   {
     var statements = AstSerializationBinder.JsonSerializer()
       .Deserialize<List<Statement>>(new JsonTextReader(new StringReader(ConnectorIn)))!;
@@ -1712,5 +1725,16 @@ public static class AstEnvironmentTests
       r.GetPrefix().GetPrefixLength() <= new UInt<_6>(27),
       Zen.Not(Zen.And(updated.GetResultValue(), updated.GetCommunities().Contains("11537:160")))).Solve();
     Assert.Null(query.IsSatisfiable() ? (query.Get(r), query.Get(updated)) : null);
+  }
+
+
+  [Fact]
+  public void PrefixMatchRejectsRoute()
+  {
+    var pms = new PrefixMatchSet(new PrefixExpr(new Ipv4Prefix("70.0.7.0/24")),
+      _routeFilterListExternal);
+    var env = new AstState();
+    Zen<bool> returnValue = env.EvaluateExpr(R, pms).ReturnValue;
+    Assert.False(returnValue.Solve().IsSatisfiable());
   }
 }

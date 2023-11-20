@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class LiteralSet : Expr
+public record LiteralSet : Expr
 {
   public readonly dynamic[] elements;
 

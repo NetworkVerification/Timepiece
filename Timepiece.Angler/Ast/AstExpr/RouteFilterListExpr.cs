@@ -10,7 +10,7 @@ namespace Timepiece.Angler.Ast.AstExpr;
 /// <remarks>For simplicity, we treat a route filter list as a kind of constant,
 /// although it does not look like a "traditional" constant and notably
 /// does not lift the <c>RouteFilterList</c> to a <c>Zen{RouteFilterList}</c>.</remarks>
-public class RouteFilterListExpr : ConstantExpr
+public record RouteFilterListExpr : ConstantExpr
 {
   public RouteFilterListExpr(RouteFilterList list) : base(list, x => x)
   {
@@ -26,6 +26,6 @@ public class RouteFilterListExpr : ConstantExpr
 
   public Zen<bool> Contains(Zen<Ipv4Prefix> prefix)
   {
-    return FilterList.Contains(prefix);
+    return FilterList.Matches(prefix);
   }
 }
