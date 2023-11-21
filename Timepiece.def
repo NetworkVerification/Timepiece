@@ -1,0 +1,22 @@
+# Build stage
+Bootstrap: docker
+From: mcr.microsoft.com/dotnet/sdk:7.0
+Stage: build
+%post
+  git clone https://github.com/alberdingk-thijm/Timepiece.git
+  cd Timepiece
+  dotnet restore "Timepiece/Timepiece.csproj" 
+  dotnet restore "Timepiece.Angler/Timepiece.Angler.csproj"
+  dotnet publish Timepiece.Angler -c Release -o /publish
+
+# Run stage
+Bootstrap: docker
+FROM: mcr.microsoft.com/dotnet/aspnet:7.0
+Stage: run
+%files from build
+  /publish /publish
+
+%runscript
+  echo "Container was created $NOW"
+  echo "Arguments received: $*"
+  dotnet /publish/Timepiece.Angler.dll "$@"
