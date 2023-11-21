@@ -3,7 +3,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class UInt2Expr : ConstantExpr
+public record UInt2Expr : ConstantExpr
 {
   public UInt2Expr(UInt<_2> value) : base(value, v => Zen.Constant<UInt<_2>>(v))
   {

@@ -84,7 +84,7 @@ public static class AstTests
   }
 
   // warning: this may not complete and need to be aborted (takes a long time to run)
-  [Fact]
+  [Fact(Skip = "only run manually; is slow", Timeout = 15_000)]
   public static void TestSpAstBadMonolithic()
   {
     var (topology, transfer) = SpAnglerNetwork.TopologyAndTransfer();

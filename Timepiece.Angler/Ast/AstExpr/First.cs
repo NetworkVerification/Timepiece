@@ -3,7 +3,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class First : UnaryOpExpr
+public record First : UnaryOpExpr
 {
   [JsonConstructor]
   public First(Expr pair) : base(pair,

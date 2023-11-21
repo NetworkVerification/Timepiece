@@ -3,7 +3,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class SetUnion : AssociativeBinaryOpExpr
+public record SetUnion : AssociativeBinaryOpExpr
 {
   private static readonly Func<dynamic, dynamic, Zen<CSet<string>>> Op = (e1, e2) => CSet.Union<string>(e1, e2);
 

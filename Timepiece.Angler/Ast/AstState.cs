@@ -33,10 +33,11 @@ public record AstState(ImmutableDictionary<string, dynamic> Bindings,
   /// <summary>
   /// Construct a new AstState with no bound variables.
   /// </summary>
-  /// <param name="declarations"></param>
-  /// <param name="defaultPolicy"></param>
-  /// <param name="callExprContext"></param>
-  /// <param name="trackTerms"></param>
+  /// <param name="declarations">The declarations in scope.</param>
+  /// <param name="function">The current function being executed.</param>
+  /// <param name="defaultPolicy">The default policy to use.</param>
+  /// <param name="callExprContext">The call expression context.</param>
+  /// <param name="trackTerms">If terms are being tracked.</param>
   public AstState(IReadOnlyDictionary<string, AstFunction<RouteEnvironment>> declarations,
     string? function = null, string? defaultPolicy = null, bool callExprContext = false,
     bool trackTerms = false) : this(

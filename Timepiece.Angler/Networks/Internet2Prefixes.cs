@@ -1,4 +1,4 @@
-namespace Timepiece.Angler.Specifications;
+namespace Timepiece.Angler.Networks;
 
 internal static class Internet2Prefixes
 {

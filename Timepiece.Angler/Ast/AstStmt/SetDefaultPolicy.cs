@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstStmt;
 
-public class SetDefaultPolicy : Statement
+public record SetDefaultPolicy : Statement
 {
   public SetDefaultPolicy(string policyName)
   {

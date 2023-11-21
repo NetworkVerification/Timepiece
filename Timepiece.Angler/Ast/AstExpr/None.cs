@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class None : Expr
+public record None : Expr
 {
   public Type innerType;
 

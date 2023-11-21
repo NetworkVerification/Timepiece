@@ -5,14 +5,24 @@ using Timepiece.DataTypes;
 using Timepiece.Networks;
 using ZenLib;
 
-namespace Timepiece.Angler.Specifications;
+namespace Timepiece.Angler.Networks;
 
 /// <summary>
 /// Internet2 benchmarks.
 /// </summary>
-public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
+public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
 {
-  public Internet2Specification(Digraph<string> digraph,
+  /// <summary>
+  /// Construct an AnglerInternet2 instance of an <c>AnnotatedNetwork</c>.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="transferFunctions"></param>
+  /// <param name="initialValues"></param>
+  /// <param name="annotations"></param>
+  /// <param name="modularProperties"></param>
+  /// <param name="monolithicProperties"></param>
+  /// <param name="symbolics"></param>
+  public AnglerInternet2(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -24,7 +34,16 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   {
   }
 
-  public Internet2Specification(Digraph<string> digraph,
+  /// <summary>
+  /// Construct an AnglerInternet2 instance that checks a safety property defined by <paramref name="monolithicProperties"/> on all nodes.
+  /// The safety property must hold at all times, and is used directly as the annotation.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="transferFunctions"></param>
+  /// <param name="initialValues"></param>
+  /// <param name="monolithicProperties"></param>
+  /// <param name="symbolics"></param>
+  public AnglerInternet2(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>> monolithicProperties, ISymbolic[] symbolics) : this(
@@ -39,7 +58,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   /// <summary>
   ///   The block to external community tag used by Internet2.
   /// </summary>
-  public const string BlockToExternalCommunity = "11537:888";
+  private const string BlockToExternalCommunity = "11537:888";
 
   /// <summary>
   ///   Community tag for identifying low-value peer connections.
@@ -186,7 +205,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="digraph"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static Internet2Specification BlockToExternal(Digraph<string> digraph,
+  public static AnglerInternet2 BlockToExternal(Digraph<string> digraph,
     string[] externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
@@ -200,7 +219,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
       digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(n =>
         Internet2Nodes.InternalNodes.Contains(n) ? Lang.True<RouteEnvironment>() : BteTagAbsent);
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new Internet2Specification(digraph, transferFunctions, initialRoutes, monolithicProperties,
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
       symbolics);
   }
 
@@ -220,7 +239,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="externalPeers"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static Internet2Specification NoMartians(Digraph<string> digraph, string[] externalPeers,
+  public static AnglerInternet2 NoMartians(Digraph<string> digraph, string[] externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
@@ -239,7 +258,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
         HasValidPrefixLength)
       : Lang.True<RouteEnvironment>());
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new Internet2Specification(digraph, transferFunctions, initialRoutes, monolithicProperties,
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
       symbolics);
   }
 
@@ -250,7 +269,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="externalPeers"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static Internet2Specification NoPrivateAs(Digraph<string> digraph,
+  public static AnglerInternet2 NoPrivateAs(Digraph<string> digraph,
     string[] externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
@@ -266,7 +285,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
         HasValidPrefixLength)
       : Lang.True<RouteEnvironment>());
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new Internet2Specification(digraph, transferFunctions, initialRoutes, monolithicProperties,
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
       symbolics);
   }
 
@@ -279,7 +298,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="digraph"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static Internet2Specification ReachableInternal(Digraph<string> digraph,
+  public static AnglerInternet2 ReachableInternal(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var internalRoutes = SymbolicValue.SymbolicDictionary<RouteEnvironment>("internal-route", Internet2Nodes.AsNodes,
@@ -308,7 +327,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
       Lang.Intersect(modularProperties[n],
         Lang.Globally(RouteEnvironment.IfValue(r => r.GetPrefix() == InternalPrefix))));
     var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
-    return new Internet2Specification(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
       monolithicProperties, symbolics);
   }
 
@@ -320,7 +339,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="externalPeers"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static Internet2Specification Reachable(Digraph<string> digraph,
+  public static AnglerInternet2 Reachable(Digraph<string> digraph,
     IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
@@ -328,7 +347,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
       Zen.And(
         // (1) must not be for a martian prefix or an Internet2-internal prefix
-        NoPrefixMatch(MartianPrefixes.Concat(Internet2Specification.InternalPrefixes),
+        NoPrefixMatch(MartianPrefixes.Concat(AnglerInternet2.InternalPrefixes),
           p),
         // (2) must have a prefix length of at most /27 -- higher lengths will be dropped by CONNECTOR-IN
         p.GetPrefixLength() <= new UInt<_6>(27)));
@@ -405,7 +424,7 @@ public class Internet2Specification : AnnotatedNetwork<RouteEnvironment, string>
               Zen.Not(r.GetAsSet().Contains(NlrAs)),
               Zen.Not(r.GetAsSet().Contains(CommercialAs)))))));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(destinationPrefix).ToArray();
-    return new Internet2Specification(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
       monolithicProperties, symbolics);
   }
 

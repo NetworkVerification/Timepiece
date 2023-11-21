@@ -4,14 +4,14 @@ using Timepiece.DataTypes;
 using Timepiece.Networks;
 using ZenLib;
 
-namespace Timepiece.Angler.Specifications;
+namespace Timepiece.Angler.Networks;
 
 /// <summary>
 ///   Checks for properties of fat-tree networks.
 /// </summary>
-public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, string>
+public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, string>
 {
-  public FatTreeSpecification(Digraph<string> digraph,
+  public AnglerFatTreeNetwork(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteType>, Zen<RouteType>>> transferFunctions,
     Func<Zen<RouteType>, Zen<RouteType>, Zen<RouteType>> mergeFunction,
     Dictionary<string, Zen<RouteType>> initialValues,
@@ -27,7 +27,7 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
     return digraph.Nodes.Order().Last(n => n.IsEdge());
   }
 
-  public static FatTreeSpecification<RouteEnvironment> Reachable(NodeLabelledDigraph<string, int> digraph,
+  public static AnglerFatTreeNetwork<RouteEnvironment> Reachable(NodeLabelledDigraph<string, int> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     // infer the destination as the last edge node
@@ -44,13 +44,13 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
     var annotations = FatTreeSymbolicTimes.FinallyAnnotations<RouteEnvironment>(digraph, destination,
       r => r.GetResultValue(), symbolicTimes.Select(s => s.Value).ToList());
 
-    return new FatTreeSpecification<RouteEnvironment>(digraph, transferFunctions,
+    return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
       RouteEnvironmentExtensions.MinOptional,
       initialRoutes, annotations, modularProperties,
       monolithicProperties, symbolicTimes.Cast<ISymbolic>().ToArray());
   }
 
-  public static FatTreeSpecification<RouteEnvironment> MaxPathLength(NodeLabelledDigraph<string, int> digraph,
+  public static AnglerFatTreeNetwork<RouteEnvironment> MaxPathLength(NodeLabelledDigraph<string, int> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     // infer the destination as the last edge node
@@ -80,7 +80,7 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
         Lang.Finally<RouteEnvironment>(time, r => Zen.And(r.GetResultValue(), r.GetAsPathLength() <= maxPathLength)));
     });
 
-    return new FatTreeSpecification<RouteEnvironment>(digraph, transferFunctions,
+    return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
       RouteEnvironmentExtensions.MinOptional,
       initialRoutes, annotations, modularProperties,
       monolithicProperties, symbolicTimes.Cast<ISymbolic>().ToArray());
@@ -93,13 +93,12 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
   /// <returns>An enumerable of community tags.</returns>
   private static IEnumerable<string> DropCommunities(int numberOfPods)
   {
-    // Enumerable.Range takes a start and a *count*, not a max -- so we want the number of pods
     return Enumerable.Range(0, numberOfPods)
       .SelectMany(podNumber => new[] {$"4:{podNumber}", $"5:{podNumber}"})
       .Concat(Enumerable.Repeat("6:0", 1));
   }
 
-  public static FatTreeSpecification<RouteEnvironment> ValleyFreedom(NodeLabelledDigraph<string, int> digraph,
+  public static AnglerFatTreeNetwork<RouteEnvironment> ValleyFreedom(NodeLabelledDigraph<string, int> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     // infer the destination as the last edge node
@@ -143,13 +142,13 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
       return Lang.Intersect(safety, eventually);
     });
 
-    return new FatTreeSpecification<RouteEnvironment>(digraph, transferFunctions,
+    return new AnglerFatTreeNetwork<RouteEnvironment>(digraph, transferFunctions,
       RouteEnvironmentExtensions.MinOptional,
       initialRoutes, annotations, modularProperties,
       monolithicProperties, symbolicTimes.Cast<ISymbolic>().ToArray());
   }
 
-  public static FatTreeSpecification<Pair<RouteEnvironment, bool>> FatTreeHijackFiltering(
+  public static AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>> FatTreeHijackFiltering(
     NodeLabelledDigraph<string, int> digraph,
     IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
@@ -178,7 +177,8 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
     // lift the original transfer and merge to pairs
     var liftedTransferFunctions = digraph.MapEdges(e => Lang.Product(transferFunctions[e], Lang.Identity<bool>()));
     var liftedMerge =
-      Lang.MergeBy<Pair<RouteEnvironment, bool>, RouteEnvironment>(RouteEnvironmentExtensions.MinOptional,
+      Lang.MergeBy<Pair<RouteEnvironment, bool>, RouteEnvironment>(
+        (r1, r2) => MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
         r => r.Item1());
 
     // the key property: nodes have routes for the destination prefix, and those routes are internal
@@ -210,10 +210,24 @@ public class FatTreeSpecification<RouteType> : AnnotatedNetwork<RouteType, strin
 
     // collect all the symbolics together
     var symbolics = new ISymbolic[] {destinationPrefix}.Concat(externalRoutes.Values).Concat(symbolicTimes).ToArray();
-    return new FatTreeSpecification<Pair<RouteEnvironment, bool>>(digraph, liftedTransferFunctions, liftedMerge,
+    return new AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>>(digraph, liftedTransferFunctions, liftedMerge,
       initialRoutes,
       annotations,
       modularProperties, monolithicProperties, symbolics);
+  }
+
+  /// <summary>
+  /// Return the minimum route of two routes modulo the given <paramref name="prefix"/>:
+  /// if one of the two routes is <i>not</i> for the desired prefix, it should be ignored.
+  /// </summary>
+  /// <param name="r1">A route.</param>
+  /// <param name="r2">A route.</param>
+  /// <param name="prefix">The desired prefix.</param>
+  /// <returns>The minimum route between <paramref name="r1"/> and <paramref name="r2"/>.</returns>
+  private static Zen<RouteEnvironment> MinOptionalForPrefix(Zen<RouteEnvironment> r1, Zen<RouteEnvironment> r2,
+    Zen<Ipv4Prefix> prefix)
+  {
+    return Zen.If(r1.GetPrefix() != prefix, r2, Zen.If(r2.GetPrefix() != prefix, r1, r1.MinOptional(r2)));
   }
 
   private static Func<Zen<Pair<RouteEnvironment, bool>>, Zen<bool>> AndIsInternal(

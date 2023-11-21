@@ -2,7 +2,7 @@ using Timepiece.Angler.Ast.AstExpr;
 
 namespace Timepiece.Angler.Ast.AstStmt;
 
-public class Assign : Statement
+public record Assign : Statement
 {
   public Assign(string var, Expr expr)
   {

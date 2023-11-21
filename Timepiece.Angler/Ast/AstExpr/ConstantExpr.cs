@@ -5,7 +5,7 @@ namespace Timepiece.Angler.Ast.AstExpr;
 /// Bundles a constructor to produce an appropriate manipulable type:
 /// typically this would be some form of Zen expression.
 /// </summary>
-public class ConstantExpr : Expr
+public record ConstantExpr : Expr
 {
   public readonly Func<dynamic, dynamic> constructor;
   public readonly dynamic value;

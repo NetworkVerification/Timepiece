@@ -6,7 +6,7 @@ namespace Timepiece.Angler.Ast.AstExpr;
 /// <summary>
 ///   See Batfish's FirstMatchChain.
 /// </summary>
-public class FirstMatchChain : VariadicExpr
+public record FirstMatchChain : VariadicExpr
 {
   public FirstMatchChain(params Expr[] subroutines) : base(subroutines)
   {

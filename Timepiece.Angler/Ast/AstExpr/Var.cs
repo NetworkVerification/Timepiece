@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class Var : Expr
+public record Var : Expr
 {
   public Var(string name)
   {

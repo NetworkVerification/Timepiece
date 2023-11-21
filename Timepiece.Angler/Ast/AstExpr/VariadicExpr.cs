@@ -1,6 +1,6 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public class VariadicExpr : Expr
+public record VariadicExpr : Expr
 {
   public VariadicExpr(params Expr[] exprs)
   {
