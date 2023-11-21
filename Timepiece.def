@@ -5,7 +5,7 @@ Stage: build
 %post
   git clone https://github.com/alberdingk-thijm/Timepiece.git
   cd Timepiece
-  dotnet restore "Timepiece/Timepiece.csproj" 
+  dotnet restore "Timepiece/Timepiece.csproj"
   dotnet restore "Timepiece.Angler/Timepiece.Angler.csproj"
   dotnet publish Timepiece.Angler -c Release -o /publish
 
@@ -17,6 +17,5 @@ Stage: run
   /publish /publish
 
 %runscript
-  echo "Container was created $NOW"
   echo "Arguments received: $*"
   dotnet /publish/Timepiece.Angler.dll "$@"

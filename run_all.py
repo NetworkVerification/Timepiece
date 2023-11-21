@@ -5,12 +5,12 @@
 import argparse
 import csv
 import datetime
-from enum import Enum
 import itertools
 import pathlib
 import re
 import subprocess
 import sys
+from enum import Enum
 
 
 def table_pattern_to_rows(s: str, pat: re.Pattern[str]) -> list[dict[str, float]]:
@@ -56,10 +56,10 @@ def run_dotnet(dll_file, options, timeout, output_file) -> tuple[Response, list[
     output_file is None or a file name
     Return the return code of running the process and any collected table rows.
     """
-    args = ["dotnet", dll_file] + options
+    subprocess_args = ["dotnet", dll_file] + options
     # run the process, redirecting stderr to stdout, timing out after TIMEOUT,
     # and raising an exception if the return code is non-zero
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    proc = subprocess.Popen(subprocess_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # regex patterns for identifying table rows for modular and monolithic benchmarks
     if "-m" in options:  # monolithic pattern
         output_pat = re.compile(r"^(n\ttotal)\n((?:[\d\.]+\s)*)", re.M)
@@ -70,24 +70,24 @@ def run_dotnet(dll_file, options, timeout, output_file) -> tuple[Response, list[
     try:
         output, _ = proc.communicate(timeout=timeout)
         tee_output(output, output_file)
-        rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
-        return (Response.SUCCESS, rows)
+        table_rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
+        return Response.SUCCESS, table_rows
     except KeyboardInterrupt:
         kill_output = "Killing process..."
         tee_output(kill_output, output_file)
         proc.terminate()
         output, _ = proc.communicate()
         tee_output(output, output_file)
-        rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
-        return (Response.USER_INTERRUPT, rows)
+        table_rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
+        return Response.USER_INTERRUPT, table_rows
     except subprocess.TimeoutExpired:
         timeout_output = "Timed out after {time} seconds".format(time=timeout)
         tee_output(timeout_output, output_file)
         proc.kill()
         output, _ = proc.communicate()
         tee_output(output, output_file)
-        rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
-        return (Response.TIMEOUT, rows)
+        table_rows = table_pattern_to_rows(output.decode("utf-8"), output_pat)
+        return Response.TIMEOUT, table_rows
 
 
 def run_all(
@@ -119,22 +119,22 @@ def run_all(
 
             # run the benchmark
             # add [-k size] to the options to set the size
-            returncode, bench_rows = run_dotnet(
+            return_code, bench_rows = run_dotnet(
                 dll_file, ["-k", str(size)] + options, timeout, output_file
             )
             rows.extend(bench_rows)
             # if the benchmark timed out or was interrupted and short_circuit is set,
             # end immediately
-            if returncode != Response.SUCCESS and short_circuit:
+            if return_code != Response.SUCCESS and short_circuit:
                 return rows
     return rows
 
 
 def run_angler(
-    dll_file, angler_files, trials, timeout, output_file, short_circuit=True
+  angler_dll_file, angler_files, trials, timeout, output_file, short_circuit=True
 ):
     """Run the given angler dll for the given files for the specified number of trials."""
-    rows = []
+    output_rows = []
     for trial in range(trials):
         date = datetime.datetime.now(datetime.timezone.utc)
         trial_output = "Trial {t} of {total} started {date}".format(
@@ -143,15 +143,15 @@ def run_angler(
         tee_output(trial_output, output_file)
 
         # run the benchmark
-        returncode, bench_rows = run_dotnet(
-            dll_file, angler_files, timeout, output_file
+        return_code, bench_rows = run_dotnet(
+          angler_dll_file, angler_files, timeout, output_file
         )
-        rows.extend(bench_rows)
+        output_rows.extend(bench_rows)
         # if the benchmark timed out or was interrupted and short_circuit is set,
         # end immediately
-        if returncode != Response.SUCCESS and short_circuit:
-            return rows
-    return rows
+        if return_code != Response.SUCCESS and short_circuit:
+          return output_rows
+    return output_rows
 
 
 def parser():
