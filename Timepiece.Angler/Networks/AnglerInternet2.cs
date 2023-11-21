@@ -1,5 +1,4 @@
 using System.Numerics;
-using Newtonsoft.Json;
 using Timepiece.Angler.DataTypes;
 using Timepiece.DataTypes;
 using Timepiece.Networks;
@@ -106,29 +105,6 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// Regular expression representing NLR AS peers.
   /// </summary>
   public const string NlrAs = @"^((^| )\d+)*(^| )19401((^| )\d+)*$";
-
-  /// <summary>
-  /// Load a dictionary from policy names to the participant prefixes they accept.
-  /// </summary>
-  /// <param name="fileName">A name of a JSON file.</param>
-  /// <returns>A dictionary from string names to lists of IPv4 prefixes.</returns>
-  /// <exception cref="IOException">If deserialization fails.</exception>
-  private static Dictionary<string, List<Ipv4Prefix>> DeserializePrefixes(string fileName)
-  {
-    var reader = new JsonTextReader(new StreamReader(fileName));
-    var deserialized = JsonSerializer.Create().Deserialize<Dictionary<string, List<string>>>(reader) ??
-                       throw new IOException("Unable to deserialize participant prefixes");
-    // convert the strings into Ipv4Prefixes -- have to help out Newtonsoft here by doing it ourselves since Ipv4Prefix has many constructors
-    // and it fails if it can't find the right one
-    return deserialized.ToDictionary(p => p.Key, p => p.Value.Select(prefix => new Ipv4Prefix(prefix)).ToList());
-  }
-
-  /// <summary>
-  /// The mapping of participants to prefixes.
-  /// Loaded from a JSON file, since it's quite long and we may want to occasionally tweak it.
-  /// </summary>
-  private static readonly IReadOnlyDictionary<string, List<Ipv4Prefix>> ParticipantPrefixes =
-    DeserializePrefixes("participants.json");
 
   /// <summary>
   ///   A prefix corresponding to the internal nodes of Internet2.
@@ -355,7 +331,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       e =>
       {
         // get the prefix list for this neighbor, to then get the prefixes it uses
-        var participantPrefixes = ParticipantPrefixes.Where(prefixList =>
+        var participantPrefixes = Internet2Prefixes.ParticipantPrefixes.Where(prefixList =>
           Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(e, out var participant) &&
           participant == prefixList.Key);
         // encode the fact that there exists a match of one of the prefixes when one of the prefixes matches the given external peer
