@@ -45,7 +45,7 @@ internal static class Internet2Prefixes
     {"146.57.255.244", "NORTHERNLIGHTS-PARTICIPANT"},
     {"146.57.255.248", "NORTHERNLIGHTS-PARTICIPANT"},
     {"146.57.255.250", "NORTHERNLIGHTS-PARTICIPANT"},
-    {"149.165.128.12", "MAX-PARTICIPANT"},
+    {"149.165.128.12", "INDIANAGIGAPOP-PARTICIPANT"},
     {"149.165.254.20", "INDIANAGIGAPOP-PARTICIPANT"},
     {"149.165.254.109", "INDIANAGIGAPOP-PARTICIPANT"},
     {"149.165.254.185", "INDIANAGIGAPOP-PARTICIPANT"},
@@ -115,14 +115,18 @@ internal static class Internet2Prefixes
     {"199.109.5.25", "NYSERNET-PARTICIPANT"},
     {"199.109.11.33", "NYSERNET-PARTICIPANT"},
     {"199.109.11.37", "NYSERNET-PARTICIPANT"},
-    {"204.238.76.33", "MAX-PARTICIPANT"},
+    {"204.238.76.33", "DREXEL-PARTICIPANT"},
     {"205.166.205.10", "HAWAII-PARTICIPANT"},
     {"205.166.205.12", "HAWAII-PARTICIPANT"},
     {"205.213.118.5", "WISCREN-PARTICIPANT"},
     {"205.213.119.9", "WISCREN-PARTICIPANT"},
     {"205.233.255.32", "MISSION-PARTICIPANT"},
     {"205.233.255.36", "MISSION-PARTICIPANT"},
+    {"206.196.177.2", "MAX-PARTICIPANT"},
+    {"206.196.177.4", "MAX-PARTICIPANT"},
     {"206.196.177.50", "MAX-PARTICIPANT"},
+    {"206.196.177.76", "MAX-PARTICIPANT"},
+    {"206.196.177.78", "MAX-PARTICIPANT"},
     {"206.196.177.105", "MAX-PARTICIPANT"},
     {"207.197.17.73", "NSHE-PARTICIPANT"},
     {"207.197.17.77", "NSHE-PARTICIPANT"},
@@ -141,7 +145,7 @@ internal static class Internet2Prefixes
   internal static readonly Dictionary<string, List<Ipv4Prefix>> ParticipantPrefixes = new()
   {
     {
-      "AREON-PARTICIPANT", new()
+      "AREON-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("69.65.160.0/19"),
         new Ipv4Prefix("74.117.168.0/22"),
@@ -163,7 +167,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "ARIZONA-PARTICIPANT", new()
+      "ARIZONA-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.196.0.0/16"),
         new Ipv4Prefix("140.252.0.0/16"),
@@ -182,7 +186,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "ARIZONAST-PARTICIPANT", new()
+      "ARIZONAST-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("129.219.0.0/16"),
         new Ipv4Prefix("134.114.0.0/16"),
@@ -193,13 +197,13 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "BIOGEN-PARTICIPANT", new()
+      "BIOGEN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("65.200.168.0/24")
       }
     },
     {
-      "BLUEWATERS-PARTICIPANT", new()
+      "BLUEWATERS-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("72.36.84.0/22"),
         new Ipv4Prefix("72.36.88.0/24"),
@@ -210,7 +214,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "CAAREN-PARTICIPANT", new()
+      "CAAREN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.164.0.0/16"),
         new Ipv4Prefix("141.161.0.0/16"),
@@ -221,7 +225,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "CALREN-PARTICIPANT", new()
+      "CALREN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.28.128.0/20"),
         new Ipv4Prefix("36.0.0.0/8"),
@@ -728,7 +732,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "CEN-PARTICIPANT", new()
+      "CEN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("50.28.128.0/18"),
         new Ipv4Prefix("63.145.155.0/24"),
@@ -779,7 +783,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "CERN-PARTICIPANT", new()
+      "CERN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.141.0.0/16"),
         new Ipv4Prefix("128.142.0.0/16"),
@@ -797,7 +801,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "CSN-PARTICIPANT", new()
+      "CSN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("192.133.144.0/20"),
         new Ipv4Prefix("192.133.160.0/19"),
@@ -806,19 +810,19 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "DARTMOUTH-PARTICIPANT", new()
+      "DARTMOUTH-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("129.170.0.0/16")
       }
     },
     {
-      "DRAGON-PARTICIPANT", new()
+      "DRAGON-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("140.173.0.0/16")
       }
     },
     {
-      "DREXEL-PARTICIPANT", new()
+      "DREXEL-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("38.66.65.0/24"),
         new Ipv4Prefix("38.115.60.0/24"),
@@ -854,7 +858,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "FLR-PARTICIPANT", new()
+      "FLR-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.6.244.0/23"),
         new Ipv4Prefix("32.243.125.0/26"),
@@ -911,7 +915,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "FRGP-PARTICIPANT", new()
+      "FRGP-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("63.229.248.0/24"),
         new Ipv4Prefix("67.230.208.0/20"),
@@ -992,13 +996,13 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "GERESEARCH-PARTICIPANT", new()
+      "GERESEARCH-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("192.35.42.0/24")
       }
     },
     {
-      "GPN-PARTICIPANT", new()
+      "GPN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("38.124.80.0/21"),
         new Ipv4Prefix("40.135.25.0/24"),
@@ -1084,7 +1088,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "HAWAII-PARTICIPANT", new()
+      "HAWAII-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.171.0.0/16"),
         new Ipv4Prefix("132.160.0.0/16"),
@@ -1106,7 +1110,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "INDIANAGIGAPOP-PARTICIPANT", new()
+      "INDIANAGIGAPOP-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("65.254.96.0/19"),
         new Ipv4Prefix("65.254.96.0/20"),
@@ -1186,7 +1190,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "IOWA-PARTICIPANT", new()
+      "IOWA-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.255.0.0/16"),
         new Ipv4Prefix("129.255.0.0/16"),
@@ -1196,7 +1200,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "IOWASTATE-PARTICIPANT", new()
+      "IOWASTATE-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("38.124.80.0/24"),
         new Ipv4Prefix("64.113.64.0/19"),
@@ -1217,7 +1221,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "IRON-PARTICIPANT", new()
+      "IRON-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.23.152.0/24"),
         new Ipv4Prefix("8.23.153.0/24"),
@@ -1312,7 +1316,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "LEARN-PARTICIPANT", new()
+      "LEARN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("50.21.240.0/20"),
         new Ipv4Prefix("64.71.80.0/20"),
@@ -1433,7 +1437,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "LONI-PARTICIPANT", new()
+      "LONI-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("76.165.0.0/16"),
         new Ipv4Prefix("76.165.24.0/22"),
@@ -1487,7 +1491,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MAGPI-PARTICIPANT", new()
+      "MAGPI-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("12.161.8.0/21"),
         new Ipv4Prefix("38.66.65.0/24"),
@@ -1552,7 +1556,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MARIA-PARTICIPANT", new()
+      "MARIA-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.15.250.0/24"),
         new Ipv4Prefix("8.18.56.0/24"),
@@ -1580,7 +1584,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MAX-PARTICIPANT", new()
+      "MAX-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.21.240.0/21"),
         new Ipv4Prefix("63.164.28.0/22"),
@@ -1799,7 +1803,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MEMPHIS-PARTICIPANT", new()
+      "MEMPHIS-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("65.127.62.0/24"),
         new Ipv4Prefix("132.192.0.0/16"),
@@ -1808,7 +1812,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MISSION-PARTICIPANT", new()
+      "MISSION-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("130.18.0.0/16"),
         new Ipv4Prefix("130.74.0.0/16"),
@@ -1834,7 +1838,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MONTANA-PARTICIPANT", new()
+      "MONTANA-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("150.131.0.0/16"),
         new Ipv4Prefix("192.73.48.0/24"),
@@ -1867,7 +1871,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "MREN-PARTICIPANT", new()
+      "MREN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.28.178.0/23"),
         new Ipv4Prefix("8.30.248.0/22"),
@@ -2096,20 +2100,20 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "NCSA-PARTICIPANT", new()
+      "NCSA-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("141.142.0.0/16")
       }
     },
     {
-      "NIH-PARTICIPANT", new()
+      "NIH-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("130.14.0.0/16"),
         new Ipv4Prefix("156.40.188.0/23")
       }
     },
     {
-      "NLM-PARTICIPANT", new()
+      "NLM-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("130.14.0.0/16"),
         new Ipv4Prefix("165.112.6.0/23"),
@@ -2119,7 +2123,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "NORTHERNLIGHTS-PARTICIPANT", new()
+      "NORTHERNLIGHTS-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("64.39.240.0/20"),
         new Ipv4Prefix("65.116.102.0/24"),
@@ -2216,7 +2220,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "NORTHWESTERN-PARTICIPANT", new()
+      "NORTHWESTERN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.28.178.0/23"),
         new Ipv4Prefix("38.124.62.0/23"),
@@ -2242,7 +2246,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "NOX-PARTICIPANT", new()
+      "NOX-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("12.0.48.0/20"),
         new Ipv4Prefix("12.6.208.0/20"),
@@ -2351,7 +2355,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "NSHE-PARTICIPANT", new()
+      "NSHE-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("131.216.0.0/16"),
         new Ipv4Prefix("134.197.0.0/16"),
@@ -2361,7 +2365,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "NYSERNET-PARTICIPANT", new()
+      "NYSERNET-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("8.22.104.0/21"),
         new Ipv4Prefix("8.35.160.0/20"),
@@ -2483,7 +2487,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "ONENET-PARTICIPANT", new()
+      "ONENET-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("66.186.144.0/20"),
         new Ipv4Prefix("129.15.0.0/16"),
@@ -2519,7 +2523,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "OREGON-PARTICIPANT", new()
+      "OREGON-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("38.103.168.0/22"),
         new Ipv4Prefix("129.95.0.0/16"),
@@ -2536,7 +2540,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "PNWG-PARTICIPANT", new()
+      "PNWG-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("24.237.243.0/24"),
         new Ipv4Prefix("38.103.168.0/22"),
@@ -2677,7 +2681,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "PSC-PARTICIPANT", new()
+      "PSC-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("63.118.64.0/23"),
         new Ipv4Prefix("64.83.144.0/21"),
@@ -2742,7 +2746,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "PSU-PARTICIPANT", new()
+      "PSU-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("66.71.0.0/17"),
         new Ipv4Prefix("75.102.64.0/18"),
@@ -2758,7 +2762,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "SFGP-PARTICIPANT", new()
+      "SFGP-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("64.28.140.0/24"),
         new Ipv4Prefix("64.28.141.0/24"),
@@ -2831,14 +2835,14 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "SINGP-PARTICIPANT", new()
+      "SINGP-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("103.242.131.0/24"),
         new Ipv4Prefix("198.71.44.0/24")
       }
     },
     {
-      "SMITHSONIAN-PARTICIPANT", new()
+      "SMITHSONIAN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("38.127.143.0/24"),
         new Ipv4Prefix("160.111.0.0/16"),
@@ -2846,7 +2850,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "SOX-BACKUP-PARTICIPANT", new()
+      "SOX-BACKUP-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("64.156.8.128/25"),
         new Ipv4Prefix("64.156.216.128/25"),
@@ -2957,7 +2961,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "SOX-PARTICIPANT", new()
+      "SOX-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("45.3.64.0/18"),
         new Ipv4Prefix("63.164.11.0/24"),
@@ -3114,7 +3118,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "SUNCORRIDOR-PARTICIPANT", new()
+      "SUNCORRIDOR-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.196.0.0/16"),
         new Ipv4Prefix("129.219.0.0/16"),
@@ -3144,7 +3148,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UEN-PARTICIPANT", new()
+      "UEN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("63.230.184.0/24"),
         new Ipv4Prefix("63.230.185.0/24"),
@@ -3313,7 +3317,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UIUC-PARTICIPANT", new()
+      "UIUC-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("64.22.176.0/20"),
         new Ipv4Prefix("64.22.176.0/21"),
@@ -3339,7 +3343,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "ULTRALIGHT-PARTICIPANT", new()
+      "ULTRALIGHT-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("192.41.230.0/23"),
         new Ipv4Prefix("192.41.236.0/23"),
@@ -3349,7 +3353,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UMICH-PARTICIPANT", new()
+      "UMICH-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("35.0.0.0/16"),
         new Ipv4Prefix("35.1.0.0/16"),
@@ -3371,7 +3375,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UMS-PARTICIPANT", new()
+      "UMS-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("64.45.64.0/18"),
         new Ipv4Prefix("64.147.48.0/20"),
@@ -3398,7 +3402,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UNM-PARTICIPANT", new()
+      "UNM-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("63.225.1.0/24"),
         new Ipv4Prefix("64.106.0.0/17"),
@@ -3533,7 +3537,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UOC-PARTICIPANT", new()
+      "UOC-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.135.0.0/16"),
         new Ipv4Prefix("192.5.85.0/24"),
@@ -3544,7 +3548,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UPENN-PARTICIPANT", new()
+      "UPENN-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("128.91.0.0/16"),
         new Ipv4Prefix("130.91.0.0/16"),
@@ -3556,20 +3560,20 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "USDA-PARTICIPANT", new()
+      "USDA-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("199.133.14.0/24"),
         new Ipv4Prefix("199.245.98.0/23")
       }
     },
     {
-      "USF-PARTICIPANT", new()
+      "USF-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("131.247.0.0/16")
       }
     },
     {
-      "UVM-PARTICIPANT", new()
+      "UVM-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("65.19.80.0/24"),
         new Ipv4Prefix("65.19.84.128/26"),
@@ -3580,7 +3584,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UW-MADISON-PARTICIPANT", new()
+      "UW-MADISON-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("72.33.0.0/16"),
         new Ipv4Prefix("128.104.0.0/15"),
@@ -3592,7 +3596,7 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UW-SYSNET-PARTICIPANT", new()
+      "UW-SYSNET-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("72.33.0.0/16"),
         new Ipv4Prefix("128.104.0.0/16"),
@@ -3627,13 +3631,13 @@ internal static class Internet2Prefixes
       }
     },
     {
-      "UWSCIENCE-PARTICIPANT", new()
+      "UWSCIENCE-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("198.48.92.0/22")
       }
     },
     {
-      "WORLDBANK-PARTICIPANT", new()
+      "WORLDBANK-PARTICIPANT", new List<Ipv4Prefix>
       {
         new Ipv4Prefix("138.220.0.0/16"),
         new Ipv4Prefix("164.114.0.0/16"),

@@ -251,7 +251,7 @@ public static class AnglerFatTreeNetwork
   {
     // external neighbors send symbolic routes
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers);
+      SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers);
     // infer the destination as the last edge node
     var destination = LastEdgeNode(digraph);
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("destination-prefix",
@@ -316,7 +316,7 @@ public static class AnglerFatTreeNetwork
   {
     // external neighbors send symbolic routes
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers);
+      SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers);
     var destination = new SymbolicDestination(digraph);
     // if a node in the graph equals the destination, then the destination prefix is one of that node's prefixes
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("destination-prefix",

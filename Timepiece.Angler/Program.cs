@@ -10,6 +10,9 @@ ZenSettings.UseLargeStack = true;
 ZenSettings.LargeStackSize = 30_000_000;
 
 var rootCommand = new RootCommand("Timepiece benchmark runner");
+var listQueriesCommand = new Command("list-queries", "Print the types of queries available to check");
+listQueriesCommand.SetHandler(() => { Console.WriteLine(QueryTypeExtensions.AcceptableQueryValues()); });
+var runCommand = new Command("run", "Run the given benchmark");
 var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically (simulating Minesweeper)");
@@ -25,13 +28,15 @@ var fileArgument = new Argument<string>(
 var queryArgument =
   new Argument<QueryType>("query",
     description: "The type of query to check",
-    parse: result => QueryTypeExtensions.Parse(result.Tokens.Single().Value));
-rootCommand.Add(fileArgument);
-rootCommand.Add(queryArgument);
-rootCommand.Add(monoOption);
-rootCommand.Add(queryOption);
-rootCommand.Add(trackTermsOption);
-rootCommand.SetHandler(
+    parse: result => QueryTypeExtensions.ToQueryType(result.Tokens.Single().Value));
+rootCommand.AddCommand(listQueriesCommand);
+rootCommand.AddCommand(runCommand);
+runCommand.Add(fileArgument);
+runCommand.Add(queryArgument);
+runCommand.Add(monoOption);
+runCommand.Add(queryOption);
+runCommand.Add(trackTermsOption);
+runCommand.SetHandler(
   (file, queryType, mono, printQuery, trackTerms) =>
   {
     var json = new JsonTextReader(new StreamReader(file));
@@ -48,9 +53,12 @@ rootCommand.SetHandler(
       var externalNodes = ast.Externals.Select(i => i.Name).ToArray();
       dynamic net = queryType switch
       {
-        QueryType.Internet2BlockToExternal => AnglerInternet2.BlockToExternal(topology, externalNodes,
-          transfer),
+        QueryType.Internet2BlockToExternal => AnglerInternet2.BlockToExternal(topology, externalNodes, transfer),
+        QueryType.Internet2BlockToExternalFaultTolerant => AnglerInternet2.FaultTolerance(
+          AnglerInternet2.BlockToExternal(topology, externalNodes, transfer)),
         QueryType.Internet2NoMartians => AnglerInternet2.NoMartians(topology, externalNodes, transfer),
+        QueryType.Internet2NoMartiansFaultTolerant => AnglerInternet2.FaultTolerance(
+          AnglerInternet2.NoMartians(topology, externalNodes, transfer)),
         QueryType.Internet2NoPrivateAs => AnglerInternet2.NoPrivateAs(topology, externalNodes, transfer),
         QueryType.Internet2Reachable => AnglerInternet2.Reachable(topology, externalNodes, transfer),
         QueryType.Internet2ReachableInternal => AnglerInternet2.ReachableInternal(topology, transfer),

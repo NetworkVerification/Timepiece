@@ -2,6 +2,7 @@ using System.Net;
 using NetTools;
 using Timepiece.DataTypes;
 using Xunit;
+using ZenLib;
 
 namespace Timepiece.Tests;
 
@@ -66,5 +67,16 @@ public class Ipv4PrefixTests
   {
     var prefix = new Ipv4Prefix(address);
     Assert.Equal(prefix, prefix.ToWildcard().ToPrefix());
+  }
+
+  [Theory]
+  [InlineData("38.66.65.0/24", "8.21.240.0/21", false)]
+  public void Ipv4PrefixMatches(string prefix1, string prefix2, bool expected)
+  {
+    var prefix = new Ipv4Prefix(prefix1);
+    var otherPrefix = Zen.Constant(new Ipv4Prefix(prefix2));
+    Assert.False(expected
+      ? Zen.Not(prefix.Matches(otherPrefix, false)).Solve().IsSatisfiable()
+      : prefix.Matches(otherPrefix, false).Solve().IsSatisfiable());
   }
 }

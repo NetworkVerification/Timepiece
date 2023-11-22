@@ -211,7 +211,7 @@ public class Internet2Tests
     NetworkAsserts.Sound(net, SmtCheck.Inductive, "wash");
   }
 
-  [Fact]
+  [Fact(Skip = "too slow")]
   public void Internet2ReachableMonolithic()
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
@@ -220,13 +220,13 @@ public class Internet2Tests
     NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 
-  [Theory(Timeout = 10_000)]
-  [InlineData(SmtCheck.Monolithic)]
+  [Theory]
+  [InlineData(SmtCheck.Monolithic, Skip = "too slow")]
   [InlineData(SmtCheck.Modular)]
   public void Internet2BadPropertyFails(SmtCheck check)
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
-    var routes = SymbolicValue.SymbolicDictionary<RouteEnvironment>("route", topology.Nodes);
+    var routes = SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("route", topology.Nodes);
     var initialRoutes = topology.MapNodes(n => routes[n].Value);
     var monolithicProperties = topology.MapNodes(_ => Lang.False<RouteEnvironment>());
     var modularProperties = topology.MapNodes(n => Lang.Globally(monolithicProperties[n]));

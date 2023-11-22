@@ -54,6 +54,28 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Annotations = ModularProperties;
   }
 
+  private static Zen<RouteEnvironment> TransferOrDrop(Zen<RouteEnvironment> r, Zen<bool> drop,
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> f)
+  {
+    return Zen.If(drop, new RouteEnvironment(), f(r));
+  }
+
+  /// <summary>
+  /// Lift the given AnglerInternet2 instance to one where links may arbitrarily fail.
+  /// </summary>
+  /// <param name="net"></param>
+  /// <returns></returns>
+  public static AnglerInternet2 FaultTolerance(AnglerInternet2 net)
+  {
+    var edgeFailed = SymbolicValue.SymbolicDictionary<(string, string), bool>("failed", net.Digraph.Edges());
+    var liftedTransferFunctions =
+      net.Digraph.MapEdges<Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>(e =>
+        r => TransferOrDrop(r, edgeFailed[e].Value, net.TransferFunctions[e]));
+    var symbolics = net.Symbolics.Concat(edgeFailed.Values).ToArray();
+    return new AnglerInternet2(net.Digraph, liftedTransferFunctions, net.InitialValues, net.Annotations,
+      net.ModularProperties, net.MonolithicProperties, symbolics);
+  }
+
   /// <summary>
   ///   The block to external community tag used by Internet2.
   /// </summary>
@@ -186,7 +208,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers, BteTagAbsent);
+      SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers, BteTagAbsent);
     // external nodes start with a route, internal nodes do not
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
@@ -195,8 +217,8 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(n =>
         Internet2Nodes.InternalNodes.Contains(n) ? Lang.True<RouteEnvironment>() : BteTagAbsent);
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
-    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
-      symbolics);
+
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties, symbolics);
   }
 
   /// <summary>
@@ -219,7 +241,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers,
+      SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers,
         HasValidPrefixLength);
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
@@ -250,7 +272,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
     var externalRoutes =
-      SymbolicValue.SymbolicDictionary<RouteEnvironment>("external-route", externalPeers,
+      SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers,
         HasValidPrefixLength);
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
@@ -277,8 +299,8 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   public static AnglerInternet2 ReachableInternal(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
-    var internalRoutes = SymbolicValue.SymbolicDictionary<RouteEnvironment>("internal-route", Internet2Nodes.AsNodes,
-      HasInternalPrefixRoute);
+    var internalRoutes = SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("internal-route",
+      Internet2Nodes.AsNodes, HasInternalPrefixRoute);
     var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
     var initialRoutes = digraph.MapNodes(n =>
       internalRoutes.TryGetValue(n, out var internalRoute)
@@ -387,11 +409,13 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
               // case 2
               notNextToPeerTime),
             monolithicProperties[n])
-          // if an external node starts with a route, it must always have one
+          // if an external node starts with a route, it must always have one (for its specific starting prefix)
+          // otherwise, we don't care what route it has
           : Lang.Globally<RouteEnvironment>(r =>
-            Zen.Implies(externalRoutes.TryGetValue(n, out var externalRoute)
-              ? externalRoute.Value.GetResultValue()
-              : Zen.False(), r.GetResultValue())),
+            externalRoutes.TryGetValue(n, out var externalRoute)
+              ? Zen.Implies(externalRoute.Value.GetResultValue(), r.HasPrefixRoute(externalRoute.Value.GetPrefix()))
+              : Zen.True()),
+        // safety condition: if a node has a route, then the route must be for the destination prefix
         Lang.Globally<RouteEnvironment>(r =>
           Zen.Implies(r.GetResultValue(),
             Zen.And(r.GetPrefix() == destinationPrefix.Value,

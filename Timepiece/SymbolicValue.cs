@@ -91,11 +91,11 @@ public static class SymbolicValue
   /// <param name="keys">the keys to create symbolic routes for (i.e. the keys to the dictionary)</param>
   /// <param name="constraint">a predicate over <c>RouteEnvironment</c>s</param>
   /// <returns>a dictionary from keys to symbolic variables</returns>
-  public static Dictionary<string, SymbolicValue<T>> SymbolicDictionary<T>(string namePrefix,
-    IEnumerable<string> keys, Func<Zen<T>, Zen<bool>>? constraint = null)
+  public static Dictionary<TKey, SymbolicValue<TValue>> SymbolicDictionary<TKey, TValue>(string namePrefix,
+    IEnumerable<TKey> keys, Func<Zen<TValue>, Zen<bool>>? constraint = null) where TKey : notnull
   {
     return keys.ToDictionary(e => e, e => constraint is null
-      ? new SymbolicValue<T>($"{namePrefix}-{e}")
-      : new SymbolicValue<T>($"{namePrefix}-{e}", constraint));
+      ? new SymbolicValue<TValue>($"{namePrefix}-{e}")
+      : new SymbolicValue<TValue>($"{namePrefix}-{e}", constraint));
   }
 }

@@ -5,7 +5,9 @@ namespace Timepiece.Angler.Networks;
 public enum QueryType
 {
   Internet2BlockToExternal,
+  Internet2BlockToExternalFaultTolerant,
   Internet2NoMartians,
+  Internet2NoMartiansFaultTolerant,
   Internet2NoPrivateAs,
   Internet2Reachable,
   Internet2ReachableInternal,
@@ -26,7 +28,9 @@ public static class QueryTypeExtensions
     return qt switch
     {
       QueryType.Internet2BlockToExternal => "bte",
+      QueryType.Internet2BlockToExternalFaultTolerant => "bteFT",
       QueryType.Internet2NoMartians => "mars",
+      QueryType.Internet2NoMartiansFaultTolerant => "marsFT",
       QueryType.Internet2NoPrivateAs => "private",
       QueryType.Internet2Reachable => "reach",
       QueryType.Internet2ReachableInternal => "reachInternal",
@@ -46,7 +50,7 @@ public static class QueryTypeExtensions
     .SelectMany(qt => new[] {(qt.ShortHand(), qt), ($"{qt}", qt)})
     .ToDictionary(p => p.Item1, p => p.Item2);
 
-  private static string AcceptableQueryValues()
+  internal static string AcceptableQueryValues()
   {
     var sb = new StringBuilder();
     sb.AppendLine("Acceptable values:");
@@ -58,7 +62,7 @@ public static class QueryTypeExtensions
     return sb.ToString();
   }
 
-  public static QueryType Parse(this string s)
+  public static QueryType ToQueryType(this string s)
   {
     return QueryNames.TryGetValue(s, out var queryType)
       ? queryType
