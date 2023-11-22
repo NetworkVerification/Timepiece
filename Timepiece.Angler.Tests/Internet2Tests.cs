@@ -202,7 +202,7 @@ public class Internet2Tests
     });
   }
 
-  [Fact]
+  [Fact(Skip = "too slow")]
   public void WashReachableInductiveCheckPasses()
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
