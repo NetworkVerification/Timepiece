@@ -37,9 +37,9 @@ public class AnglerFatTreeNetwork<RouteType> : AnnotatedNetwork<RouteType, strin
 
 public static class AnglerFatTreeNetwork
 {
-  private static string LastEdgeNode(Digraph<string> digraph)
+  public static string LastEdgeNode(Digraph<string> digraph)
   {
-    return digraph.Nodes.Order().Last(n => n.IsEdge());
+    return digraph.Nodes.Where(n => n.IsEdge()).OrderBy(FatTree.IntNodeIndex).Last();
   }
 
   /// <summary>

@@ -7,7 +7,7 @@ namespace Timepiece;
 public static partial class FatTree
 {
   [GeneratedRegex(@"(edge|aggregation|core)-(\d*)")]
-  private static partial Regex FatTreeNodePattern();
+  private static partial Regex FatTreeIntNodePattern();
 
   public enum FatTreeLayer
   {
@@ -42,6 +42,13 @@ public static partial class FatTree
       FatTreeLayer.Core => "core",
       _ => throw new ArgumentOutOfRangeException(nameof(l), l, $"{l} has no ToLowerCaseString implementation.")
     };
+  }
+
+  public static int IntNodeIndex(string s)
+  {
+    var match = FatTreeIntNodePattern().Match(s);
+    if (!match.Success) throw new ArgumentException($"Invalid node name {s} has no parseable index.");
+    return int.Parse(FatTreeIntNodePattern().Match(s).Groups[2].Value);
   }
 
   /// <summary>
@@ -97,7 +104,7 @@ public static partial class FatTree
   /// <param name="digraph">An (unlabelled) digraph.</param>
   /// <param name="skipNodes">Nodes not to label.</param>
   /// <returns>A node-labelled digraph.</returns>
-  /// <exception cref="ArgumentException">If a node in the digraph does not have a name matching <see cref="FatTreeNodePattern"/></exception>
+  /// <exception cref="ArgumentException">If a node in the digraph does not have a name matching <see cref="FatTreeIntNodePattern"/></exception>
   /// <remarks>Skipped nodes receive the label -1.</remarks>
   public static NodeLabelledDigraph<string, int> LabelFatTree(Digraph<string> digraph, string[] skipNodes = null)
   {
@@ -112,7 +119,7 @@ public static partial class FatTree
         return -1;
       }
 
-      var match = FatTreeNodePattern().Match(n);
+      var match = FatTreeIntNodePattern().Match(n);
       if (!match.Success) throw new ArgumentException($"Given node {n} does not match the fat-tree node pattern!");
       var nodeNumber = int.Parse(match.Groups[2].Value);
       // if the node is a core node, then the groups are defined as the maximum pod number plus the core node's number
