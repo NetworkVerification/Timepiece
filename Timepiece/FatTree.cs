@@ -109,7 +109,9 @@ public static partial class FatTree
   public static NodeLabelledDigraph<string, int> LabelFatTree(Digraph<string> digraph, string[] skipNodes = null)
   {
     // the #nodes = 5/4 k^2 where k is the number of pods, so k = sqrt(#nodes * 4/5)
-    var numberOfPods = (int) Math.Floor(Math.Sqrt(digraph.NNodes * 0.8));
+    // NB: we must subtract the skipped nodes from the #nodes!
+    var skippedNodes = skipNodes?.Length ?? 0;
+    var numberOfPods = (int) Math.Floor(Math.Sqrt((digraph.NNodes - skippedNodes) * 0.8));
     var coreNodes = digraph.Nodes.Count(s => s.IsCore());
     var labels = digraph.MapNodes(n =>
     {
