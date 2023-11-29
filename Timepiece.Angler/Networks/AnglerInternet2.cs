@@ -16,6 +16,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="transferFunctions"></param>
+  /// <param name="mergeFunction"></param>
   /// <param name="initialValues"></param>
   /// <param name="annotations"></param>
   /// <param name="modularProperties"></param>
@@ -23,11 +24,12 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="symbolics"></param>
   public AnglerInternet2(Digraph<string> digraph,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
+    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> annotations,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>> monolithicProperties, ISymbolic[] symbolics) : base(
-    digraph, transferFunctions, RouteEnvironmentExtensions.MinOptional, initialValues, annotations, modularProperties,
+    digraph, transferFunctions, mergeFunction, initialValues, annotations, modularProperties,
     monolithicProperties,
     symbolics)
   {
@@ -46,7 +48,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>> monolithicProperties, ISymbolic[] symbolics) : this(
-    digraph, transferFunctions, initialValues,
+    digraph, transferFunctions, RouteEnvironmentExtensions.MinOptional, initialValues,
     new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(),
     new Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>>(), monolithicProperties, symbolics)
   {
@@ -72,7 +74,8 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       net.Digraph.MapEdges<Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>(e =>
         r => TransferOrDrop(r, edgeFailed[e].Value, net.TransferFunctions[e]));
     var symbolics = net.Symbolics.Concat(edgeFailed.Values).ToArray();
-    return new AnglerInternet2(net.Digraph, liftedTransferFunctions, net.InitialValues, net.Annotations,
+    return new AnglerInternet2(net.Digraph, liftedTransferFunctions, net.MergeFunction, net.InitialValues,
+      net.Annotations,
       net.ModularProperties, net.MonolithicProperties, symbolics);
   }
 
@@ -260,8 +263,10 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
           HasValidPrefixLength)
         : Lang.True<RouteEnvironment>());
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(externalPrefix).ToArray();
-    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
-      symbolics);
+    var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
+    return new AnglerInternet2(digraph, transferFunctions,
+      (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, externalPrefix.Value), initialRoutes,
+      modularProperties, modularProperties, monolithicProperties, symbolics);
   }
 
   /// <summary>
@@ -329,7 +334,9 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       Lang.Intersect(modularProperties[n],
         Lang.Globally(RouteEnvironment.IfValue(r => r.GetPrefix() == InternalPrefix))));
     var symbolics = internalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).ToArray();
-    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
+    return new AnglerInternet2(digraph, transferFunctions,
+      (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, InternalPrefix), initialRoutes, annotations,
+      modularProperties,
       monolithicProperties, symbolics);
   }
 
@@ -427,7 +434,9 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
               Zen.Not(r.GetAsSet().Contains(NlrAs)),
               Zen.Not(r.GetAsSet().Contains(CommercialAs)))))));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
-    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, annotations, modularProperties,
+    return new AnglerInternet2(digraph, transferFunctions,
+      (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value), initialRoutes,
+      annotations, modularProperties,
       monolithicProperties, symbolics);
   }
 

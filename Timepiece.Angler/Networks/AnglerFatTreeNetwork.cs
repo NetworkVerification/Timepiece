@@ -273,7 +273,7 @@ public static class AnglerFatTreeNetwork
     var liftedTransferFunctions = digraph.MapEdges(e => Lang.Product(transferFunctions[e], Lang.Identity<bool>()));
     var liftedMerge =
       Lang.MergeBy<Pair<RouteEnvironment, bool>, RouteEnvironment>(
-        (r1, r2) => MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
+        (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
         r => r.Item1());
 
     // the key property: nodes have routes for the destination prefix, and those routes are internal
@@ -341,7 +341,7 @@ public static class AnglerFatTreeNetwork
     var liftedTransferFunctions = digraph.MapEdges(e => Lang.Product(transferFunctions[e], Lang.Identity<bool>()));
     var liftedMerge =
       Lang.MergeBy<Pair<RouteEnvironment, bool>, RouteEnvironment>(
-        (r1, r2) => MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
+        (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
         r => r.Item1());
 
     // the key property: nodes have routes for the destination prefix, and those routes are internal
@@ -375,20 +375,6 @@ public static class AnglerFatTreeNetwork
       .ToArray();
     return new AnglerFatTreeNetwork<Pair<RouteEnvironment, bool>>(digraph, liftedTransferFunctions, liftedMerge,
       initialRoutes, annotations, modularProperties, monolithicProperties, symbolics);
-  }
-
-  /// <summary>
-  /// Return the minimum route of two routes modulo the given <paramref name="prefix"/>:
-  /// if one of the two routes is <i>not</i> for the desired prefix, it should be ignored.
-  /// </summary>
-  /// <param name="r1">A route.</param>
-  /// <param name="r2">A route.</param>
-  /// <param name="prefix">The desired prefix.</param>
-  /// <returns>The minimum route between <paramref name="r1"/> and <paramref name="r2"/>.</returns>
-  private static Zen<RouteEnvironment> MinOptionalForPrefix(Zen<RouteEnvironment> r1, Zen<RouteEnvironment> r2,
-    Zen<Ipv4Prefix> prefix)
-  {
-    return Zen.If(r1.GetPrefix() != prefix, r2, Zen.If(r2.GetPrefix() != prefix, r1, r1.MinOptional(r2)));
   }
 
   /// <summary>

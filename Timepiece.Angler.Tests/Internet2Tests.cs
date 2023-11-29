@@ -252,8 +252,8 @@ public class Internet2Tests
     var initialRoutes = topology.MapNodes(n => routes[n].Value);
     var monolithicProperties = topology.MapNodes(_ => Lang.False<RouteEnvironment>());
     var modularProperties = topology.MapNodes(n => Lang.Globally(monolithicProperties[n]));
-    var net = new AnglerInternet2(topology, transfer, initialRoutes, modularProperties, modularProperties,
-      monolithicProperties, routes.Values.Cast<ISymbolic>().ToArray());
+    var net = new AnglerInternet2(topology, transfer, RouteEnvironmentExtensions.MinOptional, initialRoutes,
+      modularProperties, modularProperties, monolithicProperties, routes.Values.Cast<ISymbolic>().ToArray());
     NetworkAsserts.Unsound(net, check);
   }
 }
