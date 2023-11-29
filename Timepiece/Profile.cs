@@ -25,7 +25,7 @@ public static class Profile
   {
     try
     {
-      var s = annotatedNetwork.CheckMonolithic();
+      var s = annotatedNetwork.Check(SmtCheck.Monolithic);
       if (!s.HasValue) return;
       s.Value.ReportCheckFailure();
       Console.WriteLine("Error, monolithic verification failed!");
@@ -88,19 +88,6 @@ public static class Profile
         StatisticsExtensions.ReportTimes(nodeTimes, Statistics.Summary, t, true);
       }
     }
-  }
-
-  public static void RunAnnotated<T, NodeType>(AnnotatedNetwork<T, NodeType> annotatedNetwork)
-  {
-    var s = annotatedNetwork.CheckAnnotations();
-    if (!s.HasValue)
-    {
-      Console.WriteLine("    All the modular checks passed!");
-      return;
-    }
-
-    s.Value.ReportCheckFailure();
-    Console.WriteLine("Error, unsound annotations provided or assertions failed!");
   }
 
   /// <summary>

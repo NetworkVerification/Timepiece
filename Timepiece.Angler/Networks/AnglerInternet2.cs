@@ -138,7 +138,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   ///   Must not be advertised or accepted.
   ///   Mostly taken from Internet2's configs: see the SANITY-IN policy's block-martians term.
   /// </summary>
-  private static readonly (Ipv4Prefix Prefix, bool Exact)[] MartianPrefixes =
+  public static readonly (Ipv4Prefix Prefix, bool Exact)[] MartianPrefixes =
   {
     (new Ipv4Prefix("0.0.0.0/0"), Exact: true), // default route 0.0.0.0/0
     (new Ipv4Prefix("10.0.0.0/8"), Exact: false), // RFC1918 local network
@@ -187,7 +187,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="candidates"></param>
   /// <param name="prefix"></param>
   /// <returns></returns>
-  private static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
+  public static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
     Zen<Ipv4Prefix> prefix)
   {
     // TODO: consider converting to Zen<Ipv4Wildcard> first? rather than inside the constraints?
@@ -240,22 +240,26 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   public static AnglerInternet2 NoMartians(Digraph<string> digraph, IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
+    var externalPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p => p.IsValidPrefixLength());
+    // all external routes must be for the external prefix
     var externalRoutes =
       SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers,
-        HasValidPrefixLength);
+        r => r.GetPrefix() == externalPrefix.Value);
     var initialRoutes = digraph.MapNodes(n =>
       externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
 
     // internal nodes must not select martian routes
-    var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.InternalNodes.Contains(n)
-      ? Lang.Intersect<RouteEnvironment>(
-        // route is non-martian
-        env => Zen.Implies(env.GetResultValue(),
-          NoPrefixMatch(MartianPrefixes, env.GetPrefix())),
-        // route has prefix length at most 32
-        HasValidPrefixLength)
-      : Lang.True<RouteEnvironment>());
-    var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
+    var monolithicProperties = digraph.MapNodes(n =>
+      Internet2Nodes.InternalNodes.Contains(n) ||
+      n == "10.11.1.17" // special case: "tata-Telepresence peering| I2-S13170", which does not use a SANITY-IN policy
+        ? Lang.Intersect<RouteEnvironment>(
+          // route is non-martian
+          env => Zen.Implies(env.GetResultValue(),
+            NoPrefixMatch(MartianPrefixes, env.GetPrefix())),
+          // route has prefix length at most 32
+          HasValidPrefixLength)
+        : Lang.True<RouteEnvironment>());
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(externalPrefix).ToArray();
     return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
       symbolics);
   }

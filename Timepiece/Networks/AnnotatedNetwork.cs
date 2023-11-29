@@ -138,6 +138,42 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   public Zen<BigInteger>? MaxDelay { get; set; }
 
   /// <summary>
+  /// Perform the given <paramref name="check"/> on the network.
+  /// If a <paramref name="node"/> is given, and the check supports it, check only that node.
+  /// </summary>
+  /// <param name="check">A verification condition check.</param>
+  /// <param name="node">A node.</param>
+  /// <returns>A counterexample or none.</returns>
+  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="ArgumentOutOfRangeException"></exception>
+  public Option<State<RouteType, NodeType>> Check(SmtCheck check, NodeType? node = default)
+  {
+    return check switch
+    {
+      SmtCheck.Monolithic => node is null
+        ? CheckMonolithic()
+        : throw new ArgumentException("Monolithic check cannot be performed at a particular node!"),
+      SmtCheck.Initial => node is null ? CheckInitial() : CheckInitial(node),
+      SmtCheck.Inductive => node is null ? CheckInductive() : CheckInductive(node),
+      SmtCheck.InductiveDelayed => node is null
+        ? CheckInductiveDelayed()
+        : CheckInductiveDelayed(node),
+      SmtCheck.Safety => node is null ? CheckSafety() : CheckSafety(node),
+      SmtCheck.Modular => node is null ? CheckAnnotations() : CheckAnnotations(node),
+      SmtCheck.ModularDelayed => node is null
+        ? CheckAnnotationsDelayed()
+        : CheckAnnotationsDelayed(node),
+      _ => throw new ArgumentOutOfRangeException(nameof(check), check, null)
+    };
+  }
+
+  private Dictionary<NodeType, Zen<RouteType>> NeighborRoutes(NodeType node) =>
+    Digraph[node].ToDictionary(n => n, n => Symbolic<RouteType>($"{n}-route"));
+
+  private Dictionary<NodeType, Zen<RouteType>> NodeRoutes() =>
+    Digraph.MapNodes(node => Symbolic<RouteType>($"{node}-route"));
+
+  /// <summary>
   ///   Verify that the annotations are sound, calling the given function f on each node's check.
   /// </summary>
   /// <param name="collector"></param>
@@ -148,7 +184,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     Func<NodeType, TAcc, Func<Option<State<RouteType, NodeType>>>,
       Option<State<RouteType, NodeType>>> f)
   {
-    var routes = Digraph.MapNodes(node => Symbolic<RouteType>($"{node}-route"));
+    var routes = NodeRoutes();
     var time = Symbolic<BigInteger>("time");
     var s = Digraph.Nodes
       // call f for each node
@@ -160,8 +196,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
 
   public Option<State<RouteType, NodeType>> CheckAnnotations(NodeType node)
   {
-    return CheckAnnotations(node, Digraph[node].ToDictionary(n => n, n => Symbolic<RouteType>($"{n}-route")),
-      Symbolic<BigInteger>("time"));
+    return CheckAnnotations(node, NeighborRoutes(node), Symbolic<BigInteger>("time"));
   }
 
   private Option<State<RouteType, NodeType>> CheckAnnotations(NodeType node,
@@ -180,9 +215,16 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     return CheckInitial().OrElse(CheckInductive).OrElse(CheckSafety);
   }
 
-  public Option<State<RouteType, NodeType>> CheckAnnotationsDelayed()
+  private Option<State<RouteType, NodeType>> CheckAnnotationsDelayed()
   {
     return CheckInitial().OrElse(CheckInductiveDelayed).OrElse(CheckSafety);
+  }
+
+  private Option<State<RouteType, NodeType>> CheckAnnotationsDelayed(NodeType node)
+  {
+    return CheckInitial(node).OrElse(() => CheckInductiveDelayed(node, NeighborRoutes(node),
+        Digraph[node].ToDictionary(n => n, n => Symbolic<BigInteger>($"{n}-time"))))
+      .OrElse(() => CheckSafety(node));
   }
 
   public Option<State<RouteType, NodeType>> CheckInitial(NodeType node)
@@ -283,7 +325,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
   public Option<State<RouteType, NodeType>> CheckInductive(NodeType node)
   {
     // create symbolic values for each node neighbor.
-    var routes = Digraph[node].ToDictionary(n => n, n => Symbolic<RouteType>($"{n}-route"));
+    var routes = NeighborRoutes(node);
 
     // create a symbolic time variable.
     var time = Symbolic<BigInteger>("time");
@@ -332,10 +374,10 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     return Option.Some(state);
   }
 
-  public Option<State<RouteType, NodeType>> CheckInductiveDelayed()
+  private Option<State<RouteType, NodeType>> CheckInductiveDelayed()
   {
     // create symbolic values for each node.
-    var routes = Digraph.MapNodes(node => Symbolic<RouteType>($"{node}-route"));
+    var routes = NodeRoutes();
 
     // create symbolic time variables for each node.
     var times = Digraph.MapNodes(node => Symbolic<BigInteger>($"{node}-time"));
@@ -347,7 +389,13 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
       .Aggregate(Option.None<State<RouteType, NodeType>>(), (current, s) => current.OrElse(() => s));
   }
 
-  public Option<State<RouteType, NodeType>> CheckInductiveDelayed(NodeType node,
+  private Option<State<RouteType, NodeType>> CheckInductiveDelayed(NodeType node)
+  {
+    return CheckInductiveDelayed(node, NeighborRoutes(node),
+      Digraph[node].ToDictionary(n => n, n => Symbolic<BigInteger>($"{n}-time")));
+  }
+
+  private Option<State<RouteType, NodeType>> CheckInductiveDelayed(NodeType node,
     IReadOnlyDictionary<NodeType, Zen<RouteType>> routes, IReadOnlyDictionary<NodeType, Zen<BigInteger>> times)
   {
     var newNodeRoute = UpdateNodeRoute(node, routes);

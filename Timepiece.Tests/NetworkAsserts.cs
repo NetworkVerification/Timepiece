@@ -24,23 +24,8 @@ public static class NetworkAsserts
     where NodeType : notnull
   {
     var expected = Option.None<State<RouteType, NodeType>>();
-    Assert.Equal(expected, check switch
-    {
-      SmtCheck.Monolithic => node is null
-        ? net.CheckMonolithic()
-        : throw new ArgumentException("Monolithic check cannot be performed at a particular node!"),
-      SmtCheck.Initial => node is null ? net.CheckInitial() : net.CheckInitial(node),
-      SmtCheck.Inductive => node is null ? net.CheckInductive() : net.CheckInductive(node),
-      SmtCheck.InductiveDelayed => node is null
-        ? net.CheckInductiveDelayed()
-        : throw new NotImplementedException("Inductive delayed check not possible at a specific node."),
-      SmtCheck.Safety => node is null ? net.CheckSafety() : net.CheckSafety(node),
-      SmtCheck.Modular => node is null ? net.CheckAnnotations() : net.CheckAnnotations(node),
-      SmtCheck.ModularDelayed => node is null
-        ? net.CheckAnnotationsDelayed()
-        : throw new NotImplementedException("Inductive delayed check not possible at a specific node."),
-      _ => throw new ArgumentOutOfRangeException(nameof(check), check, null)
-    });
+    var checkAnnotationsDelayed = net.Check(check, node);
+    Assert.Equal(expected, checkAnnotationsDelayed);
   }
 
   /// <summary>
@@ -55,16 +40,6 @@ public static class NetworkAsserts
     SmtCheck check = SmtCheck.Modular)
     where NodeType : notnull
   {
-    Assert.True(check switch
-    {
-      SmtCheck.Monolithic => net.CheckMonolithic().HasValue,
-      SmtCheck.Initial => net.CheckInitial().HasValue,
-      SmtCheck.Inductive => net.CheckInductive().HasValue,
-      SmtCheck.Safety => net.CheckSafety().HasValue,
-      SmtCheck.InductiveDelayed => net.CheckInductiveDelayed().HasValue,
-      SmtCheck.Modular => net.CheckAnnotations().HasValue,
-      SmtCheck.ModularDelayed => net.CheckAnnotationsDelayed().HasValue,
-      _ => throw new ArgumentOutOfRangeException(nameof(check), check, null)
-    });
+    Assert.True(net.Check(check).HasValue);
   }
 }

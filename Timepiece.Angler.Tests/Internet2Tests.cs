@@ -44,6 +44,28 @@ public class Internet2Tests
     Assert.True(File.Exists(Internet2Path));
   }
 
+  [Fact]
+  public void TransferNoMartians()
+  {
+    var (topology, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
+    var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
+    var route = Zen.Symbolic<RouteEnvironment>("r");
+    // iterate over the edges from neighbors to Internet2 nodes
+    // explicitly exclude the "10.11.1.17"-->"newy-re1" edge, which does not have a SANITY-IN
+    var externalToInternal = topology.Edges(e =>
+      e != ("10.11.1.17", "newy-re1") && externalNodes.Contains(e.Item1) &&
+      Internet2Nodes.AsNodes.Contains(e.Item2));
+    Assert.All(externalToInternal, edge =>
+    {
+      var transferCheck = new TransferCheck<RouteEnvironment>(transfer[edge]);
+      var result = transferCheck.Verify(route, r => r.GetPrefix().IsValidPrefixLength(),
+        r => Zen.Implies(r.GetResultValue(),
+          AnglerInternet2.NoPrefixMatch(AnglerInternet2.MartianPrefixes, r.GetPrefix())));
+      _testOutputHelper.WriteLine($"Edge {edge}: {result}");
+      Assert.Null(result);
+    });
+  }
+
   /// <summary>
   /// Verify that the given route is "good":
   /// <list type="bullet">
