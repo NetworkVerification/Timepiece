@@ -52,7 +52,8 @@ runCommand.SetHandler(
     json.Close();
     if (ast != null)
     {
-      var (topology, transfer) = ast.TopologyAndTransfer(trackTerms: trackTerms);
+      var (topology, transfer) = Internet2Nodes.ShrinkInternet2(ast, 2);
+      // var (topology, transfer) = ast.TopologyAndTransfer(trackTerms: trackTerms);
       var externalNodes = ast.Externals.Select(i => i.Name).ToArray();
       dynamic net = queryType switch
       {

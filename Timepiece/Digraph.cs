@@ -24,7 +24,6 @@ public class Digraph<NodeType> where NodeType : notnull
   public Digraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors)
   {
     Neighbors = neighbors;
-    NEdges = Neighbors.Sum(p => p.Value.Count);
     Nodes = Neighbors.Keys.ToArray();
   }
 
@@ -50,7 +49,7 @@ public class Digraph<NodeType> where NodeType : notnull
   ///   The number of edges.
   /// </summary>
   [JsonIgnore]
-  public int NEdges { get; set; }
+  public int NEdges => Neighbors.Sum(p => p.Value.Count);
 
   /// <summary>
   ///   The number of nodes.
@@ -62,7 +61,7 @@ public class Digraph<NodeType> where NodeType : notnull
   ///   The edges for each node.
   /// </summary>
   [JsonPropertyName("edges")]
-  public IDictionary<NodeType, ImmutableSortedSet<NodeType>> Neighbors { get; set; }
+  public IDictionary<NodeType, ImmutableSortedSet<NodeType>> Neighbors { get; }
 
   /// <summary>
   ///   The nodes in the graph and their names.
@@ -121,7 +120,6 @@ public class Digraph<NodeType> where NodeType : notnull
     if (Neighbors[node].Contains(neighbor)) return;
 
     Neighbors.Add(node, Neighbors[node].Add(neighbor));
-    NEdges++;
   }
 
   /// <summary>

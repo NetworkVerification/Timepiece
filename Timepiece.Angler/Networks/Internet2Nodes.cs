@@ -1,7 +1,41 @@
+using System.Collections.Immutable;
+using Timepiece.Angler.Ast;
+using Timepiece.Angler.DataTypes;
+using ZenLib;
+
 namespace Timepiece.Angler.Networks;
 
 public static class Internet2Nodes
 {
+  /// <summary>
+  /// Return the topology and transfer for the network after cutting AS nodes.
+  /// </summary>
+  /// <param name="net"></param>
+  /// <param name="toKeep"></param>
+  /// <returns></returns>
+  public static (Digraph<string>, Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>)
+    ShrinkInternet2(AnglerNetwork net, int toKeep)
+  {
+    var (topology, transfer) = net.TopologyAndTransfer();
+    var keptNeighbors = topology.Neighbors;
+    var (kept, skipped) = (AsNodes.Take(toKeep).ToArray(), AsNodes.Skip(toKeep));
+    foreach (var asNode in skipped)
+    {
+      if (!keptNeighbors.TryGetValue(asNode, out var neighbors)) continue;
+      foreach (var neighbor in neighbors)
+      {
+        transfer.Remove((neighbor, asNode));
+        transfer.Remove((asNode, neighbor));
+        if (!kept.Contains(neighbor))
+          keptNeighbors.Remove(neighbor);
+      }
+
+      keptNeighbors.Remove(asNode);
+    }
+
+    return (new Digraph<string>(keptNeighbors), transfer);
+  }
+
   /// <summary>
   ///   The nodes of Internet2's AS.
   /// </summary>
