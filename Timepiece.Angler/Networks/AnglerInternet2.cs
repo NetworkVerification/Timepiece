@@ -261,6 +261,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
             NoPrefixMatch(MartianPrefixes, env.GetPrefix())),
           // route has prefix length at most 32
           HasValidPrefixLength)
+        // external nodes can have any route
         : Lang.True<RouteEnvironment>());
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(externalPrefix).ToArray();
     var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));

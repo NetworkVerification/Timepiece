@@ -16,6 +16,9 @@ var runCommand = new Command("run", "Run the given benchmark");
 var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically (simulating Minesweeper)");
+// var checkOption = new System.CommandLine.Option<SmtCheck>(new[] {"-c", "--check"},
+// result => SmtCheckExtensions.Parse(result.Tokens.Single().Value),
+// description: "The SMT check to perform");
 var queryOption = new System.CommandLine.Option<bool>(
   new[] {"--query", "-q"},
   "If given, print the query formulas to stdout");
@@ -28,7 +31,7 @@ var fileArgument = new Argument<string>(
 var queryArgument =
   new Argument<QueryType>("query",
     description: "The type of query to check",
-    parse: result => QueryTypeExtensions.ToQueryType(result.Tokens.Single().Value));
+    parse: result => result.Tokens.Single().Value.ToQueryType());
 rootCommand.AddCommand(listQueriesCommand);
 rootCommand.AddCommand(runCommand);
 runCommand.Add(fileArgument);
@@ -88,6 +91,7 @@ runCommand.SetHandler(
 
       // turn on query printing if true
       net.PrintFormulas = printQuery;
+      // net.Check(SmtCheck.Inductive, "atla-re1");
       if (mono)
         Profile.RunMonoWithStats(net);
       else

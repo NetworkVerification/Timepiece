@@ -239,7 +239,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
-      Console.Write($"Initial check at {node}: ");
+      Console.WriteLine($"Initial check at {node}: ");
       Console.WriteLine(query.Format());
     }
 
@@ -283,7 +283,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
-      Console.Write($"Safety check at {node}: ");
+      Console.WriteLine($"Safety check at {node}: ");
       Console.WriteLine(query.Format());
     }
 
@@ -361,7 +361,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
-      Console.Write($"Inductive check at {node}: ");
+      Console.WriteLine($"Inductive check at {node}: ");
       Console.WriteLine(query.Format());
     }
 
@@ -418,7 +418,7 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     var query = And(GetSymbolicConstraints(), Not(check));
     if (PrintFormulas)
     {
-      Console.Write($"Inductive (delayed) check at {node}: ");
+      Console.WriteLine($"Inductive (delayed) check at {node}: ");
       Console.WriteLine(query.Format());
     }
 
