@@ -15,8 +15,20 @@ namespace Timepiece;
 ///   whose edges point to those nodes.
 ///   Using predecessors makes it efficient to represent our network semantics.
 /// </summary>
-public class Digraph<NodeType> where NodeType : notnull
+public record Digraph<NodeType> where NodeType : notnull
 {
+  public virtual bool Equals(Digraph<NodeType>? other)
+  {
+    if (ReferenceEquals(null, other)) return false;
+    if (ReferenceEquals(this, other)) return true;
+    return Neighbors.Equals(other.Neighbors);
+  }
+
+  public override int GetHashCode()
+  {
+    return Neighbors.GetHashCode();
+  }
+
   /// <summary>
   ///   Construct a Topology given a mapping from nodes to their predecessors.
   /// </summary>
@@ -141,6 +153,30 @@ public class Digraph<NodeType> where NodeType : notnull
   }
 
   /// <summary>
+  /// Return the induced subgraph of the digraph.
+  /// The induced subgraph contains all of the nodes in the subset <paramref name="subsetNodes"/>
+  /// and only edges that go between nodes in the subset.
+  /// </summary>
+  /// <param name="subsetNodes"></param>
+  /// <returns></returns>
+  public Digraph<NodeType> InducedSubgraph(IEnumerable<NodeType> subsetNodes)
+  {
+    var nodesArray = subsetNodes.ToArray();
+    var inducedNeighbors = new Dictionary<NodeType, ImmutableSortedSet<NodeType>>();
+    foreach (var node in nodesArray)
+    {
+      // skip the neighbor if it was already added (for handling duplicates)
+      if (!inducedNeighbors.TryAdd(node, ImmutableSortedSet<NodeType>.Empty)) continue;
+      foreach (var neighbor in this[node].Where(nodesArray.Contains))
+      {
+        inducedNeighbors[node] = inducedNeighbors[node].Add(neighbor);
+      }
+    }
+
+    return new Digraph<NodeType>(inducedNeighbors);
+  }
+
+  /// <summary>
   ///   Return a dictionary mapping each node in the digraph with a given function.
   /// </summary>
   /// <param name="nodeFunc">The function over every node.</param>
@@ -235,7 +271,7 @@ public class Digraph<NodeType> where NodeType : notnull
 /// <summary>
 ///   Represents the digraph of a network with node labels.
 /// </summary>
-public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
+public record NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
 {
   public NodeLabelledDigraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors,
     Dictionary<NodeType, LabelType> labels) :
@@ -274,7 +310,7 @@ public class NodeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where 
   }
 }
 
-public class EdgeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
+public record EdgeLabelledDigraph<NodeType, LabelType> : Digraph<NodeType> where NodeType : notnull
 {
   public EdgeLabelledDigraph(IDictionary<NodeType, ImmutableSortedSet<NodeType>> neighbors,
     Dictionary<(NodeType, NodeType), LabelType> labels) :
