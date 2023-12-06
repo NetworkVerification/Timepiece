@@ -6,6 +6,8 @@ using ZenLib;
 
 namespace Timepiece.Angler.Networks;
 
+using RouteEnvironmentTransfer = Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>;
+
 /// <summary>
 /// Internet2 benchmarks.
 /// </summary>
@@ -23,7 +25,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="monolithicProperties"></param>
   /// <param name="symbolics"></param>
   public AnglerInternet2(Digraph<string> digraph,
-    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions,
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions,
     Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>, Zen<RouteEnvironment>> mergeFunction,
     Dictionary<string, Zen<RouteEnvironment>> initialValues,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> annotations,
@@ -202,10 +204,10 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   ///   Construct an AnnotatedNetwork with constraints that every external node symbolic does not have the BTE tag,
   ///   and check that all external nodes never have a BTE tag.
   /// </summary>
-  /// <param name="externalPeers"></param>
-  /// <param name="digraph"></param>
-  /// <param name="transferFunctions"></param>
-  /// <returns></returns>
+  /// <param name="digraph">A network topology.</param>
+  /// <param name="externalPeers">An enumerable of external peer nodes.</param>
+  /// <param name="transferFunctions">The transfer functions of the network.</param>
+  /// <returns>An <c>AnglerInternet2</c> instance.</returns>
   public static AnglerInternet2 BlockToExternal(Digraph<string> digraph,
     IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
@@ -236,10 +238,10 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <summary>
   /// Verify that the internal nodes never select a route for a Martian prefix.
   /// </summary>
-  /// <param name="digraph"></param>
-  /// <param name="externalPeers"></param>
-  /// <param name="transferFunctions"></param>
-  /// <returns></returns>
+  /// <param name="digraph">A network topology.</param>
+  /// <param name="externalPeers">An enumerable of external peer nodes.</param>
+  /// <param name="transferFunctions">The transfer functions of the network.</param>
+  /// <returns>An <c>AnglerInternet2</c> instance.</returns>
   public static AnglerInternet2 NoMartians(Digraph<string> digraph, IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
@@ -271,6 +273,49 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   }
 
   /// <summary>
+  /// Verify that the internal nodes never select a Martian prefix.
+  /// </summary>
+  /// <param name="digraph">A network topology.</param>
+  /// <param name="externalPeers">An enumerable of external peer nodes.</param>
+  /// <param name="transferFunctions">The transfer functions of the network.</param>
+  /// <returns>An <c>AnglerInternet2</c> instance.</returns>
+  /// <remarks>
+  /// Unlike <see cref="NoMartians"/>, here we assume that the external nodes (may) have a Martian prefix,
+  /// and want to show that the internal nodes never select a route.
+  /// </remarks>
+  public static AnglerInternet2 NoMartiansContrapositive(Digraph<string> digraph, IEnumerable<string> externalPeers,
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
+  {
+    // the external prefix is Martian
+    var externalPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix",
+      p => MartianPrefixes.Exists(martian => martian.Prefix.Matches(p, martian.Exact)));
+    // all external routes must be for the external prefix
+    var externalRoutes =
+      SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers,
+        r => r.GetPrefix() == externalPrefix.Value);
+    // special case: "tata-Telepresence peering| I2-S13170", which does not use a SANITY-IN policy
+    // the configs state however that it should "never send us Martian routes"
+    externalRoutes["10.11.1.17"].Constraint =
+      r => Zen.And(Zen.Not(r.GetResultValue()), r.GetPrefix() == externalPrefix.Value);
+    var initialRoutes = digraph.MapNodes(n =>
+      externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
+
+    // internal nodes must never have a route
+    var monolithicProperties = digraph.MapNodes(n =>
+      Internet2Nodes.InternalNodes.Contains(n)
+      ||
+      n == "10.11.1.17" // special case: "tata-Telepresence peering| I2-S13170", which does not use a SANITY-IN policy
+        ? env => Zen.Not(env.GetResultValue())
+        // external nodes can have any route
+        : Lang.True<RouteEnvironment>());
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Append(externalPrefix).ToArray();
+    var modularProperties = digraph.MapNodes(n => Lang.Globally(monolithicProperties[n]));
+    return new AnglerInternet2(digraph, transferFunctions,
+      (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, externalPrefix.Value), initialRoutes,
+      modularProperties, modularProperties, monolithicProperties, symbolics);
+  }
+
+  /// <summary>
   /// Verify that the internal nodes never select a route with a private AS in the path.
   /// </summary>
   /// <param name="digraph"></param>
@@ -289,12 +334,41 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
 
     // internal nodes must not select private AS routes
     var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.InternalNodes.Contains(n)
-      ? Lang.Intersect<RouteEnvironment>(env => Zen.Not(env.GetAsSet().Contains(PrivateAs)),
+      ? Lang.Intersect<RouteEnvironment>(
+        env => Zen.Implies(env.GetResultValue(), Zen.Not(env.GetAsSet().Contains(PrivateAs))),
         HasValidPrefixLength)
       : Lang.True<RouteEnvironment>());
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
     return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties,
       symbolics);
+  }
+
+  /// <summary>
+  /// Verify that the internal nodes never select a route with a private AS in the path.
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="externalPeers"></param>
+  /// <param name="transferFunctions"></param>
+  /// <returns></returns>
+  /// <remarks>
+  /// Unlike <see cref="NoPrivateAs"/>, here we assume that the external nodes (may) have a route with a private AS,
+  /// and want to show that the internal nodes never select a route.
+  /// </remarks>
+  public static AnglerInternet2 NoPrivateAsContrapositive(Digraph<string> digraph, IEnumerable<string> externalPeers,
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
+  {
+    var externalRoutes =
+      SymbolicValue.SymbolicDictionary("external-route", externalPeers,
+        Lang.Intersect<RouteEnvironment>(HasValidPrefixLength, r => r.GetAsSet().Contains(PrivateAs)));
+    var initialRoutes = digraph.MapNodes(n =>
+      externalRoutes.TryGetValue(n, out var route) ? route.Value : new RouteEnvironment());
+
+    // external nodes must not select routes for private AS routes
+    var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.InternalNodes.Contains(n)
+      ? env => Zen.Not(env.GetResultValue())
+      : Lang.True<RouteEnvironment>());
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
+    return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties, symbolics);
   }
 
   private static Zen<bool> HasInternalPrefixRoute(Zen<RouteEnvironment> r) =>
@@ -341,15 +415,98 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       monolithicProperties, symbolics);
   }
 
+
+  /// <summary>
+  /// </summary>
+  /// <param name="digraph"></param>
+  /// <param name="destination"></param>
+  /// <param name="externalPeers"></param>
+  /// <param name="transferFunctions"></param>
+  /// <returns></returns>
+  public static AnglerInternet2 Reachable(Digraph<string> digraph, string destination,
+    IEnumerable<string> externalPeers,
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
+  {
+    if (!Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(destination, out var participantList))
+    {
+      throw new ArgumentOutOfRangeException(nameof(destination), destination,
+        "Destination must be an external peer in the participant list.");
+    }
+
+    // the announced external destination prefix
+    var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
+      // must be for this destination node's prefix and no smaller than /27
+      Internet2Prefixes.ParticipantPrefixes[participantList.Participant].Exists(prefix =>
+        Zen.And(prefix.Matches(p, participantList.Exact),
+          // if the participant list is not exact, restrict the prefix length to at most /27
+          // (in order for the CONNECTOR-IN to accept it)
+          participantList.Exact ? true : p.GetPrefixLength() <= new UInt<_6>(27))));
+    var externalRoutes = externalPeers.ToDictionary(e => e,
+      e => new SymbolicValue<RouteEnvironment>($"external-route-{e}",
+        // external route is for the destination prefix, and has a value if the external peer is the destination
+        r => Zen.And(r.GetPrefix() == destinationPrefix.Value, Zen.Implies(e == destination, r.GetResultValue()))));
+    var initialRoutes = digraph.MapNodes(n =>
+      externalRoutes.TryGetValue(n, out var route)
+        ? route.Value
+        : Zen.Constant(new RouteEnvironment()).WithPrefix(destinationPrefix.Value));
+    // there are 2 symbolic times: when the internal nodes adjacent to the external peer get a route, and when the other internal nodes get a route
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
+    // make the external adjacent time constraint strictly greater than 0
+    symbolicTimes[0].Constraint = t => t > BigInteger.Zero;
+    var nextToPeerTime = symbolicTimes[0].Value;
+    var notNextToPeerTime = symbolicTimes[1].Value;
+    var lastTime = symbolicTimes[^1].Value;
+
+    var monolithicProperties = digraph.MapNodes(n => Internet2Nodes.AsNodes.Contains(n)
+      // Internet2 nodes: if an external route exists, then we must have a route
+      ? r => r.HasPrefixRoute(destinationPrefix.Value)
+      // no check on external nodes
+      : Lang.True<RouteEnvironment>());
+    var modularProperties = digraph.MapNodes(n => Internet2Nodes.AsNodes.Contains(n)
+      // eventually, if an external route exists, internal nodes have a route
+      ? Lang.Finally(lastTime, monolithicProperties[n])
+      : Lang.Globally(monolithicProperties[n]));
+    var annotations = digraph.MapNodes(n =>
+    {
+      // internal nodes get routes at 2 different possible times
+      // case 1: an adjacent external peer has a route. we get a route once they send it to us
+      // case 2: no adjacent external peer has a route. we get a route once an internal neighbor sends it to us
+      var witnessTime = Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes), nextToPeerTime, notNextToPeerTime);
+      // safety condition: if a node has a route, then the route must be for the destination prefix
+      // and not include any bad AS number
+      var safety = Lang.Globally<RouteEnvironment>(r =>
+        Zen.Implies(r.GetResultValue(),
+          Zen.And(r.GetPrefix() == destinationPrefix.Value,
+            Zen.Not(r.GetAsSet().Contains(PrivateAs)),
+            Zen.Not(r.GetAsSet().Contains(NlrAs)),
+            Zen.Not(r.GetAsSet().Contains(CommercialAs)))));
+      return Lang.Intersect(Internet2Nodes.AsNodes.Contains(n)
+          ? Lang.Finally(witnessTime, monolithicProperties[n])
+          // if an external node starts with a route, it must always have one (for its specific starting prefix)
+          // otherwise, we don't care what route it has
+          : Lang.Globally<RouteEnvironment>(r =>
+            externalRoutes.TryGetValue(n, out var externalRoute)
+              ? Zen.Implies(externalRoute.Value.GetResultValue(), r.HasPrefixRoute(externalRoute.Value.GetPrefix()))
+              : Zen.True()),
+        safety);
+    });
+    var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
+    return new AnglerInternet2(digraph, transferFunctions,
+      (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value),
+      initialRoutes, annotations, modularProperties, monolithicProperties, symbolics);
+  }
+
   /// <summary>
   /// Verify that if a valid route comes from the external peers to the network,
   /// then all the internal nodes eventually have that route.
+  /// The route has a symbolic destination prefix, which must match a whitelisted
+  /// prefix of one of the network's *-PARTICIPANT prefix lists.
   /// </summary>
   /// <param name="digraph"></param>
   /// <param name="externalPeers"></param>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
-  public static AnglerInternet2 Reachable(Digraph<string> digraph,
+  public static AnglerInternet2 ReachableSymbolicPrefix(Digraph<string> digraph,
     IEnumerable<string> externalPeers,
     Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
   {
@@ -365,19 +522,20 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       e =>
       {
         // get the prefix list for this neighbor, to then get the prefixes it uses
-        var participantPrefixes = Internet2Prefixes.ParticipantPrefixes.Where(prefixList =>
-          Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(e, out var participant) &&
-          participant == prefixList.Key);
+        var hasParticipantList = Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(e, out var participantList);
+        // if the neighbor has no participant list, the participant prefixes will be empty
         // encode the fact that there exists a match of one of the prefixes when one of the prefixes matches the given external peer
-        var matchesPrefix = participantPrefixes.Exists(prefixList => prefixList.Value
-          // TODO: comment out this line. cutting here to only take one prefix (just to reduce size of encoding for testing)
-          .Take(1)
-          .Exists(prefix => prefix.Matches(destinationPrefix.Value, exact: false)));
+        var matchesPrefix = Internet2Prefixes.ParticipantPrefixes
+          .Where(prefixList => hasParticipantList && participantList.Participant == prefixList.Key)
+          .Exists(prefixList => prefixList.Value
+            // TODO: comment out this line. cutting here to only take one prefix (just to reduce size of encoding for testing)
+            .Take(1)
+            .Exists(prefix => prefix.Matches(destinationPrefix.Value, exact: participantList.Exact)));
         // the constraint says that if the prefix matches, then there should be a route for it (if one exists);
         // if the prefix does not match, this neighbor should not send a route
         return new SymbolicValue<RouteEnvironment>($"external-route-{e}",
           r => Zen.If(matchesPrefix,
-            Zen.Implies(r.GetResultValue(), r.GetPrefix() == destinationPrefix.Value),
+            Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value, NoBadAs(r))),
             Zen.Not(r.GetResultValue())));
       });
     var initialRoutes = digraph.MapNodes(n =>
@@ -413,7 +571,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       Lang.Intersect(Internet2Nodes.AsNodes.Contains(n)
           // internal nodes get routes at 2 different possible times
           // case 1: an adjacent external peer has a route. we get a route once they send it to us
-          // case 2: no adjacent external peer has a route. we get a route once an internal ""sends it to us
+          // case 2: no adjacent external peer has a route. we get a route once an internal neighbor sends it to us
           ? Lang.Finally(
             Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes),
               // case 1
@@ -429,17 +587,22 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
               : Zen.True()),
         // safety condition: if a node has a route, then the route must be for the destination prefix
         Lang.Globally<RouteEnvironment>(r =>
-          Zen.Implies(r.GetResultValue(),
-            Zen.And(r.GetPrefix() == destinationPrefix.Value,
-              Zen.Not(r.GetAsSet().Contains(PrivateAs)),
-              Zen.Not(r.GetAsSet().Contains(NlrAs)),
-              Zen.Not(r.GetAsSet().Contains(CommercialAs)))))));
+          Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value, NoBadAs(r))))));
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
     return new AnglerInternet2(digraph, transferFunctions,
       (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value), initialRoutes,
       annotations, modularProperties,
       monolithicProperties, symbolics);
   }
+
+  /// <summary>
+  /// Return a Zen value encoding that r's AS set contains none of the "bad ASes":
+  /// <see cref="PrivateAs"/>, <see cref="NlrAs"/>, <see cref="CommercialAs"/>.
+  /// </summary>
+  /// <param name="r">A route.</param>
+  /// <returns>A Zen boolean value.</returns>
+  private static Zen<bool> NoBadAs(Zen<RouteEnvironment> r) =>
+    new[] {PrivateAs, NlrAs, CommercialAs}.ForAll(asn => Zen.Not(r.GetAsSet().Contains(asn)));
 
   /// <summary>
   ///   Return a constraint that one of the node's external neighbors has a route.

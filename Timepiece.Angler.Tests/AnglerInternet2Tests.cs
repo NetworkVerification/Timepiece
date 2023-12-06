@@ -9,7 +9,7 @@ using ZenLib;
 
 namespace Timepiece.Angler.Tests;
 
-public class Internet2Tests
+public class AnglerInternet2Tests
 {
   private readonly ITestOutputHelper _testOutputHelper;
   private const string Internet2FileName = "INTERNET2.angler.json";
@@ -32,7 +32,7 @@ public class Internet2Tests
     .Concat(Internet2Nodes.OtherInternalGroup)
     .Concat(Internet2Nodes.AdvancedLayer2ServiceManagementGroup);
 
-  public Internet2Tests(ITestOutputHelper testOutputHelper)
+  public AnglerInternet2Tests(ITestOutputHelper testOutputHelper)
   {
     _testOutputHelper = testOutputHelper;
   }
@@ -61,6 +61,30 @@ public class Internet2Tests
       var result = transferCheck.Verify(route, r => r.GetPrefix().IsValidPrefixLength(),
         r => Zen.Implies(r.GetResultValue(),
           AnglerInternet2.NoPrefixMatch(AnglerInternet2.MartianPrefixes, r.GetPrefix())));
+      _testOutputHelper.WriteLine($"Edge {edge}: {result}");
+      Assert.Null(result);
+    });
+  }
+
+  [Fact]
+  public void TransferPrivateAs()
+  {
+    var (topology, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
+    var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
+    var route = Zen.Symbolic<RouteEnvironment>("r");
+    // iterate over the edges from neighbors to Internet2 nodes
+    // explicitly exclude the "10.11.1.17"-->"newy-re1" edge, which does not have a SANITY-IN
+    var externalToInternal = topology.Edges(e =>
+      e != ("10.11.1.17", "newy-re1")
+      && externalNodes.Contains(e.Item1)
+      && !Internet2Nodes.AdvancedLayer2ServiceManagementGroup.Contains(e.Item1)
+      && Internet2Nodes.AsNodes.Contains(e.Item2));
+    Assert.All(externalToInternal, edge =>
+    {
+      var transferCheck = new TransferCheck<RouteEnvironment>(transfer[edge]);
+      var result = transferCheck.Verify(route, r => r.GetPrefix().IsValidPrefixLength(),
+        r => Zen.Implies(r.GetResultValue(),
+          Zen.Not(r.GetAsSet().Contains(AnglerInternet2.PrivateAs))));
       _testOutputHelper.WriteLine($"Edge {edge}: {result}");
       Assert.Null(result);
     });
@@ -149,15 +173,6 @@ public class Internet2Tests
   public void WashCaarenNeighborTransfersGoodRoute()
   {
     var route = Zen.Symbolic<RouteEnvironment>("r");
-    // var route = new RouteEnvironment
-    // {
-    // Result = new RouteResult {Exit = false, Fallthrough = false, Returned = false, Value = true},
-    // LocalDefaultAction = false, Prefix = new Ipv4Prefix("128.164.0.0", "128.164.255.255"), Weight = 0, Lp = 0,
-    // AsSet = new CSet<string>(),
-    // AsPathLength = 0, Metric = 0, OriginType = new UInt<_2>(0), Tag = 0, Communities =
-    // new CSet<string>(),
-    // VisitedTerms = new CSet<string>()
-    // };
     var (_, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
     var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("198.71.45.247", "wash")]);
     var result = transferCheck.Verify(route,
@@ -224,12 +239,28 @@ public class Internet2Tests
     });
   }
 
+  [Fact]
+  public void ChicReachableViaUnmNeighbor()
+  {
+    var (_, transfer) = Internet2Ast.TopologyAndTransfer(trackTerms: true);
+    var transferCheck = new TransferCheck<RouteEnvironment>(transfer[("198.71.46.220", "chic")]);
+    var r = Zen.Symbolic<RouteEnvironment>();
+    var result = transferCheck.Verify(r,
+      r1 => Zen.And(r1.GetResultValue(),
+        r1.GetPrefix() == new Ipv4Prefix("63.225.1.0/24"),
+        Zen.Not(r1.GetAsSet().Contains(AnglerInternet2.PrivateAs)),
+        Zen.Not(r1.GetAsSet().Contains(AnglerInternet2.NlrAs)),
+        Zen.Not(r1.GetAsSet().Contains(AnglerInternet2.CommercialAs))),
+      r2 => r2.GetResultValue());
+    Assert.Null(result);
+  }
+
   [Fact(Skip = "too slow")]
   public void WashReachableInductiveCheckPasses()
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
     var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
-    var net = AnglerInternet2.Reachable(topology, externalNodes, transfer);
+    var net = AnglerInternet2.ReachableSymbolicPrefix(topology, externalNodes, transfer);
     NetworkAsserts.Sound(net, SmtCheck.Inductive, "wash");
   }
 
@@ -238,7 +269,7 @@ public class Internet2Tests
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
     var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
-    var net = AnglerInternet2.Reachable(topology, externalNodes, transfer);
+    var net = AnglerInternet2.ReachableSymbolicPrefix(topology, externalNodes, transfer);
     NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 

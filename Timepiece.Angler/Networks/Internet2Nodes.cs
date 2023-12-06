@@ -46,12 +46,39 @@ public static class Internet2Nodes
   /// <summary>
   ///   Addresses for the AL2S_MGMT peer group.
   ///   See https://internet2.edu/services/layer-2-service/ for what AL2S is.
-  ///   Routes should never be imported or exported to these nodes.
+  ///   Routes should never be exported to these nodes.
+  ///   AL2S_MGMT uses its own particular import policy, AL2S_MGMT-IN, that accepts only prefixes
+  ///   in a particular set of prefix lists.
   ///   These peers are classified as external in the configs.
   /// </summary>
   public static readonly string[] AdvancedLayer2ServiceManagementGroup =
   {
-    "64.57.25.164", "64.57.25.165", "64.57.24.204", "64.57.24.205", "64.57.25.124", "64.57.25.236"
+    "64.57.23.228",
+    "64.57.24.196",
+    "64.57.24.197",
+    "64.57.24.204",
+    "64.57.24.205",
+    "64.57.24.212",
+    "64.57.24.213",
+    "64.57.24.214",
+    "64.57.24.217",
+    "64.57.25.100",
+    "64.57.25.101",
+    "64.57.25.108",
+    "64.57.25.109",
+    "64.57.25.110",
+    "64.57.25.116",
+    "64.57.25.124",
+    "64.57.25.164",
+    "64.57.25.165",
+    "64.57.25.172",
+    "64.57.25.180",
+    "64.57.25.181",
+    "64.57.25.188",
+    "64.57.25.189",
+    "64.57.25.190",
+    "64.57.25.236",
+    "198.71.46.132"
   };
 
   public static readonly string[] AtlaConnectorNodes =

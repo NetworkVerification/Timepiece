@@ -8,6 +8,7 @@
 # contain an initial "participant" term.
 import ipaddress
 import os
+import pathlib
 import re
 import sys
 
@@ -20,14 +21,21 @@ NEIGHBOR_DECL = re.compile(r"^(?:inactive: )?neighbor ([0-9a-f\.:]*)")
 IMPORT_POLICIES = re.compile(r"^import \[ (([\w-]* ?)*) \];")
 
 
-def get_neighbor_import_policies(text: str) -> dict[ipaddress.IPv4Address | ipaddress.IPv6Address, set[str]]:
-  """Return a dictionary mapping neighbors to sets of import policy names."""
-    # strip the lines
-    stripped = [l.strip() for l in text.splitlines()]
+def is_prefix_list_filter_exact(policy_name: str, lines: list[str]) -> bool:
+    """
+    Return if the prefix list filter is used in a policy where the filter is applied exactly or not.
+    """
+    prefix_list_name = policy_name.replace("-IN", "-PARTICIPANT")
+    search_term = f"prefix-list-filter {prefix_list_name} exact;"
+    return search_term in lines
+
+
+def get_neighbor_import_policies(config_lines: list[str]) -> dict[ipaddress.IPv4Address | ipaddress.IPv6Address, set[str]]:
+    """Return a dictionary mapping neighbors to sets of import policy names."""
     neighbors_to_policies = {}
     # start with no neighbor
     current_neighbor = None
-    for line in stripped:
+    for line in config_lines:
         # first see if the line identifies a neighbor
         neighbor_match = NEIGHBOR_DECL.match(line)
         if neighbor_match is not None:
@@ -56,28 +64,36 @@ if __name__ == "__main__":
     configs = sys.argv[1]
     neighbor_participants = {}
     for config_file in os.listdir(configs):
-        with open(os.path.join(configs, config_file), "r") as config:
-          config_text = config.read()
+        path = pathlib.Path(os.path.join(configs, config_file))
+        if not path.is_file() or not path.suffix == ".cfg":
+            # skip found paths that are not for .cfg files
+            continue
+        with open(path, "r") as config:
+            config_text = config.read()
+        # strip the lines
+        lines = [line.strip() for line in config_text.splitlines()]
         # get all the PARTICIPANT policies
         participant_policies: list[str] = HAS_PARTICIPANT_TERM.findall(config_text)
+        # for each PARTICIPANT policy, check if it's exact or orlonger
+        participant_filters = {pol: is_prefix_list_filter_exact(pol, lines) for pol in participant_policies}
         # for each found policy, find the neighbors that use it
-        neighbors_to_policies = get_neighbor_import_policies(config_text)
+        neighbors_to_policies = get_neighbor_import_policies(lines)
         for neighbor in neighbors_to_policies.keys():
-          if neighbor in neighbor_participants:
-            print(
-              f"// Warning: neighbor {neighbor} has value {neighbor_participants[neighbor]} which will be overwritten.")
+            if neighbor in neighbor_participants:
+                print(
+                    f"// Warning: neighbor {neighbor} has value {neighbor_participants[neighbor]} which will be overwritten.")
         # update the outer collection -- duplicates will be overwritten
         neighbor_participants.update(
             {
-              neighbor: policy.replace("-IN", "-PARTICIPANT")
+                neighbor: (policy.replace("-IN", "-PARTICIPANT"), exact)
                 # the format of a dict entry
-              for policy in participant_policies
+                for policy, exact in participant_filters.items()
                 for neighbor, neighbor_policies in neighbors_to_policies.items()
                 if policy in neighbor_policies
             }
         )
     output_lines = [
-        f'{{"{neighbor}", "{participant}"}},'
-        for (neighbor, participant) in sorted(neighbor_participants.items())
+        f'{{"{neighbor}", ("{participant}", {"true" if exact else "false"})}},'
+        for (neighbor, (participant, exact)) in sorted(neighbor_participants.items())
     ]
     print("\n".join(output_lines))

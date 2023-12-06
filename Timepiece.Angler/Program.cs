@@ -16,9 +16,6 @@ var runCommand = new Command("run", "Run the given benchmark");
 var monoOption = new System.CommandLine.Option<bool>(
   new[] {"--mono", "--ms", "-m"},
   "If given, run the benchmark monolithically (simulating Minesweeper)");
-// var checkOption = new System.CommandLine.Option<SmtCheck>(new[] {"-c", "--check"},
-// result => SmtCheckExtensions.Parse(result.Tokens.Single().Value),
-// description: "The SMT check to perform");
 var queryOption = new System.CommandLine.Option<bool>(
   new[] {"--query", "-q"},
   "If given, print the query formulas to stdout");
@@ -60,10 +57,19 @@ runCommand.SetHandler(
         QueryType.Internet2BlockToExternalFaultTolerant => AnglerInternet2.FaultTolerance(
           AnglerInternet2.BlockToExternal(topology, externalNodes, transfer)),
         QueryType.Internet2NoMartians => AnglerInternet2.NoMartians(topology, externalNodes, transfer),
+        QueryType.Internet2NoMartiansContra => AnglerInternet2.NoMartiansContrapositive(topology, externalNodes,
+          transfer),
         QueryType.Internet2NoMartiansFaultTolerant => AnglerInternet2.FaultTolerance(
           AnglerInternet2.NoMartians(topology, externalNodes, transfer)),
+        QueryType.Internet2NoMartiansContraFaultTolerant => AnglerInternet2.FaultTolerance(
+          AnglerInternet2.NoMartiansContrapositive(topology, externalNodes,
+            transfer)),
         QueryType.Internet2NoPrivateAs => AnglerInternet2.NoPrivateAs(topology, externalNodes, transfer),
-        QueryType.Internet2Reachable => AnglerInternet2.Reachable(topology, externalNodes, transfer),
+        QueryType.Internet2NoPrivateAsContra => AnglerInternet2.NoPrivateAsContrapositive(topology, externalNodes,
+          transfer),
+        QueryType.Internet2NoPrivateAsFaultTolerant => AnglerInternet2.FaultTolerance(
+          AnglerInternet2.NoPrivateAs(topology, externalNodes, transfer)),
+        QueryType.Internet2Reachable => AnglerInternet2.ReachableSymbolicPrefix(topology, externalNodes, transfer),
         QueryType.Internet2ReachableInternal => AnglerInternet2.ReachableInternal(topology, transfer),
         QueryType.FatReachable => AnglerFatTreeNetwork.Reachable(FatTree.LabelFatTree(topology),
           transfer),
@@ -91,7 +97,6 @@ runCommand.SetHandler(
 
       // turn on query printing if true
       net.PrintFormulas = printQuery;
-      // net.Check(SmtCheck.Inductive, "atla-re1");
       if (mono)
         Profile.RunMonoWithStats(net);
       else
