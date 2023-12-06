@@ -5,16 +5,10 @@ namespace Timepiece.Angler.Ast.AstExpr;
 /// Bundles a constructor to produce an appropriate manipulable type:
 /// typically this would be some form of Zen expression.
 /// </summary>
-public record ConstantExpr : Expr
+public record ConstantExpr(dynamic value, Func<dynamic, dynamic> constructor) : Expr
 {
-  public readonly Func<dynamic, dynamic> constructor;
-  public readonly dynamic value;
-
-  public ConstantExpr(dynamic value, Func<dynamic, dynamic> constructor)
-  {
-    this.value = value;
-    this.constructor = constructor;
-  }
+  public readonly Func<dynamic, dynamic> constructor = constructor;
+  public readonly dynamic value = value;
 
   public override void Rename(string oldVar, string newVar)
   {

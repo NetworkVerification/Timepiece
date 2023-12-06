@@ -10,7 +10,7 @@ namespace Timepiece.Angler.Ast;
 ///   Representation of the properties of a node as parsed from JSON.
 ///   Tracks the node's prefixes and its routing policies.
 /// </summary>
-public class NodeProperties
+public record struct NodeProperties
 {
   [JsonConstructor]
   public NodeProperties(int? asn, Dictionary<string, RoutingPolicies> policies,
@@ -51,7 +51,7 @@ public class NodeProperties
   [JsonProperty(nameof(Declarations))]
   public Dictionary<string, AstFunction<RouteEnvironment>> Declarations { get; set; }
 
-  [JsonProperty(nameof(Policies))] public Dictionary<string, RoutingPolicies> Policies { get; }
+  [JsonProperty(nameof(Policies))] public Dictionary<string, RoutingPolicies> Policies { get; set; }
 
   /// <summary>
   ///   Construct a <c>NetworkNode{RouteEnvironment}</c> instance that stores the

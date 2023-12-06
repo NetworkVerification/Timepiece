@@ -1,15 +1,9 @@
 namespace Timepiece.Angler.Ast.AstExpr;
 
-public record UnaryOpExpr : Expr
+public record UnaryOpExpr(Expr expr, Func<dynamic, dynamic> unaryOp) : Expr
 {
-  public readonly Expr expr;
-  public readonly Func<dynamic, dynamic> unaryOp;
-
-  public UnaryOpExpr(Expr expr, Func<dynamic, dynamic> unaryOp)
-  {
-    this.expr = expr;
-    this.unaryOp = unaryOp;
-  }
+  public readonly Expr expr = expr;
+  public readonly Func<dynamic, dynamic> unaryOp = unaryOp;
 
   public override void Rename(string oldVar, string newVar)
   {

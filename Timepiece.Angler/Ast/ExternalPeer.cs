@@ -9,10 +9,10 @@ namespace Timepiece.Angler.Ast;
 /// </summary>
 /// <param name="ip"></param>
 /// <param name="peers"></param>
-public record ExternalPeer(IPAddress ip, string[] peers)
+public record struct ExternalPeer(IPAddress ip, string[] peers)
 {
   public readonly IPAddress ip = ip;
-  [JsonProperty("Peering")] public readonly string[] peers = peers;
+  [JsonProperty("Peering")] public string[] peers = peers;
 
   [JsonConstructor]
   public ExternalPeer(string ip, string[] peers) : this(IPAddress.Parse(ip), peers)

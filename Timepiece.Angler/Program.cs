@@ -53,13 +53,6 @@ runCommand.SetHandler(
     if (ast != null)
     {
       var (topology, transfer) = ast.TopologyAndTransfer(trackTerms: trackTerms);
-      var internet2Nodes = Internet2Nodes.AsNodes.Take(2).ToArray();
-      // keep the internet2 nodes and any of their non-internet2 neighbors
-      var toKeep = internet2Nodes.Concat(internet2Nodes.SelectMany(n => topology[n])
-        .Where(m => !Internet2Nodes.AsNodes.Contains(m)));
-      topology = topology.InducedSubgraph(toKeep);
-      var newTransfer = topology.MapEdges(e => transfer[e]);
-      transfer = newTransfer;
       var externalNodes = ast.Externals.Select(i => i.Name).ToArray();
       dynamic net = queryType switch
       {
