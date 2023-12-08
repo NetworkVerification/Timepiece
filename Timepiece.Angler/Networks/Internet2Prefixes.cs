@@ -2,8 +2,24 @@ using Timepiece.DataTypes;
 
 namespace Timepiece.Angler.Networks;
 
-internal static class Internet2Prefixes
+public static class Internet2Prefixes
 {
+  /// <summary>
+  /// Return all the participant prefixes of a given node.
+  /// Each prefix is bundled with the node's boolean indicating whether or not the prefix should match another exactly.
+  /// </summary>
+  /// <param name="node">An Internet2 node.</param>
+  /// <returns>An enumerable over prefixes and booleans.</returns>
+  public static IEnumerable<(Ipv4Prefix Prefix, bool Exact)> GetParticipantPrefixes(string node)
+  {
+    // get the prefix list for this neighbor, to then get the prefixes it uses
+    if (!ExternalPeerParticipantList.TryGetValue(node, out var participantList))
+      return Enumerable.Empty<(Ipv4Prefix, bool)>();
+    return ParticipantPrefixes.Where(prefixList => participantList.Participant == prefixList.Key)
+      .SelectMany(prefixList => prefixList.Value)
+      .Select(p => (p, participantList.Exact));
+  }
+
   /// <summary>
   /// External peers to their participant prefix list.
   /// If the Exact field is true, the participant is used in an exact match;

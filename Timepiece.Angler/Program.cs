@@ -22,6 +22,9 @@ var queryOption = new System.CommandLine.Option<bool>(
 var trackTermsOption = new System.CommandLine.Option<bool>(
   new[] {"--track-terms", "-t"},
   "If given, turn on tracking of the visited terms of a route.");
+var prefixDepthOption = new System.CommandLine.Option<int?>(new[] {"--max-prefixes", "-P"}, () => null,
+  "If specified, use up to the specified maximum number of prefixes for each node; otherwise use all prefixes." +
+  "Relevant only for Internet2Reachable.");
 var fileArgument = new Argument<string>(
   "file",
   "The .angler.json file to use");
@@ -36,8 +39,9 @@ runCommand.Add(queryArgument);
 runCommand.Add(monoOption);
 runCommand.Add(queryOption);
 runCommand.Add(trackTermsOption);
+runCommand.Add(prefixDepthOption);
 runCommand.SetHandler(
-  (file, queryType, mono, printQuery, trackTerms) =>
+  (file, queryType, mono, printQuery, trackTerms, prefixDepth) =>
   {
     var json = new JsonTextReader(new StreamReader(file));
 
@@ -69,7 +73,13 @@ runCommand.SetHandler(
           transfer),
         QueryType.Internet2NoPrivateAsFaultTolerant => AnglerInternet2.FaultTolerance(
           AnglerInternet2.NoPrivateAs(topology, externalNodes, transfer)),
-        QueryType.Internet2Reachable => AnglerInternet2.ReachableSymbolicPrefix(topology, externalNodes, transfer),
+        QueryType.Internet2Reachable => AnglerInternet2.ReachableSymbolicPrefix(topology,
+          externalNodes.ToDictionary(e => e, e =>
+          {
+            var prefixes = Internet2Prefixes.GetParticipantPrefixes(e);
+            return prefixDepth.HasValue ? prefixes.Take(prefixDepth.Value) : prefixes;
+          }),
+          transfer),
         QueryType.Internet2ReachableInternal => AnglerInternet2.ReachableInternal(topology, transfer),
         QueryType.FatReachable => AnglerFatTreeNetwork.Reachable(FatTree.LabelFatTree(topology),
           transfer),
@@ -106,6 +116,6 @@ runCommand.SetHandler(
     {
       Console.WriteLine("Failed to deserialize contents of {file} (received null).");
     }
-  }, fileArgument, queryArgument, monoOption, queryOption, trackTermsOption);
+  }, fileArgument, queryArgument, monoOption, queryOption, trackTermsOption, prefixDepthOption);
 
 await rootCommand.InvokeAsync(args);

@@ -58,11 +58,6 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Annotations = ModularProperties;
   }
 
-  private static Zen<RouteEnvironment> TransferOrDrop(Zen<RouteEnvironment> r, Zen<bool> drop,
-    Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>> f)
-  {
-    return Zen.If(drop, new RouteEnvironment(), f(r));
-  }
 
   /// <summary>
   /// Lift the given AnglerInternet2 instance to one where links may arbitrarily fail.
@@ -71,10 +66,12 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <returns></returns>
   public static AnglerInternet2 FaultTolerance(AnglerInternet2 net)
   {
+    // construct a dictionary of edge failure booleans
     var edgeFailed = SymbolicValue.SymbolicDictionary<(string, string), bool>("failed", net.Digraph.Edges());
+    // if the failure boolean is true, the route is dropped
     var liftedTransferFunctions =
-      net.Digraph.MapEdges<Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>>(e =>
-        r => TransferOrDrop(r, edgeFailed[e].Value, net.TransferFunctions[e]));
+      net.Digraph.MapEdges<RouteEnvironmentTransfer>(e =>
+        r => Zen.If(edgeFailed[e].Value, new RouteEnvironment(), net.TransferFunctions[e](r)));
     var symbolics = net.Symbolics.Concat(edgeFailed.Values).ToArray();
     return new AnglerInternet2(net.Digraph, liftedTransferFunctions, net.MergeFunction, net.InitialValues,
       net.Annotations,
@@ -210,7 +207,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <returns>An <c>AnglerInternet2</c> instance.</returns>
   public static AnglerInternet2 BlockToExternal(Digraph<string> digraph,
     IEnumerable<string> externalPeers,
-    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
   {
     var externalRoutes =
       SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers, BteTagAbsent);
@@ -243,7 +240,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="transferFunctions">The transfer functions of the network.</param>
   /// <returns>An <c>AnglerInternet2</c> instance.</returns>
   public static AnglerInternet2 NoMartians(Digraph<string> digraph, IEnumerable<string> externalPeers,
-    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
   {
     var externalPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p => p.IsValidPrefixLength());
     // all external routes must be for the external prefix
@@ -324,7 +321,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <returns></returns>
   public static AnglerInternet2 NoPrivateAs(Digraph<string> digraph,
     IEnumerable<string> externalPeers,
-    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
   {
     var externalRoutes =
       SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("external-route", externalPeers,
@@ -381,7 +378,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
   public static AnglerInternet2 ReachableInternal(Digraph<string> digraph,
-    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
   {
     var internalRoutes = SymbolicValue.SymbolicDictionary<string, RouteEnvironment>("internal-route",
       Internet2Nodes.AsNodes, HasInternalPrefixRoute);
@@ -475,11 +472,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       // safety condition: if a node has a route, then the route must be for the destination prefix
       // and not include any bad AS number
       var safety = Lang.Globally<RouteEnvironment>(r =>
-        Zen.Implies(r.GetResultValue(),
-          Zen.And(r.GetPrefix() == destinationPrefix.Value,
-            Zen.Not(r.GetAsSet().Contains(PrivateAs)),
-            Zen.Not(r.GetAsSet().Contains(NlrAs)),
-            Zen.Not(r.GetAsSet().Contains(CommercialAs)))));
+        Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value, NoBadAs(r))));
       return Lang.Intersect(Internet2Nodes.AsNodes.Contains(n)
           ? Lang.Finally(witnessTime, monolithicProperties[n])
           // if an external node starts with a route, it must always have one (for its specific starting prefix)
@@ -507,30 +500,24 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   /// <param name="transferFunctions"></param>
   /// <returns></returns>
   public static AnglerInternet2 ReachableSymbolicPrefix(Digraph<string> digraph,
-    IEnumerable<string> externalPeers,
-    Dictionary<(string, string), Func<Zen<RouteEnvironment>, Zen<RouteEnvironment>>> transferFunctions)
+    Dictionary<string, IEnumerable<(Ipv4Prefix Prefix, bool Exact)>> externalPeers,
+    Dictionary<(string, string), RouteEnvironmentTransfer> transferFunctions)
   {
     // the announced external destination prefix
     var destinationPrefix = new SymbolicValue<Ipv4Prefix>("external-prefix", p =>
       Zen.And(
         // (1) must not be for a martian prefix or an Internet2-internal prefix
-        NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes),
-          p),
+        NoPrefixMatch(MartianPrefixes.Concat(InternalPrefixes), p),
         // (2) must have a prefix length of at most /27 -- higher lengths will be dropped by CONNECTOR-IN
         p.GetPrefixLength() <= new UInt<_6>(27)));
-    var externalRoutes = externalPeers.ToDictionary(e => e,
+    // two cases for external routes: if they have a prefix that matches the destination prefix:
+    // a. if they have a route, the prefix must match the destination prefix and the route must not have any bad ASes; or
+    // b. there is no route
+    var externalRoutes = externalPeers.ToDictionary(e => e.Key,
       e =>
       {
-        // get the prefix list for this neighbor, to then get the prefixes it uses
-        var hasParticipantList = Internet2Prefixes.ExternalPeerParticipantList.TryGetValue(e, out var participantList);
-        // if the neighbor has no participant list, the participant prefixes will be empty
-        // encode the fact that there exists a match of one of the prefixes when one of the prefixes matches the given external peer
-        var matchesPrefix = Internet2Prefixes.ParticipantPrefixes
-          .Where(prefixList => hasParticipantList && participantList.Participant == prefixList.Key)
-          .Exists(prefixList => prefixList.Value
-            // TODO: comment out this line. cutting here to only take one prefix (just to reduce size of encoding for testing)
-            .Take(1)
-            .Exists(prefix => prefix.Matches(destinationPrefix.Value, exact: participantList.Exact)));
+        var matchesPrefix =
+          e.Value.Exists(prefix => prefix.Prefix.Matches(destinationPrefix.Value, exact: prefix.Exact));
         // the constraint says that if the prefix matches, then there should be a route for it (if one exists);
         // if the prefix does not match, this neighbor should not send a route
         return new SymbolicValue<RouteEnvironment>($"external-route-{e}",
@@ -542,12 +529,13 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       externalRoutes.TryGetValue(n, out var route)
         ? route.Value
         : Zen.Constant(new RouteEnvironment()).WithPrefix(destinationPrefix.Value));
-    // there are 2 symbolic times: when the internal nodes adjacent to the external peer get a route, and when the other internal nodes get a route
-    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(2);
-    // make the external adjacent time constraint strictly greater than 0
-    symbolicTimes[0].Constraint = t => t > BigInteger.Zero;
-    var nextToPeerTime = symbolicTimes[0].Value;
-    var notNextToPeerTime = symbolicTimes[1].Value;
+    var symbolicTimes = SymbolicTime.AscendingSymbolicTimes(3); // there are 3 symbolic times:
+    // when the external peers have a route;
+    var externalTime = symbolicTimes[0].Value;
+    // when the internal nodes adjacent to the external peer get a route;
+    var nextToPeerTime = symbolicTimes[1].Value;
+    // when the other internal nodes get a route
+    var notNextToPeerTime = symbolicTimes[2].Value;
     var lastTime = symbolicTimes[^1].Value;
     // encoding that an external route exists
     var externalRouteExists = externalRoutes
@@ -568,26 +556,23 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
       ? Lang.Finally(lastTime, monolithicProperties[n])
       : Lang.Globally(monolithicProperties[n]));
     var annotations = digraph.MapNodes(n =>
-      Lang.Intersect(Internet2Nodes.AsNodes.Contains(n)
-          // internal nodes get routes at 2 different possible times
-          // case 1: an adjacent external peer has a route. we get a route once they send it to us
-          // case 2: no adjacent external peer has a route. we get a route once an internal neighbor sends it to us
-          ? Lang.Finally(
-            Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes),
-              // case 1
-              nextToPeerTime,
-              // case 2
-              notNextToPeerTime),
-            monolithicProperties[n])
-          // if an external node starts with a route, it must always have one (for its specific starting prefix)
-          // otherwise, we don't care what route it has
-          : Lang.Globally<RouteEnvironment>(r =>
-            externalRoutes.TryGetValue(n, out var externalRoute)
-              ? Zen.Implies(externalRoute.Value.GetResultValue(), r.HasPrefixRoute(externalRoute.Value.GetPrefix()))
-              : Zen.True()),
-        // safety condition: if a node has a route, then the route must be for the destination prefix
-        Lang.Globally<RouteEnvironment>(r =>
-          Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value, NoBadAs(r))))));
+    {
+      // internal nodes get routes at 2 different possible times
+      // case 1: an adjacent external peer has a route. we get a route once they send it to us
+      // case 2: no adjacent external peer has a route. we get a route once an internal neighbor sends it to us
+      var witnessTime = Zen.If(ExternalNeighborHasRoute(digraph, n, externalRoutes), nextToPeerTime, notNextToPeerTime);
+      // safety condition: if a node has a route, then the route must be for the destination prefix and not include a bad AS
+      var safety = Lang.Globally<RouteEnvironment>(r =>
+        Zen.Implies(r.GetResultValue(), Zen.And(r.GetPrefix() == destinationPrefix.Value, NoBadAs(r))));
+      return Lang.Intersect(Internet2Nodes.AsNodes.Contains(n)
+        ? Lang.Finally(witnessTime, monolithicProperties[n])
+        // if an external node starts with a route, it must always have one (for its specific starting prefix)
+        // otherwise, we don't care what route it has
+        : Lang.Finally<RouteEnvironment>(externalTime, r =>
+          externalRoutes.TryGetValue(n, out var externalRoute)
+            ? Zen.Implies(externalRoute.Value.GetResultValue(), r.HasPrefixRoute(externalRoute.Value.GetPrefix()))
+            : Zen.True()), safety);
+    });
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
     return new AnglerInternet2(digraph, transferFunctions,
       (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value), initialRoutes,

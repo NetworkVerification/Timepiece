@@ -23,6 +23,10 @@ public class AnglerInternet2Tests
     AstSerializationBinder.JsonSerializer()
       .Deserialize<AnglerNetwork>(new JsonTextReader(new StreamReader(Internet2Path)))!;
 
+  private static readonly Dictionary<string, IEnumerable<(Ipv4Prefix Prefix, bool Exact)>> ExternalPeerPrefixes =
+    Internet2Ast.Externals.Select(e => e.Name)
+      .ToDictionary(e => e, e => Internet2Prefixes.GetParticipantPrefixes(e).Take(1));
+
   private static readonly NodeProperties WashProperties = Internet2Ast.Nodes["wash"];
 
   /// <summary>
@@ -259,8 +263,7 @@ public class AnglerInternet2Tests
   public void WashReachableInductiveCheckPasses()
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
-    var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
-    var net = AnglerInternet2.ReachableSymbolicPrefix(topology, externalNodes, transfer);
+    var net = AnglerInternet2.ReachableSymbolicPrefix(topology, ExternalPeerPrefixes, transfer);
     NetworkAsserts.Sound(net, SmtCheck.Inductive, "wash");
   }
 
@@ -268,8 +271,7 @@ public class AnglerInternet2Tests
   public void Internet2ReachableMonolithic()
   {
     var (topology, transfer) = Internet2Ast.TopologyAndTransfer();
-    var externalNodes = Internet2Ast.Externals.Select(i => i.Name);
-    var net = AnglerInternet2.ReachableSymbolicPrefix(topology, externalNodes, transfer);
+    var net = AnglerInternet2.ReachableSymbolicPrefix(topology, ExternalPeerPrefixes, transfer);
     NetworkAsserts.Sound(net, SmtCheck.Monolithic);
   }
 

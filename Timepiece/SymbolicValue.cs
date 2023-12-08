@@ -27,6 +27,9 @@ public record SymbolicValue<T> : ISymbolic
     Constraint = constraint;
   }
 
+  /// <summary>
+  /// A predicate constraining the possible values of the symbolic once encoded.
+  /// </summary>
   public Func<Zen<T>, Zen<bool>>? Constraint { get; set; }
 
   /// <summary>
