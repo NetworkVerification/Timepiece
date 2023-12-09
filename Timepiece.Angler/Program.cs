@@ -55,6 +55,8 @@ runCommand.SetHandler(
     {
       var (topology, transfer) = ast.TopologyAndTransfer(trackTerms: trackTerms);
       var externalNodes = ast.Externals.Select(i => i.Name).ToArray();
+      Console.WriteLine($"Topology contains {topology.NNodes} nodes and {topology.NEdges} edges.");
+      Console.WriteLine($"Found {externalNodes.Length} external nodes.");
       dynamic net = queryType switch
       {
         QueryType.Internet2BlockToExternal => AnglerInternet2.BlockToExternal(topology, externalNodes, transfer),
