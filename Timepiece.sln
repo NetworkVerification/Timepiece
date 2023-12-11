@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		run_all.py = run_all.py
 		README.md = README.md
 		find_participants.py = find_participants.py
+		INTERNET2.angler.json = INTERNET2.angler.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MisterWolf.Tests", "MisterWolf.Tests\MisterWolf.Tests.csproj", "{D8AA48BC-24A6-4FA8-AF0B-07280EB23514}"

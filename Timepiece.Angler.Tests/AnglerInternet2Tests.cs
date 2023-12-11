@@ -12,12 +12,14 @@ namespace Timepiece.Angler.Tests;
 public class AnglerInternet2Tests
 {
   private readonly ITestOutputHelper _testOutputHelper;
+
+  /// <summary>
+  /// Name of the Internet2 config file.
+  /// This file is set to be copied into the BaseDirectory when the solution builds.
+  /// </summary>
   private const string Internet2FileName = "INTERNET2.angler.json";
 
-  // TODO: change this to instead track the file down by going up the directories
-  private static readonly string Internet2Path =
-    Path.Join(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)!.Parent!.Parent!.Parent!.Parent!.ToString(),
-      Internet2FileName);
+  private static readonly string Internet2Path = Path.Join(AppDomain.CurrentDomain.BaseDirectory, Internet2FileName);
 
   private static readonly AnglerNetwork Internet2Ast =
     AstSerializationBinder.JsonSerializer()
