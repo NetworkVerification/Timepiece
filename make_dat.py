@@ -40,10 +40,10 @@ else:
         "total",
         "wall",
     ]
-averaged_rows = []
+min_rows = []
 for _, g in itertools.groupby(rows, key=lambda r: r["n"]):
     groups = list(g)
-    averaged_rows.append({h: sum(r[h] for r in groups) / len(groups) for h in headers})
+    min_rows.append({h: min(r[h] for r in groups) for h in headers})
 writer = csv.DictWriter(sys.stdout, fieldnames=headers, delimiter="\t")
 writer.writeheader()
-writer.writerows(averaged_rows)
+writer.writerows(min_rows)
