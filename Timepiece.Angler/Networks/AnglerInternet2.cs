@@ -217,7 +217,10 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
 
     var monolithicProperties =
       digraph.MapNodes<Func<Zen<RouteEnvironment>, Zen<bool>>>(n =>
-        Internet2Nodes.InternalNodes.Contains(n) ? Lang.True<RouteEnvironment>() : BteTagAbsent);
+        Internet2Nodes.InternalNodes.Contains(n)
+        || n == "10.11.1.17"
+        || Internet2Nodes.OtherGroup.Contains(n)
+          ? Lang.True<RouteEnvironment>() : BteTagAbsent);
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().ToArray();
 
     return new AnglerInternet2(digraph, transferFunctions, initialRoutes, monolithicProperties, symbolics);
