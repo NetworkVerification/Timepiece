@@ -349,7 +349,6 @@ public class AnnotatedNetwork<RouteType, NodeType> : Network<RouteType, NodeType
     // get the new route as the merge of all neighbors
     var newNodeRoute = UpdateNodeRoute(node, routes);
 
-    // collect all of the symbolics from neighbors.
     var assume = new List<Zen<bool>> {time > new BigInteger(0)};
     assume.AddRange(Digraph[node].Select(neighbor =>
       Annotations[neighbor](routes[neighbor], time - new BigInteger(1))));

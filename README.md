@@ -16,7 +16,7 @@ dotnet build Timepiece.Angler
 Timepiece can take network configurations from Batfish that have been processed by [Angler](https://github.com/NetworkVerification/angler).
 
 ```sh
-dotnet run --project Timepiece.Angler -- FILE.json [query]
+dotnet run --project Timepiece.Angler -- run FILE.json [query]
 ```
 
 The list of predefined queries can be found by passing the `list-queries` subcommand.

@@ -1,6 +1,6 @@
 # Build stage
 Bootstrap: docker
-From: mcr.microsoft.com/dotnet/sdk:7.0
+From: mcr.microsoft.com/dotnet/sdk:8.0
 Stage: build
 %post
   git clone https://github.com/alberdingk-thijm/Timepiece.git
@@ -11,7 +11,7 @@ Stage: build
 
 # Run stage
 Bootstrap: docker
-FROM: mcr.microsoft.com/dotnet/aspnet:7.0
+FROM: mcr.microsoft.com/dotnet/aspnet:8.0
 Stage: run
 %files from build
   /publish /publish

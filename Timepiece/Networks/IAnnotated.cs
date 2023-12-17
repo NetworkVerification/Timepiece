@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using ZenLib;
 
-namespace Timepiece;
+namespace Timepiece.Networks;
 
 public interface IAnnotated<RouteType, NodeType>
 {
