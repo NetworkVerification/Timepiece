@@ -32,8 +32,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<BigInteger>, Zen<bool>>> modularProperties,
     Dictionary<string, Func<Zen<RouteEnvironment>, Zen<bool>>> monolithicProperties, ISymbolic[] symbolics) : base(
     digraph, transferFunctions, mergeFunction, initialValues, annotations, modularProperties,
-    monolithicProperties,
-    symbolics)
+    monolithicProperties, symbolics)
   {
   }
 
@@ -74,8 +73,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
         r => Zen.If(edgeFailed[e].Value, new RouteEnvironment(), net.TransferFunctions[e](r)));
     var symbolics = net.Symbolics.Concat(edgeFailed.Values).ToArray();
     return new AnglerInternet2(net.Digraph, liftedTransferFunctions, net.MergeFunction, net.InitialValues,
-      net.Annotations,
-      net.ModularProperties, net.MonolithicProperties, symbolics);
+      net.Annotations, net.ModularProperties, net.MonolithicProperties, symbolics);
   }
 
   /// <summary>
@@ -192,7 +190,6 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
   public static Zen<bool> NoPrefixMatch(IEnumerable<(Ipv4Prefix Prefix, bool Exact)> candidates,
     Zen<Ipv4Prefix> prefix)
   {
-    // TODO: consider converting to Zen<Ipv4Wildcard> first? rather than inside the constraints?
     return candidates.ForAll(candidate =>
       Zen.Not(candidate.Prefix.Matches(prefix, candidate.Exact)));
   }
@@ -579,8 +576,7 @@ public class AnglerInternet2 : AnnotatedNetwork<RouteEnvironment, string>
     var symbolics = externalRoutes.Values.Cast<ISymbolic>().Concat(symbolicTimes).Append(destinationPrefix).ToArray();
     return new AnglerInternet2(digraph, transferFunctions,
       (r1, r2) => RouteEnvironmentExtensions.MinOptionalForPrefix(r1, r2, destinationPrefix.Value), initialRoutes,
-      annotations, modularProperties,
-      monolithicProperties, symbolics);
+      annotations, modularProperties, monolithicProperties, symbolics);
   }
 
   /// <summary>
