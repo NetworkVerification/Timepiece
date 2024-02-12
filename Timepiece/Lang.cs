@@ -27,6 +27,18 @@ public static class Lang
   }
 
   /// <summary>
+  /// Generate an annotation: at and after time t, the temporal operator holds for a given route.
+  /// </summary>
+  /// <param name="t">An integer time.</param>
+  /// <param name="after">A predicate over a route and a time.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and a time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Finally<T>(Time t, Func<Zen<T>, Time, Zen<bool>> after)
+  {
+    return (r, time) => Implies(time >= t, after(r, time));
+  }
+
+  /// <summary>
   ///   Generate an annotation: until time t, the predicate p1 holds for a given route.
   ///   At time t, the predicate p2 holds for the given route.
   /// </summary>
@@ -39,6 +51,22 @@ public static class Lang
     Func<Zen<T>, Zen<bool>> after)
   {
     return (r, time) => If(time < t, before(r), after(r));
+  }
+
+  /// <summary>
+  /// Generate an annotation: until time <paramref name="t"/>, the predicate <paramref name="before"/>
+  /// holds for a given route. At time <paramref name="t"/>, the predicate <paramref name="after"/>
+  /// holds for the given route and time.
+  /// </summary>
+  /// <param name="t">An integer time.</param>
+  /// <param name="before">A predicate over a route.</param>
+  /// <param name="after">A predicate over a route and a time.</param>
+  /// <typeparam name="T">The type of routes.</typeparam>
+  /// <returns>A predicate over a route and a time.</returns>
+  public static Func<Zen<T>, Time, Zen<bool>> Until<T>(Time t, Func<Zen<T>, Zen<bool>> before,
+    Func<Zen<T>, Time, Zen<bool>> after)
+  {
+    return (r, time) => If(time < t, before(r), after(r, time));
   }
 
   /// <summary>
