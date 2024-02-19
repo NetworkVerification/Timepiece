@@ -57,6 +57,10 @@ The table lists the following data:
   * `wall`, the wall-clock time.
 For monolithic benchmarks, only `n` and `total` are listed.
 
+Timepiece will try and catch a user interrupt signal (CTRL-C) and report partial results,
+but depending on when the interrupt is sent, if verification has not yet begun, 
+results will _not_ be reported.
+
 ## Generating Plots
 
 Included with Timepiece are two Python scripts to help users generate plots of the data output by the tool.
@@ -85,14 +89,28 @@ python make_dat.py <(cat FatReachable.*.modular.out) modular > FatReachable.modu
 Once a matching modular and monolithic .dat file are created using `make_dat.py`, 
 they can then be supplied to the
 [`plot.py`](https://github.com/NetworkVerification/Timepiece/tree/main/plot.py)
-Python script, which will produce a PDF file `plot.pdf` plotting the modular results against
+Python script, which will produce a PDF file (by default called `plot.pdf`) plotting the modular results against
 the monolithic ones, with the number of nodes on the x-axis and the verification time in seconds
 on the y-axis.
-`plot.py` also accepts an optional third timeout argument: if supplied, a dashed black line will
-be added to the plot, showing when a timeout was sent to interrupt verification.
 
 ``` shell
-# usage: plot.py [modular dat file] [monolithic dat file] [timeout in seconds (optional)]
-python plot.py FatReachable.modular.dat FatReachable.mono.dat 14400000
+# usage: plot.py [modular dat file] [monolithic dat file] [output file (default: plot.pdf)] [timeout in seconds (optional)]
+python plot.py FatReachable.modular.dat FatReachable.mono.dat FatReachable.pdf 14400000 
 ```
 
+#### Plotting timeouts
+
+`plot.py` also accepts an optional timeout argument: if supplied, a dashed black line will
+be added to the plot, showing when a timeout was sent to interrupt verification.
+Since we aren't guaranteed to report the time results for verification when a timeout occurs,
+benchmarks that timeout may not be shown on the plot.
+You can add data points for timed-out benchmarks by hand by writing in additional rows
+in the .dat file, _e.g.,_
+``` csv
+n   total
+20  1000
+# added by hand, assuming timeout is 7200 seconds (2 hours)
+80  7200
+180 7200
+# ...etc...
+```
