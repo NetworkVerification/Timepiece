@@ -61,11 +61,33 @@ Timepiece will try and catch a user interrupt signal (CTRL-C) and report partial
 but depending on when the interrupt is sent, if verification has not yet begun, 
 results will _not_ be reported.
 
-## Generating Plots
+## Generating Scaling Plots
 
 Included with Timepiece are two Python scripts to help users generate plots of the data output by the tool.
 These scripts allow users to compare verification times between Timepiece's modular verifier and its implemented
 monolithic verifier.
+
+**TL;DR:**
+``` shell
+# 1. Run Timepiece for each desired benchmark, redirecting stdout to a log file, e.g.:
+dotnet run --project Timepiece.Angler -- run sp4.angler.json FatReachable &> FatReachable.4.modular.out
+dotnet run --project Timepiece.Angler -- run sp8.angler.json FatReachable &> FatReachable.8.modular.out
+dotnet run --project Timepiece.Angler -- run sp12.angler.json FatReachable &> FatReachable.12.modular.out
+# etc.
+# 2. Repeat for monolithic benchmarks:
+dotnet run --project Timepiece.Angler -- run sp4.angler.json FatReachable --mono &> FatReachable.4.mono.out
+dotnet run --project Timepiece.Angler -- run sp8.angler.json FatReachable --mono &> FatReachable.8.mono.out
+dotnet run --project Timepiece.Angler -- run sp12.angler.json FatReachable --mono &> FatReachable.12.mono.out
+# etc.
+# 3. For each distinct query, generate the .dat file:
+python make_dat.py <(cat FatReachable.*.modular.out) modular > FatReachable.modular.dat
+python make_dat.py <(cat FatReachable.*.mono.out) mono > FatReachable.mono.dat
+# 4. If any .dat files are missing benchmarks that timed out or were interrupted (by the user), write them in
+vim FatReachable.modular.dat  # ...edit as needed...
+vim FatReachable.mono.dat  # ...edit as needed...
+# 5. Generate the plot
+python plot.py FatReachable.modular.dat FatReachable.mono.dat FatReachable.pdf 14400000 
+```
 
 ### Generating a Table of Results
 
