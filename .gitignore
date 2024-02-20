@@ -1,3 +1,6 @@
+# Apptainer/Singularity SIF
+*.sif
+
 # Logging and results files
 logs*
 results*

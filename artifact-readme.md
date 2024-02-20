@@ -288,23 +288,15 @@ on page 18 of the paper (under Wide-area networks).
 
 ### Making INTERNET2.angler.json from scratch
 
-You can use the Makefile's `make angler/INTERNET2.angler.json` command
-to build the Internet2 benchmark from its configuration files.
-Included in the `angler` repository is the `internet2.sh` shell script,
-which builds a Docker image for running Angler on the Internet2 benchmark's
-configuration files and constructing an .angler.json file from the Batfish output.
-Note that the `internet2.sh` script also requires that
-[**Docker Compose**](https://docs.docker.com/compose/install/) is installed.
-
-Building the Docker image can take some time, as the
-`igraph` and `pybatfish` Python dependencies may take several minutes to build.
-Once it is created, the `internet.sh` script will run batfish
-together with angler to generate the `INTERNET2.angler.json` file from the
-configurations.
-The configuration files we used can be found in `angler/examples/INTERNET2`.
-The `INTERNET2.json` file is the intermediate output from querying batfish,
-while the `INTERNET2.angler.json` file is the one we generate ourselves.
-Note that `INTERNET2.angler.json` may be close to 1GB in size.
+We include INTERNET2.angler.json for users' convenience,
+but it can also be built from scratch.
+Simply clone the [`angler`](https://github.com/NetworkVerification/angler) GitHub
+repository, then follow the insutrctions therein to convert the
+configuration files (under `examples/INTERNET2`).
+Angler uses [Batfish](https://github.com/batfish/batfish) to convert the configuration
+files to its own intermediate JSON representation.
+You will need to use Docker again to start a container for Batfish,
+and then Python to run Angler.
 
 ### Modifying benchmarks
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Generate PDFs of the plots for each desired benchmark in the logs.
+# Generate PDFs of the plots for each desired benchmark in the logs, using PDFLaTeX and pgfplots.
+# See plot.py for an alternate, somewhat simpler approach to generating plots entirely in Python. 
 TIMEOUT=$1
 mkdir -p results
 

@@ -1,17 +1,17 @@
 # Build stage
 Bootstrap: docker
-From: mcr.microsoft.com/dotnet/sdk:8.0
+From: mcr.microsoft.com/dotnet/sdk:7.0
 Stage: build
 %post
-  git clone https://github.com/alberdingk-thijm/Timepiece.git
+  git clone https://github.com/NetworkVerification/Timepiece.git
   cd Timepiece
-  dotnet restore "Timepiece/Timepiece.csproj"
+  dotnet restore "Timepiece/Timepiece.csproj" 
   dotnet restore "Timepiece.Angler/Timepiece.Angler.csproj"
   dotnet publish Timepiece.Angler -c Release -o /publish
 
 # Run stage
 Bootstrap: docker
-FROM: mcr.microsoft.com/dotnet/aspnet:8.0
+FROM: mcr.microsoft.com/dotnet/aspnet:7.0
 Stage: run
 %files from build
   /publish /publish

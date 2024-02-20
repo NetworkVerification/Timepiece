@@ -1,3 +1,15 @@
+%% A standalone LaTeX file used to generate LaTeX plots for the benchmarks.
+%% Requires PGFPlots (minimum version 1.17).
+%% Rather than using this file directly, we compile plots with it by
+%% redefining \timeout, \benchmono and \benchmod to the appropriate times and files,
+%% and then write the output to a particular file.
+%% The command ends up being something like:
+%% TIMEOUT=7200 MOD=results/mod.dat MONO=results/mono.dat \
+%%   pdflatex -jobname plot.pdf -halt-on-error -output-directory results \
+%%   "\newcommand\timeout{$TIMEOUT}\newcommand\benchmod{$MOD}\newcommand\benchmono{$MONO}\input{plot.tex}"
+%% See Makefile for how this is done.
+%% In order for this to work, the \benchmod file must contain the columns "n", "wall", "med" and "99p".
+%% The \benchmono file must contain the columns "n" and "total".
 \documentclass[tikz]{standalone}
 \usepackage{etoolbox} % command-line flag
 \usepackage{mathptmx}  % times roman, including math (where possible)
@@ -34,9 +46,7 @@
             grid=major,
             xlabel=Nodes,
             ylabel={Verification time},
-            % ymax=10000,
             xmin=0,
-            % xmax=2000,
             ymode=log,
             y unit=\si{\second},
             cycle list name=cute,
@@ -45,14 +55,14 @@
                     anchor=north east,
                 }
         ]
-			\addplot table[x=n, y expr=\thisrow{wall}/1000]{\tbl};
-			\addlegendentry{\sysshort}
-			\addplot table[x=n, y expr=\thisrow{med}/1000]{\tbl};
-			\addlegendentry{\sysshort median}
-			\addplot table[x=n, y expr=\thisrow{99p}/1000]{\tbl};
-			\addlegendentry{\sysshort $99^{th}$ p.}
-			\addplot table[x=n, y expr=\thisrow{total}/1000]{\mtbl};
-			\addlegendentry{\ms}
+	\addplot table[x=n, y expr=\thisrow{wall}/1000]{\tbl};
+	\addlegendentry{\sysshort}
+	\addplot table[x=n, y expr=\thisrow{med}/1000]{\tbl};
+	\addlegendentry{\sysshort median}
+	\addplot table[x=n, y expr=\thisrow{99p}/1000]{\tbl};
+	\addlegendentry{\sysshort $99^{th}$ p.}
+	\addplot table[x=n, y expr=\thisrow{total}/1000]{\mtbl};
+	\addlegendentry{\ms}
         \addplot[timeout line] {\timeout} node [timeout node] {t/o};
       \end{axis}
     \end{tikzpicture}
